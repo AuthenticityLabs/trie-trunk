@@ -1,0 +1,5 @@
+# Benchmark CSV exports may use CRLF; preserve the recorded data bytes.
+*.csv whitespace=trailing-space,space-before-tab,cr-at-eol
+
+# Preserve archived test output, including final blank lines.
+pil/benchmarks/**/*.log whitespace=blank-at-eol,space-before-tab,-blank-at-eof

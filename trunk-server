@@ -1,0 +1,2 @@
+#!/bin/sh
+exec ./trunk ingest 5410 serve 8443 --http-address 127.0.0.1:3020

@@ -1,0 +1,20 @@
+[package]
+name = "trunk-browser"
+version = "0.1.0"
+edition = "2024"
+license = "AGPL-3.0-only"
+publish = false
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+pil-codec = { path = "../../pil" }
+ciborium = "0.2.2"
+crc32c = "0.6.8"
+
+[profile.release]
+opt-level = "s"
+lto = true
+strip = true
+panic = "abort"

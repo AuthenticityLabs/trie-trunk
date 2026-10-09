@@ -1,0 +1,16 @@
+[
+  {
+    "run": "forward",
+    "elapsed_seconds": 179.2633879184723,
+    "exit_code": 0,
+    "start_unix": 1790992085.4768739,
+    "binary_sha256": "a8bab72e139fa133d17dd7f48a07e05510fa01b6efcca933ebd7e95d883fc204"
+  },
+  {
+    "run": "reverse",
+    "elapsed_seconds": 179.1905858516693,
+    "exit_code": 0,
+    "start_unix": 1790992264.741133,
+    "binary_sha256": "a8bab72e139fa133d17dd7f48a07e05510fa01b6efcca933ebd7e95d883fc204"
+  }
+]

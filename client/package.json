@@ -1,0 +1,30 @@
+{
+  "name": "snoot",
+  "private": true,
+  "license": "AGPL-3.0-only",
+  "version": "0.1.0",
+  "type": "module",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "vite",
+    "check": "tsc --noEmit",
+    "test": "node --experimental-strip-types --test services/*.test.mjs",
+    "build": "npm run check && vite build",
+    "preview": "vite preview",
+    "wasm": "node scripts/build-pil.mjs",
+    "predev": "npm run wasm",
+    "prebuild": "npm run wasm",
+    "pretest": "npm run wasm"
+  },
+  "dependencies": {
+    "@ark-ui/solid": "5.39.2",
+    "solid-js": "1.9.15"
+  },
+  "devDependencies": {
+    "typescript": "7.0.2",
+    "vite": "8.3.1",
+    "vite-plugin-solid": "2.11.14"
+  }
+}

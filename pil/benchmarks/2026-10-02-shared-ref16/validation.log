@@ -1,0 +1,30 @@
+object8_full: 1 events, 4/4 shared fields, 4 supplied dynamic fields, 34 trie nodes; definitions and paths cached
+object8_full no_REF 1
+object8_full REF16 1
+object16_full: 1 events, 8/8 shared fields, 8 supplied dynamic fields, 514 trie nodes; definitions and paths cached
+object16_full no_REF 1
+object16_full REF16 1
+object8_change1_dynamic: 1 events, 0/4 shared fields, 1 supplied dynamic fields, 34 trie nodes; definitions and paths cached
+object8_change1_dynamic no_REF 1
+object8_change1_dynamic REF16 1
+object8_change2_dynamic: 1 events, 0/4 shared fields, 2 supplied dynamic fields, 34 trie nodes; definitions and paths cached
+object8_change2_dynamic no_REF 1
+object8_change2_dynamic REF16 1
+object16_change1_dynamic: 1 events, 0/8 shared fields, 1 supplied dynamic fields, 514 trie nodes; definitions and paths cached
+object16_change1_dynamic no_REF 1
+object16_change1_dynamic REF16 1
+object16_change2_dynamic: 1 events, 0/8 shared fields, 2 supplied dynamic fields, 514 trie nodes; definitions and paths cached
+object16_change2_dynamic no_REF 1
+object16_change2_dynamic REF16 1
+object8_change1_shared: 1 events, 1/4 shared fields, 0 supplied dynamic fields, 34 trie nodes; definitions and paths cached
+object8_change1_shared no_REF 1
+object8_change1_shared REF16 1
+object8_change2_shared: 1 events, 2/4 shared fields, 0 supplied dynamic fields, 34 trie nodes; definitions and paths cached
+object8_change2_shared no_REF 1
+object8_change2_shared REF16 1
+object16_change1_shared: 1 events, 1/8 shared fields, 0 supplied dynamic fields, 514 trie nodes; definitions and paths cached
+object16_change1_shared no_REF 1
+object16_change1_shared REF16 1
+object16_change2_shared: 1 events, 2/8 shared fields, 0 supplied dynamic fields, 514 trie nodes; definitions and paths cached
+object16_change2_shared no_REF 1
+object16_change2_shared REF16 1

@@ -1,0 +1,51 @@
+{
+  "date": "2026-10-02 America/New_York",
+  "cpu": "Apple M1 Max",
+  "memory_gib": 32,
+  "os": "macOS 27.0",
+  "rustc": "1.97.1",
+  "profile": "Cargo bench default optimized",
+  "object_fields": [
+    8,
+    16
+  ],
+  "shared_slots": [
+    4,
+    8
+  ],
+  "partial_supplied_fields": [
+    1,
+    2
+  ],
+  "trie_nodes": [
+    34,
+    514
+  ],
+  "collection_sizes": [
+    1000,
+    10000,
+    50000,
+    100000,
+    1000000
+  ],
+  "samples_per_condition": 14,
+  "reference_baseline": "no REF field; common values individually dictionary-coded",
+  "reference_after": "one REF16 replacing the exact supplied shared group; omitted when group is absent",
+  "expanded_output": "identical sparse typed logical fields, including null and absent semantics; no JSON",
+  "cache": "definitions, dictionaries, replicated trie, expanded leaf paths, dense shared-value lookup tables preloaded outside timings",
+  "code_sha256": "42955735e18bd08b6a4f2a0f06c0b996361956d92006259444fc7c7b1d07ac05",
+  "library_sha256": {
+    "pil/src/array.rs": "b0d46f52299cd93261f24583912ba03b04c1785d5567834e5c5a295b647bec9f",
+    "pil/src/borrowed_cbor.rs": "126a5e80af399c22204f0aed49bccdf31e329726237a4d194bbbab62a96f79f7",
+    "pil/src/cbor.rs": "a82293703edf197aebbb119f46ecc6bd6e9d07a3c5003e5515ff300801bc1bf8",
+    "pil/src/definition.rs": "c9ede1aab9a753b27355fb4298cce7271db8f75c69b19a6d3c8f642dc785ca31",
+    "pil/src/error.rs": "438cc314a503aef9ac140e706f55ecd8d2e3e35c3d0d76648cc1133f535921a1",
+    "pil/src/frame.rs": "227c0c6662a96f6b1bb6f5d699b3f96c7465583c0154f57e4394ed9117876893",
+    "pil/src/index.rs": "0ee7e85827cfc8aaf923dbb355353681ba2049537c85ecba1e3d697d891f6102",
+    "pil/src/lib.rs": "515c482500ee1ba9c6ed83900a0452b0ed443ed84e5a89a73422455a63cf0cbc",
+    "pil/src/stream.rs": "d9616a74b7878f0fb6ca7cc8d2731009d6a036119f4947caf85c0172db088964",
+    "pil/src/types.rs": "45f2bc4f537c69343f5d28086f239a3d50ec9539b47f32006b7754b7ed51eaef",
+    "pil/src/uint.rs": "6a9589fe9d18fe7d69686ad763b48bd960381747ea521fc6ffdb38de6dd518ac",
+    "pil/src/value.rs": "84ebdfdec2400a743594accf49d53509dce977cb73ba82bac354fb8285ce2633"
+  }
+}
