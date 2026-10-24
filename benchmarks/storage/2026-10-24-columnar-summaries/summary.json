@@ -1,0 +1,12 @@
+{
+  "sparse/BuildColumnar": 163996.0,
+  "sparse/BuildCurrent": 139341.0,
+  "sparse/ColumnCount": 6.536,
+  "sparse/ResidentRowCount": 6.703,
+  "sparse/IndexedResidentRowCount": 8.017,
+  "dense/BuildColumnar": 9847373.0,
+  "dense/BuildCurrent": 3326089.0,
+  "dense/ColumnCount": 126.5,
+  "dense/ResidentRowCount": 709.8,
+  "dense/IndexedResidentRowCount": 319.6
+}

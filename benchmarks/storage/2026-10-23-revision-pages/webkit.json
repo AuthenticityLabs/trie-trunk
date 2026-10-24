@@ -1,0 +1,1343 @@
+{
+  "engine": "webkit",
+  "version": "26.5",
+  "platform": "darwin",
+  "arch": "arm64",
+  "results": [
+    {
+      "case": {
+        "name": "positional-headers",
+        "count": 0,
+        "id": 1,
+        "objects": 4096
+      },
+      "stages": [
+        {
+          "action": "prepare",
+          "measurement": {
+            "result": {
+              "action": "prepare",
+              "logical": 8388608,
+              "writtenBytes": 196608,
+              "writeCalls": 4096,
+              "milliseconds": 24
+            },
+            "usage": {
+              "quota": 20615843021,
+              "usage": 16777216
+            }
+          },
+          "checked": {
+            "result": {
+              "verified": true,
+              "stage": "prepare",
+              "bytes": 8388608
+            },
+            "usage": {
+              "quota": 20615843021,
+              "usage": 8388608
+            }
+          },
+          "physical": null
+        },
+        {
+          "action": "fill",
+          "measurement": {
+            "result": {
+              "action": "fill",
+              "logical": 8388608,
+              "writtenBytes": 8192000,
+              "writeCalls": 4096,
+              "milliseconds": 20
+            },
+            "usage": {
+              "quota": 20615843021,
+              "usage": 8388608
+            }
+          },
+          "checked": {
+            "result": {
+              "verified": true,
+              "stage": "fill",
+              "bytes": 8388608
+            },
+            "usage": {
+              "quota": 20615843021,
+              "usage": 8388608
+            }
+          },
+          "physical": null
+        },
+        {
+          "action": "clear-records",
+          "measurement": {
+            "result": {
+              "action": "clear-records",
+              "logical": 8388608,
+              "writtenBytes": 8192000,
+              "writeCalls": 4096,
+              "milliseconds": 17
+            },
+            "usage": {
+              "quota": 20615843021,
+              "usage": 8388608
+            }
+          },
+          "checked": {
+            "result": {
+              "verified": true,
+              "stage": "clear-records",
+              "bytes": 8388608
+            },
+            "usage": {
+              "quota": 20615843021,
+              "usage": 8388608
+            }
+          },
+          "physical": null
+        },
+        {
+          "action": "zero-pages",
+          "measurement": {
+            "result": {
+              "action": "zero-pages",
+              "logical": 8388608,
+              "writtenBytes": 8388608,
+              "writeCalls": 2048,
+              "milliseconds": 9
+            },
+            "usage": {
+              "quota": 20615843021,
+              "usage": 8388608
+            }
+          },
+          "checked": {
+            "result": {
+              "verified": true,
+              "stage": "zero-pages",
+              "bytes": 8388608
+            },
+            "usage": {
+              "quota": 20615843021,
+              "usage": 8388608
+            }
+          },
+          "physical": null
+        },
+        {
+          "action": "truncate-half",
+          "measurement": {
+            "result": {
+              "action": "truncate-half",
+              "logical": 4194304,
+              "writtenBytes": 0,
+              "writeCalls": 0,
+              "milliseconds": 1
+            },
+            "usage": {
+              "quota": 20615843021,
+              "usage": 4194304
+            }
+          },
+          "physical": null
+        }
+      ]
+    },
+    {
+      "case": {
+        "name": "positional-one",
+        "count": 1,
+        "id": 2,
+        "objects": 4096
+      },
+      "stages": [
+        {
+          "action": "prepare",
+          "measurement": {
+            "result": {
+              "action": "prepare",
+              "logical": 8388608,
+              "writtenBytes": 229376,
+              "writeCalls": 8192,
+              "milliseconds": 27
+            },
+            "usage": {
+              "quota": 20615843021,
+              "usage": 16777216
+            }
+          },
+          "checked": {
+            "result": {
+              "verified": true,
+              "stage": "prepare",
+              "bytes": 8388608
+            },
+            "usage": {
+              "quota": 20615843021,
+              "usage": 8388608
+            }
+          },
+          "physical": null
+        },
+        {
+          "action": "fill",
+          "measurement": {
+            "result": {
+              "action": "fill",
+              "logical": 8388608,
+              "writtenBytes": 8192000,
+              "writeCalls": 4096,
+              "milliseconds": 18
+            },
+            "usage": {
+              "quota": 20615843021,
+              "usage": 8388608
+            }
+          },
+          "checked": {
+            "result": {
+              "verified": true,
+              "stage": "fill",
+              "bytes": 8388608
+            },
+            "usage": {
+              "quota": 20615843021,
+              "usage": 8388608
+            }
+          },
+          "physical": null
+        },
+        {
+          "action": "clear-records",
+          "measurement": {
+            "result": {
+              "action": "clear-records",
+              "logical": 8388608,
+              "writtenBytes": 8192000,
+              "writeCalls": 4096,
+              "milliseconds": 19
+            },
+            "usage": {
+              "quota": 20615843021,
+              "usage": 8388608
+            }
+          },
+          "checked": {
+            "result": {
+              "verified": true,
+              "stage": "clear-records",
+              "bytes": 8388608
+            },
+            "usage": {
+              "quota": 20615843021,
+              "usage": 8388608
+            }
+          },
+          "physical": null
+        },
+        {
+          "action": "zero-pages",
+          "measurement": {
+            "result": {
+              "action": "zero-pages",
+              "logical": 8388608,
+              "writtenBytes": 8388608,
+              "writeCalls": 2048,
+              "milliseconds": 8
+            },
+            "usage": {
+              "quota": 20615843021,
+              "usage": 8388608
+            }
+          },
+          "checked": {
+            "result": {
+              "verified": true,
+              "stage": "zero-pages",
+              "bytes": 8388608
+            },
+            "usage": {
+              "quota": 20615843021,
+              "usage": 8388608
+            }
+          },
+          "physical": null
+        },
+        {
+          "action": "truncate-half",
+          "measurement": {
+            "result": {
+              "action": "truncate-half",
+              "logical": 4194304,
+              "writtenBytes": 0,
+              "writeCalls": 0,
+              "milliseconds": 1
+            },
+            "usage": {
+              "quota": 20615843021,
+              "usage": 4194304
+            }
+          },
+          "physical": null
+        }
+      ]
+    },
+    {
+      "case": {
+        "name": "positional-two-distant",
+        "count": 2,
+        "distant": true,
+        "id": 3,
+        "objects": 4096
+      },
+      "stages": [
+        {
+          "action": "prepare",
+          "measurement": {
+            "result": {
+              "action": "prepare",
+              "logical": 8388608,
+              "writtenBytes": 262144,
+              "writeCalls": 12288,
+              "milliseconds": 67
+            },
+            "usage": {
+              "quota": 20615843021,
+              "usage": 16777216
+            }
+          },
+          "checked": {
+            "result": {
+              "verified": true,
+              "stage": "prepare",
+              "bytes": 8388608
+            },
+            "usage": {
+              "quota": 20615843021,
+              "usage": 8388608
+            }
+          },
+          "physical": null
+        },
+        {
+          "action": "fill",
+          "measurement": {
+            "result": {
+              "action": "fill",
+              "logical": 8388608,
+              "writtenBytes": 8192000,
+              "writeCalls": 4096,
+              "milliseconds": 21
+            },
+            "usage": {
+              "quota": 20615843021,
+              "usage": 8388608
+            }
+          },
+          "checked": {
+            "result": {
+              "verified": true,
+              "stage": "fill",
+              "bytes": 8388608
+            },
+            "usage": {
+              "quota": 20615843021,
+              "usage": 8388608
+            }
+          },
+          "physical": null
+        },
+        {
+          "action": "clear-records",
+          "measurement": {
+            "result": {
+              "action": "clear-records",
+              "logical": 8388608,
+              "writtenBytes": 8192000,
+              "writeCalls": 4096,
+              "milliseconds": 19
+            },
+            "usage": {
+              "quota": 20615843021,
+              "usage": 8388608
+            }
+          },
+          "checked": {
+            "result": {
+              "verified": true,
+              "stage": "clear-records",
+              "bytes": 8388608
+            },
+            "usage": {
+              "quota": 20615843021,
+              "usage": 8388608
+            }
+          },
+          "physical": null
+        },
+        {
+          "action": "zero-pages",
+          "measurement": {
+            "result": {
+              "action": "zero-pages",
+              "logical": 8388608,
+              "writtenBytes": 8388608,
+              "writeCalls": 2048,
+              "milliseconds": 8
+            },
+            "usage": {
+              "quota": 20615843021,
+              "usage": 8388608
+            }
+          },
+          "checked": {
+            "result": {
+              "verified": true,
+              "stage": "zero-pages",
+              "bytes": 8388608
+            },
+            "usage": {
+              "quota": 20615843021,
+              "usage": 8388608
+            }
+          },
+          "physical": null
+        },
+        {
+          "action": "truncate-half",
+          "measurement": {
+            "result": {
+              "action": "truncate-half",
+              "logical": 4194304,
+              "writtenBytes": 0,
+              "writeCalls": 0,
+              "milliseconds": 4
+            },
+            "usage": {
+              "quota": 20615843021,
+              "usage": 4194304
+            }
+          },
+          "physical": null
+        }
+      ]
+    },
+    {
+      "case": {
+        "name": "positional-ten",
+        "count": 10,
+        "id": 4,
+        "objects": 4096
+      },
+      "stages": [
+        {
+          "action": "prepare",
+          "measurement": {
+            "result": {
+              "action": "prepare",
+              "logical": 8388608,
+              "writtenBytes": 524288,
+              "writeCalls": 8192,
+              "milliseconds": 48
+            },
+            "usage": {
+              "quota": 20615843021,
+              "usage": 16777216
+            }
+          },
+          "checked": {
+            "result": {
+              "verified": true,
+              "stage": "prepare",
+              "bytes": 8388608
+            },
+            "usage": {
+              "quota": 20615843021,
+              "usage": 8388608
+            }
+          },
+          "physical": null
+        },
+        {
+          "action": "fill",
+          "measurement": {
+            "result": {
+              "action": "fill",
+              "logical": 8388608,
+              "writtenBytes": 8192000,
+              "writeCalls": 4096,
+              "milliseconds": 17
+            },
+            "usage": {
+              "quota": 20615843021,
+              "usage": 8388608
+            }
+          },
+          "checked": {
+            "result": {
+              "verified": true,
+              "stage": "fill",
+              "bytes": 8388608
+            },
+            "usage": {
+              "quota": 20615843021,
+              "usage": 8388608
+            }
+          },
+          "physical": null
+        },
+        {
+          "action": "clear-records",
+          "measurement": {
+            "result": {
+              "action": "clear-records",
+              "logical": 8388608,
+              "writtenBytes": 8192000,
+              "writeCalls": 4096,
+              "milliseconds": 18
+            },
+            "usage": {
+              "quota": 20615843021,
+              "usage": 8388608
+            }
+          },
+          "checked": {
+            "result": {
+              "verified": true,
+              "stage": "clear-records",
+              "bytes": 8388608
+            },
+            "usage": {
+              "quota": 20615843021,
+              "usage": 8388608
+            }
+          },
+          "physical": null
+        },
+        {
+          "action": "zero-pages",
+          "measurement": {
+            "result": {
+              "action": "zero-pages",
+              "logical": 8388608,
+              "writtenBytes": 8388608,
+              "writeCalls": 2048,
+              "milliseconds": 10
+            },
+            "usage": {
+              "quota": 20615843021,
+              "usage": 8388608
+            }
+          },
+          "checked": {
+            "result": {
+              "verified": true,
+              "stage": "zero-pages",
+              "bytes": 8388608
+            },
+            "usage": {
+              "quota": 20615843021,
+              "usage": 8388608
+            }
+          },
+          "physical": null
+        },
+        {
+          "action": "truncate-half",
+          "measurement": {
+            "result": {
+              "action": "truncate-half",
+              "logical": 4194304,
+              "writtenBytes": 0,
+              "writeCalls": 0,
+              "milliseconds": 1
+            },
+            "usage": {
+              "quota": 20615843021,
+              "usage": 4194304
+            }
+          },
+          "physical": null
+        }
+      ]
+    },
+    {
+      "case": {
+        "name": "positional-hundred",
+        "count": 100,
+        "id": 5,
+        "objects": 4096
+      },
+      "stages": [
+        {
+          "action": "prepare",
+          "measurement": {
+            "result": {
+              "action": "prepare",
+              "logical": 8388608,
+              "writtenBytes": 3473408,
+              "writeCalls": 8192,
+              "milliseconds": 37
+            },
+            "usage": {
+              "quota": 20615843021,
+              "usage": 16777216
+            }
+          },
+          "checked": {
+            "result": {
+              "verified": true,
+              "stage": "prepare",
+              "bytes": 8388608
+            },
+            "usage": {
+              "quota": 20615843021,
+              "usage": 8388608
+            }
+          },
+          "physical": null
+        },
+        {
+          "action": "fill",
+          "measurement": {
+            "result": {
+              "action": "fill",
+              "logical": 8388608,
+              "writtenBytes": 8192000,
+              "writeCalls": 4096,
+              "milliseconds": 25
+            },
+            "usage": {
+              "quota": 20615843021,
+              "usage": 8388608
+            }
+          },
+          "checked": {
+            "result": {
+              "verified": true,
+              "stage": "fill",
+              "bytes": 8388608
+            },
+            "usage": {
+              "quota": 20615843021,
+              "usage": 8388608
+            }
+          },
+          "physical": null
+        },
+        {
+          "action": "clear-records",
+          "measurement": {
+            "result": {
+              "action": "clear-records",
+              "logical": 8388608,
+              "writtenBytes": 8192000,
+              "writeCalls": 4096,
+              "milliseconds": 23
+            },
+            "usage": {
+              "quota": 20615843021,
+              "usage": 8388608
+            }
+          },
+          "checked": {
+            "result": {
+              "verified": true,
+              "stage": "clear-records",
+              "bytes": 8388608
+            },
+            "usage": {
+              "quota": 20615843021,
+              "usage": 8388608
+            }
+          },
+          "physical": null
+        },
+        {
+          "action": "zero-pages",
+          "measurement": {
+            "result": {
+              "action": "zero-pages",
+              "logical": 8388608,
+              "writtenBytes": 8388608,
+              "writeCalls": 2048,
+              "milliseconds": 11
+            },
+            "usage": {
+              "quota": 20615843021,
+              "usage": 8388608
+            }
+          },
+          "checked": {
+            "result": {
+              "verified": true,
+              "stage": "zero-pages",
+              "bytes": 8388608
+            },
+            "usage": {
+              "quota": 20615843021,
+              "usage": 8388608
+            }
+          },
+          "physical": null
+        },
+        {
+          "action": "truncate-half",
+          "measurement": {
+            "result": {
+              "action": "truncate-half",
+              "logical": 4194304,
+              "writtenBytes": 0,
+              "writeCalls": 0,
+              "milliseconds": 1
+            },
+            "usage": {
+              "quota": 20615843021,
+              "usage": 4194304
+            }
+          },
+          "physical": null
+        }
+      ]
+    },
+    {
+      "case": {
+        "name": "positional-full",
+        "count": 250,
+        "id": 6,
+        "objects": 4096
+      },
+      "stages": [
+        {
+          "action": "prepare",
+          "measurement": {
+            "result": {
+              "action": "prepare",
+              "logical": 8388608,
+              "writtenBytes": 8388608,
+              "writeCalls": 8192,
+              "milliseconds": 29
+            },
+            "usage": {
+              "quota": 20615843021,
+              "usage": 16777216
+            }
+          },
+          "checked": {
+            "result": {
+              "verified": true,
+              "stage": "prepare",
+              "bytes": 8388608
+            },
+            "usage": {
+              "quota": 20615843021,
+              "usage": 8388608
+            }
+          },
+          "physical": null
+        },
+        {
+          "action": "fill",
+          "measurement": {
+            "result": {
+              "action": "fill",
+              "logical": 8388608,
+              "writtenBytes": 8192000,
+              "writeCalls": 4096,
+              "milliseconds": 19
+            },
+            "usage": {
+              "quota": 20615843021,
+              "usage": 8388608
+            }
+          },
+          "checked": {
+            "result": {
+              "verified": true,
+              "stage": "fill",
+              "bytes": 8388608
+            },
+            "usage": {
+              "quota": 20615843021,
+              "usage": 8388608
+            }
+          },
+          "physical": null
+        },
+        {
+          "action": "clear-records",
+          "measurement": {
+            "result": {
+              "action": "clear-records",
+              "logical": 8388608,
+              "writtenBytes": 8192000,
+              "writeCalls": 4096,
+              "milliseconds": 17
+            },
+            "usage": {
+              "quota": 20615843021,
+              "usage": 8388608
+            }
+          },
+          "checked": {
+            "result": {
+              "verified": true,
+              "stage": "clear-records",
+              "bytes": 8388608
+            },
+            "usage": {
+              "quota": 20615843021,
+              "usage": 8388608
+            }
+          },
+          "physical": null
+        },
+        {
+          "action": "zero-pages",
+          "measurement": {
+            "result": {
+              "action": "zero-pages",
+              "logical": 8388608,
+              "writtenBytes": 8388608,
+              "writeCalls": 2048,
+              "milliseconds": 7
+            },
+            "usage": {
+              "quota": 20615843021,
+              "usage": 8388608
+            }
+          },
+          "checked": {
+            "result": {
+              "verified": true,
+              "stage": "zero-pages",
+              "bytes": 8388608
+            },
+            "usage": {
+              "quota": 20615843021,
+              "usage": 8388608
+            }
+          },
+          "physical": null
+        },
+        {
+          "action": "truncate-half",
+          "measurement": {
+            "result": {
+              "action": "truncate-half",
+              "logical": 4194304,
+              "writtenBytes": 0,
+              "writeCalls": 0,
+              "milliseconds": 1
+            },
+            "usage": {
+              "quota": 20615843021,
+              "usage": 4194304
+            }
+          },
+          "physical": null
+        }
+      ]
+    },
+    {
+      "case": {
+        "name": "positional-one-full-write",
+        "count": 1,
+        "fullWrite": true,
+        "id": 7,
+        "objects": 4096
+      },
+      "stages": [
+        {
+          "action": "prepare",
+          "measurement": {
+            "result": {
+              "action": "prepare",
+              "logical": 8388608,
+              "writtenBytes": 8388608,
+              "writeCalls": 4096,
+              "milliseconds": 19
+            },
+            "usage": {
+              "quota": 20615843021,
+              "usage": 16777216
+            }
+          },
+          "checked": {
+            "result": {
+              "verified": true,
+              "stage": "prepare",
+              "bytes": 8388608
+            },
+            "usage": {
+              "quota": 20615843021,
+              "usage": 8388608
+            }
+          },
+          "physical": null
+        },
+        {
+          "action": "fill",
+          "measurement": {
+            "result": {
+              "action": "fill",
+              "logical": 8388608,
+              "writtenBytes": 8192000,
+              "writeCalls": 4096,
+              "milliseconds": 18
+            },
+            "usage": {
+              "quota": 20615843021,
+              "usage": 8388608
+            }
+          },
+          "checked": {
+            "result": {
+              "verified": true,
+              "stage": "fill",
+              "bytes": 8388608
+            },
+            "usage": {
+              "quota": 20615843021,
+              "usage": 8388608
+            }
+          },
+          "physical": null
+        },
+        {
+          "action": "clear-records",
+          "measurement": {
+            "result": {
+              "action": "clear-records",
+              "logical": 8388608,
+              "writtenBytes": 8192000,
+              "writeCalls": 4096,
+              "milliseconds": 18
+            },
+            "usage": {
+              "quota": 20615843021,
+              "usage": 8388608
+            }
+          },
+          "checked": {
+            "result": {
+              "verified": true,
+              "stage": "clear-records",
+              "bytes": 8388608
+            },
+            "usage": {
+              "quota": 20615843021,
+              "usage": 8388608
+            }
+          },
+          "physical": null
+        },
+        {
+          "action": "zero-pages",
+          "measurement": {
+            "result": {
+              "action": "zero-pages",
+              "logical": 8388608,
+              "writtenBytes": 8388608,
+              "writeCalls": 2048,
+              "milliseconds": 7
+            },
+            "usage": {
+              "quota": 20615843021,
+              "usage": 8388608
+            }
+          },
+          "checked": {
+            "result": {
+              "verified": true,
+              "stage": "zero-pages",
+              "bytes": 8388608
+            },
+            "usage": {
+              "quota": 20615843021,
+              "usage": 8388608
+            }
+          },
+          "physical": null
+        },
+        {
+          "action": "truncate-half",
+          "measurement": {
+            "result": {
+              "action": "truncate-half",
+              "logical": 4194304,
+              "writtenBytes": 0,
+              "writeCalls": 0,
+              "milliseconds": 1
+            },
+            "usage": {
+              "quota": 20615843021,
+              "usage": 4194304
+            }
+          },
+          "physical": null
+        }
+      ]
+    },
+    {
+      "case": {
+        "name": "slotted-fixed-one",
+        "count": 1,
+        "slotted": true,
+        "id": 8,
+        "objects": 4096
+      },
+      "stages": [
+        {
+          "action": "prepare",
+          "measurement": {
+            "result": {
+              "action": "prepare",
+              "logical": 8388608,
+              "writtenBytes": 245760,
+              "writeCalls": 8192,
+              "milliseconds": 27
+            },
+            "usage": {
+              "quota": 20615843021,
+              "usage": 16777216
+            }
+          },
+          "checked": {
+            "result": {
+              "verified": true,
+              "stage": "prepare",
+              "bytes": 8388608
+            },
+            "usage": {
+              "quota": 20615843021,
+              "usage": 8388608
+            }
+          },
+          "physical": null
+        },
+        {
+          "action": "fill",
+          "measurement": {
+            "result": {
+              "action": "fill",
+              "logical": 8388608,
+              "writtenBytes": 8192000,
+              "writeCalls": 4096,
+              "milliseconds": 17
+            },
+            "usage": {
+              "quota": 20615843021,
+              "usage": 8388608
+            }
+          },
+          "checked": {
+            "result": {
+              "verified": true,
+              "stage": "fill",
+              "bytes": 8388608
+            },
+            "usage": {
+              "quota": 20615843021,
+              "usage": 8388608
+            }
+          },
+          "physical": null
+        },
+        {
+          "action": "clear-records",
+          "measurement": {
+            "result": {
+              "action": "clear-records",
+              "logical": 8388608,
+              "writtenBytes": 8192000,
+              "writeCalls": 4096,
+              "milliseconds": 17
+            },
+            "usage": {
+              "quota": 20615843021,
+              "usage": 8388608
+            }
+          },
+          "checked": {
+            "result": {
+              "verified": true,
+              "stage": "clear-records",
+              "bytes": 8388608
+            },
+            "usage": {
+              "quota": 20615843021,
+              "usage": 8388608
+            }
+          },
+          "physical": null
+        },
+        {
+          "action": "zero-pages",
+          "measurement": {
+            "result": {
+              "action": "zero-pages",
+              "logical": 8388608,
+              "writtenBytes": 8388608,
+              "writeCalls": 2048,
+              "milliseconds": 8
+            },
+            "usage": {
+              "quota": 20615843021,
+              "usage": 8388608
+            }
+          },
+          "checked": {
+            "result": {
+              "verified": true,
+              "stage": "zero-pages",
+              "bytes": 8388608
+            },
+            "usage": {
+              "quota": 20615843021,
+              "usage": 8388608
+            }
+          },
+          "physical": null
+        },
+        {
+          "action": "truncate-half",
+          "measurement": {
+            "result": {
+              "action": "truncate-half",
+              "logical": 4194304,
+              "writtenBytes": 0,
+              "writeCalls": 0,
+              "milliseconds": 1
+            },
+            "usage": {
+              "quota": 20615843021,
+              "usage": 4194304
+            }
+          },
+          "physical": null
+        }
+      ]
+    },
+    {
+      "case": {
+        "name": "packed-variable-one",
+        "count": 1,
+        "packed": true,
+        "slotted": true,
+        "id": 9,
+        "objects": 4096
+      },
+      "stages": [
+        {
+          "action": "prepare",
+          "measurement": {
+            "result": {
+              "action": "prepare",
+              "logical": 249856,
+              "writtenBytes": 245760,
+              "writeCalls": 4096,
+              "milliseconds": 11
+            },
+            "usage": {
+              "quota": 20615843021,
+              "usage": 1048576
+            }
+          },
+          "checked": {
+            "result": {
+              "verified": true,
+              "stage": "prepare",
+              "bytes": 249856
+            },
+            "usage": {
+              "quota": 20615843021,
+              "usage": 249856
+            }
+          },
+          "physical": null
+        }
+      ]
+    },
+    {
+      "case": {
+        "name": "packed-variable-ten",
+        "count": 10,
+        "packed": true,
+        "slotted": true,
+        "id": 10,
+        "objects": 4096
+      },
+      "stages": [
+        {
+          "action": "prepare",
+          "measurement": {
+            "result": {
+              "action": "prepare",
+              "logical": 700416,
+              "writtenBytes": 688128,
+              "writeCalls": 4096,
+              "milliseconds": 11
+            },
+            "usage": {
+              "quota": 20615843021,
+              "usage": 1048576
+            }
+          },
+          "checked": {
+            "result": {
+              "verified": true,
+              "stage": "prepare",
+              "bytes": 700416
+            },
+            "usage": {
+              "quota": 20615843021,
+              "usage": 700416
+            }
+          },
+          "physical": null
+        }
+      ]
+    },
+    {
+      "case": {
+        "name": "whole-page-holes",
+        "count": 1,
+        "stride": 16,
+        "id": 11,
+        "objects": 4096
+      },
+      "stages": [
+        {
+          "action": "prepare",
+          "measurement": {
+            "result": {
+              "action": "prepare",
+              "logical": 8388608,
+              "writtenBytes": 14336,
+              "writeCalls": 512,
+              "milliseconds": 10
+            },
+            "usage": {
+              "quota": 20615843021,
+              "usage": 16777216
+            }
+          },
+          "checked": {
+            "result": {
+              "verified": true,
+              "stage": "prepare",
+              "bytes": 8388608
+            },
+            "usage": {
+              "quota": 20615843021,
+              "usage": 8388608
+            }
+          },
+          "physical": null
+        },
+        {
+          "action": "fill",
+          "measurement": {
+            "result": {
+              "action": "fill",
+              "logical": 8388608,
+              "writtenBytes": 512000,
+              "writeCalls": 256,
+              "milliseconds": 5
+            },
+            "usage": {
+              "quota": 20615843021,
+              "usage": 8388608
+            }
+          },
+          "checked": {
+            "result": {
+              "verified": true,
+              "stage": "fill",
+              "bytes": 8388608
+            },
+            "usage": {
+              "quota": 20615843021,
+              "usage": 8388608
+            }
+          },
+          "physical": null
+        },
+        {
+          "action": "clear-records",
+          "measurement": {
+            "result": {
+              "action": "clear-records",
+              "logical": 8388608,
+              "writtenBytes": 512000,
+              "writeCalls": 256,
+              "milliseconds": 5
+            },
+            "usage": {
+              "quota": 20615843021,
+              "usage": 8388608
+            }
+          },
+          "checked": {
+            "result": {
+              "verified": true,
+              "stage": "clear-records",
+              "bytes": 8388608
+            },
+            "usage": {
+              "quota": 20615843021,
+              "usage": 8388608
+            }
+          },
+          "physical": null
+        },
+        {
+          "action": "zero-pages",
+          "measurement": {
+            "result": {
+              "action": "zero-pages",
+              "logical": 8388608,
+              "writtenBytes": 8388608,
+              "writeCalls": 2048,
+              "milliseconds": 8
+            },
+            "usage": {
+              "quota": 20615843021,
+              "usage": 8388608
+            }
+          },
+          "checked": {
+            "result": {
+              "verified": true,
+              "stage": "zero-pages",
+              "bytes": 8388608
+            },
+            "usage": {
+              "quota": 20615843021,
+              "usage": 8388608
+            }
+          },
+          "physical": null
+        },
+        {
+          "action": "truncate-half",
+          "measurement": {
+            "result": {
+              "action": "truncate-half",
+              "logical": 4194304,
+              "writtenBytes": 0,
+              "writeCalls": 0,
+              "milliseconds": 1
+            },
+            "usage": {
+              "quota": 20615843021,
+              "usage": 4194304
+            }
+          },
+          "physical": null
+        }
+      ]
+    }
+  ]
+}

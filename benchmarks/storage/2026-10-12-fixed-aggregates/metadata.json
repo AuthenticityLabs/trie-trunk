@@ -1,0 +1,50 @@
+{
+  "date": "2026-10-12",
+  "go": "go version go1.26.4 darwin/arm64",
+  "platform": "arm64",
+  "source_files": {
+    "go/server/cache/aggregate.go": "772500c120c813fbc41915f03a5e6c7550ccddf27a48a7e3d47efbf9f3d8553f",
+    "go/server/cache/binding.go": "b0b03e5fa7de39109a84b76a0b56e89e685ec2d9cc696c0cf66ad97d4fd13e26",
+    "go/server/cache/codec_measure_test.go": "020e3d3b99d8b0683e3572c3e9142eb01469e3b73c6e70edb7de81668972db08",
+    "go/server/cache/definition.go": "11ce67726f665a94470f6f7f8d42e7be343d9dfeab2d91efd8d6e9d605a86004",
+    "go/server/cache/files.go": "bc24eb488eb7a12549d69278f8572ce17de7f916035575b7f86566caba388b44",
+    "go/server/cache/frame.go": "17f60e749c2a1cd34566fd512241f8b70da919440420807a98a69b11129164de",
+    "go/server/cache/index.go": "1d6cd912808d766c8ebb5a017305088a276a911ae02e8728a30300a3c3af905e",
+    "go/server/cache/lock_other.go": "5c69509196930563511f84944528f10365e150ddfffda2bdc3a8081c23fc3f3d",
+    "go/server/cache/lock_unix.go": "86c8d996631cdc4e3f2f6cd83259bcb30f686b20b3a000ac0368998636c7cfe1",
+    "go/server/cache/mapping_other.go": "a1c5abd94e5f3b8487cd5d3e814af34cdfe4567ddc6019fb92269c8088c8224d",
+    "go/server/cache/mapping_unix.go": "0aa1b23d4859e3d25626dc75790b927cdee60bafb541dd3ac82051c7c13a63c4",
+    "go/server/cache/measure_test.go": "5770e665266abc1e6856388ca28069b5fb5fd6a5d290bf4fc7c09d82b015ffa4",
+    "go/server/cache/objects.go": "15c0c82f1c9f609daafa065c85646e3e9f1f56f7f9f6f371c436537a8c6f93cc",
+    "go/server/cache/policy.go": "077830ff5bc96d511e910b018f852d48d2f8ff796cfbfbc1b7e5bddc53c601a8",
+    "go/server/cache/query.go": "28e9a59d17f21c46e913d0104694bae6e4347938208a0aa484e4834f361429d6",
+    "go/server/cache/replication.go": "d10b42aeddb76f027ec6fd169ec2ff93b8db4553e14725d1feb0730effd6a1de",
+    "go/server/cache/replication_test.go": "9a6c3b6e7355939cefebab9b4c6a23172111173ba46dd72bf491c67d60e6cb73",
+    "go/server/cache/retention.go": "e9eb2e85adae1b430025b4ee2f4818c6b206791891bd806e0b20392adec4af63",
+    "go/server/cache/rollup.go": "d30324cea997f12e21ed83e3190a4420655248cd5e5e7ada6bbef219fff31133",
+    "go/server/cache/statistics.go": "cde94395280163966a4d2707077648907874296ebc46c4031308ee47b8087ec1",
+    "go/server/cache/store.go": "b2165f1b75ccfc336763aff7554190496e6d49a3796e134f94c6d2bea5037105",
+    "go/server/cache/store_test.go": "76244889e4d1a23e8688d0a694ec4db037c12df9daafdd4b05a0ccd80a7e5fa8",
+    "go/server/cache/summary_codec.go": "7de4fa1708fa98377748f2fe62217ef3113ee49be27c890322c63b62a3e2dd50",
+    "go/server/cache/summary_codec_test.go": "9b9ff361235cb220f9b39f93c0bd9859bf45edd569ff8931b64c39fbe6023769",
+    "go/server/cache/trie.go": "24186d389b517a03fce5f522484909bf3d3ade492fca4c5f9ece98aeab78ff11",
+    "go/server/cache/README.md": "c197592eaa475529baf997685a80aa0b8d93e215c9ec08bbbbc525d9d06bc562",
+    "go/go.mod": "9e4bc7489e44f628737f5cdd9f66577f0eeb2f96b63f051e20ed5306237895da",
+    "go/go.sum": "04732da1e9ba0a9a899a5f317a9c614111007c0e18cdb4464b44093799e6268f"
+  },
+  "benchmark_binaries": {
+    "before/cache.test": "2d36b16ccf2798ccc4b6285c6d1a60ac8891ef0dd1114a7c124ba69c5b3753bd",
+    "after.test": "db3d96637193dc0a16abaca4304929abffd91b10e431541ae5e5ca025ddbea99"
+  },
+  "archives": {
+    "before/source.tar.gz": "19de0070773909b05f522a7b97336f88ad3b72f44fd5a85c4f53549d64d777a4",
+    "after-source.tar.gz": "9a9d534a9f5071ba368bfbb796edfb70165816fef6a9e416d3637c6b8e4751ae"
+  },
+  "notes": [
+    "Before snapshot adds only benchmark harness and thin codec wrappers; aggregate format and algorithms are unchanged.",
+    "After source matches measured production code and measurement functions. It also includes documentation and the extra TestPopulationCodecEquivalence correctness test added after building the measured binary.",
+    "Nine alternating warm query samples per codec; nine aggregate samples. No other benchmarks or test suites ran concurrently with timed measurements.",
+    "Old CBOR event populations use the same fixed index layout for isolation, not the original filesystem partition scheme.",
+    "CPU brand sysctl was unavailable in the sandbox. Platform and Go version recorded above."
+  ]
+}

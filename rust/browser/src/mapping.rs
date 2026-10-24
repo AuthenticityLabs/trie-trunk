@@ -8,6 +8,7 @@ use std::collections::{BTreeMap, HashSet};
 
 pub struct Mapping {
     pub definition: Definition,
+    native: bool,
     keys: Vec<u16>,
     codes: Vec<Vec<u16>>,
     id: usize,
@@ -43,6 +44,40 @@ impl Mapping {
             .map_err(|e| e.to_string())?;
         if !source.is_empty() {
             return bad("trailing schema bytes");
+        }
+        if value
+            .as_map()
+            .is_some_and(|m| m.iter().any(|(k, _)| k.as_text() == Some("resource")))
+        {
+            if schema != pil {
+                return bad("PIL/resource maps must be identical");
+            }
+            let definition = Definition::from_cbor(pil).map_err(|e| e.to_string())?;
+            let get = |v: &Cbor, name: &str| {
+                v.as_map().and_then(|m| {
+                    m.iter()
+                        .find(|(k, _)| k.as_text() == Some(name))
+                        .map(|(_, v)| v.clone())
+                })
+            };
+            let resource = get(&value, "resource").ok_or("missing resource")?;
+            let roles = get(&resource, "roles").ok_or("missing roles")?;
+            let event = get(&roles, "event_id").ok_or("missing event role")?;
+            let id = definition
+                .fields()
+                .iter()
+                .position(|f| {
+                    Some(f.name.as_str()) == event.as_text() && f.kind == Type::Scalar(Scalar::Uuid)
+                })
+                .ok_or("invalid event role")?;
+            return Ok(Self {
+                definition,
+                native: true,
+                keys: Vec::new(),
+                codes: Vec::new(),
+                id,
+                path: Vec::new(),
+            });
         }
         let root = map(&value)?;
         if root.get(&4).and_then(|v| v.as_text()) != Some("UTC") {
@@ -174,6 +209,7 @@ impl Mapping {
         }
         Ok(Self {
             definition,
+            native: false,
             keys,
             codes,
             id,
@@ -204,6 +240,9 @@ impl Mapping {
             .map_err(|_| "invalid UUID")?;
         if uuid[6] >> 4 != 7 || uuid[8] >> 6 != 2 {
             return bad("id must be UUIDv7");
+        }
+        if self.native {
+            return Ok((uuid, Vec::new(), bytes.to_vec()));
         }
         // Only offsets and small direct values are materialized. CBOR payloads
         // remain borrowed slices and are copied directly into the population map.
@@ -236,7 +275,9 @@ impl Mapping {
                         value.extend_from_slice(b);
                     }
                     Type::Scalar(Scalar::U64) => {
-                        head(0, u64::from_le_bytes(b.try_into().unwrap()), &mut value)
+                        let mut n = [0; 8];
+                        n[..b.len()].copy_from_slice(b);
+                        head(0, u64::from_le_bytes(n), &mut value)
                     }
                     Type::Scalar(Scalar::String) => {
                         let state = (bytes[i / 4] >> (6 - 2 * (i % 4))) & 3;
@@ -351,7 +392,26 @@ impl Mapping {
         chain: &[(u16, u64)],
         pop: &[u8],
         encoder: &mut FrameEncoder,
+        index: &mut FrameIndex,
     ) -> Result<Vec<u8>> {
+        if self.native {
+            if !chain.is_empty() {
+                return bad("unexpected native lineage");
+            }
+            // Validate offsets once per requested frame; never reconstruct values.
+            if index
+                .scan(&self.definition, pop, 64 * 1024 * 1024)
+                .map_err(|e| e.to_string())?
+                != pop.len()
+            {
+                return bad("invalid native frame");
+            }
+            let [start, end] = index.spans()[self.id];
+            if pop.get(start as usize..end as usize) != Some(uuid.as_slice()) {
+                return bad("event identity mismatch");
+            }
+            return Ok(pop.to_vec());
+        }
         let mut values = BTreeMap::new();
         for item in CborMap::new(pop, 64).map_err(|e| e.to_string())? {
             let (k, v) = item.map_err(|e| e.to_string())?;

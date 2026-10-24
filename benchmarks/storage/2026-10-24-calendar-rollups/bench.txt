@@ -1,0 +1,9 @@
+goos: darwin
+goarch: arm64
+pkg: trie-trunk/go/server/cache
+cpu: Apple M1 Max
+BenchmarkCalendarRollupsYear-10    	    5859	     58554 ns/op	   23952 B/op	      19 allocs/op
+BenchmarkCalendarRollupsYear-10    	    6268	     57971 ns/op	   23952 B/op	      19 allocs/op
+BenchmarkCalendarRollupsYear-10    	    6295	     57992 ns/op	   23952 B/op	      19 allocs/op
+PASS
+ok  	trie-trunk/go/server/cache	1.538s

@@ -1,0 +1,43 @@
+{
+  "engine": "webkit",
+  "version": "26.5",
+  "platform": "darwin",
+  "arch": "arm64",
+  "results": [
+    {
+      "case": {
+        "name": "object-1-full",
+        "objects": 1,
+        "revisionCount": 65536,
+        "stride": 528384,
+        "slots": 1,
+        "seek": true
+      },
+      "before": {
+        "usage": 0,
+        "quota": 20615843021
+      },
+      "reserved": {
+        "usage": 0,
+        "quota": 20615843021
+      },
+      "closed": {
+        "usage": 1048576,
+        "quota": 20615843021
+      },
+      "logical": 524352,
+      "writeFlushMs": 170,
+      "records": 65537,
+      "dataBytes": 524304,
+      "disk": [],
+      "restart": {
+        "verified": 65537,
+        "reopened": {
+          "usage": 524352,
+          "quota": 20615843021
+        },
+        "headerReadUs": 1
+      }
+    }
+  ]
+}

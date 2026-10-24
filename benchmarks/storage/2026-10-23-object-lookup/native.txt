@@ -1,0 +1,21 @@
+   Compiling trie-trunk-search v0.1.0 (/Users/Shared/code/applications/trie-trunk/rust)
+    Finished `release` profile [optimized] target(s) in 2.83s
+     Running unittests src/tantivy.rs (rust/target/release/deps/trunk_tantivy-e5977a037979f011)
+
+running 1 test
+{"case":"dense50k","events":50000,"kind":"history","mean_us":11.34839999999999,"median_us":11.25,"mode":"current","objects":5556,"p95_us":11.916,"queries":1280}
+{"case":"dense50k","events":50000,"kind":"history","mean_us":3.7405367187500103,"median_us":3.75,"mode":"exact_only_control","objects":5556,"p95_us":3.834,"queries":1280}
+{"case":"dense50k","events":50000,"kind":"revision7","mean_us":7.793128125000086,"median_us":7.75,"mode":"current","objects":5556,"p95_us":7.917000000000001,"queries":1280}
+{"case":"dense50k","events":50000,"kind":"revision7","mean_us":4.529557031250025,"median_us":4.541,"mode":"exact_only_control","objects":5556,"p95_us":4.584,"queries":1280}
+{"case":"dense50k","events":50000,"kind":"missing","mean_us":5.546573437500055,"median_us":5.541,"mode":"current","objects":5556,"p95_us":5.6659999999999995,"queries":1280}
+{"case":"dense50k","events":50000,"kind":"missing","mean_us":2.7742585937499715,"median_us":2.791,"mode":"exact_only_control","objects":5556,"p95_us":2.8329999999999997,"queries":1280}
+{"case":"dense250k","events":250000,"kind":"history","mean_us":20.12432031250005,"median_us":19.5,"mode":"current","objects":27778,"p95_us":21.084,"queries":1280}
+{"case":"dense250k","events":250000,"kind":"history","mean_us":7.641543750000084,"median_us":7.584,"mode":"exact_only_control","objects":27778,"p95_us":7.75,"queries":1280}
+{"case":"dense250k","events":250000,"kind":"revision7","mean_us":16.484598437499965,"median_us":16.333000000000002,"mode":"current","objects":27778,"p95_us":17.625,"queries":1280}
+{"case":"dense250k","events":250000,"kind":"revision7","mean_us":8.87058359374993,"median_us":8.875,"mode":"exact_only_control","objects":27778,"p95_us":8.959,"queries":1280}
+{"case":"dense250k","events":250000,"kind":"missing","mean_us":13.567136718749968,"median_us":13.541,"mode":"current","objects":27778,"p95_us":13.792,"queries":1280}
+{"case":"dense250k","events":250000,"kind":"missing","mean_us":6.697042187499854,"median_us":6.708,"mode":"exact_only_control","objects":27778,"p95_us":6.75,"queries":1280}
+test address_tradeoff_test::compare_object_lookup ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 3 filtered out; finished in 25.71s
+

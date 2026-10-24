@@ -1,0 +1,50 @@
+ok  	trie-trunk/go/server/cache	180.238s
+--- FAIL: TestHTTP2HTTP3AndSocket (0.34s)
+    listener_test.go:137: listen tcp 127.0.0.1:0: bind: operation not permitted
+--- FAIL: TestFollowDisconnectAndShutdown (0.29s)
+    listener_test.go:293: listen tcp 127.0.0.1:0: bind: operation not permitted
+--- FAIL: TestSocketDoesNotReplaceFilesOrListeners (0.02s)
+    listener_test.go:361: listen unix /var/folders/85/cj8xpvmj32jfrbhxvj3f44jh0000gn/T/trunk-1341718855/private/search.sock: bind: operation not permitted
+--- FAIL: TestLoopbackHTTPOrigin (0.89s)
+    --- FAIL: TestLoopbackHTTPOrigin/token= (0.43s)
+        listener_test.go:401: listen tcp 127.0.0.1:0: bind: operation not permitted
+    --- FAIL: TestLoopbackHTTPOrigin/token=test-token (0.46s)
+        listener_test.go:401: listen tcp 127.0.0.1:0: bind: operation not permitted
+--- FAIL: TestObjectHistoryHTTP2HTTP3AndSocket (0.98s)
+    native_test.go:57: listen tcp 127.0.0.1:0: bind: operation not permitted
+--- FAIL: TestNativeCacheHTTP2HTTP3AndSocket (0.65s)
+    native_test.go:134: listen tcp 127.0.0.1:0: bind: operation not permitted
+--- FAIL: TestPILLoggerRegistrationTransports (0.12s)
+    --- FAIL: TestPILLoggerRegistrationTransports/http2 (0.05s)
+        native_test.go:220: listen tcp 127.0.0.1:0: bind: operation not permitted
+    --- FAIL: TestPILLoggerRegistrationTransports/http3 (0.03s)
+        native_test.go:220: listen tcp 127.0.0.1:0: bind: operation not permitted
+    --- FAIL: TestPILLoggerRegistrationTransports/socket (0.04s)
+        native_test.go:220: listen tcp 127.0.0.1:0: bind: operation not permitted
+--- FAIL: TestSummaryDayNativeRoute (0.01s)
+    native_test.go:368: listen tcp 127.0.0.1:0: bind: operation not permitted
+--- FAIL: TestPILWireOverHTTP2AndHTTP3 (0.34s)
+    pil_test.go:23: listen tcp 127.0.0.1:0: bind: operation not permitted
+--- FAIL: TestPILFallsBackToHTTP2BeforeEventPull (0.33s)
+panic: httptest: failed to listen on a port: listen tcp6 [::1]:0: bind: operation not permitted [recovered, repanicked]
+
+goroutine 71 [running]:
+testing.tRunner.func1.2({0x1017e3940, 0x297eb4656500})
+	/opt/homebrew/Cellar/go/1.26.4/libexec/src/testing/testing.go:1974 +0x1a0
+testing.tRunner.func1()
+	/opt/homebrew/Cellar/go/1.26.4/libexec/src/testing/testing.go:1977 +0x318
+panic({0x1017e3940?, 0x297eb4656500?})
+	/opt/homebrew/Cellar/go/1.26.4/libexec/src/runtime/panic.go:860 +0x12c
+net/http/httptest.newLocalListener()
+	/opt/homebrew/Cellar/go/1.26.4/libexec/src/net/http/httptest/server.go:72 +0xd4
+net/http/httptest.NewUnstartedServer(...)
+	/opt/homebrew/Cellar/go/1.26.4/libexec/src/net/http/httptest/server.go:120
+trie-trunk/go/server/serve.TestPILFallsBackToHTTP2BeforeEventPull(0x297eb47046c8)
+	/Users/Shared/code/applications/trie-trunk/go/server/serve/pil_test.go:93 +0x164
+testing.tRunner(0x297eb47046c8, 0x1018c4ec0)
+	/opt/homebrew/Cellar/go/1.26.4/libexec/src/testing/testing.go:2036 +0xc4
+created by testing.(*T).Run in goroutine 1
+	/opt/homebrew/Cellar/go/1.26.4/libexec/src/testing/testing.go:2101 +0x3a8
+FAIL	trie-trunk/go/server/serve	4.353s
+ok  	trie-trunk/go/cmd/seed-demo	24.169s
+FAIL

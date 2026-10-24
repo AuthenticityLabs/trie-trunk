@@ -1,0 +1,24 @@
+goos: darwin
+goarch: arm64
+pkg: trie-trunk/go/server/cache
+cpu: Apple M1 Max
+BenchmarkViewBucketPage/text17/baseline-10         	     200	    289084 ns/op	     19410 response-B	  281863 B/op	    1146 allocs/op
+BenchmarkViewBucketPage/text17/baseline-10         	     200	    194427 ns/op	     19410 response-B	  282775 B/op	    1147 allocs/op
+BenchmarkViewBucketPage/text17/baseline-10         	     200	    196287 ns/op	     19410 response-B	  282768 B/op	    1146 allocs/op
+BenchmarkViewBucketPage/text17/cold-buckets-10     	     200	    196425 ns/op	     19596 response-B	  283787 B/op	    1161 allocs/op
+BenchmarkViewBucketPage/text17/cold-buckets-10     	     200	    198668 ns/op	     19596 response-B	  283031 B/op	    1161 allocs/op
+BenchmarkViewBucketPage/text17/cold-buckets-10     	     200	    194891 ns/op	     19596 response-B	  283960 B/op	    1161 allocs/op
+BenchmarkViewBucketPage/text17/warm-bucket-10      	     200	    130606 ns/op	     12486 response-B	  239433 B/op	     643 allocs/op
+BenchmarkViewBucketPage/text17/warm-bucket-10      	     200	    128233 ns/op	     12486 response-B	  239180 B/op	     643 allocs/op
+BenchmarkViewBucketPage/text17/warm-bucket-10      	     200	    128537 ns/op	     12486 response-B	  239510 B/op	     643 allocs/op
+BenchmarkViewBucketPage/text1024/baseline-10       	     200	    351488 ns/op	    120114 response-B	  611988 B/op	    1249 allocs/op
+BenchmarkViewBucketPage/text1024/baseline-10       	     200	    246931 ns/op	    120114 response-B	  612476 B/op	    1249 allocs/op
+BenchmarkViewBucketPage/text1024/baseline-10       	     200	    255034 ns/op	    120114 response-B	  612659 B/op	    1249 allocs/op
+BenchmarkViewBucketPage/text1024/cold-buckets-10   	     200	    256314 ns/op	    120300 response-B	  612748 B/op	    1263 allocs/op
+BenchmarkViewBucketPage/text1024/cold-buckets-10   	     200	    256385 ns/op	    120300 response-B	  612726 B/op	    1263 allocs/op
+BenchmarkViewBucketPage/text1024/cold-buckets-10   	     200	    258723 ns/op	    120300 response-B	  613157 B/op	    1263 allocs/op
+BenchmarkViewBucketPage/text1024/warm-bucket-10    	     200	    128809 ns/op	     12486 response-B	  239089 B/op	     643 allocs/op
+BenchmarkViewBucketPage/text1024/warm-bucket-10    	     200	    126585 ns/op	     12486 response-B	  239771 B/op	     643 allocs/op
+BenchmarkViewBucketPage/text1024/warm-bucket-10    	     200	    126314 ns/op	     12486 response-B	  240026 B/op	     643 allocs/op
+PASS
+ok  	trie-trunk/go/server/cache	9.204s

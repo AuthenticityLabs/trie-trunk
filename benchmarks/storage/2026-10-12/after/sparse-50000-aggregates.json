@@ -1,0 +1,205 @@
+{
+  "format": "cache-format-5-prototype",
+  "event_count": 50000,
+  "shape": "sparse",
+  "aggregates": true,
+  "fixture_sha256": "c7c87c696992f8240d1bf6228f8c71cff87dd2db212cb560cec7909bf3aee84d",
+  "from": "2026-09-01T00:00:00Z",
+  "to": "2026-10-01T00:00:00Z",
+  "go": "go1.26.4",
+  "platform": "darwin/arm64",
+  "logical_cpus": 10,
+  "ingest_ns": 1063379625,
+  "reopen_ns": 51637583,
+  "logical_bytes": {
+    ".cfg": 119,
+    ".idx": 2600064,
+    ".lock": 0,
+    ".map": 883,
+    ".pop": 550064,
+    ".state": 64,
+    ".stats": 236,
+    ".sum": 1726546,
+    ".tri": 3729
+  },
+  "file_count": 12,
+  "pil_response_bytes": {
+    "all": 2400000,
+    "day": 80016,
+    "errors": 120000,
+    "three_hours": 10032
+  },
+  "query_latency": {
+    "all": {
+      "samples_ns": [
+        36540917,
+        35377083,
+        35688583,
+        35649916,
+        36525917,
+        34249541,
+        33510625,
+        33462208,
+        35438459
+      ],
+      "p50_ns": 35438459,
+      "p95_ns": 36540917
+    },
+    "day": {
+      "samples_ns": [
+        1028000,
+        1028083,
+        1360250,
+        1291875,
+        1261666,
+        1295083,
+        1284666,
+        1273000,
+        1455416
+      ],
+      "p50_ns": 1284666,
+      "p95_ns": 1455416
+    },
+    "errors": {
+      "samples_ns": [
+        3954083,
+        3590292,
+        3165625,
+        3154083,
+        3376583,
+        3232125,
+        3168292,
+        3154958,
+        3502750
+      ],
+      "p50_ns": 3232125,
+      "p95_ns": 3954083
+    },
+    "object_history": {
+      "samples_ns": [
+        1502958,
+        1514791,
+        1506250,
+        1556042,
+        1526792,
+        1491209,
+        1493959,
+        1496417,
+        1498208
+      ],
+      "p50_ns": 1502958,
+      "p95_ns": 1556042
+    },
+    "three_hours": {
+      "samples_ns": [
+        154166,
+        154250,
+        153416,
+        152541,
+        165292,
+        151625,
+        149458,
+        148000,
+        153458
+      ],
+      "p50_ns": 153416,
+      "p95_ns": 165292
+    }
+  },
+  "aggregate_count": 50000,
+  "aggregate_sum": 2502225000,
+  "notes": [
+    "Same logical events and legacy fixture hash as baseline; native PIL frames prepared before ingestion timing.",
+    "52-byte replay rows include U64 object/revision slots, REF16/flags and explicit live population bounds; legacy rows keep object/revision in CBOR population.",
+    "Native measurements are in-process Go API calls, not Rust IPC or HTTP; latency differences cannot be attributed to layout alone.",
+    "Response bytes are standalone PIL frames without transport control framing; not a native replication bandwidth measurement.",
+    "Ingest includes validation, shared paths, index/population/accumulator sync, 30-day trie statistics, and optional object index. Reopen verifies committed CRCs.",
+    "OS page cache not flushed. Native indexes are read-only memory mappings; resident pages are OS-managed, not a claimed fixed memory budget.",
+    "Native chunk bytes include map/trie/state/index/population bodies, excluding manifest/control framing and HTTP; cached means a matching complete source generation."
+  ],
+  "row_width": 52,
+  "native_chunk_bytes": {
+    "day_cached": {
+      "state": 55
+    },
+    "day_cold": {
+      "index": 86684,
+      "map": 758,
+      "population": 18337,
+      "state": 55,
+      "trie": 113
+    },
+    "three_hours_cached": {
+      "state": 55
+    },
+    "three_hours_cold": {
+      "index": 86684,
+      "map": 758,
+      "population": 2299,
+      "state": 55,
+      "trie": 113
+    }
+  },
+  "native_collection_latency": {
+    "day_cached": {
+      "samples_ns": [
+        18708,
+        19666,
+        18250,
+        19167,
+        21750,
+        19458,
+        18917,
+        19416,
+        18708
+      ],
+      "p50_ns": 19167,
+      "p95_ns": 21750
+    },
+    "day_cold": {
+      "samples_ns": [
+        67542,
+        77333,
+        66833,
+        66875,
+        65375,
+        68750,
+        68833,
+        66792,
+        66875
+      ],
+      "p50_ns": 66875,
+      "p95_ns": 77333
+    },
+    "three_hours_cached": {
+      "samples_ns": [
+        10500,
+        9833,
+        12750,
+        10208,
+        10083,
+        9917,
+        9959,
+        9792,
+        10333
+      ],
+      "p50_ns": 10083,
+      "p95_ns": 12750
+    },
+    "three_hours_cold": {
+      "samples_ns": [
+        49291,
+        63792,
+        49667,
+        48792,
+        49000,
+        49625,
+        50083,
+        48708,
+        49458
+      ],
+      "p50_ns": 49458,
+      "p95_ns": 63792
+    }
+  }
+}

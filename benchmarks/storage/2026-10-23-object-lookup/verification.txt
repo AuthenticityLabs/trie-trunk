@@ -1,0 +1,8 @@
+=== RUN   TestObjectLookupComparison
+=== RUN   TestObjectLookupComparison/dense50k
+=== RUN   TestObjectLookupComparison/dense250k
+--- PASS: TestObjectLookupComparison (1.67s)
+    --- PASS: TestObjectLookupComparison/dense50k (0.29s)
+    --- PASS: TestObjectLookupComparison/dense250k (1.38s)
+PASS
+ok  	trie-trunk/go/server/cache	1.830s

@@ -1,0 +1,4121 @@
+{
+  "go": "go1.26.4",
+  "postgresql": "PostgreSQL 16.14 (Homebrew) on aarch64-apple-darwin25.4.0, compiled by Apple clang version 21.0.0 (clang-2100.0.123.102), 64-bit",
+  "postgres_settings": {
+    "fsync": "on",
+    "full_page_writes": "on",
+    "shared_buffers": "256MB",
+    "synchronous_commit": "on",
+    "wal_sync_method": "open_datasync"
+  },
+  "updates": 128,
+  "rounds": 3,
+  "results": [
+    {
+      "variant": "pg-json",
+      "round": 1,
+      "subscribers": 1,
+      "description_bytes": 256,
+      "updates": 112,
+      "commit_to_apply": {
+        "p50_us": 44.708,
+        "p95_us": 63.75,
+        "p99_us": 153.041
+      },
+      "write_to_apply": {
+        "p50_us": 182.458,
+        "p95_us": 227.167,
+        "p99_us": 345
+      },
+      "publish_to_apply": {
+        "p50_us": 42.541,
+        "p95_us": 57.375,
+        "p99_us": 148.541
+      },
+      "ingress": {
+        "p50_us": 0,
+        "p95_us": 0,
+        "p99_us": 0
+      },
+      "origin_write": {
+        "p50_us": 136.583,
+        "p95_us": 171.833,
+        "p99_us": 184.583
+      },
+      "commit_to_all_applied": {
+        "p50_us": 44.708,
+        "p95_us": 63.75,
+        "p99_us": 153.041
+      },
+      "sse_bytes_per_update_per_subscriber": 479.16964285714283,
+      "replication_body_bytes_per_update": 0,
+      "ingress_requests": 0,
+      "go_bytes_per_update": 4895.071428571428,
+      "go_allocs_per_update": 50.598214285714285,
+      "combined_go_cpu_us_per_update": 95.72321428571429,
+      "pg_result_payload_bytes_per_update": 321.9107142857143
+    },
+    {
+      "variant": "pg-pil",
+      "round": 1,
+      "subscribers": 1,
+      "description_bytes": 256,
+      "updates": 112,
+      "commit_to_apply": {
+        "p50_us": 15.708,
+        "p95_us": 21.041,
+        "p99_us": 27.167
+      },
+      "write_to_apply": {
+        "p50_us": 91.625,
+        "p95_us": 105.5,
+        "p99_us": 113.583
+      },
+      "publish_to_apply": {
+        "p50_us": 14.209,
+        "p95_us": 18.541,
+        "p99_us": 26.125
+      },
+      "ingress": {
+        "p50_us": 0,
+        "p95_us": 0,
+        "p99_us": 0
+      },
+      "origin_write": {
+        "p50_us": 74.75,
+        "p95_us": 88.208,
+        "p99_us": 95.167
+      },
+      "commit_to_all_applied": {
+        "p50_us": 15.708,
+        "p95_us": 21.041,
+        "p99_us": 27.167
+      },
+      "sse_bytes_per_update_per_subscriber": 459.9017857142857,
+      "replication_body_bytes_per_update": 0,
+      "ingress_requests": 0,
+      "go_bytes_per_update": 5410.642857142857,
+      "go_allocs_per_update": 60.07142857142857,
+      "combined_go_cpu_us_per_update": 59.4375,
+      "pg_result_payload_bytes_per_update": 321.9107142857143
+    },
+    {
+      "variant": "trunk-lookup",
+      "round": 1,
+      "subscribers": 1,
+      "description_bytes": 256,
+      "updates": 112,
+      "commit_to_apply": {
+        "p50_us": 3424,
+        "p95_us": 4790.417,
+        "p99_us": 4941.834
+      },
+      "write_to_apply": {
+        "p50_us": 3590.083,
+        "p95_us": 5023.542,
+        "p99_us": 5126.542
+      },
+      "publish_to_apply": {
+        "p50_us": 43.584,
+        "p95_us": 64,
+        "p99_us": 78.083
+      },
+      "ingress": {
+        "p50_us": 3369.916,
+        "p95_us": 4745.833,
+        "p99_us": 4864.791
+      },
+      "origin_write": {
+        "p50_us": 163.5,
+        "p95_us": 226.209,
+        "p99_us": 257.5
+      },
+      "commit_to_all_applied": {
+        "p50_us": 3424,
+        "p95_us": 4790.417,
+        "p99_us": 4941.834
+      },
+      "sse_bytes_per_update_per_subscriber": 65.29464285714286,
+      "replication_body_bytes_per_update": 25.901785714285715,
+      "ingress_requests": 112,
+      "go_bytes_per_update": 155177.7142857143,
+      "go_allocs_per_update": 224.32142857142858,
+      "combined_go_cpu_us_per_update": 459.9375,
+      "pg_result_payload_bytes_per_update": 12
+    },
+    {
+      "variant": "trunk-direct",
+      "round": 1,
+      "subscribers": 1,
+      "description_bytes": 256,
+      "updates": 112,
+      "commit_to_apply": {
+        "p50_us": 4762.917,
+        "p95_us": 5663.625,
+        "p99_us": 7528.667
+      },
+      "write_to_apply": {
+        "p50_us": 4971.625,
+        "p95_us": 6892.209,
+        "p99_us": 11998.541
+      },
+      "publish_to_apply": {
+        "p50_us": 56.625,
+        "p95_us": 102.625,
+        "p99_us": 114.958
+      },
+      "ingress": {
+        "p50_us": 4699.75,
+        "p95_us": 5567.5,
+        "p99_us": 7429.958
+      },
+      "origin_write": {
+        "p50_us": 199.083,
+        "p95_us": 1346.833,
+        "p99_us": 2229.792
+      },
+      "commit_to_all_applied": {
+        "p50_us": 4762.917,
+        "p95_us": 5663.625,
+        "p99_us": 7528.667
+      },
+      "sse_bytes_per_update_per_subscriber": 65.29464285714286,
+      "replication_body_bytes_per_update": 25.901785714285715,
+      "ingress_requests": 112,
+      "go_bytes_per_update": 151752.7142857143,
+      "go_allocs_per_update": 213.57142857142858,
+      "combined_go_cpu_us_per_update": 687.7142857142857,
+      "pg_result_payload_bytes_per_update": 12
+    },
+    {
+      "variant": "trunk-batch8",
+      "round": 1,
+      "subscribers": 1,
+      "description_bytes": 256,
+      "updates": 112,
+      "commit_to_apply": {
+        "p50_us": 5161.5,
+        "p95_us": 5877.916,
+        "p99_us": 5965.542
+      },
+      "write_to_apply": {
+        "p50_us": 5297.208,
+        "p95_us": 6028.791,
+        "p99_us": 6137
+      },
+      "publish_to_apply": {
+        "p50_us": 72.5,
+        "p95_us": 89.542,
+        "p99_us": 91
+      },
+      "ingress": {
+        "p50_us": 4629.584,
+        "p95_us": 5048.292,
+        "p99_us": 5048.292
+      },
+      "origin_write": {
+        "p50_us": 154,
+        "p95_us": 223.625,
+        "p99_us": 266.5
+      },
+      "commit_to_all_applied": {
+        "p50_us": 5161.5,
+        "p95_us": 5877.916,
+        "p99_us": 5965.542
+      },
+      "sse_bytes_per_update_per_subscriber": 65.29464285714286,
+      "replication_body_bytes_per_update": 25.901785714285715,
+      "ingress_requests": 14,
+      "go_bytes_per_update": 22664.285714285714,
+      "go_allocs_per_update": 60.4375,
+      "combined_go_cpu_us_per_update": 130.72321428571428,
+      "pg_result_payload_bytes_per_update": 12
+    },
+    {
+      "variant": "pg-json",
+      "round": 1,
+      "subscribers": 10,
+      "description_bytes": 256,
+      "updates": 112,
+      "commit_to_apply": {
+        "p50_us": 76.958,
+        "p95_us": 126.25,
+        "p99_us": 148.917
+      },
+      "write_to_apply": {
+        "p50_us": 213.292,
+        "p95_us": 286.833,
+        "p99_us": 313.708
+      },
+      "publish_to_apply": {
+        "p50_us": 74.709,
+        "p95_us": 122.875,
+        "p99_us": 144.5
+      },
+      "ingress": {
+        "p50_us": 0,
+        "p95_us": 0,
+        "p99_us": 0
+      },
+      "origin_write": {
+        "p50_us": 134.625,
+        "p95_us": 180.291,
+        "p99_us": 209.166
+      },
+      "commit_to_all_applied": {
+        "p50_us": 108.291,
+        "p95_us": 148.917,
+        "p99_us": 165.875
+      },
+      "sse_bytes_per_update_per_subscriber": 479.16964285714283,
+      "replication_body_bytes_per_update": 0,
+      "ingress_requests": 0,
+      "go_bytes_per_update": 17046.85714285714,
+      "go_allocs_per_update": 167.52678571428572,
+      "combined_go_cpu_us_per_update": 521.9375,
+      "pg_result_payload_bytes_per_update": 321.9107142857143
+    },
+    {
+      "variant": "pg-pil",
+      "round": 1,
+      "subscribers": 10,
+      "description_bytes": 256,
+      "updates": 112,
+      "commit_to_apply": {
+        "p50_us": 52.625,
+        "p95_us": 91.625,
+        "p99_us": 107.5
+      },
+      "write_to_apply": {
+        "p50_us": 145.334,
+        "p95_us": 199.584,
+        "p99_us": 237
+      },
+      "publish_to_apply": {
+        "p50_us": 50.792,
+        "p95_us": 89.708,
+        "p99_us": 105.25
+      },
+      "ingress": {
+        "p50_us": 0,
+        "p95_us": 0,
+        "p99_us": 0
+      },
+      "origin_write": {
+        "p50_us": 91.75,
+        "p95_us": 127.292,
+        "p99_us": 135.458
+      },
+      "commit_to_all_applied": {
+        "p50_us": 81.125,
+        "p95_us": 111.667,
+        "p99_us": 120.208
+      },
+      "sse_bytes_per_update_per_subscriber": 459.9017857142857,
+      "replication_body_bytes_per_update": 0,
+      "ingress_requests": 0,
+      "go_bytes_per_update": 15270.07142857143,
+      "go_allocs_per_update": 126.33035714285714,
+      "combined_go_cpu_us_per_update": 387.0267857142857,
+      "pg_result_payload_bytes_per_update": 321.9107142857143
+    },
+    {
+      "variant": "trunk-lookup",
+      "round": 1,
+      "subscribers": 10,
+      "description_bytes": 256,
+      "updates": 112,
+      "commit_to_apply": {
+        "p50_us": 3933.708,
+        "p95_us": 4844.958,
+        "p99_us": 5721.958
+      },
+      "write_to_apply": {
+        "p50_us": 4134.25,
+        "p95_us": 5080.833,
+        "p99_us": 5964.625
+      },
+      "publish_to_apply": {
+        "p50_us": 77.5,
+        "p95_us": 141.917,
+        "p99_us": 164.125
+      },
+      "ingress": {
+        "p50_us": 3845.083,
+        "p95_us": 4745.458,
+        "p99_us": 5597.917
+      },
+      "origin_write": {
+        "p50_us": 200.875,
+        "p95_us": 297.292,
+        "p99_us": 330.542
+      },
+      "commit_to_all_applied": {
+        "p50_us": 3967.708,
+        "p95_us": 4871.167,
+        "p99_us": 5736.875
+      },
+      "sse_bytes_per_update_per_subscriber": 65.29464285714286,
+      "replication_body_bytes_per_update": 25.901785714285715,
+      "ingress_requests": 112,
+      "go_bytes_per_update": 176769.85714285713,
+      "go_allocs_per_update": 263.80357142857144,
+      "combined_go_cpu_us_per_update": 927.1428571428571,
+      "pg_result_payload_bytes_per_update": 12
+    },
+    {
+      "variant": "trunk-direct",
+      "round": 1,
+      "subscribers": 10,
+      "description_bytes": 256,
+      "updates": 112,
+      "commit_to_apply": {
+        "p50_us": 3746.709,
+        "p95_us": 5648.375,
+        "p99_us": 6785.792
+      },
+      "write_to_apply": {
+        "p50_us": 3970.083,
+        "p95_us": 5933.375,
+        "p99_us": 6969.5
+      },
+      "publish_to_apply": {
+        "p50_us": 89.417,
+        "p95_us": 176.666,
+        "p99_us": 267.333
+      },
+      "ingress": {
+        "p50_us": 3663.542,
+        "p95_us": 5383.459,
+        "p99_us": 6645.625
+      },
+      "origin_write": {
+        "p50_us": 217.666,
+        "p95_us": 296.833,
+        "p99_us": 335.875
+      },
+      "commit_to_all_applied": {
+        "p50_us": 3778.25,
+        "p95_us": 5684.292,
+        "p99_us": 6789.209
+      },
+      "sse_bytes_per_update_per_subscriber": 65.29464285714286,
+      "replication_body_bytes_per_update": 25.901785714285715,
+      "ingress_requests": 112,
+      "go_bytes_per_update": 177900.64285714287,
+      "go_allocs_per_update": 255.05357142857142,
+      "combined_go_cpu_us_per_update": 1255.4017857142858,
+      "pg_result_payload_bytes_per_update": 12
+    },
+    {
+      "variant": "trunk-batch8",
+      "round": 1,
+      "subscribers": 10,
+      "description_bytes": 256,
+      "updates": 112,
+      "commit_to_apply": {
+        "p50_us": 4593.417,
+        "p95_us": 5963.292,
+        "p99_us": 6265.833
+      },
+      "write_to_apply": {
+        "p50_us": 4786.584,
+        "p95_us": 6158.042,
+        "p99_us": 6670.208
+      },
+      "publish_to_apply": {
+        "p50_us": 350.291,
+        "p95_us": 671.167,
+        "p99_us": 857.667
+      },
+      "ingress": {
+        "p50_us": 3849.416,
+        "p95_us": 4895.5,
+        "p99_us": 4895.5
+      },
+      "origin_write": {
+        "p50_us": 154.625,
+        "p95_us": 437.334,
+        "p99_us": 597.25
+      },
+      "commit_to_all_applied": {
+        "p50_us": 4806.458,
+        "p95_us": 6193.083,
+        "p99_us": 6441.167
+      },
+      "sse_bytes_per_update_per_subscriber": 65.29464285714286,
+      "replication_body_bytes_per_update": 25.901785714285715,
+      "ingress_requests": 14,
+      "go_bytes_per_update": 29084.071428571428,
+      "go_allocs_per_update": 92.74107142857143,
+      "combined_go_cpu_us_per_update": 479.5357142857143,
+      "pg_result_payload_bytes_per_update": 12
+    },
+    {
+      "variant": "pg-json",
+      "round": 1,
+      "subscribers": 100,
+      "description_bytes": 256,
+      "updates": 112,
+      "commit_to_apply": {
+        "p50_us": 278.542,
+        "p95_us": 439.917,
+        "p99_us": 806.25
+      },
+      "write_to_apply": {
+        "p50_us": 367.584,
+        "p95_us": 539.292,
+        "p99_us": 886.833
+      },
+      "publish_to_apply": {
+        "p50_us": 276.25,
+        "p95_us": 436.708,
+        "p99_us": 804.875
+      },
+      "ingress": {
+        "p50_us": 0,
+        "p95_us": 0,
+        "p99_us": 0
+      },
+      "origin_write": {
+        "p50_us": 84.625,
+        "p95_us": 122.167,
+        "p99_us": 177.291
+      },
+      "commit_to_all_applied": {
+        "p50_us": 427.791,
+        "p95_us": 501.208,
+        "p99_us": 1183.542
+      },
+      "sse_bytes_per_update_per_subscriber": 479.16964285714283,
+      "replication_body_bytes_per_update": 0,
+      "ingress_requests": 0,
+      "go_bytes_per_update": 141831.92857142858,
+      "go_allocs_per_update": 1316.2589285714287,
+      "combined_go_cpu_us_per_update": 2968.5714285714284,
+      "pg_result_payload_bytes_per_update": 321.9107142857143
+    },
+    {
+      "variant": "pg-pil",
+      "round": 1,
+      "subscribers": 100,
+      "description_bytes": 256,
+      "updates": 112,
+      "commit_to_apply": {
+        "p50_us": 258.459,
+        "p95_us": 399.083,
+        "p99_us": 899
+      },
+      "write_to_apply": {
+        "p50_us": 341.583,
+        "p95_us": 495.666,
+        "p99_us": 994.458
+      },
+      "publish_to_apply": {
+        "p50_us": 255.709,
+        "p95_us": 394.792,
+        "p99_us": 897.125
+      },
+      "ingress": {
+        "p50_us": 0,
+        "p95_us": 0,
+        "p99_us": 0
+      },
+      "origin_write": {
+        "p50_us": 82.334,
+        "p95_us": 110.958,
+        "p99_us": 167.375
+      },
+      "commit_to_all_applied": {
+        "p50_us": 382.625,
+        "p95_us": 460.958,
+        "p99_us": 1107.625
+      },
+      "sse_bytes_per_update_per_subscriber": 459.9017857142857,
+      "replication_body_bytes_per_update": 0,
+      "ingress_requests": 0,
+      "go_bytes_per_update": 118218.21428571429,
+      "go_allocs_per_update": 764.7232142857143,
+      "combined_go_cpu_us_per_update": 2687.785714285714,
+      "pg_result_payload_bytes_per_update": 321.9107142857143
+    },
+    {
+      "variant": "trunk-lookup",
+      "round": 1,
+      "subscribers": 100,
+      "description_bytes": 256,
+      "updates": 112,
+      "commit_to_apply": {
+        "p50_us": 3685.708,
+        "p95_us": 7842.042,
+        "p99_us": 10482.666
+      },
+      "write_to_apply": {
+        "p50_us": 3885.417,
+        "p95_us": 8496.75,
+        "p99_us": 10854.875
+      },
+      "publish_to_apply": {
+        "p50_us": 465.917,
+        "p95_us": 3008.75,
+        "p99_us": 5872.083
+      },
+      "ingress": {
+        "p50_us": 3234.834,
+        "p95_us": 4838.166,
+        "p99_us": 6326.375
+      },
+      "origin_write": {
+        "p50_us": 177.459,
+        "p95_us": 638.541,
+        "p99_us": 1305.125
+      },
+      "commit_to_all_applied": {
+        "p50_us": 3888.959,
+        "p95_us": 8088.041,
+        "p99_us": 10522.25
+      },
+      "sse_bytes_per_update_per_subscriber": 65.29464285714286,
+      "replication_body_bytes_per_update": 25.901785714285715,
+      "ingress_requests": 112,
+      "go_bytes_per_update": 204096.35714285713,
+      "go_allocs_per_update": 564.6428571428571,
+      "combined_go_cpu_us_per_update": 5329.705357142857,
+      "pg_result_payload_bytes_per_update": 12
+    },
+    {
+      "variant": "trunk-direct",
+      "round": 1,
+      "subscribers": 100,
+      "description_bytes": 256,
+      "updates": 112,
+      "commit_to_apply": {
+        "p50_us": 3635.375,
+        "p95_us": 5221.666,
+        "p99_us": 7264.958
+      },
+      "write_to_apply": {
+        "p50_us": 4408.333,
+        "p95_us": 5899.709,
+        "p99_us": 7891.167
+      },
+      "publish_to_apply": {
+        "p50_us": 424.542,
+        "p95_us": 766.625,
+        "p99_us": 960.667
+      },
+      "ingress": {
+        "p50_us": 3232.083,
+        "p95_us": 4593.5,
+        "p99_us": 6736.709
+      },
+      "origin_write": {
+        "p50_us": 679.625,
+        "p95_us": 1108.25,
+        "p99_us": 1143.666
+      },
+      "commit_to_all_applied": {
+        "p50_us": 3948.834,
+        "p95_us": 5406.542,
+        "p99_us": 7573.5
+      },
+      "sse_bytes_per_update_per_subscriber": 65.29464285714286,
+      "replication_body_bytes_per_update": 25.901785714285715,
+      "ingress_requests": 112,
+      "go_bytes_per_update": 200989.57142857142,
+      "go_allocs_per_update": 553.875,
+      "combined_go_cpu_us_per_update": 4514.491071428572,
+      "pg_result_payload_bytes_per_update": 12
+    },
+    {
+      "variant": "trunk-batch8",
+      "round": 1,
+      "subscribers": 100,
+      "description_bytes": 256,
+      "updates": 112,
+      "commit_to_apply": {
+        "p50_us": 5003.708,
+        "p95_us": 6799.458,
+        "p99_us": 7355.459
+      },
+      "write_to_apply": {
+        "p50_us": 5121.667,
+        "p95_us": 7109,
+        "p99_us": 7803.25
+      },
+      "publish_to_apply": {
+        "p50_us": 1554.958,
+        "p95_us": 2857.959,
+        "p99_us": 3355.25
+      },
+      "ingress": {
+        "p50_us": 3184.667,
+        "p95_us": 4288.708,
+        "p99_us": 4288.708
+      },
+      "origin_write": {
+        "p50_us": 82.916,
+        "p95_us": 157.584,
+        "p99_us": 2633.125
+      },
+      "commit_to_all_applied": {
+        "p50_us": 5707.958,
+        "p95_us": 7711.667,
+        "p99_us": 7858.5
+      },
+      "sse_bytes_per_update_per_subscriber": 65.29464285714286,
+      "replication_body_bytes_per_update": 25.901785714285715,
+      "ingress_requests": 14,
+      "go_bytes_per_update": 68238.28571428571,
+      "go_allocs_per_update": 394.2857142857143,
+      "combined_go_cpu_us_per_update": 2183.9910714285716,
+      "pg_result_payload_bytes_per_update": 12
+    },
+    {
+      "variant": "pg-json",
+      "round": 1,
+      "subscribers": 1,
+      "description_bytes": 4096,
+      "updates": 112,
+      "commit_to_apply": {
+        "p50_us": 45.75,
+        "p95_us": 85.125,
+        "p99_us": 117.75
+      },
+      "write_to_apply": {
+        "p50_us": 126.792,
+        "p95_us": 246.375,
+        "p99_us": 287.375
+      },
+      "publish_to_apply": {
+        "p50_us": 39.291,
+        "p95_us": 76.333,
+        "p99_us": 111
+      },
+      "ingress": {
+        "p50_us": 0,
+        "p95_us": 0,
+        "p99_us": 0
+      },
+      "origin_write": {
+        "p50_us": 84.042,
+        "p95_us": 161.666,
+        "p99_us": 185.292
+      },
+      "commit_to_all_applied": {
+        "p50_us": 45.75,
+        "p95_us": 85.125,
+        "p99_us": 117.75
+      },
+      "sse_bytes_per_update_per_subscriber": 4319.169642857143,
+      "replication_body_bytes_per_update": 0,
+      "ingress_requests": 0,
+      "go_bytes_per_update": 25772.285714285714,
+      "go_allocs_per_update": 49.4375,
+      "combined_go_cpu_us_per_update": 113.53571428571429,
+      "pg_result_payload_bytes_per_update": 4161.910714285715
+    },
+    {
+      "variant": "pg-pil",
+      "round": 1,
+      "subscribers": 1,
+      "description_bytes": 4096,
+      "updates": 112,
+      "commit_to_apply": {
+        "p50_us": 20.792,
+        "p95_us": 27.917,
+        "p99_us": 100.875
+      },
+      "write_to_apply": {
+        "p50_us": 92.625,
+        "p95_us": 112.25,
+        "p99_us": 169.75
+      },
+      "publish_to_apply": {
+        "p50_us": 15.583,
+        "p95_us": 22.875,
+        "p99_us": 38.042
+      },
+      "ingress": {
+        "p50_us": 0,
+        "p95_us": 0,
+        "p99_us": 0
+      },
+      "origin_write": {
+        "p50_us": 71.459,
+        "p95_us": 87.583,
+        "p99_us": 95.5
+      },
+      "commit_to_all_applied": {
+        "p50_us": 20.792,
+        "p95_us": 27.917,
+        "p99_us": 100.875
+      },
+      "sse_bytes_per_update_per_subscriber": 5579.901785714285,
+      "replication_body_bytes_per_update": 0,
+      "ingress_requests": 0,
+      "go_bytes_per_update": 38529.57142857143,
+      "go_allocs_per_update": 60.11607142857143,
+      "combined_go_cpu_us_per_update": 74.40178571428571,
+      "pg_result_payload_bytes_per_update": 4161.910714285715
+    },
+    {
+      "variant": "trunk-lookup",
+      "round": 1,
+      "subscribers": 1,
+      "description_bytes": 4096,
+      "updates": 112,
+      "commit_to_apply": {
+        "p50_us": 4725.25,
+        "p95_us": 6192.375,
+        "p99_us": 7238.084
+      },
+      "write_to_apply": {
+        "p50_us": 5004.208,
+        "p95_us": 6740.75,
+        "p99_us": 7466.292
+      },
+      "publish_to_apply": {
+        "p50_us": 61.625,
+        "p95_us": 163.125,
+        "p99_us": 341.792
+      },
+      "ingress": {
+        "p50_us": 4656,
+        "p95_us": 6068.083,
+        "p99_us": 7150
+      },
+      "origin_write": {
+        "p50_us": 299.792,
+        "p95_us": 955.541,
+        "p99_us": 1172.667
+      },
+      "commit_to_all_applied": {
+        "p50_us": 4725.25,
+        "p95_us": 6192.375,
+        "p99_us": 7238.084
+      },
+      "sse_bytes_per_update_per_subscriber": 65.29464285714286,
+      "replication_body_bytes_per_update": 25.901785714285715,
+      "ingress_requests": 112,
+      "go_bytes_per_update": 157727.85714285713,
+      "go_allocs_per_update": 225.88392857142858,
+      "combined_go_cpu_us_per_update": 1121.017857142857,
+      "pg_result_payload_bytes_per_update": 12
+    },
+    {
+      "variant": "trunk-direct",
+      "round": 1,
+      "subscribers": 1,
+      "description_bytes": 4096,
+      "updates": 112,
+      "commit_to_apply": {
+        "p50_us": 4632.375,
+        "p95_us": 8462.542,
+        "p99_us": 20500.125
+      },
+      "write_to_apply": {
+        "p50_us": 4961.333,
+        "p95_us": 10729.375,
+        "p99_us": 20952.834
+      },
+      "publish_to_apply": {
+        "p50_us": 58.208,
+        "p95_us": 103.833,
+        "p99_us": 288.334
+      },
+      "ingress": {
+        "p50_us": 4540.458,
+        "p95_us": 8396.875,
+        "p99_us": 20432.75
+      },
+      "origin_write": {
+        "p50_us": 295.792,
+        "p95_us": 860.834,
+        "p99_us": 3667.166
+      },
+      "commit_to_all_applied": {
+        "p50_us": 4632.375,
+        "p95_us": 8462.542,
+        "p99_us": 20500.125
+      },
+      "sse_bytes_per_update_per_subscriber": 65.29464285714286,
+      "replication_body_bytes_per_update": 25.901785714285715,
+      "ingress_requests": 112,
+      "go_bytes_per_update": 156211.85714285713,
+      "go_allocs_per_update": 214.96428571428572,
+      "combined_go_cpu_us_per_update": 869.9375,
+      "pg_result_payload_bytes_per_update": 12
+    },
+    {
+      "variant": "trunk-batch8",
+      "round": 1,
+      "subscribers": 1,
+      "description_bytes": 4096,
+      "updates": 112,
+      "commit_to_apply": {
+        "p50_us": 5136.125,
+        "p95_us": 5853.625,
+        "p99_us": 5933.875
+      },
+      "write_to_apply": {
+        "p50_us": 5299.084,
+        "p95_us": 6029.459,
+        "p99_us": 6120.708
+      },
+      "publish_to_apply": {
+        "p50_us": 70.958,
+        "p95_us": 106.375,
+        "p99_us": 134.042
+      },
+      "ingress": {
+        "p50_us": 4561.5,
+        "p95_us": 4703.333,
+        "p99_us": 4703.333
+      },
+      "origin_write": {
+        "p50_us": 163.5,
+        "p95_us": 202.125,
+        "p99_us": 224.542
+      },
+      "commit_to_all_applied": {
+        "p50_us": 5136.125,
+        "p95_us": 5853.625,
+        "p99_us": 5933.875
+      },
+      "sse_bytes_per_update_per_subscriber": 65.29464285714286,
+      "replication_body_bytes_per_update": 25.901785714285715,
+      "ingress_requests": 14,
+      "go_bytes_per_update": 23162.85714285714,
+      "go_allocs_per_update": 60.098214285714285,
+      "combined_go_cpu_us_per_update": 151.60714285714286,
+      "pg_result_payload_bytes_per_update": 12
+    },
+    {
+      "variant": "pg-json",
+      "round": 1,
+      "subscribers": 10,
+      "description_bytes": 4096,
+      "updates": 112,
+      "commit_to_apply": {
+        "p50_us": 123.458,
+        "p95_us": 231.208,
+        "p99_us": 340.25
+      },
+      "write_to_apply": {
+        "p50_us": 256.417,
+        "p95_us": 388.458,
+        "p99_us": 517.5
+      },
+      "publish_to_apply": {
+        "p50_us": 113.334,
+        "p95_us": 199.292,
+        "p99_us": 292.708
+      },
+      "ingress": {
+        "p50_us": 0,
+        "p95_us": 0,
+        "p99_us": 0
+      },
+      "origin_write": {
+        "p50_us": 135.125,
+        "p95_us": 193.542,
+        "p99_us": 239.875
+      },
+      "commit_to_all_applied": {
+        "p50_us": 173.708,
+        "p95_us": 346.375,
+        "p99_us": 415.791
+      },
+      "sse_bytes_per_update_per_subscriber": 4319.169642857143,
+      "replication_body_bytes_per_update": 0,
+      "ingress_requests": 0,
+      "go_bytes_per_update": 117230.42857142857,
+      "go_allocs_per_update": 170.85714285714286,
+      "combined_go_cpu_us_per_update": 958.5,
+      "pg_result_payload_bytes_per_update": 4161.910714285715
+    },
+    {
+      "variant": "pg-pil",
+      "round": 1,
+      "subscribers": 10,
+      "description_bytes": 4096,
+      "updates": 112,
+      "commit_to_apply": {
+        "p50_us": 73.542,
+        "p95_us": 150.541,
+        "p99_us": 233.334
+      },
+      "write_to_apply": {
+        "p50_us": 165.708,
+        "p95_us": 297.541,
+        "p99_us": 393.166
+      },
+      "publish_to_apply": {
+        "p50_us": 67,
+        "p95_us": 129.041,
+        "p99_us": 206.75
+      },
+      "ingress": {
+        "p50_us": 0,
+        "p95_us": 0,
+        "p99_us": 0
+      },
+      "origin_write": {
+        "p50_us": 91.917,
+        "p95_us": 158,
+        "p99_us": 214.5
+      },
+      "commit_to_all_applied": {
+        "p50_us": 97.458,
+        "p95_us": 242.125,
+        "p99_us": 271.292
+      },
+      "sse_bytes_per_update_per_subscriber": 5579.901785714285,
+      "replication_body_bytes_per_update": 0,
+      "ingress_requests": 0,
+      "go_bytes_per_update": 134406,
+      "go_allocs_per_update": 127.13392857142857,
+      "combined_go_cpu_us_per_update": 621.7857142857143,
+      "pg_result_payload_bytes_per_update": 4161.910714285715
+    },
+    {
+      "variant": "trunk-lookup",
+      "round": 1,
+      "subscribers": 10,
+      "description_bytes": 4096,
+      "updates": 112,
+      "commit_to_apply": {
+        "p50_us": 4658.958,
+        "p95_us": 6715.542,
+        "p99_us": 7476.917
+      },
+      "write_to_apply": {
+        "p50_us": 4908.958,
+        "p95_us": 6938.625,
+        "p99_us": 7950.375
+      },
+      "publish_to_apply": {
+        "p50_us": 104.459,
+        "p95_us": 176.209,
+        "p99_us": 225.459
+      },
+      "ingress": {
+        "p50_us": 4536.167,
+        "p95_us": 6613.708,
+        "p99_us": 7323.5
+      },
+      "origin_write": {
+        "p50_us": 245.875,
+        "p95_us": 333.791,
+        "p99_us": 427.75
+      },
+      "commit_to_all_applied": {
+        "p50_us": 4705.458,
+        "p95_us": 6772.667,
+        "p99_us": 7478.667
+      },
+      "sse_bytes_per_update_per_subscriber": 65.29464285714286,
+      "replication_body_bytes_per_update": 25.901785714285715,
+      "ingress_requests": 112,
+      "go_bytes_per_update": 184187.5,
+      "go_allocs_per_update": 269.45535714285717,
+      "combined_go_cpu_us_per_update": 1514.107142857143,
+      "pg_result_payload_bytes_per_update": 12
+    },
+    {
+      "variant": "trunk-direct",
+      "round": 1,
+      "subscribers": 10,
+      "description_bytes": 4096,
+      "updates": 112,
+      "commit_to_apply": {
+        "p50_us": 4693.625,
+        "p95_us": 7195.458,
+        "p99_us": 10137.375
+      },
+      "write_to_apply": {
+        "p50_us": 5025.583,
+        "p95_us": 7765.334,
+        "p99_us": 10626.792
+      },
+      "publish_to_apply": {
+        "p50_us": 148.625,
+        "p95_us": 736.959,
+        "p99_us": 2746.833
+      },
+      "ingress": {
+        "p50_us": 4548.291,
+        "p95_us": 6639.416,
+        "p99_us": 7774.667
+      },
+      "origin_write": {
+        "p50_us": 306.209,
+        "p95_us": 1095.083,
+        "p99_us": 2203.792
+      },
+      "commit_to_all_applied": {
+        "p50_us": 4755.25,
+        "p95_us": 7403.166,
+        "p99_us": 10402.333
+      },
+      "sse_bytes_per_update_per_subscriber": 65.29464285714286,
+      "replication_body_bytes_per_update": 25.901785714285715,
+      "ingress_requests": 112,
+      "go_bytes_per_update": 182370.85714285713,
+      "go_allocs_per_update": 258.79464285714283,
+      "combined_go_cpu_us_per_update": 2097.9821428571427,
+      "pg_result_payload_bytes_per_update": 12
+    },
+    {
+      "variant": "trunk-batch8",
+      "round": 1,
+      "subscribers": 10,
+      "description_bytes": 4096,
+      "updates": 112,
+      "commit_to_apply": {
+        "p50_us": 5299.292,
+        "p95_us": 6163.667,
+        "p99_us": 6433.542
+      },
+      "write_to_apply": {
+        "p50_us": 5488.417,
+        "p95_us": 6527.083,
+        "p99_us": 6824.209
+      },
+      "publish_to_apply": {
+        "p50_us": 341.958,
+        "p95_us": 718.5,
+        "p99_us": 846.834
+      },
+      "ingress": {
+        "p50_us": 4599.5,
+        "p95_us": 4775.375,
+        "p99_us": 4775.375
+      },
+      "origin_write": {
+        "p50_us": 154.791,
+        "p95_us": 542.333,
+        "p99_us": 646.333
+      },
+      "commit_to_all_applied": {
+        "p50_us": 5566.375,
+        "p95_us": 6480.75,
+        "p99_us": 6597.417
+      },
+      "sse_bytes_per_update_per_subscriber": 65.29464285714286,
+      "replication_body_bytes_per_update": 25.901785714285715,
+      "ingress_requests": 14,
+      "go_bytes_per_update": 30145.14285714286,
+      "go_allocs_per_update": 93.34821428571429,
+      "combined_go_cpu_us_per_update": 471.54464285714283,
+      "pg_result_payload_bytes_per_update": 12
+    },
+    {
+      "variant": "pg-json",
+      "round": 1,
+      "subscribers": 100,
+      "description_bytes": 4096,
+      "updates": 112,
+      "commit_to_apply": {
+        "p50_us": 498.208,
+        "p95_us": 1258.875,
+        "p99_us": 1601.375
+      },
+      "write_to_apply": {
+        "p50_us": 611.167,
+        "p95_us": 1385.5,
+        "p99_us": 1741.375
+      },
+      "publish_to_apply": {
+        "p50_us": 490.875,
+        "p95_us": 1250.292,
+        "p99_us": 1591.208
+      },
+      "ingress": {
+        "p50_us": 0,
+        "p95_us": 0,
+        "p99_us": 0
+      },
+      "origin_write": {
+        "p50_us": 104.5,
+        "p95_us": 198.708,
+        "p99_us": 225.709
+      },
+      "commit_to_all_applied": {
+        "p50_us": 740.875,
+        "p95_us": 1696.792,
+        "p99_us": 1803.875
+      },
+      "sse_bytes_per_update_per_subscriber": 4319.169642857143,
+      "replication_body_bytes_per_update": 0,
+      "ingress_requests": 0,
+      "go_bytes_per_update": 985930.9285714285,
+      "go_allocs_per_update": 1321.0982142857142,
+      "combined_go_cpu_us_per_update": 6664.428571428572,
+      "pg_result_payload_bytes_per_update": 4161.910714285715
+    },
+    {
+      "variant": "pg-pil",
+      "round": 1,
+      "subscribers": 100,
+      "description_bytes": 4096,
+      "updates": 112,
+      "commit_to_apply": {
+        "p50_us": 455,
+        "p95_us": 1021.334,
+        "p99_us": 1324.209
+      },
+      "write_to_apply": {
+        "p50_us": 572.5,
+        "p95_us": 1179.5,
+        "p99_us": 1479.583
+      },
+      "publish_to_apply": {
+        "p50_us": 447.25,
+        "p95_us": 1011.708,
+        "p99_us": 1318.042
+      },
+      "ingress": {
+        "p50_us": 0,
+        "p95_us": 0,
+        "p99_us": 0
+      },
+      "origin_write": {
+        "p50_us": 109.958,
+        "p95_us": 242.417,
+        "p99_us": 254.792
+      },
+      "commit_to_all_applied": {
+        "p50_us": 646.042,
+        "p95_us": 1342.084,
+        "p99_us": 1445.625
+      },
+      "sse_bytes_per_update_per_subscriber": 5579.901785714285,
+      "replication_body_bytes_per_update": 0,
+      "ingress_requests": 0,
+      "go_bytes_per_update": 1095651.2857142857,
+      "go_allocs_per_update": 765.8392857142857,
+      "combined_go_cpu_us_per_update": 5523.321428571428,
+      "pg_result_payload_bytes_per_update": 4161.910714285715
+    },
+    {
+      "variant": "trunk-lookup",
+      "round": 1,
+      "subscribers": 100,
+      "description_bytes": 4096,
+      "updates": 112,
+      "commit_to_apply": {
+        "p50_us": 4885.333,
+        "p95_us": 6610.166,
+        "p99_us": 9554
+      },
+      "write_to_apply": {
+        "p50_us": 5520.417,
+        "p95_us": 7317.167,
+        "p99_us": 9884.75
+      },
+      "publish_to_apply": {
+        "p50_us": 510.333,
+        "p95_us": 2160.459,
+        "p99_us": 3501.209
+      },
+      "ingress": {
+        "p50_us": 4350.167,
+        "p95_us": 4940.375,
+        "p99_us": 5434.875
+      },
+      "origin_write": {
+        "p50_us": 534.75,
+        "p95_us": 1076.125,
+        "p99_us": 1206.042
+      },
+      "commit_to_all_applied": {
+        "p50_us": 5262.417,
+        "p95_us": 7312.416,
+        "p99_us": 9959.125
+      },
+      "sse_bytes_per_update_per_subscriber": 65.29464285714286,
+      "replication_body_bytes_per_update": 25.901785714285715,
+      "ingress_requests": 112,
+      "go_bytes_per_update": 204595.2142857143,
+      "go_allocs_per_update": 564.2678571428571,
+      "combined_go_cpu_us_per_update": 5947.75,
+      "pg_result_payload_bytes_per_update": 12
+    },
+    {
+      "variant": "trunk-direct",
+      "round": 1,
+      "subscribers": 100,
+      "description_bytes": 4096,
+      "updates": 112,
+      "commit_to_apply": {
+        "p50_us": 5065.709,
+        "p95_us": 7910.584,
+        "p99_us": 8765.875
+      },
+      "write_to_apply": {
+        "p50_us": 5710.5,
+        "p95_us": 8499,
+        "p99_us": 9392.625
+      },
+      "publish_to_apply": {
+        "p50_us": 584.041,
+        "p95_us": 3215.375,
+        "p99_us": 4120.5
+      },
+      "ingress": {
+        "p50_us": 4496.166,
+        "p95_us": 5353.25,
+        "p99_us": 6597.708
+      },
+      "origin_write": {
+        "p50_us": 677.584,
+        "p95_us": 1100.583,
+        "p99_us": 1225.417
+      },
+      "commit_to_all_applied": {
+        "p50_us": 5399.375,
+        "p95_us": 8151.209,
+        "p99_us": 8947.584
+      },
+      "sse_bytes_per_update_per_subscriber": 65.29464285714286,
+      "replication_body_bytes_per_update": 25.901785714285715,
+      "ingress_requests": 112,
+      "go_bytes_per_update": 200396.42857142858,
+      "go_allocs_per_update": 553.6964285714286,
+      "combined_go_cpu_us_per_update": 6484.964285714285,
+      "pg_result_payload_bytes_per_update": 12
+    },
+    {
+      "variant": "trunk-batch8",
+      "round": 1,
+      "subscribers": 100,
+      "description_bytes": 4096,
+      "updates": 112,
+      "commit_to_apply": {
+        "p50_us": 4914.791,
+        "p95_us": 6925.459,
+        "p99_us": 7760.333
+      },
+      "write_to_apply": {
+        "p50_us": 5048.417,
+        "p95_us": 7395.084,
+        "p99_us": 8134.875
+      },
+      "publish_to_apply": {
+        "p50_us": 1353.084,
+        "p95_us": 2588.542,
+        "p99_us": 3142.583
+      },
+      "ingress": {
+        "p50_us": 3483.834,
+        "p95_us": 4444.667,
+        "p99_us": 4444.667
+      },
+      "origin_write": {
+        "p50_us": 85.458,
+        "p95_us": 176.917,
+        "p99_us": 2543.458
+      },
+      "commit_to_all_applied": {
+        "p50_us": 5615.917,
+        "p95_us": 7962.583,
+        "p99_us": 8138.041
+      },
+      "sse_bytes_per_update_per_subscriber": 65.29464285714286,
+      "replication_body_bytes_per_update": 25.901785714285715,
+      "ingress_requests": 14,
+      "go_bytes_per_update": 69054.07142857143,
+      "go_allocs_per_update": 394.75892857142856,
+      "combined_go_cpu_us_per_update": 1902.857142857143,
+      "pg_result_payload_bytes_per_update": 12
+    },
+    {
+      "variant": "pg-pil",
+      "round": 2,
+      "subscribers": 1,
+      "description_bytes": 256,
+      "updates": 112,
+      "commit_to_apply": {
+        "p50_us": 15.166,
+        "p95_us": 21.875,
+        "p99_us": 34.625
+      },
+      "write_to_apply": {
+        "p50_us": 85.792,
+        "p95_us": 132,
+        "p99_us": 195.042
+      },
+      "publish_to_apply": {
+        "p50_us": 13.667,
+        "p95_us": 20.375,
+        "p99_us": 33.5
+      },
+      "ingress": {
+        "p50_us": 0,
+        "p95_us": 0,
+        "p99_us": 0
+      },
+      "origin_write": {
+        "p50_us": 70.5,
+        "p95_us": 107.334,
+        "p99_us": 176.5
+      },
+      "commit_to_all_applied": {
+        "p50_us": 15.166,
+        "p95_us": 21.875,
+        "p99_us": 34.625
+      },
+      "sse_bytes_per_update_per_subscriber": 459.9017857142857,
+      "replication_body_bytes_per_update": 0,
+      "ingress_requests": 0,
+      "go_bytes_per_update": 5400.214285714285,
+      "go_allocs_per_update": 59.973214285714285,
+      "combined_go_cpu_us_per_update": 55.973214285714285,
+      "pg_result_payload_bytes_per_update": 321.9107142857143
+    },
+    {
+      "variant": "trunk-lookup",
+      "round": 2,
+      "subscribers": 1,
+      "description_bytes": 256,
+      "updates": 112,
+      "commit_to_apply": {
+        "p50_us": 3808.5,
+        "p95_us": 4861.625,
+        "p99_us": 5237.583
+      },
+      "write_to_apply": {
+        "p50_us": 3998.333,
+        "p95_us": 5012.709,
+        "p99_us": 5367.125
+      },
+      "publish_to_apply": {
+        "p50_us": 45.583,
+        "p95_us": 66.25,
+        "p99_us": 93.333
+      },
+      "ingress": {
+        "p50_us": 3752.708,
+        "p95_us": 4810.584,
+        "p99_us": 5187.625
+      },
+      "origin_write": {
+        "p50_us": 181.708,
+        "p95_us": 253.042,
+        "p99_us": 280.25
+      },
+      "commit_to_all_applied": {
+        "p50_us": 3808.5,
+        "p95_us": 4861.625,
+        "p99_us": 5237.583
+      },
+      "sse_bytes_per_update_per_subscriber": 65.29464285714286,
+      "replication_body_bytes_per_update": 25.901785714285715,
+      "ingress_requests": 112,
+      "go_bytes_per_update": 161406.85714285713,
+      "go_allocs_per_update": 226.25892857142858,
+      "combined_go_cpu_us_per_update": 543.4821428571429,
+      "pg_result_payload_bytes_per_update": 12
+    },
+    {
+      "variant": "trunk-direct",
+      "round": 2,
+      "subscribers": 1,
+      "description_bytes": 256,
+      "updates": 112,
+      "commit_to_apply": {
+        "p50_us": 4755.25,
+        "p95_us": 8187.667,
+        "p99_us": 14979.417
+      },
+      "write_to_apply": {
+        "p50_us": 5010.542,
+        "p95_us": 10021,
+        "p99_us": 15206.917
+      },
+      "publish_to_apply": {
+        "p50_us": 60.375,
+        "p95_us": 105.083,
+        "p99_us": 241.916
+      },
+      "ingress": {
+        "p50_us": 4682.917,
+        "p95_us": 8099.916,
+        "p99_us": 14896.042
+      },
+      "origin_write": {
+        "p50_us": 242.834,
+        "p95_us": 1214.375,
+        "p99_us": 3027.458
+      },
+      "commit_to_all_applied": {
+        "p50_us": 4755.25,
+        "p95_us": 8187.667,
+        "p99_us": 14979.417
+      },
+      "sse_bytes_per_update_per_subscriber": 65.29464285714286,
+      "replication_body_bytes_per_update": 25.901785714285715,
+      "ingress_requests": 112,
+      "go_bytes_per_update": 156037.64285714287,
+      "go_allocs_per_update": 214.50892857142858,
+      "combined_go_cpu_us_per_update": 905.4642857142857,
+      "pg_result_payload_bytes_per_update": 12
+    },
+    {
+      "variant": "trunk-batch8",
+      "round": 2,
+      "subscribers": 1,
+      "description_bytes": 256,
+      "updates": 112,
+      "commit_to_apply": {
+        "p50_us": 5805.209,
+        "p95_us": 6689.833,
+        "p99_us": 6770.709
+      },
+      "write_to_apply": {
+        "p50_us": 5963.625,
+        "p95_us": 6914.083,
+        "p99_us": 6980
+      },
+      "publish_to_apply": {
+        "p50_us": 90.042,
+        "p95_us": 123.791,
+        "p99_us": 136.75
+      },
+      "ingress": {
+        "p50_us": 5264.458,
+        "p95_us": 5438.917,
+        "p99_us": 5438.917
+      },
+      "origin_write": {
+        "p50_us": 185.125,
+        "p95_us": 247.708,
+        "p99_us": 284.625
+      },
+      "commit_to_all_applied": {
+        "p50_us": 5805.209,
+        "p95_us": 6689.833,
+        "p99_us": 6770.709
+      },
+      "sse_bytes_per_update_per_subscriber": 65.29464285714286,
+      "replication_body_bytes_per_update": 25.901785714285715,
+      "ingress_requests": 14,
+      "go_bytes_per_update": 22302.85714285714,
+      "go_allocs_per_update": 60.080357142857146,
+      "combined_go_cpu_us_per_update": 185.26785714285714,
+      "pg_result_payload_bytes_per_update": 12
+    },
+    {
+      "variant": "pg-json",
+      "round": 2,
+      "subscribers": 1,
+      "description_bytes": 256,
+      "updates": 112,
+      "commit_to_apply": {
+        "p50_us": 43.709,
+        "p95_us": 93.25,
+        "p99_us": 100.458
+      },
+      "write_to_apply": {
+        "p50_us": 186.417,
+        "p95_us": 294.042,
+        "p99_us": 364.75
+      },
+      "publish_to_apply": {
+        "p50_us": 42.125,
+        "p95_us": 92,
+        "p99_us": 98.5
+      },
+      "ingress": {
+        "p50_us": 0,
+        "p95_us": 0,
+        "p99_us": 0
+      },
+      "origin_write": {
+        "p50_us": 141.25,
+        "p95_us": 198.875,
+        "p99_us": 294.792
+      },
+      "commit_to_all_applied": {
+        "p50_us": 43.709,
+        "p95_us": 93.25,
+        "p99_us": 100.458
+      },
+      "sse_bytes_per_update_per_subscriber": 479.16964285714283,
+      "replication_body_bytes_per_update": 0,
+      "ingress_requests": 0,
+      "go_bytes_per_update": 4790.071428571428,
+      "go_allocs_per_update": 49.598214285714285,
+      "combined_go_cpu_us_per_update": 104.8125,
+      "pg_result_payload_bytes_per_update": 321.9107142857143
+    },
+    {
+      "variant": "pg-pil",
+      "round": 2,
+      "subscribers": 10,
+      "description_bytes": 256,
+      "updates": 112,
+      "commit_to_apply": {
+        "p50_us": 59.167,
+        "p95_us": 103,
+        "p99_us": 164.167
+      },
+      "write_to_apply": {
+        "p50_us": 162.542,
+        "p95_us": 256.833,
+        "p99_us": 297.583
+      },
+      "publish_to_apply": {
+        "p50_us": 56.666,
+        "p95_us": 100.209,
+        "p99_us": 161.084
+      },
+      "ingress": {
+        "p50_us": 0,
+        "p95_us": 0,
+        "p99_us": 0
+      },
+      "origin_write": {
+        "p50_us": 98.125,
+        "p95_us": 173.458,
+        "p99_us": 189.875
+      },
+      "commit_to_all_applied": {
+        "p50_us": 88.125,
+        "p95_us": 121,
+        "p99_us": 204.125
+      },
+      "sse_bytes_per_update_per_subscriber": 459.9017857142857,
+      "replication_body_bytes_per_update": 0,
+      "ingress_requests": 0,
+      "go_bytes_per_update": 15273.42857142857,
+      "go_allocs_per_update": 126.25892857142857,
+      "combined_go_cpu_us_per_update": 427.70535714285717,
+      "pg_result_payload_bytes_per_update": 321.9107142857143
+    },
+    {
+      "variant": "trunk-lookup",
+      "round": 2,
+      "subscribers": 10,
+      "description_bytes": 256,
+      "updates": 112,
+      "commit_to_apply": {
+        "p50_us": 4502,
+        "p95_us": 4975.458,
+        "p99_us": 5974.125
+      },
+      "write_to_apply": {
+        "p50_us": 4713.084,
+        "p95_us": 5161.375,
+        "p99_us": 6144.125
+      },
+      "publish_to_apply": {
+        "p50_us": 76.25,
+        "p95_us": 130.667,
+        "p99_us": 164.875
+      },
+      "ingress": {
+        "p50_us": 4432.458,
+        "p95_us": 4875.875,
+        "p99_us": 5882.583
+      },
+      "origin_write": {
+        "p50_us": 176.917,
+        "p95_us": 247.125,
+        "p99_us": 318.5
+      },
+      "commit_to_all_applied": {
+        "p50_us": 4544.917,
+        "p95_us": 5006.833,
+        "p99_us": 5975.209
+      },
+      "sse_bytes_per_update_per_subscriber": 65.29464285714286,
+      "replication_body_bytes_per_update": 25.901785714285715,
+      "ingress_requests": 112,
+      "go_bytes_per_update": 180799.7142857143,
+      "go_allocs_per_update": 267.6875,
+      "combined_go_cpu_us_per_update": 1027.044642857143,
+      "pg_result_payload_bytes_per_update": 12
+    },
+    {
+      "variant": "trunk-direct",
+      "round": 2,
+      "subscribers": 10,
+      "description_bytes": 256,
+      "updates": 112,
+      "commit_to_apply": {
+        "p50_us": 3756.084,
+        "p95_us": 4818.167,
+        "p99_us": 6312.208
+      },
+      "write_to_apply": {
+        "p50_us": 3986.5,
+        "p95_us": 5038.875,
+        "p99_us": 6576.75
+      },
+      "publish_to_apply": {
+        "p50_us": 94.291,
+        "p95_us": 157.916,
+        "p99_us": 189.875
+      },
+      "ingress": {
+        "p50_us": 3659.541,
+        "p95_us": 4716.334,
+        "p99_us": 6205.5
+      },
+      "origin_write": {
+        "p50_us": 230.833,
+        "p95_us": 300.084,
+        "p99_us": 324.417
+      },
+      "commit_to_all_applied": {
+        "p50_us": 3808.792,
+        "p95_us": 4853.708,
+        "p99_us": 6319.833
+      },
+      "sse_bytes_per_update_per_subscriber": 65.29464285714286,
+      "replication_body_bytes_per_update": 25.901785714285715,
+      "ingress_requests": 112,
+      "go_bytes_per_update": 176348,
+      "go_allocs_per_update": 255.04464285714286,
+      "combined_go_cpu_us_per_update": 1336.4464285714287,
+      "pg_result_payload_bytes_per_update": 12
+    },
+    {
+      "variant": "trunk-batch8",
+      "round": 2,
+      "subscribers": 10,
+      "description_bytes": 256,
+      "updates": 112,
+      "commit_to_apply": {
+        "p50_us": 4736.583,
+        "p95_us": 6116.667,
+        "p99_us": 6513.958
+      },
+      "write_to_apply": {
+        "p50_us": 4938.625,
+        "p95_us": 6429.625,
+        "p99_us": 6797.292
+      },
+      "publish_to_apply": {
+        "p50_us": 371.75,
+        "p95_us": 771.25,
+        "p99_us": 902.583
+      },
+      "ingress": {
+        "p50_us": 4041.708,
+        "p95_us": 4986.291,
+        "p99_us": 4986.291
+      },
+      "origin_write": {
+        "p50_us": 157.416,
+        "p95_us": 568.041,
+        "p99_us": 762.084
+      },
+      "commit_to_all_applied": {
+        "p50_us": 4997.458,
+        "p95_us": 6429.5,
+        "p99_us": 6642.917
+      },
+      "sse_bytes_per_update_per_subscriber": 65.29464285714286,
+      "replication_body_bytes_per_update": 25.901785714285715,
+      "ingress_requests": 14,
+      "go_bytes_per_update": 29833.5,
+      "go_allocs_per_update": 93.32142857142857,
+      "combined_go_cpu_us_per_update": 511.79464285714283,
+      "pg_result_payload_bytes_per_update": 12
+    },
+    {
+      "variant": "pg-json",
+      "round": 2,
+      "subscribers": 10,
+      "description_bytes": 256,
+      "updates": 112,
+      "commit_to_apply": {
+        "p50_us": 77.542,
+        "p95_us": 123.5,
+        "p99_us": 143.583
+      },
+      "write_to_apply": {
+        "p50_us": 203.958,
+        "p95_us": 318.833,
+        "p99_us": 365.5
+      },
+      "publish_to_apply": {
+        "p50_us": 74.459,
+        "p95_us": 120.042,
+        "p99_us": 137.625
+      },
+      "ingress": {
+        "p50_us": 0,
+        "p95_us": 0,
+        "p99_us": 0
+      },
+      "origin_write": {
+        "p50_us": 132.666,
+        "p95_us": 215.375,
+        "p99_us": 259.042
+      },
+      "commit_to_all_applied": {
+        "p50_us": 108.708,
+        "p95_us": 144.75,
+        "p99_us": 211.667
+      },
+      "sse_bytes_per_update_per_subscriber": 479.16964285714283,
+      "replication_body_bytes_per_update": 0,
+      "ingress_requests": 0,
+      "go_bytes_per_update": 17066.571428571428,
+      "go_allocs_per_update": 167.98214285714286,
+      "combined_go_cpu_us_per_update": 469.89285714285717,
+      "pg_result_payload_bytes_per_update": 321.9107142857143
+    },
+    {
+      "variant": "pg-pil",
+      "round": 2,
+      "subscribers": 100,
+      "description_bytes": 256,
+      "updates": 112,
+      "commit_to_apply": {
+        "p50_us": 263.708,
+        "p95_us": 406.041,
+        "p99_us": 817.833
+      },
+      "write_to_apply": {
+        "p50_us": 354.041,
+        "p95_us": 513.375,
+        "p99_us": 922
+      },
+      "publish_to_apply": {
+        "p50_us": 260.875,
+        "p95_us": 403.333,
+        "p99_us": 816.25
+      },
+      "ingress": {
+        "p50_us": 0,
+        "p95_us": 0,
+        "p99_us": 0
+      },
+      "origin_write": {
+        "p50_us": 85.25,
+        "p95_us": 139.708,
+        "p99_us": 181.666
+      },
+      "commit_to_all_applied": {
+        "p50_us": 390.667,
+        "p95_us": 482.958,
+        "p99_us": 1023.666
+      },
+      "sse_bytes_per_update_per_subscriber": 459.9017857142857,
+      "replication_body_bytes_per_update": 0,
+      "ingress_requests": 0,
+      "go_bytes_per_update": 118093,
+      "go_allocs_per_update": 764.4375,
+      "combined_go_cpu_us_per_update": 2588.875,
+      "pg_result_payload_bytes_per_update": 321.9107142857143
+    },
+    {
+      "variant": "trunk-lookup",
+      "round": 2,
+      "subscribers": 100,
+      "description_bytes": 256,
+      "updates": 112,
+      "commit_to_apply": {
+        "p50_us": 3746.708,
+        "p95_us": 7952.417,
+        "p99_us": 11364.5
+      },
+      "write_to_apply": {
+        "p50_us": 4094.667,
+        "p95_us": 8342.125,
+        "p99_us": 11956.875
+      },
+      "publish_to_apply": {
+        "p50_us": 512.333,
+        "p95_us": 3090.25,
+        "p99_us": 6167.667
+      },
+      "ingress": {
+        "p50_us": 3269.458,
+        "p95_us": 5143,
+        "p99_us": 6361.167
+      },
+      "origin_write": {
+        "p50_us": 268.209,
+        "p95_us": 648.083,
+        "p99_us": 767.875
+      },
+      "commit_to_all_applied": {
+        "p50_us": 4038,
+        "p95_us": 8434.375,
+        "p99_us": 11449
+      },
+      "sse_bytes_per_update_per_subscriber": 65.29464285714286,
+      "replication_body_bytes_per_update": 25.901785714285715,
+      "ingress_requests": 112,
+      "go_bytes_per_update": 203670.57142857142,
+      "go_allocs_per_update": 563.1071428571429,
+      "combined_go_cpu_us_per_update": 5823.633928571428,
+      "pg_result_payload_bytes_per_update": 12
+    },
+    {
+      "variant": "trunk-direct",
+      "round": 2,
+      "subscribers": 100,
+      "description_bytes": 256,
+      "updates": 112,
+      "commit_to_apply": {
+        "p50_us": 4145.583,
+        "p95_us": 6621.208,
+        "p99_us": 13032.292
+      },
+      "write_to_apply": {
+        "p50_us": 4725.917,
+        "p95_us": 7104.792,
+        "p99_us": 13637.167
+      },
+      "publish_to_apply": {
+        "p50_us": 574.459,
+        "p95_us": 2522.417,
+        "p99_us": 6681.208
+      },
+      "ingress": {
+        "p50_us": 3575.708,
+        "p95_us": 4855.875,
+        "p99_us": 6346.833
+      },
+      "origin_write": {
+        "p50_us": 565.375,
+        "p95_us": 810.333,
+        "p99_us": 1039.458
+      },
+      "commit_to_all_applied": {
+        "p50_us": 4437.917,
+        "p95_us": 7221.375,
+        "p99_us": 13073.792
+      },
+      "sse_bytes_per_update_per_subscriber": 65.29464285714286,
+      "replication_body_bytes_per_update": 25.901785714285715,
+      "ingress_requests": 112,
+      "go_bytes_per_update": 200045.7857142857,
+      "go_allocs_per_update": 553.1696428571429,
+      "combined_go_cpu_us_per_update": 6280.544642857143,
+      "pg_result_payload_bytes_per_update": 12
+    },
+    {
+      "variant": "trunk-batch8",
+      "round": 2,
+      "subscribers": 100,
+      "description_bytes": 256,
+      "updates": 112,
+      "commit_to_apply": {
+        "p50_us": 5014.375,
+        "p95_us": 6426.292,
+        "p99_us": 6785.542
+      },
+      "write_to_apply": {
+        "p50_us": 5129.959,
+        "p95_us": 6591.208,
+        "p99_us": 7073.958
+      },
+      "publish_to_apply": {
+        "p50_us": 1508.166,
+        "p95_us": 2399.375,
+        "p99_us": 2798
+      },
+      "ingress": {
+        "p50_us": 3098.958,
+        "p95_us": 4344.042,
+        "p99_us": 4344.042
+      },
+      "origin_write": {
+        "p50_us": 90.75,
+        "p95_us": 172.333,
+        "p99_us": 1603.75
+      },
+      "commit_to_all_applied": {
+        "p50_us": 5803.291,
+        "p95_us": 6862.083,
+        "p99_us": 7070.75
+      },
+      "sse_bytes_per_update_per_subscriber": 65.29464285714286,
+      "replication_body_bytes_per_update": 25.901785714285715,
+      "ingress_requests": 14,
+      "go_bytes_per_update": 67534.85714285714,
+      "go_allocs_per_update": 393.99107142857144,
+      "combined_go_cpu_us_per_update": 2069.2321428571427,
+      "pg_result_payload_bytes_per_update": 12
+    },
+    {
+      "variant": "pg-json",
+      "round": 2,
+      "subscribers": 100,
+      "description_bytes": 256,
+      "updates": 112,
+      "commit_to_apply": {
+        "p50_us": 266.584,
+        "p95_us": 411.292,
+        "p99_us": 825.917
+      },
+      "write_to_apply": {
+        "p50_us": 355.916,
+        "p95_us": 518.125,
+        "p99_us": 957
+      },
+      "publish_to_apply": {
+        "p50_us": 264.042,
+        "p95_us": 408.75,
+        "p99_us": 820.625
+      },
+      "ingress": {
+        "p50_us": 0,
+        "p95_us": 0,
+        "p99_us": 0
+      },
+      "origin_write": {
+        "p50_us": 87.667,
+        "p95_us": 146.458,
+        "p99_us": 176.667
+      },
+      "commit_to_all_applied": {
+        "p50_us": 392.792,
+        "p95_us": 741.75,
+        "p99_us": 1014.042
+      },
+      "sse_bytes_per_update_per_subscriber": 479.16964285714283,
+      "replication_body_bytes_per_update": 0,
+      "ingress_requests": 0,
+      "go_bytes_per_update": 141563.64285714287,
+      "go_allocs_per_update": 1314.8839285714287,
+      "combined_go_cpu_us_per_update": 3045.339285714286,
+      "pg_result_payload_bytes_per_update": 321.9107142857143
+    },
+    {
+      "variant": "pg-pil",
+      "round": 2,
+      "subscribers": 1,
+      "description_bytes": 4096,
+      "updates": 112,
+      "commit_to_apply": {
+        "p50_us": 21.625,
+        "p95_us": 34.542,
+        "p99_us": 104.583
+      },
+      "write_to_apply": {
+        "p50_us": 97.416,
+        "p95_us": 118.708,
+        "p99_us": 234.125
+      },
+      "publish_to_apply": {
+        "p50_us": 15.958,
+        "p95_us": 26.792,
+        "p99_us": 95.541
+      },
+      "ingress": {
+        "p50_us": 0,
+        "p95_us": 0,
+        "p99_us": 0
+      },
+      "origin_write": {
+        "p50_us": 75.75,
+        "p95_us": 91.667,
+        "p99_us": 144.25
+      },
+      "commit_to_all_applied": {
+        "p50_us": 21.625,
+        "p95_us": 34.542,
+        "p99_us": 104.583
+      },
+      "sse_bytes_per_update_per_subscriber": 5579.901785714285,
+      "replication_body_bytes_per_update": 0,
+      "ingress_requests": 0,
+      "go_bytes_per_update": 38538.5,
+      "go_allocs_per_update": 60.098214285714285,
+      "combined_go_cpu_us_per_update": 88.65178571428571,
+      "pg_result_payload_bytes_per_update": 4161.910714285715
+    },
+    {
+      "variant": "trunk-lookup",
+      "round": 2,
+      "subscribers": 1,
+      "description_bytes": 4096,
+      "updates": 112,
+      "commit_to_apply": {
+        "p50_us": 4429.458,
+        "p95_us": 7381.5,
+        "p99_us": 9393.917
+      },
+      "write_to_apply": {
+        "p50_us": 4912.916,
+        "p95_us": 8536.25,
+        "p99_us": 10063.958
+      },
+      "publish_to_apply": {
+        "p50_us": 56.625,
+        "p95_us": 130.375,
+        "p99_us": 345.75
+      },
+      "ingress": {
+        "p50_us": 4358.125,
+        "p95_us": 7195.25,
+        "p99_us": 8807.417
+      },
+      "origin_write": {
+        "p50_us": 264.708,
+        "p95_us": 1084.125,
+        "p99_us": 3220.917
+      },
+      "commit_to_all_applied": {
+        "p50_us": 4429.458,
+        "p95_us": 7381.5,
+        "p99_us": 9393.917
+      },
+      "sse_bytes_per_update_per_subscriber": 65.29464285714286,
+      "replication_body_bytes_per_update": 25.901785714285715,
+      "ingress_requests": 112,
+      "go_bytes_per_update": 160777.2857142857,
+      "go_allocs_per_update": 225.9375,
+      "combined_go_cpu_us_per_update": 944.4464285714286,
+      "pg_result_payload_bytes_per_update": 12
+    },
+    {
+      "variant": "trunk-direct",
+      "round": 2,
+      "subscribers": 1,
+      "description_bytes": 4096,
+      "updates": 112,
+      "commit_to_apply": {
+        "p50_us": 4777.375,
+        "p95_us": 8801.209,
+        "p99_us": 10774.167
+      },
+      "write_to_apply": {
+        "p50_us": 5082.333,
+        "p95_us": 9423.209,
+        "p99_us": 12076.375
+      },
+      "publish_to_apply": {
+        "p50_us": 62.416,
+        "p95_us": 167.584,
+        "p99_us": 2735.916
+      },
+      "ingress": {
+        "p50_us": 4698.541,
+        "p95_us": 8091.791,
+        "p99_us": 9178.917
+      },
+      "origin_write": {
+        "p50_us": 340.417,
+        "p95_us": 1429.625,
+        "p99_us": 2623.5
+      },
+      "commit_to_all_applied": {
+        "p50_us": 4777.375,
+        "p95_us": 8801.209,
+        "p99_us": 10774.167
+      },
+      "sse_bytes_per_update_per_subscriber": 65.29464285714286,
+      "replication_body_bytes_per_update": 25.901785714285715,
+      "ingress_requests": 112,
+      "go_bytes_per_update": 155471.5,
+      "go_allocs_per_update": 215.21428571428572,
+      "combined_go_cpu_us_per_update": 1109.6785714285713,
+      "pg_result_payload_bytes_per_update": 12
+    },
+    {
+      "variant": "trunk-batch8",
+      "round": 2,
+      "subscribers": 1,
+      "description_bytes": 4096,
+      "updates": 112,
+      "commit_to_apply": {
+        "p50_us": 5058.833,
+        "p95_us": 6022.417,
+        "p99_us": 6701.583
+      },
+      "write_to_apply": {
+        "p50_us": 5277.708,
+        "p95_us": 6267.083,
+        "p99_us": 7610.75
+      },
+      "publish_to_apply": {
+        "p50_us": 84.959,
+        "p95_us": 132.125,
+        "p99_us": 153.75
+      },
+      "ingress": {
+        "p50_us": 4348.167,
+        "p95_us": 5069,
+        "p99_us": 5069
+      },
+      "origin_write": {
+        "p50_us": 188.125,
+        "p95_us": 310.375,
+        "p99_us": 1087.209
+      },
+      "commit_to_all_applied": {
+        "p50_us": 5058.833,
+        "p95_us": 6022.417,
+        "p99_us": 6701.583
+      },
+      "sse_bytes_per_update_per_subscriber": 65.29464285714286,
+      "replication_body_bytes_per_update": 25.901785714285715,
+      "ingress_requests": 14,
+      "go_bytes_per_update": 22382.35714285714,
+      "go_allocs_per_update": 60.151785714285715,
+      "combined_go_cpu_us_per_update": 194.48214285714286,
+      "pg_result_payload_bytes_per_update": 12
+    },
+    {
+      "variant": "pg-json",
+      "round": 2,
+      "subscribers": 1,
+      "description_bytes": 4096,
+      "updates": 112,
+      "commit_to_apply": {
+        "p50_us": 80.334,
+        "p95_us": 104.25,
+        "p99_us": 156.333
+      },
+      "write_to_apply": {
+        "p50_us": 232.625,
+        "p95_us": 296.333,
+        "p99_us": 325.875
+      },
+      "publish_to_apply": {
+        "p50_us": 73.334,
+        "p95_us": 95.792,
+        "p99_us": 137.083
+      },
+      "ingress": {
+        "p50_us": 0,
+        "p95_us": 0,
+        "p99_us": 0
+      },
+      "origin_write": {
+        "p50_us": 148.416,
+        "p95_us": 196.75,
+        "p99_us": 220.084
+      },
+      "commit_to_all_applied": {
+        "p50_us": 80.334,
+        "p95_us": 104.25,
+        "p99_us": 156.333
+      },
+      "sse_bytes_per_update_per_subscriber": 4319.169642857143,
+      "replication_body_bytes_per_update": 0,
+      "ingress_requests": 0,
+      "go_bytes_per_update": 25683.714285714286,
+      "go_allocs_per_update": 49.419642857142854,
+      "combined_go_cpu_us_per_update": 152.91071428571428,
+      "pg_result_payload_bytes_per_update": 4161.910714285715
+    },
+    {
+      "variant": "pg-pil",
+      "round": 2,
+      "subscribers": 10,
+      "description_bytes": 4096,
+      "updates": 112,
+      "commit_to_apply": {
+        "p50_us": 77.25,
+        "p95_us": 167.25,
+        "p99_us": 278.708
+      },
+      "write_to_apply": {
+        "p50_us": 179.292,
+        "p95_us": 299.709,
+        "p99_us": 375.209
+      },
+      "publish_to_apply": {
+        "p50_us": 69.458,
+        "p95_us": 147.5,
+        "p99_us": 270.291
+      },
+      "ingress": {
+        "p50_us": 0,
+        "p95_us": 0,
+        "p99_us": 0
+      },
+      "origin_write": {
+        "p50_us": 98,
+        "p95_us": 162.167,
+        "p99_us": 213.916
+      },
+      "commit_to_all_applied": {
+        "p50_us": 104.5,
+        "p95_us": 275.459,
+        "p99_us": 308.125
+      },
+      "sse_bytes_per_update_per_subscriber": 5579.901785714285,
+      "replication_body_bytes_per_update": 0,
+      "ingress_requests": 0,
+      "go_bytes_per_update": 134356.42857142858,
+      "go_allocs_per_update": 126.6875,
+      "combined_go_cpu_us_per_update": 675.7589285714286,
+      "pg_result_payload_bytes_per_update": 4161.910714285715
+    },
+    {
+      "variant": "trunk-lookup",
+      "round": 2,
+      "subscribers": 10,
+      "description_bytes": 4096,
+      "updates": 112,
+      "commit_to_apply": {
+        "p50_us": 4676.417,
+        "p95_us": 4951.084,
+        "p99_us": 6899.5
+      },
+      "write_to_apply": {
+        "p50_us": 4917.792,
+        "p95_us": 5207.5,
+        "p99_us": 7096.709
+      },
+      "publish_to_apply": {
+        "p50_us": 98.833,
+        "p95_us": 156.667,
+        "p99_us": 198.042
+      },
+      "ingress": {
+        "p50_us": 4566.791,
+        "p95_us": 4863.709,
+        "p99_us": 6773.333
+      },
+      "origin_write": {
+        "p50_us": 225.083,
+        "p95_us": 345.458,
+        "p99_us": 366
+      },
+      "commit_to_all_applied": {
+        "p50_us": 4722.334,
+        "p95_us": 4977.708,
+        "p99_us": 6899.916
+      },
+      "sse_bytes_per_update_per_subscriber": 65.29464285714286,
+      "replication_body_bytes_per_update": 25.901785714285715,
+      "ingress_requests": 112,
+      "go_bytes_per_update": 182792.07142857142,
+      "go_allocs_per_update": 268.14285714285717,
+      "combined_go_cpu_us_per_update": 1380.9642857142858,
+      "pg_result_payload_bytes_per_update": 12
+    },
+    {
+      "variant": "trunk-direct",
+      "round": 2,
+      "subscribers": 10,
+      "description_bytes": 4096,
+      "updates": 112,
+      "commit_to_apply": {
+        "p50_us": 4713.375,
+        "p95_us": 6317.166,
+        "p99_us": 8138.666
+      },
+      "write_to_apply": {
+        "p50_us": 4968.042,
+        "p95_us": 6926.125,
+        "p99_us": 8489.167
+      },
+      "publish_to_apply": {
+        "p50_us": 115.792,
+        "p95_us": 430.584,
+        "p99_us": 1004.5
+      },
+      "ingress": {
+        "p50_us": 4598.459,
+        "p95_us": 6173.875,
+        "p99_us": 6715.042
+      },
+      "origin_write": {
+        "p50_us": 246,
+        "p95_us": 602.208,
+        "p99_us": 1205.708
+      },
+      "commit_to_all_applied": {
+        "p50_us": 4759.958,
+        "p95_us": 6334.875,
+        "p99_us": 8187.708
+      },
+      "sse_bytes_per_update_per_subscriber": 65.29464285714286,
+      "replication_body_bytes_per_update": 25.901785714285715,
+      "ingress_requests": 112,
+      "go_bytes_per_update": 183186.92857142858,
+      "go_allocs_per_update": 259.875,
+      "combined_go_cpu_us_per_update": 1990.732142857143,
+      "pg_result_payload_bytes_per_update": 12
+    },
+    {
+      "variant": "trunk-batch8",
+      "round": 2,
+      "subscribers": 10,
+      "description_bytes": 4096,
+      "updates": 112,
+      "commit_to_apply": {
+        "p50_us": 4748.708,
+        "p95_us": 5480.583,
+        "p99_us": 5685.125
+      },
+      "write_to_apply": {
+        "p50_us": 4866.292,
+        "p95_us": 5708.333,
+        "p99_us": 5953.417
+      },
+      "publish_to_apply": {
+        "p50_us": 230.583,
+        "p95_us": 490.458,
+        "p99_us": 577.042
+      },
+      "ingress": {
+        "p50_us": 4175.958,
+        "p95_us": 4649.75,
+        "p99_us": 4649.75
+      },
+      "origin_write": {
+        "p50_us": 107.167,
+        "p95_us": 400.834,
+        "p99_us": 471.125
+      },
+      "commit_to_all_applied": {
+        "p50_us": 4977.417,
+        "p95_us": 5662.167,
+        "p99_us": 5815.792
+      },
+      "sse_bytes_per_update_per_subscriber": 65.29464285714286,
+      "replication_body_bytes_per_update": 25.901785714285715,
+      "ingress_requests": 14,
+      "go_bytes_per_update": 29750.85714285714,
+      "go_allocs_per_update": 93.58928571428571,
+      "combined_go_cpu_us_per_update": 355.83035714285717,
+      "pg_result_payload_bytes_per_update": 12
+    },
+    {
+      "variant": "pg-json",
+      "round": 2,
+      "subscribers": 10,
+      "description_bytes": 4096,
+      "updates": 112,
+      "commit_to_apply": {
+        "p50_us": 114.042,
+        "p95_us": 233,
+        "p99_us": 305.791
+      },
+      "write_to_apply": {
+        "p50_us": 235.25,
+        "p95_us": 359.875,
+        "p99_us": 427.959
+      },
+      "publish_to_apply": {
+        "p50_us": 106.292,
+        "p95_us": 203.084,
+        "p99_us": 294.875
+      },
+      "ingress": {
+        "p50_us": 0,
+        "p95_us": 0,
+        "p99_us": 0
+      },
+      "origin_write": {
+        "p50_us": 121.667,
+        "p95_us": 183.625,
+        "p99_us": 214.666
+      },
+      "commit_to_all_applied": {
+        "p50_us": 154.208,
+        "p95_us": 305.791,
+        "p99_us": 325.292
+      },
+      "sse_bytes_per_update_per_subscriber": 4319.169642857143,
+      "replication_body_bytes_per_update": 0,
+      "ingress_requests": 0,
+      "go_bytes_per_update": 116472.92857142857,
+      "go_allocs_per_update": 170.34821428571428,
+      "combined_go_cpu_us_per_update": 828.1696428571429,
+      "pg_result_payload_bytes_per_update": 4161.910714285715
+    },
+    {
+      "variant": "pg-pil",
+      "round": 2,
+      "subscribers": 100,
+      "description_bytes": 4096,
+      "updates": 112,
+      "commit_to_apply": {
+        "p50_us": 449.917,
+        "p95_us": 1145.583,
+        "p99_us": 1397.459
+      },
+      "write_to_apply": {
+        "p50_us": 568.625,
+        "p95_us": 1267.583,
+        "p99_us": 1499.083
+      },
+      "publish_to_apply": {
+        "p50_us": 441.917,
+        "p95_us": 1119.5,
+        "p99_us": 1376.333
+      },
+      "ingress": {
+        "p50_us": 0,
+        "p95_us": 0,
+        "p99_us": 0
+      },
+      "origin_write": {
+        "p50_us": 107.584,
+        "p95_us": 204.333,
+        "p99_us": 222.792
+      },
+      "commit_to_all_applied": {
+        "p50_us": 619.458,
+        "p95_us": 1438.125,
+        "p99_us": 1533.875
+      },
+      "sse_bytes_per_update_per_subscriber": 5579.901785714285,
+      "replication_body_bytes_per_update": 0,
+      "ingress_requests": 0,
+      "go_bytes_per_update": 1095590.5,
+      "go_allocs_per_update": 765.3303571428571,
+      "combined_go_cpu_us_per_update": 5395.473214285715,
+      "pg_result_payload_bytes_per_update": 4161.910714285715
+    },
+    {
+      "variant": "trunk-lookup",
+      "round": 2,
+      "subscribers": 100,
+      "description_bytes": 4096,
+      "updates": 112,
+      "commit_to_apply": {
+        "p50_us": 4102.292,
+        "p95_us": 5509.708,
+        "p99_us": 5939.791
+      },
+      "write_to_apply": {
+        "p50_us": 4618.875,
+        "p95_us": 6458.875,
+        "p99_us": 6834.917
+      },
+      "publish_to_apply": {
+        "p50_us": 350.792,
+        "p95_us": 700.958,
+        "p99_us": 878.125
+      },
+      "ingress": {
+        "p50_us": 3703.833,
+        "p95_us": 4955.333,
+        "p99_us": 5246.458
+      },
+      "origin_write": {
+        "p50_us": 474.708,
+        "p95_us": 988.125,
+        "p99_us": 1139.541
+      },
+      "commit_to_all_applied": {
+        "p50_us": 4420.792,
+        "p95_us": 5840.916,
+        "p99_us": 6131.458
+      },
+      "sse_bytes_per_update_per_subscriber": 65.29464285714286,
+      "replication_body_bytes_per_update": 25.901785714285715,
+      "ingress_requests": 112,
+      "go_bytes_per_update": 203133.2857142857,
+      "go_allocs_per_update": 564.0535714285714,
+      "combined_go_cpu_us_per_update": 3984.9910714285716,
+      "pg_result_payload_bytes_per_update": 12
+    },
+    {
+      "variant": "trunk-direct",
+      "round": 2,
+      "subscribers": 100,
+      "description_bytes": 4096,
+      "updates": 112,
+      "commit_to_apply": {
+        "p50_us": 4697.125,
+        "p95_us": 5840.292,
+        "p99_us": 7129.833
+      },
+      "write_to_apply": {
+        "p50_us": 5416.708,
+        "p95_us": 6661,
+        "p99_us": 8313.333
+      },
+      "publish_to_apply": {
+        "p50_us": 392.583,
+        "p95_us": 693.875,
+        "p99_us": 875.25
+      },
+      "ingress": {
+        "p50_us": 4371.834,
+        "p95_us": 5308.083,
+        "p99_us": 6570.459
+      },
+      "origin_write": {
+        "p50_us": 614.792,
+        "p95_us": 1062.875,
+        "p99_us": 1166.125
+      },
+      "commit_to_all_applied": {
+        "p50_us": 5125.583,
+        "p95_us": 6292.084,
+        "p99_us": 7178.916
+      },
+      "sse_bytes_per_update_per_subscriber": 65.29464285714286,
+      "replication_body_bytes_per_update": 25.901785714285715,
+      "ingress_requests": 112,
+      "go_bytes_per_update": 204973.7857142857,
+      "go_allocs_per_update": 553.8303571428571,
+      "combined_go_cpu_us_per_update": 4232.901785714285,
+      "pg_result_payload_bytes_per_update": 12
+    },
+    {
+      "variant": "trunk-batch8",
+      "round": 2,
+      "subscribers": 100,
+      "description_bytes": 4096,
+      "updates": 112,
+      "commit_to_apply": {
+        "p50_us": 5725.083,
+        "p95_us": 7686.584,
+        "p99_us": 8362.875
+      },
+      "write_to_apply": {
+        "p50_us": 5899.25,
+        "p95_us": 8182.125,
+        "p99_us": 9194.709
+      },
+      "publish_to_apply": {
+        "p50_us": 1434.333,
+        "p95_us": 3007.792,
+        "p99_us": 3613.5
+      },
+      "ingress": {
+        "p50_us": 4223.667,
+        "p95_us": 4511.292,
+        "p99_us": 4511.292
+      },
+      "origin_write": {
+        "p50_us": 96.583,
+        "p95_us": 1852.417,
+        "p99_us": 2566.959
+      },
+      "commit_to_all_applied": {
+        "p50_us": 7434.25,
+        "p95_us": 8756.458,
+        "p99_us": 9086.334
+      },
+      "sse_bytes_per_update_per_subscriber": 65.29464285714286,
+      "replication_body_bytes_per_update": 25.901785714285715,
+      "ingress_requests": 14,
+      "go_bytes_per_update": 68619.57142857143,
+      "go_allocs_per_update": 394.0625,
+      "combined_go_cpu_us_per_update": 2145.410714285714,
+      "pg_result_payload_bytes_per_update": 12
+    },
+    {
+      "variant": "pg-json",
+      "round": 2,
+      "subscribers": 100,
+      "description_bytes": 4096,
+      "updates": 112,
+      "commit_to_apply": {
+        "p50_us": 511,
+        "p95_us": 1257.75,
+        "p99_us": 1633.417
+      },
+      "write_to_apply": {
+        "p50_us": 622.25,
+        "p95_us": 1375.292,
+        "p99_us": 1730.834
+      },
+      "publish_to_apply": {
+        "p50_us": 503.125,
+        "p95_us": 1249.083,
+        "p99_us": 1627.666
+      },
+      "ingress": {
+        "p50_us": 0,
+        "p95_us": 0,
+        "p99_us": 0
+      },
+      "origin_write": {
+        "p50_us": 103.5,
+        "p95_us": 173.917,
+        "p99_us": 263.625
+      },
+      "commit_to_all_applied": {
+        "p50_us": 761.5,
+        "p95_us": 1721.375,
+        "p99_us": 1875.625
+      },
+      "sse_bytes_per_update_per_subscriber": 4319.169642857143,
+      "replication_body_bytes_per_update": 0,
+      "ingress_requests": 0,
+      "go_bytes_per_update": 985394.5714285715,
+      "go_allocs_per_update": 1320.267857142857,
+      "combined_go_cpu_us_per_update": 6632.892857142857,
+      "pg_result_payload_bytes_per_update": 4161.910714285715
+    },
+    {
+      "variant": "trunk-lookup",
+      "round": 3,
+      "subscribers": 1,
+      "description_bytes": 256,
+      "updates": 112,
+      "commit_to_apply": {
+        "p50_us": 3713.834,
+        "p95_us": 5843,
+        "p99_us": 7060.917
+      },
+      "write_to_apply": {
+        "p50_us": 3947.084,
+        "p95_us": 6648.5,
+        "p99_us": 7572.041
+      },
+      "publish_to_apply": {
+        "p50_us": 50.833,
+        "p95_us": 97.959,
+        "p99_us": 411.083
+      },
+      "ingress": {
+        "p50_us": 3660.959,
+        "p95_us": 5755,
+        "p99_us": 6964.208
+      },
+      "origin_write": {
+        "p50_us": 198.042,
+        "p95_us": 681.75,
+        "p99_us": 972.75
+      },
+      "commit_to_all_applied": {
+        "p50_us": 3713.834,
+        "p95_us": 5843,
+        "p99_us": 7060.917
+      },
+      "sse_bytes_per_update_per_subscriber": 65.29464285714286,
+      "replication_body_bytes_per_update": 25.901785714285715,
+      "ingress_requests": 112,
+      "go_bytes_per_update": 157624,
+      "go_allocs_per_update": 225.01785714285714,
+      "combined_go_cpu_us_per_update": 807.7857142857143,
+      "pg_result_payload_bytes_per_update": 12
+    },
+    {
+      "variant": "trunk-direct",
+      "round": 3,
+      "subscribers": 1,
+      "description_bytes": 256,
+      "updates": 112,
+      "commit_to_apply": {
+        "p50_us": 3764.833,
+        "p95_us": 5764.5,
+        "p99_us": 9056.25
+      },
+      "write_to_apply": {
+        "p50_us": 4164.542,
+        "p95_us": 7000.083,
+        "p99_us": 9652.833
+      },
+      "publish_to_apply": {
+        "p50_us": 62.417,
+        "p95_us": 179.792,
+        "p99_us": 290.5
+      },
+      "ingress": {
+        "p50_us": 3689.708,
+        "p95_us": 5694.334,
+        "p99_us": 8865.417
+      },
+      "origin_write": {
+        "p50_us": 468.417,
+        "p95_us": 1098.167,
+        "p99_us": 2902.334
+      },
+      "commit_to_all_applied": {
+        "p50_us": 3764.833,
+        "p95_us": 5764.5,
+        "p99_us": 9056.25
+      },
+      "sse_bytes_per_update_per_subscriber": 65.29464285714286,
+      "replication_body_bytes_per_update": 25.901785714285715,
+      "ingress_requests": 112,
+      "go_bytes_per_update": 156261.14285714287,
+      "go_allocs_per_update": 214.875,
+      "combined_go_cpu_us_per_update": 1052.2232142857142,
+      "pg_result_payload_bytes_per_update": 12
+    },
+    {
+      "variant": "trunk-batch8",
+      "round": 3,
+      "subscribers": 1,
+      "description_bytes": 256,
+      "updates": 112,
+      "commit_to_apply": {
+        "p50_us": 4544.916,
+        "p95_us": 6135.5,
+        "p99_us": 6822.833
+      },
+      "write_to_apply": {
+        "p50_us": 4719,
+        "p95_us": 6308.75,
+        "p99_us": 7000.708
+      },
+      "publish_to_apply": {
+        "p50_us": 87.333,
+        "p95_us": 131,
+        "p99_us": 144.166
+      },
+      "ingress": {
+        "p50_us": 3506.916,
+        "p95_us": 5660.5,
+        "p99_us": 5660.5
+      },
+      "origin_write": {
+        "p50_us": 179.459,
+        "p95_us": 222.917,
+        "p99_us": 263.959
+      },
+      "commit_to_all_applied": {
+        "p50_us": 4544.916,
+        "p95_us": 6135.5,
+        "p99_us": 6822.833
+      },
+      "sse_bytes_per_update_per_subscriber": 65.29464285714286,
+      "replication_body_bytes_per_update": 25.901785714285715,
+      "ingress_requests": 14,
+      "go_bytes_per_update": 22972.071428571428,
+      "go_allocs_per_update": 60.42857142857143,
+      "combined_go_cpu_us_per_update": 183.45535714285714,
+      "pg_result_payload_bytes_per_update": 12
+    },
+    {
+      "variant": "pg-json",
+      "round": 3,
+      "subscribers": 1,
+      "description_bytes": 256,
+      "updates": 112,
+      "commit_to_apply": {
+        "p50_us": 46.042,
+        "p95_us": 61.875,
+        "p99_us": 115.5
+      },
+      "write_to_apply": {
+        "p50_us": 187.333,
+        "p95_us": 261.417,
+        "p99_us": 305.833
+      },
+      "publish_to_apply": {
+        "p50_us": 43.75,
+        "p95_us": 60.333,
+        "p99_us": 113.959
+      },
+      "ingress": {
+        "p50_us": 0,
+        "p95_us": 0,
+        "p99_us": 0
+      },
+      "origin_write": {
+        "p50_us": 141.458,
+        "p95_us": 191.542,
+        "p99_us": 209.166
+      },
+      "commit_to_all_applied": {
+        "p50_us": 46.042,
+        "p95_us": 61.875,
+        "p99_us": 115.5
+      },
+      "sse_bytes_per_update_per_subscriber": 479.16964285714283,
+      "replication_body_bytes_per_update": 0,
+      "ingress_requests": 0,
+      "go_bytes_per_update": 4793.214285714285,
+      "go_allocs_per_update": 49.642857142857146,
+      "combined_go_cpu_us_per_update": 109.57142857142857,
+      "pg_result_payload_bytes_per_update": 321.9107142857143
+    },
+    {
+      "variant": "pg-pil",
+      "round": 3,
+      "subscribers": 1,
+      "description_bytes": 256,
+      "updates": 112,
+      "commit_to_apply": {
+        "p50_us": 18.417,
+        "p95_us": 37.084,
+        "p99_us": 42.75
+      },
+      "write_to_apply": {
+        "p50_us": 93.709,
+        "p95_us": 174.958,
+        "p99_us": 186.833
+      },
+      "publish_to_apply": {
+        "p50_us": 16.291,
+        "p95_us": 35.625,
+        "p99_us": 39.958
+      },
+      "ingress": {
+        "p50_us": 0,
+        "p95_us": 0,
+        "p99_us": 0
+      },
+      "origin_write": {
+        "p50_us": 76.166,
+        "p95_us": 140.25,
+        "p99_us": 145.833
+      },
+      "commit_to_all_applied": {
+        "p50_us": 18.417,
+        "p95_us": 37.084,
+        "p99_us": 42.75
+      },
+      "sse_bytes_per_update_per_subscriber": 459.9017857142857,
+      "replication_body_bytes_per_update": 0,
+      "ingress_requests": 0,
+      "go_bytes_per_update": 5400.357142857143,
+      "go_allocs_per_update": 59.973214285714285,
+      "combined_go_cpu_us_per_update": 69.27678571428571,
+      "pg_result_payload_bytes_per_update": 321.9107142857143
+    },
+    {
+      "variant": "trunk-lookup",
+      "round": 3,
+      "subscribers": 10,
+      "description_bytes": 256,
+      "updates": 112,
+      "commit_to_apply": {
+        "p50_us": 3725.583,
+        "p95_us": 6526.583,
+        "p99_us": 7695.666
+      },
+      "write_to_apply": {
+        "p50_us": 3962.208,
+        "p95_us": 7054.792,
+        "p99_us": 8410.708
+      },
+      "publish_to_apply": {
+        "p50_us": 98.417,
+        "p95_us": 317.084,
+        "p99_us": 1152.208
+      },
+      "ingress": {
+        "p50_us": 3625.5,
+        "p95_us": 5501.333,
+        "p99_us": 7270.75
+      },
+      "origin_write": {
+        "p50_us": 222.542,
+        "p95_us": 550.667,
+        "p99_us": 874.167
+      },
+      "commit_to_all_applied": {
+        "p50_us": 3756.334,
+        "p95_us": 6569.916,
+        "p99_us": 7698.333
+      },
+      "sse_bytes_per_update_per_subscriber": 65.29464285714286,
+      "replication_body_bytes_per_update": 25.901785714285715,
+      "ingress_requests": 112,
+      "go_bytes_per_update": 181582.7857142857,
+      "go_allocs_per_update": 267.79464285714283,
+      "combined_go_cpu_us_per_update": 1613.0357142857142,
+      "pg_result_payload_bytes_per_update": 12
+    },
+    {
+      "variant": "trunk-direct",
+      "round": 3,
+      "subscribers": 10,
+      "description_bytes": 256,
+      "updates": 112,
+      "commit_to_apply": {
+        "p50_us": 3843.25,
+        "p95_us": 6174.75,
+        "p99_us": 7192.25
+      },
+      "write_to_apply": {
+        "p50_us": 4163.083,
+        "p95_us": 6804.667,
+        "p99_us": 8242.541
+      },
+      "publish_to_apply": {
+        "p50_us": 141.666,
+        "p95_us": 605.541,
+        "p99_us": 816.25
+      },
+      "ingress": {
+        "p50_us": 3657.917,
+        "p95_us": 5995.917,
+        "p99_us": 6800.292
+      },
+      "origin_write": {
+        "p50_us": 274.583,
+        "p95_us": 1012.125,
+        "p99_us": 2269.5
+      },
+      "commit_to_all_applied": {
+        "p50_us": 3938.583,
+        "p95_us": 6276.5,
+        "p99_us": 7204.5
+      },
+      "sse_bytes_per_update_per_subscriber": 65.29464285714286,
+      "replication_body_bytes_per_update": 25.901785714285715,
+      "ingress_requests": 112,
+      "go_bytes_per_update": 182526.35714285713,
+      "go_allocs_per_update": 258.0267857142857,
+      "combined_go_cpu_us_per_update": 1999.2142857142858,
+      "pg_result_payload_bytes_per_update": 12
+    },
+    {
+      "variant": "trunk-batch8",
+      "round": 3,
+      "subscribers": 10,
+      "description_bytes": 256,
+      "updates": 112,
+      "commit_to_apply": {
+        "p50_us": 4913.542,
+        "p95_us": 6306.959,
+        "p99_us": 6698.584
+      },
+      "write_to_apply": {
+        "p50_us": 5104.875,
+        "p95_us": 6566.292,
+        "p99_us": 6994.416
+      },
+      "publish_to_apply": {
+        "p50_us": 403.583,
+        "p95_us": 716.125,
+        "p99_us": 802.416
+      },
+      "ingress": {
+        "p50_us": 3623.417,
+        "p95_us": 5366.791,
+        "p99_us": 5366.791
+      },
+      "origin_write": {
+        "p50_us": 181.875,
+        "p95_us": 541.625,
+        "p99_us": 619.041
+      },
+      "commit_to_all_applied": {
+        "p50_us": 5147.542,
+        "p95_us": 6512.042,
+        "p99_us": 6831.375
+      },
+      "sse_bytes_per_update_per_subscriber": 65.29464285714286,
+      "replication_body_bytes_per_update": 25.901785714285715,
+      "ingress_requests": 14,
+      "go_bytes_per_update": 30185.071428571428,
+      "go_allocs_per_update": 93.28571428571429,
+      "combined_go_cpu_us_per_update": 585.2410714285714,
+      "pg_result_payload_bytes_per_update": 12
+    },
+    {
+      "variant": "pg-json",
+      "round": 3,
+      "subscribers": 10,
+      "description_bytes": 256,
+      "updates": 112,
+      "commit_to_apply": {
+        "p50_us": 87.458,
+        "p95_us": 144.958,
+        "p99_us": 171.542
+      },
+      "write_to_apply": {
+        "p50_us": 238.583,
+        "p95_us": 340.792,
+        "p99_us": 410.416
+      },
+      "publish_to_apply": {
+        "p50_us": 84.5,
+        "p95_us": 141.459,
+        "p99_us": 166.167
+      },
+      "ingress": {
+        "p50_us": 0,
+        "p95_us": 0,
+        "p99_us": 0
+      },
+      "origin_write": {
+        "p50_us": 148.916,
+        "p95_us": 225.917,
+        "p99_us": 245.75
+      },
+      "commit_to_all_applied": {
+        "p50_us": 119.125,
+        "p95_us": 178.708,
+        "p99_us": 198.458
+      },
+      "sse_bytes_per_update_per_subscriber": 479.16964285714283,
+      "replication_body_bytes_per_update": 0,
+      "ingress_requests": 0,
+      "go_bytes_per_update": 16978.928571428572,
+      "go_allocs_per_update": 167.46428571428572,
+      "combined_go_cpu_us_per_update": 612.9017857142857,
+      "pg_result_payload_bytes_per_update": 321.9107142857143
+    },
+    {
+      "variant": "pg-pil",
+      "round": 3,
+      "subscribers": 10,
+      "description_bytes": 256,
+      "updates": 112,
+      "commit_to_apply": {
+        "p50_us": 44.083,
+        "p95_us": 79.167,
+        "p99_us": 103.458
+      },
+      "write_to_apply": {
+        "p50_us": 134.083,
+        "p95_us": 186.833,
+        "p99_us": 218.834
+      },
+      "publish_to_apply": {
+        "p50_us": 41.917,
+        "p95_us": 76.75,
+        "p99_us": 100.667
+      },
+      "ingress": {
+        "p50_us": 0,
+        "p95_us": 0,
+        "p99_us": 0
+      },
+      "origin_write": {
+        "p50_us": 87.75,
+        "p95_us": 119.625,
+        "p99_us": 131.916
+      },
+      "commit_to_all_applied": {
+        "p50_us": 66.333,
+        "p95_us": 95.667,
+        "p99_us": 150.625
+      },
+      "sse_bytes_per_update_per_subscriber": 459.9017857142857,
+      "replication_body_bytes_per_update": 0,
+      "ingress_requests": 0,
+      "go_bytes_per_update": 15273.57142857143,
+      "go_allocs_per_update": 126.27678571428571,
+      "combined_go_cpu_us_per_update": 375.2857142857143,
+      "pg_result_payload_bytes_per_update": 321.9107142857143
+    },
+    {
+      "variant": "trunk-lookup",
+      "round": 3,
+      "subscribers": 100,
+      "description_bytes": 256,
+      "updates": 112,
+      "commit_to_apply": {
+        "p50_us": 4011.75,
+        "p95_us": 6375.75,
+        "p99_us": 7593.625
+      },
+      "write_to_apply": {
+        "p50_us": 4693,
+        "p95_us": 6719.125,
+        "p99_us": 8244.792
+      },
+      "publish_to_apply": {
+        "p50_us": 514.125,
+        "p95_us": 1232.417,
+        "p99_us": 2335.333
+      },
+      "ingress": {
+        "p50_us": 3539.542,
+        "p95_us": 4858.167,
+        "p99_us": 6463.792
+      },
+      "origin_write": {
+        "p50_us": 616.333,
+        "p95_us": 1127.834,
+        "p99_us": 1207.875
+      },
+      "commit_to_all_applied": {
+        "p50_us": 4343.417,
+        "p95_us": 7307.583,
+        "p99_us": 7817.417
+      },
+      "sse_bytes_per_update_per_subscriber": 65.29464285714286,
+      "replication_body_bytes_per_update": 25.901785714285715,
+      "ingress_requests": 112,
+      "go_bytes_per_update": 206198.07142857142,
+      "go_allocs_per_update": 564.2589285714286,
+      "combined_go_cpu_us_per_update": 5646.3125,
+      "pg_result_payload_bytes_per_update": 12
+    },
+    {
+      "variant": "trunk-direct",
+      "round": 3,
+      "subscribers": 100,
+      "description_bytes": 256,
+      "updates": 112,
+      "commit_to_apply": {
+        "p50_us": 4120.291,
+        "p95_us": 7380.417,
+        "p99_us": 10336.708
+      },
+      "write_to_apply": {
+        "p50_us": 4729.833,
+        "p95_us": 7957.5,
+        "p99_us": 10960
+      },
+      "publish_to_apply": {
+        "p50_us": 602.5,
+        "p95_us": 2865.75,
+        "p99_us": 5285.542
+      },
+      "ingress": {
+        "p50_us": 3546.125,
+        "p95_us": 4691.625,
+        "p99_us": 5798.458
+      },
+      "origin_write": {
+        "p50_us": 566.833,
+        "p95_us": 928.667,
+        "p99_us": 1177.625
+      },
+      "commit_to_all_applied": {
+        "p50_us": 4447.959,
+        "p95_us": 8402.084,
+        "p99_us": 10645.875
+      },
+      "sse_bytes_per_update_per_subscriber": 65.29464285714286,
+      "replication_body_bytes_per_update": 25.901785714285715,
+      "ingress_requests": 112,
+      "go_bytes_per_update": 198155.07142857142,
+      "go_allocs_per_update": 552.9910714285714,
+      "combined_go_cpu_us_per_update": 6357.892857142857,
+      "pg_result_payload_bytes_per_update": 12
+    },
+    {
+      "variant": "trunk-batch8",
+      "round": 3,
+      "subscribers": 100,
+      "description_bytes": 256,
+      "updates": 112,
+      "commit_to_apply": {
+        "p50_us": 4843.833,
+        "p95_us": 6767.5,
+        "p99_us": 8609.083
+      },
+      "write_to_apply": {
+        "p50_us": 4999.791,
+        "p95_us": 7624.417,
+        "p99_us": 9040.75
+      },
+      "publish_to_apply": {
+        "p50_us": 1577.542,
+        "p95_us": 3111.5,
+        "p99_us": 3680.25
+      },
+      "ingress": {
+        "p50_us": 3030.25,
+        "p95_us": 4737.417,
+        "p99_us": 4737.417
+      },
+      "origin_write": {
+        "p50_us": 89.458,
+        "p95_us": 1634.666,
+        "p99_us": 2770.209
+      },
+      "commit_to_all_applied": {
+        "p50_us": 5838.875,
+        "p95_us": 8891.75,
+        "p99_us": 9305.791
+      },
+      "sse_bytes_per_update_per_subscriber": 65.29464285714286,
+      "replication_body_bytes_per_update": 25.901785714285715,
+      "ingress_requests": 14,
+      "go_bytes_per_update": 68528.5,
+      "go_allocs_per_update": 394.32142857142856,
+      "combined_go_cpu_us_per_update": 2267.1071428571427,
+      "pg_result_payload_bytes_per_update": 12
+    },
+    {
+      "variant": "pg-json",
+      "round": 3,
+      "subscribers": 100,
+      "description_bytes": 256,
+      "updates": 112,
+      "commit_to_apply": {
+        "p50_us": 267.25,
+        "p95_us": 419.167,
+        "p99_us": 870.959
+      },
+      "write_to_apply": {
+        "p50_us": 355.334,
+        "p95_us": 517,
+        "p99_us": 1002.833
+      },
+      "publish_to_apply": {
+        "p50_us": 264.791,
+        "p95_us": 417.333,
+        "p99_us": 867.083
+      },
+      "ingress": {
+        "p50_us": 0,
+        "p95_us": 0,
+        "p99_us": 0
+      },
+      "origin_write": {
+        "p50_us": 83,
+        "p95_us": 119.75,
+        "p99_us": 171.5
+      },
+      "commit_to_all_applied": {
+        "p50_us": 406.083,
+        "p95_us": 532.625,
+        "p99_us": 1093.583
+      },
+      "sse_bytes_per_update_per_subscriber": 479.16964285714283,
+      "replication_body_bytes_per_update": 0,
+      "ingress_requests": 0,
+      "go_bytes_per_update": 141707.92857142858,
+      "go_allocs_per_update": 1315.517857142857,
+      "combined_go_cpu_us_per_update": 2867.9196428571427,
+      "pg_result_payload_bytes_per_update": 321.9107142857143
+    },
+    {
+      "variant": "pg-pil",
+      "round": 3,
+      "subscribers": 100,
+      "description_bytes": 256,
+      "updates": 112,
+      "commit_to_apply": {
+        "p50_us": 251.084,
+        "p95_us": 383.75,
+        "p99_us": 785.25
+      },
+      "write_to_apply": {
+        "p50_us": 335.042,
+        "p95_us": 478.125,
+        "p99_us": 876.084
+      },
+      "publish_to_apply": {
+        "p50_us": 249,
+        "p95_us": 381.292,
+        "p99_us": 782.084
+      },
+      "ingress": {
+        "p50_us": 0,
+        "p95_us": 0,
+        "p99_us": 0
+      },
+      "origin_write": {
+        "p50_us": 84.166,
+        "p95_us": 105.375,
+        "p99_us": 155.666
+      },
+      "commit_to_all_applied": {
+        "p50_us": 374.541,
+        "p95_us": 461.584,
+        "p99_us": 1086.417
+      },
+      "sse_bytes_per_update_per_subscriber": 459.9017857142857,
+      "replication_body_bytes_per_update": 0,
+      "ingress_requests": 0,
+      "go_bytes_per_update": 118074.14285714286,
+      "go_allocs_per_update": 764.2678571428571,
+      "combined_go_cpu_us_per_update": 2652.9375,
+      "pg_result_payload_bytes_per_update": 321.9107142857143
+    },
+    {
+      "variant": "trunk-lookup",
+      "round": 3,
+      "subscribers": 1,
+      "description_bytes": 4096,
+      "updates": 112,
+      "commit_to_apply": {
+        "p50_us": 4267.875,
+        "p95_us": 6057.458,
+        "p99_us": 8837.375
+      },
+      "write_to_apply": {
+        "p50_us": 4772.291,
+        "p95_us": 6842.792,
+        "p99_us": 9113.5
+      },
+      "publish_to_apply": {
+        "p50_us": 53.834,
+        "p95_us": 136.375,
+        "p99_us": 247.333
+      },
+      "ingress": {
+        "p50_us": 4158.209,
+        "p95_us": 5932.292,
+        "p99_us": 8744.709
+      },
+      "origin_write": {
+        "p50_us": 232.25,
+        "p95_us": 944.333,
+        "p99_us": 1300.041
+      },
+      "commit_to_all_applied": {
+        "p50_us": 4267.875,
+        "p95_us": 6057.458,
+        "p99_us": 8837.375
+      },
+      "sse_bytes_per_update_per_subscriber": 65.29464285714286,
+      "replication_body_bytes_per_update": 25.901785714285715,
+      "ingress_requests": 112,
+      "go_bytes_per_update": 156888.5,
+      "go_allocs_per_update": 225.4375,
+      "combined_go_cpu_us_per_update": 964.125,
+      "pg_result_payload_bytes_per_update": 12
+    },
+    {
+      "variant": "trunk-direct",
+      "round": 3,
+      "subscribers": 1,
+      "description_bytes": 4096,
+      "updates": 112,
+      "commit_to_apply": {
+        "p50_us": 4851.083,
+        "p95_us": 7522.916,
+        "p99_us": 12761.25
+      },
+      "write_to_apply": {
+        "p50_us": 5333.959,
+        "p95_us": 8535.833,
+        "p99_us": 13013.791
+      },
+      "publish_to_apply": {
+        "p50_us": 68,
+        "p95_us": 206.291,
+        "p99_us": 682.875
+      },
+      "ingress": {
+        "p50_us": 4778.75,
+        "p95_us": 7432.5,
+        "p99_us": 12637.208
+      },
+      "origin_write": {
+        "p50_us": 503.542,
+        "p95_us": 1357.125,
+        "p99_us": 3200.125
+      },
+      "commit_to_all_applied": {
+        "p50_us": 4851.083,
+        "p95_us": 7522.916,
+        "p99_us": 12761.25
+      },
+      "sse_bytes_per_update_per_subscriber": 65.29464285714286,
+      "replication_body_bytes_per_update": 25.901785714285715,
+      "ingress_requests": 112,
+      "go_bytes_per_update": 157280.2142857143,
+      "go_allocs_per_update": 215.48214285714286,
+      "combined_go_cpu_us_per_update": 1194.669642857143,
+      "pg_result_payload_bytes_per_update": 12
+    },
+    {
+      "variant": "trunk-batch8",
+      "round": 3,
+      "subscribers": 1,
+      "description_bytes": 4096,
+      "updates": 112,
+      "commit_to_apply": {
+        "p50_us": 5666.416,
+        "p95_us": 14958.125,
+        "p99_us": 15680.291
+      },
+      "write_to_apply": {
+        "p50_us": 5878.375,
+        "p95_us": 15116.25,
+        "p99_us": 15905.041
+      },
+      "publish_to_apply": {
+        "p50_us": 104.291,
+        "p95_us": 144.458,
+        "p99_us": 171.5
+      },
+      "ingress": {
+        "p50_us": 4820.25,
+        "p95_us": 8109.916,
+        "p99_us": 8109.916
+      },
+      "origin_write": {
+        "p50_us": 208.917,
+        "p95_us": 350.75,
+        "p99_us": 823.666
+      },
+      "commit_to_all_applied": {
+        "p50_us": 5666.416,
+        "p95_us": 14958.125,
+        "p99_us": 15680.291
+      },
+      "sse_bytes_per_update_per_subscriber": 65.29464285714286,
+      "replication_body_bytes_per_update": 25.901785714285715,
+      "ingress_requests": 14,
+      "go_bytes_per_update": 23007.214285714286,
+      "go_allocs_per_update": 60.473214285714285,
+      "combined_go_cpu_us_per_update": 209.3125,
+      "pg_result_payload_bytes_per_update": 12
+    },
+    {
+      "variant": "pg-json",
+      "round": 3,
+      "subscribers": 1,
+      "description_bytes": 4096,
+      "updates": 112,
+      "commit_to_apply": {
+        "p50_us": 86.083,
+        "p95_us": 126.541,
+        "p99_us": 261.333
+      },
+      "write_to_apply": {
+        "p50_us": 247.541,
+        "p95_us": 332.458,
+        "p99_us": 430.208
+      },
+      "publish_to_apply": {
+        "p50_us": 77.208,
+        "p95_us": 105.791,
+        "p99_us": 121.209
+      },
+      "ingress": {
+        "p50_us": 0,
+        "p95_us": 0,
+        "p99_us": 0
+      },
+      "origin_write": {
+        "p50_us": 161.042,
+        "p95_us": 222.459,
+        "p99_us": 244.792
+      },
+      "commit_to_all_applied": {
+        "p50_us": 86.083,
+        "p95_us": 126.541,
+        "p99_us": 261.333
+      },
+      "sse_bytes_per_update_per_subscriber": 4319.169642857143,
+      "replication_body_bytes_per_update": 0,
+      "ingress_requests": 0,
+      "go_bytes_per_update": 25965.14285714286,
+      "go_allocs_per_update": 49.660714285714285,
+      "combined_go_cpu_us_per_update": 173.85714285714286,
+      "pg_result_payload_bytes_per_update": 4161.910714285715
+    },
+    {
+      "variant": "pg-pil",
+      "round": 3,
+      "subscribers": 1,
+      "description_bytes": 4096,
+      "updates": 112,
+      "commit_to_apply": {
+        "p50_us": 24.5,
+        "p95_us": 40.625,
+        "p99_us": 124.583
+      },
+      "write_to_apply": {
+        "p50_us": 119.833,
+        "p95_us": 162.834,
+        "p99_us": 220.167
+      },
+      "publish_to_apply": {
+        "p50_us": 18.583,
+        "p95_us": 34.25,
+        "p99_us": 37.708
+      },
+      "ingress": {
+        "p50_us": 0,
+        "p95_us": 0,
+        "p99_us": 0
+      },
+      "origin_write": {
+        "p50_us": 93.584,
+        "p95_us": 128.958,
+        "p99_us": 185.792
+      },
+      "commit_to_all_applied": {
+        "p50_us": 24.5,
+        "p95_us": 40.625,
+        "p99_us": 124.583
+      },
+      "sse_bytes_per_update_per_subscriber": 5579.901785714285,
+      "replication_body_bytes_per_update": 0,
+      "ingress_requests": 0,
+      "go_bytes_per_update": 38524.57142857143,
+      "go_allocs_per_update": 60.07142857142857,
+      "combined_go_cpu_us_per_update": 97.49107142857143,
+      "pg_result_payload_bytes_per_update": 4161.910714285715
+    },
+    {
+      "variant": "trunk-lookup",
+      "round": 3,
+      "subscribers": 10,
+      "description_bytes": 4096,
+      "updates": 112,
+      "commit_to_apply": {
+        "p50_us": 4719.5,
+        "p95_us": 7154.167,
+        "p99_us": 13219.208
+      },
+      "write_to_apply": {
+        "p50_us": 5001.292,
+        "p95_us": 7398.208,
+        "p99_us": 13591
+      },
+      "publish_to_apply": {
+        "p50_us": 123.375,
+        "p95_us": 465.667,
+        "p99_us": 6105.75
+      },
+      "ingress": {
+        "p50_us": 4566.208,
+        "p95_us": 6693.291,
+        "p99_us": 7004.334
+      },
+      "origin_write": {
+        "p50_us": 273.083,
+        "p95_us": 745.125,
+        "p99_us": 1429.625
+      },
+      "commit_to_all_applied": {
+        "p50_us": 4773.125,
+        "p95_us": 7220.75,
+        "p99_us": 13261.583
+      },
+      "sse_bytes_per_update_per_subscriber": 65.29464285714286,
+      "replication_body_bytes_per_update": 25.901785714285715,
+      "ingress_requests": 112,
+      "go_bytes_per_update": 183008.14285714287,
+      "go_allocs_per_update": 268.70535714285717,
+      "combined_go_cpu_us_per_update": 1798.607142857143,
+      "pg_result_payload_bytes_per_update": 12
+    },
+    {
+      "variant": "trunk-direct",
+      "round": 3,
+      "subscribers": 10,
+      "description_bytes": 4096,
+      "updates": 112,
+      "commit_to_apply": {
+        "p50_us": 4676.041,
+        "p95_us": 6631.834,
+        "p99_us": 11246.584
+      },
+      "write_to_apply": {
+        "p50_us": 4941.875,
+        "p95_us": 7268.834,
+        "p99_us": 11487.459
+      },
+      "publish_to_apply": {
+        "p50_us": 116,
+        "p95_us": 578.75,
+        "p99_us": 1532.709
+      },
+      "ingress": {
+        "p50_us": 4556.333,
+        "p95_us": 5593.708,
+        "p99_us": 10072.292
+      },
+      "origin_write": {
+        "p50_us": 262.584,
+        "p95_us": 832.166,
+        "p99_us": 1688.584
+      },
+      "commit_to_all_applied": {
+        "p50_us": 4726.083,
+        "p95_us": 6702.959,
+        "p99_us": 11269.792
+      },
+      "sse_bytes_per_update_per_subscriber": 65.29464285714286,
+      "replication_body_bytes_per_update": 25.901785714285715,
+      "ingress_requests": 112,
+      "go_bytes_per_update": 182239.07142857142,
+      "go_allocs_per_update": 259.23214285714283,
+      "combined_go_cpu_us_per_update": 2108.0535714285716,
+      "pg_result_payload_bytes_per_update": 12
+    },
+    {
+      "variant": "trunk-batch8",
+      "round": 3,
+      "subscribers": 10,
+      "description_bytes": 4096,
+      "updates": 112,
+      "commit_to_apply": {
+        "p50_us": 5527.791,
+        "p95_us": 6436.958,
+        "p99_us": 6676.583
+      },
+      "write_to_apply": {
+        "p50_us": 5709.292,
+        "p95_us": 6715.584,
+        "p99_us": 7106.375
+      },
+      "publish_to_apply": {
+        "p50_us": 337.291,
+        "p95_us": 640.667,
+        "p99_us": 719.542
+      },
+      "ingress": {
+        "p50_us": 4664.167,
+        "p95_us": 5129.709,
+        "p99_us": 5129.709
+      },
+      "origin_write": {
+        "p50_us": 175.583,
+        "p95_us": 452.417,
+        "p99_us": 679.583
+      },
+      "commit_to_all_applied": {
+        "p50_us": 5722.083,
+        "p95_us": 6598.584,
+        "p99_us": 6833.584
+      },
+      "sse_bytes_per_update_per_subscriber": 65.29464285714286,
+      "replication_body_bytes_per_update": 25.901785714285715,
+      "ingress_requests": 14,
+      "go_bytes_per_update": 28848.928571428572,
+      "go_allocs_per_update": 93.59821428571429,
+      "combined_go_cpu_us_per_update": 534.7410714285714,
+      "pg_result_payload_bytes_per_update": 12
+    },
+    {
+      "variant": "pg-json",
+      "round": 3,
+      "subscribers": 10,
+      "description_bytes": 4096,
+      "updates": 112,
+      "commit_to_apply": {
+        "p50_us": 112.334,
+        "p95_us": 219.25,
+        "p99_us": 296.375
+      },
+      "write_to_apply": {
+        "p50_us": 229.25,
+        "p95_us": 344.625,
+        "p99_us": 439.292
+      },
+      "publish_to_apply": {
+        "p50_us": 104.542,
+        "p95_us": 182.75,
+        "p99_us": 265.125
+      },
+      "ingress": {
+        "p50_us": 0,
+        "p95_us": 0,
+        "p99_us": 0
+      },
+      "origin_write": {
+        "p50_us": 121.625,
+        "p95_us": 161.666,
+        "p99_us": 185.708
+      },
+      "commit_to_all_applied": {
+        "p50_us": 153.209,
+        "p95_us": 289.458,
+        "p99_us": 333.834
+      },
+      "sse_bytes_per_update_per_subscriber": 4319.169642857143,
+      "replication_body_bytes_per_update": 0,
+      "ingress_requests": 0,
+      "go_bytes_per_update": 117061.78571428571,
+      "go_allocs_per_update": 171.08928571428572,
+      "combined_go_cpu_us_per_update": 762.4642857142857,
+      "pg_result_payload_bytes_per_update": 4161.910714285715
+    },
+    {
+      "variant": "pg-pil",
+      "round": 3,
+      "subscribers": 10,
+      "description_bytes": 4096,
+      "updates": 112,
+      "commit_to_apply": {
+        "p50_us": 71.25,
+        "p95_us": 184.041,
+        "p99_us": 248.75
+      },
+      "write_to_apply": {
+        "p50_us": 165.167,
+        "p95_us": 295.708,
+        "p99_us": 393.375
+      },
+      "publish_to_apply": {
+        "p50_us": 65.541,
+        "p95_us": 142.542,
+        "p99_us": 211.959
+      },
+      "ingress": {
+        "p50_us": 0,
+        "p95_us": 0,
+        "p99_us": 0
+      },
+      "origin_write": {
+        "p50_us": 90.542,
+        "p95_us": 163.5,
+        "p99_us": 217.791
+      },
+      "commit_to_all_applied": {
+        "p50_us": 99.958,
+        "p95_us": 241.958,
+        "p99_us": 263.792
+      },
+      "sse_bytes_per_update_per_subscriber": 5579.901785714285,
+      "replication_body_bytes_per_update": 0,
+      "ingress_requests": 0,
+      "go_bytes_per_update": 134427.92857142858,
+      "go_allocs_per_update": 127.24107142857143,
+      "combined_go_cpu_us_per_update": 601.5446428571429,
+      "pg_result_payload_bytes_per_update": 4161.910714285715
+    },
+    {
+      "variant": "trunk-lookup",
+      "round": 3,
+      "subscribers": 100,
+      "description_bytes": 4096,
+      "updates": 112,
+      "commit_to_apply": {
+        "p50_us": 4392.083,
+        "p95_us": 5359.917,
+        "p99_us": 6246.583
+      },
+      "write_to_apply": {
+        "p50_us": 5055.208,
+        "p95_us": 6080.625,
+        "p99_us": 7041
+      },
+      "publish_to_apply": {
+        "p50_us": 382.542,
+        "p95_us": 681.75,
+        "p99_us": 929.708
+      },
+      "ingress": {
+        "p50_us": 3871.333,
+        "p95_us": 4811.667,
+        "p99_us": 5886.417
+      },
+      "origin_write": {
+        "p50_us": 639.083,
+        "p95_us": 1025.458,
+        "p99_us": 1111.5
+      },
+      "commit_to_all_applied": {
+        "p50_us": 4576.625,
+        "p95_us": 5544.792,
+        "p99_us": 6481.333
+      },
+      "sse_bytes_per_update_per_subscriber": 65.29464285714286,
+      "replication_body_bytes_per_update": 25.901785714285715,
+      "ingress_requests": 112,
+      "go_bytes_per_update": 202596,
+      "go_allocs_per_update": 564.0892857142857,
+      "combined_go_cpu_us_per_update": 4023.125,
+      "pg_result_payload_bytes_per_update": 12
+    },
+    {
+      "variant": "trunk-direct",
+      "round": 3,
+      "subscribers": 100,
+      "description_bytes": 4096,
+      "updates": 112,
+      "commit_to_apply": {
+        "p50_us": 4898.542,
+        "p95_us": 5853.375,
+        "p99_us": 7317.875
+      },
+      "write_to_apply": {
+        "p50_us": 5523.75,
+        "p95_us": 6675.166,
+        "p99_us": 7901.25
+      },
+      "publish_to_apply": {
+        "p50_us": 389.333,
+        "p95_us": 681,
+        "p99_us": 829.459
+      },
+      "ingress": {
+        "p50_us": 4571.5,
+        "p95_us": 5353.708,
+        "p99_us": 6770.75
+      },
+      "origin_write": {
+        "p50_us": 640.75,
+        "p95_us": 809.875,
+        "p99_us": 965.708
+      },
+      "commit_to_all_applied": {
+        "p50_us": 5246.416,
+        "p95_us": 6069.5,
+        "p99_us": 7617.5
+      },
+      "sse_bytes_per_update_per_subscriber": 65.29464285714286,
+      "replication_body_bytes_per_update": 25.901785714285715,
+      "ingress_requests": 112,
+      "go_bytes_per_update": 201799.2857142857,
+      "go_allocs_per_update": 554.0357142857143,
+      "combined_go_cpu_us_per_update": 4280.017857142857,
+      "pg_result_payload_bytes_per_update": 12
+    },
+    {
+      "variant": "trunk-batch8",
+      "round": 3,
+      "subscribers": 100,
+      "description_bytes": 4096,
+      "updates": 112,
+      "commit_to_apply": {
+        "p50_us": 5275.125,
+        "p95_us": 6893,
+        "p99_us": 7265.333
+      },
+      "write_to_apply": {
+        "p50_us": 5361.833,
+        "p95_us": 7143.334,
+        "p99_us": 8783.584
+      },
+      "publish_to_apply": {
+        "p50_us": 1380.041,
+        "p95_us": 2841.375,
+        "p99_us": 3320.417
+      },
+      "ingress": {
+        "p50_us": 3634.708,
+        "p95_us": 4383.917,
+        "p99_us": 4383.917
+      },
+      "origin_write": {
+        "p50_us": 75.167,
+        "p95_us": 151.041,
+        "p99_us": 2666
+      },
+      "commit_to_all_applied": {
+        "p50_us": 6309.666,
+        "p95_us": 7436.75,
+        "p99_us": 7492
+      },
+      "sse_bytes_per_update_per_subscriber": 65.29464285714286,
+      "replication_body_bytes_per_update": 25.901785714285715,
+      "ingress_requests": 14,
+      "go_bytes_per_update": 68221.42857142857,
+      "go_allocs_per_update": 394.3392857142857,
+      "combined_go_cpu_us_per_update": 1917.2232142857142,
+      "pg_result_payload_bytes_per_update": 12
+    },
+    {
+      "variant": "pg-json",
+      "round": 3,
+      "subscribers": 100,
+      "description_bytes": 4096,
+      "updates": 112,
+      "commit_to_apply": {
+        "p50_us": 534.292,
+        "p95_us": 1227.084,
+        "p99_us": 1660.416
+      },
+      "write_to_apply": {
+        "p50_us": 655.708,
+        "p95_us": 1355.583,
+        "p99_us": 1779.916
+      },
+      "publish_to_apply": {
+        "p50_us": 526.5,
+        "p95_us": 1218.042,
+        "p99_us": 1653.375
+      },
+      "ingress": {
+        "p50_us": 0,
+        "p95_us": 0,
+        "p99_us": 0
+      },
+      "origin_write": {
+        "p50_us": 112.667,
+        "p95_us": 214.417,
+        "p99_us": 230.125
+      },
+      "commit_to_all_applied": {
+        "p50_us": 780.458,
+        "p95_us": 1753.834,
+        "p99_us": 1913.041
+      },
+      "sse_bytes_per_update_per_subscriber": 4319.169642857143,
+      "replication_body_bytes_per_update": 0,
+      "ingress_requests": 0,
+      "go_bytes_per_update": 986413.5714285715,
+      "go_allocs_per_update": 1321.2142857142858,
+      "combined_go_cpu_us_per_update": 6347.580357142857,
+      "pg_result_payload_bytes_per_update": 4161.910714285715
+    },
+    {
+      "variant": "pg-pil",
+      "round": 3,
+      "subscribers": 100,
+      "description_bytes": 4096,
+      "updates": 112,
+      "commit_to_apply": {
+        "p50_us": 451.333,
+        "p95_us": 1065.625,
+        "p99_us": 1361.542
+      },
+      "write_to_apply": {
+        "p50_us": 570.708,
+        "p95_us": 1202.5,
+        "p99_us": 1487.083
+      },
+      "publish_to_apply": {
+        "p50_us": 443.5,
+        "p95_us": 1053.25,
+        "p99_us": 1350.5
+      },
+      "ingress": {
+        "p50_us": 0,
+        "p95_us": 0,
+        "p99_us": 0
+      },
+      "origin_write": {
+        "p50_us": 113.792,
+        "p95_us": 215.917,
+        "p99_us": 258.584
+      },
+      "commit_to_all_applied": {
+        "p50_us": 613.541,
+        "p95_us": 1387.459,
+        "p99_us": 1445.084
+      },
+      "sse_bytes_per_update_per_subscriber": 5579.901785714285,
+      "replication_body_bytes_per_update": 0,
+      "ingress_requests": 0,
+      "go_bytes_per_update": 1095591.7857142857,
+      "go_allocs_per_update": 765.5178571428571,
+      "combined_go_cpu_us_per_update": 5259.866071428572,
+      "pg_result_payload_bytes_per_update": 4161.910714285715
+    }
+  ],
+  "reconnect": [
+    {
+      "variant": "postgres",
+      "missing_revisions": 1,
+      "description_bytes": 256,
+      "samples": 30,
+      "request_to_applied": {
+        "p50_us": 237.292,
+        "p95_us": 471.458,
+        "p99_us": 583.792
+      },
+      "sse_body_bytes": 454
+    },
+    {
+      "variant": "trunk",
+      "missing_revisions": 1,
+      "description_bytes": 256,
+      "samples": 30,
+      "request_to_applied": {
+        "p50_us": 137.667,
+        "p95_us": 164.917,
+        "p99_us": 181.208
+      },
+      "sse_body_bytes": 62
+    },
+    {
+      "variant": "postgres",
+      "missing_revisions": 10,
+      "description_bytes": 256,
+      "samples": 30,
+      "request_to_applied": {
+        "p50_us": 233.708,
+        "p95_us": 315.166,
+        "p99_us": 431.292
+      },
+      "sse_body_bytes": 454
+    },
+    {
+      "variant": "trunk",
+      "missing_revisions": 10,
+      "description_bytes": 256,
+      "samples": 30,
+      "request_to_applied": {
+        "p50_us": 87.959,
+        "p95_us": 126.917,
+        "p99_us": 148.25
+      },
+      "sse_body_bytes": 664
+    },
+    {
+      "variant": "postgres",
+      "missing_revisions": 100,
+      "description_bytes": 256,
+      "samples": 30,
+      "request_to_applied": {
+        "p50_us": 153.791,
+        "p95_us": 223.583,
+        "p99_us": 229.375
+      },
+      "sse_body_bytes": 454
+    },
+    {
+      "variant": "trunk",
+      "missing_revisions": 100,
+      "description_bytes": 256,
+      "samples": 30,
+      "request_to_applied": {
+        "p50_us": 467.458,
+        "p95_us": 827.375,
+        "p99_us": 853.916
+      },
+      "sse_body_bytes": 6533
+    },
+    {
+      "variant": "postgres",
+      "missing_revisions": 1,
+      "description_bytes": 4096,
+      "samples": 30,
+      "request_to_applied": {
+        "p50_us": 352.833,
+        "p95_us": 698.042,
+        "p99_us": 728.417
+      },
+      "sse_body_bytes": 5574
+    },
+    {
+      "variant": "trunk",
+      "missing_revisions": 1,
+      "description_bytes": 4096,
+      "samples": 30,
+      "request_to_applied": {
+        "p50_us": 144.917,
+        "p95_us": 176.792,
+        "p99_us": 189.541
+      },
+      "sse_body_bytes": 62
+    },
+    {
+      "variant": "postgres",
+      "missing_revisions": 10,
+      "description_bytes": 4096,
+      "samples": 30,
+      "request_to_applied": {
+        "p50_us": 244,
+        "p95_us": 334.375,
+        "p99_us": 420.417
+      },
+      "sse_body_bytes": 5574
+    },
+    {
+      "variant": "trunk",
+      "missing_revisions": 10,
+      "description_bytes": 4096,
+      "samples": 30,
+      "request_to_applied": {
+        "p50_us": 110.917,
+        "p95_us": 145.166,
+        "p99_us": 183.958
+      },
+      "sse_body_bytes": 664
+    },
+    {
+      "variant": "postgres",
+      "missing_revisions": 100,
+      "description_bytes": 4096,
+      "samples": 30,
+      "request_to_applied": {
+        "p50_us": 144.375,
+        "p95_us": 273.625,
+        "p99_us": 396.708
+      },
+      "sse_body_bytes": 5574
+    },
+    {
+      "variant": "trunk",
+      "missing_revisions": 100,
+      "description_bytes": 4096,
+      "samples": 30,
+      "request_to_applied": {
+        "p50_us": 378.708,
+        "p95_us": 657.875,
+        "p99_us": 697.541
+      },
+      "sse_body_bytes": 6533
+    }
+  ]
+}

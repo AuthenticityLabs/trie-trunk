@@ -1,0 +1,554 @@
+[
+  {
+    "Workload": "sparse-day",
+    "Mode": "u64",
+    "Decoded": 583,
+    "Gzip": 175,
+    "Widths": null,
+    "Bases": null
+  },
+  {
+    "Workload": "sparse-day",
+    "Mode": "narrow",
+    "Decoded": 662,
+    "Gzip": 199,
+    "Widths": [
+      1,
+      1,
+      8,
+      3,
+      3,
+      1,
+      1,
+      3,
+      1
+    ],
+    "Bases": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "Workload": "sparse-day",
+    "Mode": "based",
+    "Decoded": 656,
+    "Gzip": 195,
+    "Widths": [
+      1,
+      1,
+      8,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1
+    ],
+    "Bases": [
+      0,
+      0,
+      0,
+      1349886,
+      1349886,
+      0,
+      0,
+      1349886,
+      0
+    ]
+  },
+  {
+    "Workload": "sparse-day",
+    "Mode": "based-shuffle",
+    "Decoded": 656,
+    "Gzip": 195,
+    "Widths": [
+      1,
+      1,
+      8,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1
+    ],
+    "Bases": [
+      0,
+      0,
+      0,
+      1349886,
+      1349886,
+      0,
+      0,
+      1349886,
+      0
+    ]
+  },
+  {
+    "Workload": "demo-20",
+    "Mode": "u64",
+    "Decoded": 3434,
+    "Gzip": 583,
+    "Widths": null,
+    "Bases": null
+  },
+  {
+    "Workload": "demo-20",
+    "Mode": "narrow",
+    "Decoded": 2563,
+    "Gzip": 695,
+    "Widths": [
+      1,
+      1,
+      8,
+      3,
+      3,
+      1,
+      1,
+      3,
+      1
+    ],
+    "Bases": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "Workload": "demo-20",
+    "Mode": "based",
+    "Decoded": 2563,
+    "Gzip": 691,
+    "Widths": [
+      1,
+      1,
+      8,
+      3,
+      3,
+      1,
+      1,
+      3,
+      1
+    ],
+    "Bases": [
+      0,
+      0,
+      0,
+      642516,
+      642516,
+      0,
+      0,
+      642516,
+      0
+    ]
+  },
+  {
+    "Workload": "demo-20",
+    "Mode": "based-shuffle",
+    "Decoded": 2563,
+    "Gzip": 681,
+    "Widths": [
+      1,
+      1,
+      8,
+      3,
+      3,
+      1,
+      1,
+      3,
+      1
+    ],
+    "Bases": [
+      0,
+      0,
+      0,
+      642516,
+      642516,
+      0,
+      0,
+      642516,
+      0
+    ]
+  },
+  {
+    "Workload": "dense-240k",
+    "Mode": "u64",
+    "Decoded": 2608752,
+    "Gzip": 265190,
+    "Widths": null,
+    "Bases": null
+  },
+  {
+    "Workload": "dense-240k",
+    "Mode": "narrow",
+    "Decoded": 666321,
+    "Gzip": 357556,
+    "Widths": [
+      2,
+      2,
+      8,
+      3,
+      3,
+      2,
+      1,
+      3,
+      1
+    ],
+    "Bases": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "Workload": "dense-240k",
+    "Mode": "based",
+    "Decoded": 666321,
+    "Gzip": 357566,
+    "Widths": [
+      2,
+      2,
+      8,
+      3,
+      3,
+      2,
+      1,
+      3,
+      1
+    ],
+    "Bases": [
+      0,
+      0,
+      0,
+      12,
+      12,
+      0,
+      0,
+      12,
+      0
+    ]
+  },
+  {
+    "Workload": "dense-240k",
+    "Mode": "based-shuffle",
+    "Decoded": 666321,
+    "Gzip": 10370,
+    "Widths": [
+      2,
+      2,
+      8,
+      3,
+      3,
+      2,
+      1,
+      3,
+      1
+    ],
+    "Bases": [
+      0,
+      0,
+      0,
+      12,
+      12,
+      0,
+      0,
+      12,
+      0
+    ]
+  },
+  {
+    "Workload": "large-base-240k",
+    "Mode": "u64",
+    "Decoded": 2608752,
+    "Gzip": 265426,
+    "Widths": null,
+    "Bases": null
+  },
+  {
+    "Workload": "large-base-240k",
+    "Mode": "narrow",
+    "Decoded": 828033,
+    "Gzip": 420887,
+    "Widths": [
+      2,
+      2,
+      8,
+      4,
+      4,
+      2,
+      1,
+      4,
+      1
+    ],
+    "Bases": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "Workload": "large-base-240k",
+    "Mode": "based",
+    "Decoded": 666321,
+    "Gzip": 357801,
+    "Widths": [
+      2,
+      2,
+      8,
+      3,
+      3,
+      2,
+      1,
+      3,
+      1
+    ],
+    "Bases": [
+      0,
+      0,
+      0,
+      1000000012,
+      1000000012,
+      0,
+      0,
+      1000000012,
+      0
+    ]
+  },
+  {
+    "Workload": "large-base-240k",
+    "Mode": "based-shuffle",
+    "Decoded": 666321,
+    "Gzip": 10526,
+    "Widths": [
+      2,
+      2,
+      8,
+      3,
+      3,
+      2,
+      1,
+      3,
+      1
+    ],
+    "Bases": [
+      0,
+      0,
+      0,
+      1000000012,
+      1000000012,
+      0,
+      0,
+      1000000012,
+      0
+    ]
+  },
+  {
+    "Workload": "varied-240k",
+    "Mode": "u64",
+    "Decoded": 2604520,
+    "Gzip": 494314,
+    "Widths": null,
+    "Bases": null
+  },
+  {
+    "Workload": "varied-240k",
+    "Mode": "narrow",
+    "Decoded": 825281,
+    "Gzip": 495192,
+    "Widths": [
+      2,
+      2,
+      8,
+      2,
+      4,
+      2,
+      1,
+      4,
+      1
+    ],
+    "Bases": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "Workload": "varied-240k",
+    "Mode": "based",
+    "Decoded": 825281,
+    "Gzip": 494787,
+    "Widths": [
+      2,
+      2,
+      8,
+      2,
+      4,
+      2,
+      1,
+      4,
+      1
+    ],
+    "Bases": [
+      0,
+      0,
+      0,
+      1000,
+      1000,
+      0,
+      0,
+      1000,
+      0
+    ]
+  },
+  {
+    "Workload": "varied-240k",
+    "Mode": "based-shuffle",
+    "Decoded": 825281,
+    "Gzip": 341727,
+    "Widths": [
+      2,
+      2,
+      8,
+      2,
+      4,
+      2,
+      1,
+      4,
+      1
+    ],
+    "Bases": [
+      0,
+      0,
+      0,
+      1000,
+      1000,
+      0,
+      0,
+      1000,
+      0
+    ]
+  },
+  {
+    "Workload": "full-u32-240k",
+    "Mode": "u64",
+    "Decoded": 2605416,
+    "Gzip": 726042,
+    "Widths": null,
+    "Bases": null
+  },
+  {
+    "Workload": "full-u32-240k",
+    "Mode": "narrow",
+    "Decoded": 826713,
+    "Gzip": 654956,
+    "Widths": [
+      2,
+      2,
+      8,
+      4,
+      4,
+      2,
+      1,
+      4,
+      1
+    ],
+    "Bases": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "Workload": "full-u32-240k",
+    "Mode": "based",
+    "Decoded": 826713,
+    "Gzip": 654964,
+    "Widths": [
+      2,
+      2,
+      8,
+      4,
+      4,
+      2,
+      1,
+      4,
+      1
+    ],
+    "Bases": [
+      0,
+      0,
+      0,
+      31152,
+      31152,
+      0,
+      0,
+      31152,
+      0
+    ]
+  },
+  {
+    "Workload": "full-u32-240k",
+    "Mode": "based-shuffle",
+    "Decoded": 826713,
+    "Gzip": 585905,
+    "Widths": [
+      2,
+      2,
+      8,
+      4,
+      4,
+      2,
+      1,
+      4,
+      1
+    ],
+    "Bases": [
+      0,
+      0,
+      0,
+      31152,
+      31152,
+      0,
+      0,
+      31152,
+      0
+    ]
+  }
+]

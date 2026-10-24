@@ -1,0 +1,12 @@
+goos: darwin
+goarch: arm64
+pkg: trie-trunk/go/logger/client
+cpu: Apple M1 Max
+BenchmarkRequestEncoding/LegacyCBOR-10         	12134904	        98.73 ns/op	 395.01 MB/s	     128 B/op	       1 allocs/op
+BenchmarkRequestEncoding/LegacyCBOR-10         	12033728	       128.0 ns/op	 304.80 MB/s	     128 B/op	       1 allocs/op
+BenchmarkRequestEncoding/LegacyCBOR-10         	11249937	       109.4 ns/op	 356.40 MB/s	     128 B/op	       1 allocs/op
+BenchmarkRequestEncoding/PIL-10                	 5121409	       233.8 ns/op	 136.89 MB/s	     128 B/op	       1 allocs/op
+BenchmarkRequestEncoding/PIL-10                	 5186382	       295.2 ns/op	 108.41 MB/s	     128 B/op	       1 allocs/op
+BenchmarkRequestEncoding/PIL-10                	 4800745	       247.4 ns/op	 129.34 MB/s	     128 B/op	       1 allocs/op
+PASS
+ok  	trie-trunk/go/logger/client	9.048s

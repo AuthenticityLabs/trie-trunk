@@ -17,6 +17,8 @@ import (
 )
 
 type Config struct {
+	// API optionally serves a registered collection-native cache.
+	API     http.Handler
 	Root    string
 	Web     string
 	Address string
@@ -57,10 +59,21 @@ func Run(ctx context.Context, c Config) error {
 	defer handler.Close()
 	handler.OnError = c.OnError
 	routes := http.NewServeMux()
-	routes.Handle("/events", handler)
-	routes.Handle("/collect", handler)
-	routes.Handle("/schemas", handler)
-	routes.Handle("/taps", handler)
+	api := http.Handler(handler)
+	if c.API != nil {
+		api = c.API
+		routes.Handle("/ingest", api)
+		routes.Handle("/definitions", api)
+		routes.Handle("/rejections", api)
+		routes.Handle("/summary-day", api)
+		routes.Handle("/objects/history", api)
+		routes.Handle("/objects/state", api)
+	}
+	routes.Handle("/events", api)
+	routes.Handle("/collect", api)
+	routes.Handle("/schemas", api)
+	routes.Handle("/caches", api)
+	routes.Handle("/taps", api) // Compatibility for older clients.
 	if c.Web != "" {
 		routes.Handle("/", staticFiles(c.Web))
 	}
@@ -100,7 +113,13 @@ func Run(ctx context.Context, c Config) error {
 	})
 	base := func(net.Listener) context.Context { return ctx }
 	h2 := &http.Server{Handler: remote, TLSConfig: tlsConfig, ReadHeaderTimeout: 10 * time.Second, IdleTimeout: time.Minute, MaxHeaderBytes: 16384, BaseContext: base}
-	localHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { handler.serve(w, r, false) })
+	localHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if c.API != nil {
+			api.ServeHTTP(w, r)
+		} else {
+			handler.serve(w, r, false)
+		}
+	})
 	unix := &http.Server{Handler: localHandler, ReadHeaderTimeout: 10 * time.Second, IdleTimeout: time.Minute, MaxHeaderBytes: 16384, BaseContext: base}
 	done := make(chan error, 4)
 	remaining := 3

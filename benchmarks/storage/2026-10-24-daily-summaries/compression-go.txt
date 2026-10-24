@@ -1,0 +1,12 @@
+goos: darwin
+goarch: arm64
+pkg: trie-trunk/go/server/cache
+cpu: Apple M1 Max
+BenchmarkSavedSummaryCompression/sample1/gzip6-10         	    6266	     62748 ns/op	       174.0 bytes/packet	  814115 B/op	      20 allocs/op
+BenchmarkSavedSummaryCompression/sample1/gzip9-10         	    5493	     78126 ns/op	       174.0 bytes/packet	  814118 B/op	      20 allocs/op
+BenchmarkSavedSummaryCompression/sample2/gzip6-10         	    3484	    102635 ns/op	       583.0 bytes/packet	  815760 B/op	      22 allocs/op
+BenchmarkSavedSummaryCompression/sample2/gzip9-10         	    1614	    218954 ns/op	       578.0 bytes/packet	  815761 B/op	      22 allocs/op
+BenchmarkSavedSummaryCompression/sample3/gzip6-10         	    3692	     98150 ns/op	       480.0 bytes/packet	  814738 B/op	      21 allocs/op
+BenchmarkSavedSummaryCompression/sample3/gzip9-10         	    2076	    167507 ns/op	       480.0 bytes/packet	  814737 B/op	      21 allocs/op
+PASS
+ok  	trie-trunk/go/server/cache	2.568s

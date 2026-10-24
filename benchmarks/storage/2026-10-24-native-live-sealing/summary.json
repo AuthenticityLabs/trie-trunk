@@ -1,0 +1,156 @@
+{
+  "before": {
+    "BenchmarkResidentObjectHistory/1/pending-10": [
+      788.6,
+      1088.0,
+      11
+    ],
+    "BenchmarkResidentObjectHistory/1/sealed-resident-10": [
+      898.8,
+      1216.0,
+      15
+    ],
+    "BenchmarkResidentObjectHistory/1/expired-resident-warm-disk-10": [
+      24276.0,
+      2812.0,
+      36
+    ],
+    "BenchmarkResidentObjectHistory/9/pending-10": [
+      1499.0,
+      3568.0,
+      17
+    ],
+    "BenchmarkResidentObjectHistory/9/sealed-resident-10": [
+      2249.0,
+      4096.0,
+      34
+    ],
+    "BenchmarkResidentObjectHistory/9/expired-resident-warm-disk-10": [
+      31044.0,
+      13707.0,
+      139
+    ],
+    "BenchmarkResidentObjectHistory/61/pending-10": [
+      3700.0,
+      11632.0,
+      19
+    ],
+    "BenchmarkResidentObjectHistory/61/sealed-resident-10": [
+      7924.0,
+      13760.0,
+      90
+    ],
+    "BenchmarkResidentObjectHistory/61/expired-resident-warm-disk-10": [
+      66814.0,
+      68819.0,
+      681
+    ]
+  },
+  "after": {
+    "BenchmarkResidentObjectHistory/1/pending-10": [
+      911.3,
+      976.0,
+      12
+    ],
+    "BenchmarkResidentObjectHistory/1/sealed-resident-10": [
+      961.0,
+      1056.0,
+      13
+    ],
+    "BenchmarkResidentObjectHistory/1/expired-resident-warm-disk-10": [
+      24446.0,
+      2700.0,
+      37
+    ],
+    "BenchmarkResidentObjectHistory/9/pending-10": [
+      1434.0,
+      1728.0,
+      14
+    ],
+    "BenchmarkResidentObjectHistory/9/sealed-resident-10": [
+      1480.0,
+      1808.0,
+      15
+    ],
+    "BenchmarkResidentObjectHistory/9/expired-resident-warm-disk-10": [
+      31178.0,
+      13591.0,
+      140
+    ],
+    "BenchmarkResidentObjectHistory/61/pending-10": [
+      4032.0,
+      5888.0,
+      14
+    ],
+    "BenchmarkResidentObjectHistory/61/sealed-resident-10": [
+      4061.0,
+      5968.0,
+      15
+    ],
+    "BenchmarkResidentObjectHistory/61/expired-resident-warm-disk-10": [
+      67193.0,
+      68692.0,
+      682
+    ]
+  },
+  "sealing-before-hour-transaction": {
+    "BenchmarkSealPhases/read/records=1000-10": {
+      "ns/op": 73041458.0,
+      "outside-lock-ns": 39874041.0,
+      "publication-ns": 390000.0,
+      "publication-wait-ns": 250.0,
+      "total-locked-ns": 32126833.0
+    },
+    "BenchmarkSealPhases/read/records=10000-10": {
+      "ns/op": 66985417.0,
+      "outside-lock-ns": 38314875.0,
+      "publication-ns": 2162000.0,
+      "publication-wait-ns": 125.0,
+      "total-locked-ns": 24831457.0
+    },
+    "BenchmarkSealPhases/write/records=1000-10": {
+      "ns/op": 81785333.0,
+      "outside-lock-ns": 45816833.0,
+      "publication-ns": 14580917.0,
+      "publication-wait-ns": 208.0,
+      "total-locked-ns": 35964209.0
+    },
+    "BenchmarkSealPhases/write/records=10000-10": {
+      "ns/op": 174884749.0,
+      "outside-lock-ns": 43880500.0,
+      "publication-ns": 109095042.0,
+      "publication-wait-ns": 166.0,
+      "total-locked-ns": 132974417.0
+    }
+  },
+  "sealing": {
+    "BenchmarkSealPhases/read/records=1000-10": {
+      "ns/op": 78547875.0,
+      "outside-lock-ns": 41935417.0,
+      "publication-ns": 481416.0,
+      "publication-wait-ns": 291.0,
+      "total-locked-ns": 35931458.0
+    },
+    "BenchmarkSealPhases/read/records=10000-10": {
+      "ns/op": 68982999.0,
+      "outside-lock-ns": 40100250.0,
+      "publication-ns": 2159583.0,
+      "publication-wait-ns": 84.0,
+      "total-locked-ns": 26865834.0
+    },
+    "BenchmarkSealPhases/write/records=1000-10": {
+      "ns/op": 79928500.0,
+      "outside-lock-ns": 37956750.0,
+      "publication-ns": 18989875.0,
+      "publication-wait-ns": 166.0,
+      "total-locked-ns": 42138501.0
+    },
+    "BenchmarkSealPhases/write/records=10000-10": {
+      "ns/op": 89982584.0,
+      "outside-lock-ns": 34210167.0,
+      "publication-ns": 31097458.0,
+      "publication-wait-ns": 166.0,
+      "total-locked-ns": 52869042.0
+    }
+  }
+}

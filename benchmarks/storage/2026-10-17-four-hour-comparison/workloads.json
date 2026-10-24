@@ -1,0 +1,2079 @@
+{
+  "Workloads": [
+    {
+      "Data": "burstfalse",
+      "Workload": "nearby",
+      "Scheme": "semantic4h",
+      "Containers": 6,
+      "DirectoryBytes": 1480,
+      "DirectoryContainers": 180,
+      "MatchedRows": 33287,
+      "CollectedRows": 33287,
+      "Steps": [
+        {
+          "Query": 1,
+          "Containers": 1,
+          "NewRows": 5547,
+          "MatchedRows": 4161,
+          "CumulativeRows": 5547
+        },
+        {
+          "Query": 2,
+          "Containers": 0,
+          "NewRows": 0,
+          "MatchedRows": 1387,
+          "CumulativeRows": 5547
+        },
+        {
+          "Query": 3,
+          "Containers": 0,
+          "NewRows": 0,
+          "MatchedRows": 4161,
+          "CumulativeRows": 5547
+        },
+        {
+          "Query": 4,
+          "Containers": 1,
+          "NewRows": 5548,
+          "MatchedRows": 8321,
+          "CumulativeRows": 11095
+        },
+        {
+          "Query": 5,
+          "Containers": 0,
+          "NewRows": 0,
+          "MatchedRows": 4161,
+          "CumulativeRows": 11095
+        },
+        {
+          "Query": 6,
+          "Containers": 2,
+          "NewRows": 11096,
+          "MatchedRows": 16643,
+          "CumulativeRows": 22191
+        },
+        {
+          "Query": 7,
+          "Containers": 0,
+          "NewRows": 0,
+          "MatchedRows": 4161,
+          "CumulativeRows": 22191
+        },
+        {
+          "Query": 8,
+          "Containers": 1,
+          "NewRows": 5548,
+          "MatchedRows": 4161,
+          "CumulativeRows": 27739
+        },
+        {
+          "Query": 9,
+          "Containers": 1,
+          "NewRows": 5548,
+          "MatchedRows": 33287,
+          "CumulativeRows": 33287
+        },
+        {
+          "Query": 10,
+          "Containers": 0,
+          "NewRows": 0,
+          "MatchedRows": 4161,
+          "CumulativeRows": 33287
+        }
+      ]
+    },
+    {
+      "Data": "burstfalse",
+      "Workload": "scattered_hour",
+      "Scheme": "semantic4h",
+      "Containers": 10,
+      "DirectoryBytes": 1480,
+      "DirectoryContainers": 180,
+      "MatchedRows": 13869,
+      "CollectedRows": 55478,
+      "Steps": [
+        {
+          "Query": 1,
+          "Containers": 1,
+          "NewRows": 5548,
+          "MatchedRows": 1387,
+          "CumulativeRows": 5548
+        },
+        {
+          "Query": 2,
+          "Containers": 1,
+          "NewRows": 5547,
+          "MatchedRows": 1387,
+          "CumulativeRows": 11095
+        },
+        {
+          "Query": 3,
+          "Containers": 1,
+          "NewRows": 5548,
+          "MatchedRows": 1387,
+          "CumulativeRows": 16643
+        },
+        {
+          "Query": 4,
+          "Containers": 1,
+          "NewRows": 5548,
+          "MatchedRows": 1387,
+          "CumulativeRows": 22191
+        },
+        {
+          "Query": 5,
+          "Containers": 1,
+          "NewRows": 5548,
+          "MatchedRows": 1387,
+          "CumulativeRows": 27739
+        },
+        {
+          "Query": 6,
+          "Containers": 1,
+          "NewRows": 5548,
+          "MatchedRows": 1387,
+          "CumulativeRows": 33287
+        },
+        {
+          "Query": 7,
+          "Containers": 1,
+          "NewRows": 5548,
+          "MatchedRows": 1387,
+          "CumulativeRows": 38835
+        },
+        {
+          "Query": 8,
+          "Containers": 1,
+          "NewRows": 5548,
+          "MatchedRows": 1387,
+          "CumulativeRows": 44383
+        },
+        {
+          "Query": 9,
+          "Containers": 1,
+          "NewRows": 5547,
+          "MatchedRows": 1386,
+          "CumulativeRows": 49930
+        },
+        {
+          "Query": 10,
+          "Containers": 1,
+          "NewRows": 5548,
+          "MatchedRows": 1387,
+          "CumulativeRows": 55478
+        }
+      ]
+    },
+    {
+      "Data": "burstfalse",
+      "Workload": "aligned_4h",
+      "Scheme": "semantic4h",
+      "Containers": 10,
+      "DirectoryBytes": 1480,
+      "DirectoryContainers": 180,
+      "MatchedRows": 55478,
+      "CollectedRows": 55478,
+      "Steps": [
+        {
+          "Query": 1,
+          "Containers": 1,
+          "NewRows": 5548,
+          "MatchedRows": 5548,
+          "CumulativeRows": 5548
+        },
+        {
+          "Query": 2,
+          "Containers": 1,
+          "NewRows": 5547,
+          "MatchedRows": 5547,
+          "CumulativeRows": 11095
+        },
+        {
+          "Query": 3,
+          "Containers": 1,
+          "NewRows": 5548,
+          "MatchedRows": 5548,
+          "CumulativeRows": 16643
+        },
+        {
+          "Query": 4,
+          "Containers": 1,
+          "NewRows": 5548,
+          "MatchedRows": 5548,
+          "CumulativeRows": 22191
+        },
+        {
+          "Query": 5,
+          "Containers": 1,
+          "NewRows": 5548,
+          "MatchedRows": 5548,
+          "CumulativeRows": 27739
+        },
+        {
+          "Query": 6,
+          "Containers": 1,
+          "NewRows": 5548,
+          "MatchedRows": 5548,
+          "CumulativeRows": 33287
+        },
+        {
+          "Query": 7,
+          "Containers": 1,
+          "NewRows": 5548,
+          "MatchedRows": 5548,
+          "CumulativeRows": 38835
+        },
+        {
+          "Query": 8,
+          "Containers": 1,
+          "NewRows": 5548,
+          "MatchedRows": 5548,
+          "CumulativeRows": 44383
+        },
+        {
+          "Query": 9,
+          "Containers": 1,
+          "NewRows": 5547,
+          "MatchedRows": 5547,
+          "CumulativeRows": 49930
+        },
+        {
+          "Query": 10,
+          "Containers": 1,
+          "NewRows": 5548,
+          "MatchedRows": 5548,
+          "CumulativeRows": 55478
+        }
+      ]
+    },
+    {
+      "Data": "burstfalse",
+      "Workload": "rolling_week",
+      "Scheme": "semantic4h",
+      "Containers": 96,
+      "DirectoryBytes": 1480,
+      "DirectoryContainers": 180,
+      "MatchedRows": 533980,
+      "CollectedRows": 533980,
+      "Steps": [
+        {
+          "Query": 1,
+          "Containers": 42,
+          "NewRows": 233009,
+          "MatchedRows": 233009,
+          "CumulativeRows": 233009
+        },
+        {
+          "Query": 2,
+          "Containers": 6,
+          "NewRows": 33287,
+          "MatchedRows": 233009,
+          "CumulativeRows": 266296
+        },
+        {
+          "Query": 3,
+          "Containers": 6,
+          "NewRows": 33288,
+          "MatchedRows": 233010,
+          "CumulativeRows": 299584
+        },
+        {
+          "Query": 4,
+          "Containers": 6,
+          "NewRows": 33287,
+          "MatchedRows": 233010,
+          "CumulativeRows": 332871
+        },
+        {
+          "Query": 5,
+          "Containers": 6,
+          "NewRows": 33287,
+          "MatchedRows": 233010,
+          "CumulativeRows": 366158
+        },
+        {
+          "Query": 6,
+          "Containers": 6,
+          "NewRows": 34674,
+          "MatchedRows": 234397,
+          "CumulativeRows": 400832
+        },
+        {
+          "Query": 7,
+          "Containers": 6,
+          "NewRows": 33287,
+          "MatchedRows": 234397,
+          "CumulativeRows": 434119
+        },
+        {
+          "Query": 8,
+          "Containers": 6,
+          "NewRows": 33287,
+          "MatchedRows": 234397,
+          "CumulativeRows": 467406
+        },
+        {
+          "Query": 9,
+          "Containers": 6,
+          "NewRows": 33287,
+          "MatchedRows": 234397,
+          "CumulativeRows": 500693
+        },
+        {
+          "Query": 10,
+          "Containers": 6,
+          "NewRows": 33287,
+          "MatchedRows": 234396,
+          "CumulativeRows": 533980
+        }
+      ]
+    },
+    {
+      "Data": "burstfalse",
+      "Workload": "nearby",
+      "Scheme": "epoch24",
+      "Containers": 7,
+      "DirectoryBytes": 1288,
+      "DirectoryContainers": 156,
+      "MatchedRows": 33287,
+      "CollectedRows": 45246,
+      "Steps": [
+        {
+          "Query": 1,
+          "Containers": 2,
+          "NewRows": 12927,
+          "MatchedRows": 4161,
+          "CumulativeRows": 12927
+        },
+        {
+          "Query": 2,
+          "Containers": 0,
+          "NewRows": 0,
+          "MatchedRows": 1387,
+          "CumulativeRows": 12927
+        },
+        {
+          "Query": 3,
+          "Containers": 0,
+          "NewRows": 0,
+          "MatchedRows": 4161,
+          "CumulativeRows": 12927
+        },
+        {
+          "Query": 4,
+          "Containers": 0,
+          "NewRows": 0,
+          "MatchedRows": 8321,
+          "CumulativeRows": 12927
+        },
+        {
+          "Query": 5,
+          "Containers": 1,
+          "NewRows": 6464,
+          "MatchedRows": 4161,
+          "CumulativeRows": 19391
+        },
+        {
+          "Query": 6,
+          "Containers": 0,
+          "NewRows": 0,
+          "MatchedRows": 16643,
+          "CumulativeRows": 19391
+        },
+        {
+          "Query": 7,
+          "Containers": 0,
+          "NewRows": 0,
+          "MatchedRows": 4161,
+          "CumulativeRows": 19391
+        },
+        {
+          "Query": 8,
+          "Containers": 1,
+          "NewRows": 6464,
+          "MatchedRows": 4161,
+          "CumulativeRows": 25855
+        },
+        {
+          "Query": 9,
+          "Containers": 3,
+          "NewRows": 19391,
+          "MatchedRows": 33287,
+          "CumulativeRows": 45246
+        },
+        {
+          "Query": 10,
+          "Containers": 0,
+          "NewRows": 0,
+          "MatchedRows": 4161,
+          "CumulativeRows": 45246
+        }
+      ]
+    },
+    {
+      "Data": "burstfalse",
+      "Workload": "scattered_hour",
+      "Scheme": "epoch24",
+      "Containers": 13,
+      "DirectoryBytes": 1288,
+      "DirectoryContainers": 156,
+      "MatchedRows": 13869,
+      "CollectedRows": 84028,
+      "Steps": [
+        {
+          "Query": 1,
+          "Containers": 1,
+          "NewRows": 6464,
+          "MatchedRows": 1387,
+          "CumulativeRows": 6464
+        },
+        {
+          "Query": 2,
+          "Containers": 1,
+          "NewRows": 6463,
+          "MatchedRows": 1387,
+          "CumulativeRows": 12927
+        },
+        {
+          "Query": 3,
+          "Containers": 1,
+          "NewRows": 6464,
+          "MatchedRows": 1387,
+          "CumulativeRows": 19391
+        },
+        {
+          "Query": 4,
+          "Containers": 2,
+          "NewRows": 12927,
+          "MatchedRows": 1387,
+          "CumulativeRows": 32318
+        },
+        {
+          "Query": 5,
+          "Containers": 1,
+          "NewRows": 6464,
+          "MatchedRows": 1387,
+          "CumulativeRows": 38782
+        },
+        {
+          "Query": 6,
+          "Containers": 1,
+          "NewRows": 6464,
+          "MatchedRows": 1387,
+          "CumulativeRows": 45246
+        },
+        {
+          "Query": 7,
+          "Containers": 1,
+          "NewRows": 6463,
+          "MatchedRows": 1387,
+          "CumulativeRows": 51709
+        },
+        {
+          "Query": 8,
+          "Containers": 2,
+          "NewRows": 12928,
+          "MatchedRows": 1387,
+          "CumulativeRows": 64637
+        },
+        {
+          "Query": 9,
+          "Containers": 1,
+          "NewRows": 6463,
+          "MatchedRows": 1386,
+          "CumulativeRows": 71100
+        },
+        {
+          "Query": 10,
+          "Containers": 2,
+          "NewRows": 12928,
+          "MatchedRows": 1387,
+          "CumulativeRows": 84028
+        }
+      ]
+    },
+    {
+      "Data": "burstfalse",
+      "Workload": "aligned_4h",
+      "Scheme": "epoch24",
+      "Containers": 18,
+      "DirectoryBytes": 1288,
+      "DirectoryContainers": 156,
+      "MatchedRows": 55478,
+      "CollectedRows": 116348,
+      "Steps": [
+        {
+          "Query": 1,
+          "Containers": 2,
+          "NewRows": 12928,
+          "MatchedRows": 5548,
+          "CumulativeRows": 12928
+        },
+        {
+          "Query": 2,
+          "Containers": 2,
+          "NewRows": 12927,
+          "MatchedRows": 5547,
+          "CumulativeRows": 25855
+        },
+        {
+          "Query": 3,
+          "Containers": 1,
+          "NewRows": 6464,
+          "MatchedRows": 5548,
+          "CumulativeRows": 32319
+        },
+        {
+          "Query": 4,
+          "Containers": 2,
+          "NewRows": 12927,
+          "MatchedRows": 5548,
+          "CumulativeRows": 45246
+        },
+        {
+          "Query": 5,
+          "Containers": 2,
+          "NewRows": 12928,
+          "MatchedRows": 5548,
+          "CumulativeRows": 58174
+        },
+        {
+          "Query": 6,
+          "Containers": 2,
+          "NewRows": 12928,
+          "MatchedRows": 5548,
+          "CumulativeRows": 71102
+        },
+        {
+          "Query": 7,
+          "Containers": 1,
+          "NewRows": 6463,
+          "MatchedRows": 5548,
+          "CumulativeRows": 77565
+        },
+        {
+          "Query": 8,
+          "Containers": 2,
+          "NewRows": 12928,
+          "MatchedRows": 5548,
+          "CumulativeRows": 90493
+        },
+        {
+          "Query": 9,
+          "Containers": 2,
+          "NewRows": 12927,
+          "MatchedRows": 5547,
+          "CumulativeRows": 103420
+        },
+        {
+          "Query": 10,
+          "Containers": 2,
+          "NewRows": 12928,
+          "MatchedRows": 5548,
+          "CumulativeRows": 116348
+        }
+      ]
+    },
+    {
+      "Data": "burstfalse",
+      "Workload": "rolling_week",
+      "Scheme": "epoch24",
+      "Containers": 84,
+      "DirectoryBytes": 1288,
+      "DirectoryContainers": 156,
+      "MatchedRows": 533980,
+      "CollectedRows": 542952,
+      "Steps": [
+        {
+          "Query": 1,
+          "Containers": 37,
+          "NewRows": 239158,
+          "MatchedRows": 233009,
+          "CumulativeRows": 239158
+        },
+        {
+          "Query": 2,
+          "Containers": 5,
+          "NewRows": 32318,
+          "MatchedRows": 233009,
+          "CumulativeRows": 271476
+        },
+        {
+          "Query": 3,
+          "Containers": 5,
+          "NewRows": 32319,
+          "MatchedRows": 233010,
+          "CumulativeRows": 303795
+        },
+        {
+          "Query": 4,
+          "Containers": 6,
+          "NewRows": 38782,
+          "MatchedRows": 233010,
+          "CumulativeRows": 342577
+        },
+        {
+          "Query": 5,
+          "Containers": 5,
+          "NewRows": 32319,
+          "MatchedRows": 233010,
+          "CumulativeRows": 374896
+        },
+        {
+          "Query": 6,
+          "Containers": 5,
+          "NewRows": 32318,
+          "MatchedRows": 234397,
+          "CumulativeRows": 407214
+        },
+        {
+          "Query": 7,
+          "Containers": 5,
+          "NewRows": 32319,
+          "MatchedRows": 234397,
+          "CumulativeRows": 439533
+        },
+        {
+          "Query": 8,
+          "Containers": 5,
+          "NewRows": 32318,
+          "MatchedRows": 234397,
+          "CumulativeRows": 471851
+        },
+        {
+          "Query": 9,
+          "Containers": 6,
+          "NewRows": 38783,
+          "MatchedRows": 234397,
+          "CumulativeRows": 510634
+        },
+        {
+          "Query": 10,
+          "Containers": 5,
+          "NewRows": 32318,
+          "MatchedRows": 234396,
+          "CumulativeRows": 542952
+        }
+      ]
+    },
+    {
+      "Data": "burstfalse",
+      "Workload": "nearby",
+      "Scheme": "epoch4h_control",
+      "Containers": 6,
+      "DirectoryBytes": 1488,
+      "DirectoryContainers": 181,
+      "MatchedRows": 33287,
+      "CollectedRows": 33287,
+      "Steps": [
+        {
+          "Query": 1,
+          "Containers": 1,
+          "NewRows": 5547,
+          "MatchedRows": 4161,
+          "CumulativeRows": 5547
+        },
+        {
+          "Query": 2,
+          "Containers": 0,
+          "NewRows": 0,
+          "MatchedRows": 1387,
+          "CumulativeRows": 5547
+        },
+        {
+          "Query": 3,
+          "Containers": 0,
+          "NewRows": 0,
+          "MatchedRows": 4161,
+          "CumulativeRows": 5547
+        },
+        {
+          "Query": 4,
+          "Containers": 1,
+          "NewRows": 5548,
+          "MatchedRows": 8321,
+          "CumulativeRows": 11095
+        },
+        {
+          "Query": 5,
+          "Containers": 0,
+          "NewRows": 0,
+          "MatchedRows": 4161,
+          "CumulativeRows": 11095
+        },
+        {
+          "Query": 6,
+          "Containers": 2,
+          "NewRows": 11096,
+          "MatchedRows": 16643,
+          "CumulativeRows": 22191
+        },
+        {
+          "Query": 7,
+          "Containers": 0,
+          "NewRows": 0,
+          "MatchedRows": 4161,
+          "CumulativeRows": 22191
+        },
+        {
+          "Query": 8,
+          "Containers": 1,
+          "NewRows": 5548,
+          "MatchedRows": 4161,
+          "CumulativeRows": 27739
+        },
+        {
+          "Query": 9,
+          "Containers": 1,
+          "NewRows": 5548,
+          "MatchedRows": 33287,
+          "CumulativeRows": 33287
+        },
+        {
+          "Query": 10,
+          "Containers": 0,
+          "NewRows": 0,
+          "MatchedRows": 4161,
+          "CumulativeRows": 33287
+        }
+      ]
+    },
+    {
+      "Data": "burstfalse",
+      "Workload": "scattered_hour",
+      "Scheme": "epoch4h_control",
+      "Containers": 10,
+      "DirectoryBytes": 1488,
+      "DirectoryContainers": 181,
+      "MatchedRows": 13869,
+      "CollectedRows": 55478,
+      "Steps": [
+        {
+          "Query": 1,
+          "Containers": 1,
+          "NewRows": 5548,
+          "MatchedRows": 1387,
+          "CumulativeRows": 5548
+        },
+        {
+          "Query": 2,
+          "Containers": 1,
+          "NewRows": 5547,
+          "MatchedRows": 1387,
+          "CumulativeRows": 11095
+        },
+        {
+          "Query": 3,
+          "Containers": 1,
+          "NewRows": 5548,
+          "MatchedRows": 1387,
+          "CumulativeRows": 16643
+        },
+        {
+          "Query": 4,
+          "Containers": 1,
+          "NewRows": 5548,
+          "MatchedRows": 1387,
+          "CumulativeRows": 22191
+        },
+        {
+          "Query": 5,
+          "Containers": 1,
+          "NewRows": 5548,
+          "MatchedRows": 1387,
+          "CumulativeRows": 27739
+        },
+        {
+          "Query": 6,
+          "Containers": 1,
+          "NewRows": 5548,
+          "MatchedRows": 1387,
+          "CumulativeRows": 33287
+        },
+        {
+          "Query": 7,
+          "Containers": 1,
+          "NewRows": 5548,
+          "MatchedRows": 1387,
+          "CumulativeRows": 38835
+        },
+        {
+          "Query": 8,
+          "Containers": 1,
+          "NewRows": 5548,
+          "MatchedRows": 1387,
+          "CumulativeRows": 44383
+        },
+        {
+          "Query": 9,
+          "Containers": 1,
+          "NewRows": 5547,
+          "MatchedRows": 1386,
+          "CumulativeRows": 49930
+        },
+        {
+          "Query": 10,
+          "Containers": 1,
+          "NewRows": 5548,
+          "MatchedRows": 1387,
+          "CumulativeRows": 55478
+        }
+      ]
+    },
+    {
+      "Data": "burstfalse",
+      "Workload": "aligned_4h",
+      "Scheme": "epoch4h_control",
+      "Containers": 16,
+      "DirectoryBytes": 1488,
+      "DirectoryContainers": 181,
+      "MatchedRows": 55478,
+      "CollectedRows": 88765,
+      "Steps": [
+        {
+          "Query": 1,
+          "Containers": 1,
+          "NewRows": 5548,
+          "MatchedRows": 5548,
+          "CumulativeRows": 5548
+        },
+        {
+          "Query": 2,
+          "Containers": 1,
+          "NewRows": 5547,
+          "MatchedRows": 5547,
+          "CumulativeRows": 11095
+        },
+        {
+          "Query": 3,
+          "Containers": 1,
+          "NewRows": 5548,
+          "MatchedRows": 5548,
+          "CumulativeRows": 16643
+        },
+        {
+          "Query": 4,
+          "Containers": 1,
+          "NewRows": 5548,
+          "MatchedRows": 5548,
+          "CumulativeRows": 22191
+        },
+        {
+          "Query": 5,
+          "Containers": 2,
+          "NewRows": 11096,
+          "MatchedRows": 5548,
+          "CumulativeRows": 33287
+        },
+        {
+          "Query": 6,
+          "Containers": 2,
+          "NewRows": 11095,
+          "MatchedRows": 5548,
+          "CumulativeRows": 44382
+        },
+        {
+          "Query": 7,
+          "Containers": 2,
+          "NewRows": 11096,
+          "MatchedRows": 5548,
+          "CumulativeRows": 55478
+        },
+        {
+          "Query": 8,
+          "Containers": 2,
+          "NewRows": 11096,
+          "MatchedRows": 5548,
+          "CumulativeRows": 66574
+        },
+        {
+          "Query": 9,
+          "Containers": 2,
+          "NewRows": 11095,
+          "MatchedRows": 5547,
+          "CumulativeRows": 77669
+        },
+        {
+          "Query": 10,
+          "Containers": 2,
+          "NewRows": 11096,
+          "MatchedRows": 5548,
+          "CumulativeRows": 88765
+        }
+      ]
+    },
+    {
+      "Data": "burstfalse",
+      "Workload": "rolling_week",
+      "Scheme": "epoch4h_control",
+      "Containers": 97,
+      "DirectoryBytes": 1488,
+      "DirectoryContainers": 181,
+      "MatchedRows": 533980,
+      "CollectedRows": 538141,
+      "Steps": [
+        {
+          "Query": 1,
+          "Containers": 42,
+          "NewRows": 233009,
+          "MatchedRows": 233009,
+          "CumulativeRows": 233009
+        },
+        {
+          "Query": 2,
+          "Containers": 6,
+          "NewRows": 33287,
+          "MatchedRows": 233009,
+          "CumulativeRows": 266296
+        },
+        {
+          "Query": 3,
+          "Containers": 6,
+          "NewRows": 33288,
+          "MatchedRows": 233010,
+          "CumulativeRows": 299584
+        },
+        {
+          "Query": 4,
+          "Containers": 6,
+          "NewRows": 33287,
+          "MatchedRows": 233010,
+          "CumulativeRows": 332871
+        },
+        {
+          "Query": 5,
+          "Containers": 6,
+          "NewRows": 33287,
+          "MatchedRows": 233010,
+          "CumulativeRows": 366158
+        },
+        {
+          "Query": 6,
+          "Containers": 7,
+          "NewRows": 38835,
+          "MatchedRows": 234397,
+          "CumulativeRows": 404993
+        },
+        {
+          "Query": 7,
+          "Containers": 6,
+          "NewRows": 33287,
+          "MatchedRows": 234397,
+          "CumulativeRows": 438280
+        },
+        {
+          "Query": 8,
+          "Containers": 6,
+          "NewRows": 33287,
+          "MatchedRows": 234397,
+          "CumulativeRows": 471567
+        },
+        {
+          "Query": 9,
+          "Containers": 6,
+          "NewRows": 33287,
+          "MatchedRows": 234397,
+          "CumulativeRows": 504854
+        },
+        {
+          "Query": 10,
+          "Containers": 6,
+          "NewRows": 33287,
+          "MatchedRows": 234396,
+          "CumulativeRows": 538141
+        }
+      ]
+    },
+    {
+      "Data": "bursttrue",
+      "Workload": "nearby",
+      "Scheme": "semantic4h",
+      "Containers": 6,
+      "DirectoryBytes": 1480,
+      "DirectoryContainers": 180,
+      "MatchedRows": 33287,
+      "CollectedRows": 33287,
+      "Steps": [
+        {
+          "Query": 1,
+          "Containers": 1,
+          "NewRows": 0,
+          "MatchedRows": 0,
+          "CumulativeRows": 0
+        },
+        {
+          "Query": 2,
+          "Containers": 0,
+          "NewRows": 0,
+          "MatchedRows": 0,
+          "CumulativeRows": 0
+        },
+        {
+          "Query": 3,
+          "Containers": 0,
+          "NewRows": 0,
+          "MatchedRows": 0,
+          "CumulativeRows": 0
+        },
+        {
+          "Query": 4,
+          "Containers": 1,
+          "NewRows": 8322,
+          "MatchedRows": 8322,
+          "CumulativeRows": 8322
+        },
+        {
+          "Query": 5,
+          "Containers": 0,
+          "NewRows": 0,
+          "MatchedRows": 8322,
+          "CumulativeRows": 8322
+        },
+        {
+          "Query": 6,
+          "Containers": 2,
+          "NewRows": 16643,
+          "MatchedRows": 16643,
+          "CumulativeRows": 24965
+        },
+        {
+          "Query": 7,
+          "Containers": 0,
+          "NewRows": 0,
+          "MatchedRows": 0,
+          "CumulativeRows": 24965
+        },
+        {
+          "Query": 8,
+          "Containers": 1,
+          "NewRows": 0,
+          "MatchedRows": 8322,
+          "CumulativeRows": 24965
+        },
+        {
+          "Query": 9,
+          "Containers": 1,
+          "NewRows": 8322,
+          "MatchedRows": 33287,
+          "CumulativeRows": 33287
+        },
+        {
+          "Query": 10,
+          "Containers": 0,
+          "NewRows": 0,
+          "MatchedRows": 0,
+          "CumulativeRows": 33287
+        }
+      ]
+    },
+    {
+      "Data": "bursttrue",
+      "Workload": "scattered_hour",
+      "Scheme": "semantic4h",
+      "Containers": 10,
+      "DirectoryBytes": 1480,
+      "DirectoryContainers": 180,
+      "MatchedRows": 0,
+      "CollectedRows": 49931,
+      "Steps": [
+        {
+          "Query": 1,
+          "Containers": 1,
+          "NewRows": 0,
+          "MatchedRows": 0,
+          "CumulativeRows": 0
+        },
+        {
+          "Query": 2,
+          "Containers": 1,
+          "NewRows": 0,
+          "MatchedRows": 0,
+          "CumulativeRows": 0
+        },
+        {
+          "Query": 3,
+          "Containers": 1,
+          "NewRows": 0,
+          "MatchedRows": 0,
+          "CumulativeRows": 0
+        },
+        {
+          "Query": 4,
+          "Containers": 1,
+          "NewRows": 0,
+          "MatchedRows": 0,
+          "CumulativeRows": 0
+        },
+        {
+          "Query": 5,
+          "Containers": 1,
+          "NewRows": 8322,
+          "MatchedRows": 0,
+          "CumulativeRows": 8322
+        },
+        {
+          "Query": 6,
+          "Containers": 1,
+          "NewRows": 8321,
+          "MatchedRows": 0,
+          "CumulativeRows": 16643
+        },
+        {
+          "Query": 7,
+          "Containers": 1,
+          "NewRows": 8322,
+          "MatchedRows": 0,
+          "CumulativeRows": 24965
+        },
+        {
+          "Query": 8,
+          "Containers": 1,
+          "NewRows": 8322,
+          "MatchedRows": 0,
+          "CumulativeRows": 33287
+        },
+        {
+          "Query": 9,
+          "Containers": 1,
+          "NewRows": 8322,
+          "MatchedRows": 0,
+          "CumulativeRows": 41609
+        },
+        {
+          "Query": 10,
+          "Containers": 1,
+          "NewRows": 8322,
+          "MatchedRows": 0,
+          "CumulativeRows": 49931
+        }
+      ]
+    },
+    {
+      "Data": "bursttrue",
+      "Workload": "aligned_4h",
+      "Scheme": "semantic4h",
+      "Containers": 10,
+      "DirectoryBytes": 1480,
+      "DirectoryContainers": 180,
+      "MatchedRows": 49931,
+      "CollectedRows": 49931,
+      "Steps": [
+        {
+          "Query": 1,
+          "Containers": 1,
+          "NewRows": 0,
+          "MatchedRows": 0,
+          "CumulativeRows": 0
+        },
+        {
+          "Query": 2,
+          "Containers": 1,
+          "NewRows": 0,
+          "MatchedRows": 0,
+          "CumulativeRows": 0
+        },
+        {
+          "Query": 3,
+          "Containers": 1,
+          "NewRows": 0,
+          "MatchedRows": 0,
+          "CumulativeRows": 0
+        },
+        {
+          "Query": 4,
+          "Containers": 1,
+          "NewRows": 0,
+          "MatchedRows": 0,
+          "CumulativeRows": 0
+        },
+        {
+          "Query": 5,
+          "Containers": 1,
+          "NewRows": 8322,
+          "MatchedRows": 8322,
+          "CumulativeRows": 8322
+        },
+        {
+          "Query": 6,
+          "Containers": 1,
+          "NewRows": 8321,
+          "MatchedRows": 8321,
+          "CumulativeRows": 16643
+        },
+        {
+          "Query": 7,
+          "Containers": 1,
+          "NewRows": 8322,
+          "MatchedRows": 8322,
+          "CumulativeRows": 24965
+        },
+        {
+          "Query": 8,
+          "Containers": 1,
+          "NewRows": 8322,
+          "MatchedRows": 8322,
+          "CumulativeRows": 33287
+        },
+        {
+          "Query": 9,
+          "Containers": 1,
+          "NewRows": 8322,
+          "MatchedRows": 8322,
+          "CumulativeRows": 41609
+        },
+        {
+          "Query": 10,
+          "Containers": 1,
+          "NewRows": 8322,
+          "MatchedRows": 8322,
+          "CumulativeRows": 49931
+        }
+      ]
+    },
+    {
+      "Data": "bursttrue",
+      "Workload": "rolling_week",
+      "Scheme": "semantic4h",
+      "Containers": 96,
+      "DirectoryBytes": 1480,
+      "DirectoryContainers": 180,
+      "MatchedRows": 540915,
+      "CollectedRows": 540915,
+      "Steps": [
+        {
+          "Query": 1,
+          "Containers": 42,
+          "NewRows": 233009,
+          "MatchedRows": 233009,
+          "CumulativeRows": 233009
+        },
+        {
+          "Query": 2,
+          "Containers": 6,
+          "NewRows": 33287,
+          "MatchedRows": 233009,
+          "CumulativeRows": 266296
+        },
+        {
+          "Query": 3,
+          "Containers": 6,
+          "NewRows": 33288,
+          "MatchedRows": 233010,
+          "CumulativeRows": 299584
+        },
+        {
+          "Query": 4,
+          "Containers": 6,
+          "NewRows": 33287,
+          "MatchedRows": 233010,
+          "CumulativeRows": 332871
+        },
+        {
+          "Query": 5,
+          "Containers": 6,
+          "NewRows": 33287,
+          "MatchedRows": 233010,
+          "CumulativeRows": 366158
+        },
+        {
+          "Query": 6,
+          "Containers": 6,
+          "NewRows": 41609,
+          "MatchedRows": 241332,
+          "CumulativeRows": 407767
+        },
+        {
+          "Query": 7,
+          "Containers": 6,
+          "NewRows": 33287,
+          "MatchedRows": 241332,
+          "CumulativeRows": 441054
+        },
+        {
+          "Query": 8,
+          "Containers": 6,
+          "NewRows": 33287,
+          "MatchedRows": 241332,
+          "CumulativeRows": 474341
+        },
+        {
+          "Query": 9,
+          "Containers": 6,
+          "NewRows": 33287,
+          "MatchedRows": 241332,
+          "CumulativeRows": 507628
+        },
+        {
+          "Query": 10,
+          "Containers": 6,
+          "NewRows": 33287,
+          "MatchedRows": 241331,
+          "CumulativeRows": 540915
+        }
+      ]
+    },
+    {
+      "Data": "bursttrue",
+      "Workload": "nearby",
+      "Scheme": "epoch24",
+      "Containers": 7,
+      "DirectoryBytes": 1288,
+      "DirectoryContainers": 156,
+      "MatchedRows": 33287,
+      "CollectedRows": 41609,
+      "Steps": [
+        {
+          "Query": 1,
+          "Containers": 2,
+          "NewRows": 16643,
+          "MatchedRows": 0,
+          "CumulativeRows": 16643
+        },
+        {
+          "Query": 2,
+          "Containers": 0,
+          "NewRows": 0,
+          "MatchedRows": 0,
+          "CumulativeRows": 16643
+        },
+        {
+          "Query": 3,
+          "Containers": 0,
+          "NewRows": 0,
+          "MatchedRows": 0,
+          "CumulativeRows": 16643
+        },
+        {
+          "Query": 4,
+          "Containers": 0,
+          "NewRows": 0,
+          "MatchedRows": 8322,
+          "CumulativeRows": 16643
+        },
+        {
+          "Query": 5,
+          "Containers": 1,
+          "NewRows": 8322,
+          "MatchedRows": 8322,
+          "CumulativeRows": 24965
+        },
+        {
+          "Query": 6,
+          "Containers": 0,
+          "NewRows": 0,
+          "MatchedRows": 16643,
+          "CumulativeRows": 24965
+        },
+        {
+          "Query": 7,
+          "Containers": 0,
+          "NewRows": 0,
+          "MatchedRows": 0,
+          "CumulativeRows": 24965
+        },
+        {
+          "Query": 8,
+          "Containers": 1,
+          "NewRows": 0,
+          "MatchedRows": 8322,
+          "CumulativeRows": 24965
+        },
+        {
+          "Query": 9,
+          "Containers": 3,
+          "NewRows": 16644,
+          "MatchedRows": 33287,
+          "CumulativeRows": 41609
+        },
+        {
+          "Query": 10,
+          "Containers": 0,
+          "NewRows": 0,
+          "MatchedRows": 0,
+          "CumulativeRows": 41609
+        }
+      ]
+    },
+    {
+      "Data": "bursttrue",
+      "Workload": "scattered_hour",
+      "Scheme": "epoch24",
+      "Containers": 13,
+      "DirectoryBytes": 1288,
+      "DirectoryContainers": 156,
+      "MatchedRows": 0,
+      "CollectedRows": 83218,
+      "Steps": [
+        {
+          "Query": 1,
+          "Containers": 1,
+          "NewRows": 0,
+          "MatchedRows": 0,
+          "CumulativeRows": 0
+        },
+        {
+          "Query": 2,
+          "Containers": 1,
+          "NewRows": 8322,
+          "MatchedRows": 0,
+          "CumulativeRows": 8322
+        },
+        {
+          "Query": 3,
+          "Containers": 1,
+          "NewRows": 8321,
+          "MatchedRows": 0,
+          "CumulativeRows": 16643
+        },
+        {
+          "Query": 4,
+          "Containers": 2,
+          "NewRows": 16644,
+          "MatchedRows": 0,
+          "CumulativeRows": 33287
+        },
+        {
+          "Query": 5,
+          "Containers": 1,
+          "NewRows": 8322,
+          "MatchedRows": 0,
+          "CumulativeRows": 41609
+        },
+        {
+          "Query": 6,
+          "Containers": 1,
+          "NewRows": 8321,
+          "MatchedRows": 0,
+          "CumulativeRows": 49930
+        },
+        {
+          "Query": 7,
+          "Containers": 1,
+          "NewRows": 8322,
+          "MatchedRows": 0,
+          "CumulativeRows": 58252
+        },
+        {
+          "Query": 8,
+          "Containers": 2,
+          "NewRows": 8322,
+          "MatchedRows": 0,
+          "CumulativeRows": 66574
+        },
+        {
+          "Query": 9,
+          "Containers": 1,
+          "NewRows": 8322,
+          "MatchedRows": 0,
+          "CumulativeRows": 74896
+        },
+        {
+          "Query": 10,
+          "Containers": 2,
+          "NewRows": 8322,
+          "MatchedRows": 0,
+          "CumulativeRows": 83218
+        }
+      ]
+    },
+    {
+      "Data": "bursttrue",
+      "Workload": "aligned_4h",
+      "Scheme": "epoch24",
+      "Containers": 18,
+      "DirectoryBytes": 1288,
+      "DirectoryContainers": 156,
+      "MatchedRows": 49931,
+      "CollectedRows": 116504,
+      "Steps": [
+        {
+          "Query": 1,
+          "Containers": 2,
+          "NewRows": 8322,
+          "MatchedRows": 0,
+          "CumulativeRows": 8322
+        },
+        {
+          "Query": 2,
+          "Containers": 2,
+          "NewRows": 16643,
+          "MatchedRows": 0,
+          "CumulativeRows": 24965
+        },
+        {
+          "Query": 3,
+          "Containers": 1,
+          "NewRows": 8321,
+          "MatchedRows": 0,
+          "CumulativeRows": 33286
+        },
+        {
+          "Query": 4,
+          "Containers": 2,
+          "NewRows": 16644,
+          "MatchedRows": 0,
+          "CumulativeRows": 49930
+        },
+        {
+          "Query": 5,
+          "Containers": 2,
+          "NewRows": 8322,
+          "MatchedRows": 8322,
+          "CumulativeRows": 58252
+        },
+        {
+          "Query": 6,
+          "Containers": 2,
+          "NewRows": 16643,
+          "MatchedRows": 8321,
+          "CumulativeRows": 74895
+        },
+        {
+          "Query": 7,
+          "Containers": 1,
+          "NewRows": 8322,
+          "MatchedRows": 8322,
+          "CumulativeRows": 83217
+        },
+        {
+          "Query": 8,
+          "Containers": 2,
+          "NewRows": 8322,
+          "MatchedRows": 8322,
+          "CumulativeRows": 91539
+        },
+        {
+          "Query": 9,
+          "Containers": 2,
+          "NewRows": 16643,
+          "MatchedRows": 8322,
+          "CumulativeRows": 108182
+        },
+        {
+          "Query": 10,
+          "Containers": 2,
+          "NewRows": 8322,
+          "MatchedRows": 8322,
+          "CumulativeRows": 116504
+        }
+      ]
+    },
+    {
+      "Data": "bursttrue",
+      "Workload": "rolling_week",
+      "Scheme": "epoch24",
+      "Containers": 84,
+      "DirectoryBytes": 1288,
+      "DirectoryContainers": 156,
+      "MatchedRows": 540915,
+      "CollectedRows": 540915,
+      "Steps": [
+        {
+          "Query": 1,
+          "Containers": 37,
+          "NewRows": 241331,
+          "MatchedRows": 233009,
+          "CumulativeRows": 241331
+        },
+        {
+          "Query": 2,
+          "Containers": 5,
+          "NewRows": 33287,
+          "MatchedRows": 233009,
+          "CumulativeRows": 274618
+        },
+        {
+          "Query": 3,
+          "Containers": 5,
+          "NewRows": 33224,
+          "MatchedRows": 233010,
+          "CumulativeRows": 307842
+        },
+        {
+          "Query": 4,
+          "Containers": 6,
+          "NewRows": 33350,
+          "MatchedRows": 233010,
+          "CumulativeRows": 341192
+        },
+        {
+          "Query": 5,
+          "Containers": 5,
+          "NewRows": 33287,
+          "MatchedRows": 233010,
+          "CumulativeRows": 374479
+        },
+        {
+          "Query": 6,
+          "Containers": 5,
+          "NewRows": 33288,
+          "MatchedRows": 241332,
+          "CumulativeRows": 407767
+        },
+        {
+          "Query": 7,
+          "Containers": 5,
+          "NewRows": 33287,
+          "MatchedRows": 241332,
+          "CumulativeRows": 441054
+        },
+        {
+          "Query": 8,
+          "Containers": 5,
+          "NewRows": 33287,
+          "MatchedRows": 241332,
+          "CumulativeRows": 474341
+        },
+        {
+          "Query": 9,
+          "Containers": 6,
+          "NewRows": 33287,
+          "MatchedRows": 241332,
+          "CumulativeRows": 507628
+        },
+        {
+          "Query": 10,
+          "Containers": 5,
+          "NewRows": 33287,
+          "MatchedRows": 241331,
+          "CumulativeRows": 540915
+        }
+      ]
+    },
+    {
+      "Data": "bursttrue",
+      "Workload": "nearby",
+      "Scheme": "epoch4h_control",
+      "Containers": 6,
+      "DirectoryBytes": 1488,
+      "DirectoryContainers": 181,
+      "MatchedRows": 33287,
+      "CollectedRows": 33287,
+      "Steps": [
+        {
+          "Query": 1,
+          "Containers": 1,
+          "NewRows": 0,
+          "MatchedRows": 0,
+          "CumulativeRows": 0
+        },
+        {
+          "Query": 2,
+          "Containers": 0,
+          "NewRows": 0,
+          "MatchedRows": 0,
+          "CumulativeRows": 0
+        },
+        {
+          "Query": 3,
+          "Containers": 0,
+          "NewRows": 0,
+          "MatchedRows": 0,
+          "CumulativeRows": 0
+        },
+        {
+          "Query": 4,
+          "Containers": 1,
+          "NewRows": 8322,
+          "MatchedRows": 8322,
+          "CumulativeRows": 8322
+        },
+        {
+          "Query": 5,
+          "Containers": 0,
+          "NewRows": 0,
+          "MatchedRows": 8322,
+          "CumulativeRows": 8322
+        },
+        {
+          "Query": 6,
+          "Containers": 2,
+          "NewRows": 16643,
+          "MatchedRows": 16643,
+          "CumulativeRows": 24965
+        },
+        {
+          "Query": 7,
+          "Containers": 0,
+          "NewRows": 0,
+          "MatchedRows": 0,
+          "CumulativeRows": 24965
+        },
+        {
+          "Query": 8,
+          "Containers": 1,
+          "NewRows": 0,
+          "MatchedRows": 8322,
+          "CumulativeRows": 24965
+        },
+        {
+          "Query": 9,
+          "Containers": 1,
+          "NewRows": 8322,
+          "MatchedRows": 33287,
+          "CumulativeRows": 33287
+        },
+        {
+          "Query": 10,
+          "Containers": 0,
+          "NewRows": 0,
+          "MatchedRows": 0,
+          "CumulativeRows": 33287
+        }
+      ]
+    },
+    {
+      "Data": "bursttrue",
+      "Workload": "scattered_hour",
+      "Scheme": "epoch4h_control",
+      "Containers": 10,
+      "DirectoryBytes": 1488,
+      "DirectoryContainers": 181,
+      "MatchedRows": 0,
+      "CollectedRows": 0,
+      "Steps": [
+        {
+          "Query": 1,
+          "Containers": 1,
+          "NewRows": 0,
+          "MatchedRows": 0,
+          "CumulativeRows": 0
+        },
+        {
+          "Query": 2,
+          "Containers": 1,
+          "NewRows": 0,
+          "MatchedRows": 0,
+          "CumulativeRows": 0
+        },
+        {
+          "Query": 3,
+          "Containers": 1,
+          "NewRows": 0,
+          "MatchedRows": 0,
+          "CumulativeRows": 0
+        },
+        {
+          "Query": 4,
+          "Containers": 1,
+          "NewRows": 0,
+          "MatchedRows": 0,
+          "CumulativeRows": 0
+        },
+        {
+          "Query": 5,
+          "Containers": 1,
+          "NewRows": 0,
+          "MatchedRows": 0,
+          "CumulativeRows": 0
+        },
+        {
+          "Query": 6,
+          "Containers": 1,
+          "NewRows": 0,
+          "MatchedRows": 0,
+          "CumulativeRows": 0
+        },
+        {
+          "Query": 7,
+          "Containers": 1,
+          "NewRows": 0,
+          "MatchedRows": 0,
+          "CumulativeRows": 0
+        },
+        {
+          "Query": 8,
+          "Containers": 1,
+          "NewRows": 0,
+          "MatchedRows": 0,
+          "CumulativeRows": 0
+        },
+        {
+          "Query": 9,
+          "Containers": 1,
+          "NewRows": 0,
+          "MatchedRows": 0,
+          "CumulativeRows": 0
+        },
+        {
+          "Query": 10,
+          "Containers": 1,
+          "NewRows": 0,
+          "MatchedRows": 0,
+          "CumulativeRows": 0
+        }
+      ]
+    },
+    {
+      "Data": "bursttrue",
+      "Workload": "aligned_4h",
+      "Scheme": "epoch4h_control",
+      "Containers": 16,
+      "DirectoryBytes": 1488,
+      "DirectoryContainers": 181,
+      "MatchedRows": 49931,
+      "CollectedRows": 49931,
+      "Steps": [
+        {
+          "Query": 1,
+          "Containers": 1,
+          "NewRows": 0,
+          "MatchedRows": 0,
+          "CumulativeRows": 0
+        },
+        {
+          "Query": 2,
+          "Containers": 1,
+          "NewRows": 0,
+          "MatchedRows": 0,
+          "CumulativeRows": 0
+        },
+        {
+          "Query": 3,
+          "Containers": 1,
+          "NewRows": 0,
+          "MatchedRows": 0,
+          "CumulativeRows": 0
+        },
+        {
+          "Query": 4,
+          "Containers": 1,
+          "NewRows": 0,
+          "MatchedRows": 0,
+          "CumulativeRows": 0
+        },
+        {
+          "Query": 5,
+          "Containers": 2,
+          "NewRows": 8322,
+          "MatchedRows": 8322,
+          "CumulativeRows": 8322
+        },
+        {
+          "Query": 6,
+          "Containers": 2,
+          "NewRows": 8321,
+          "MatchedRows": 8321,
+          "CumulativeRows": 16643
+        },
+        {
+          "Query": 7,
+          "Containers": 2,
+          "NewRows": 8322,
+          "MatchedRows": 8322,
+          "CumulativeRows": 24965
+        },
+        {
+          "Query": 8,
+          "Containers": 2,
+          "NewRows": 8322,
+          "MatchedRows": 8322,
+          "CumulativeRows": 33287
+        },
+        {
+          "Query": 9,
+          "Containers": 2,
+          "NewRows": 8322,
+          "MatchedRows": 8322,
+          "CumulativeRows": 41609
+        },
+        {
+          "Query": 10,
+          "Containers": 2,
+          "NewRows": 8322,
+          "MatchedRows": 8322,
+          "CumulativeRows": 49931
+        }
+      ]
+    },
+    {
+      "Data": "bursttrue",
+      "Workload": "rolling_week",
+      "Scheme": "epoch4h_control",
+      "Containers": 97,
+      "DirectoryBytes": 1488,
+      "DirectoryContainers": 181,
+      "MatchedRows": 540915,
+      "CollectedRows": 540915,
+      "Steps": [
+        {
+          "Query": 1,
+          "Containers": 42,
+          "NewRows": 233009,
+          "MatchedRows": 233009,
+          "CumulativeRows": 233009
+        },
+        {
+          "Query": 2,
+          "Containers": 6,
+          "NewRows": 33287,
+          "MatchedRows": 233009,
+          "CumulativeRows": 266296
+        },
+        {
+          "Query": 3,
+          "Containers": 6,
+          "NewRows": 33288,
+          "MatchedRows": 233010,
+          "CumulativeRows": 299584
+        },
+        {
+          "Query": 4,
+          "Containers": 6,
+          "NewRows": 33287,
+          "MatchedRows": 233010,
+          "CumulativeRows": 332871
+        },
+        {
+          "Query": 5,
+          "Containers": 6,
+          "NewRows": 33287,
+          "MatchedRows": 233010,
+          "CumulativeRows": 366158
+        },
+        {
+          "Query": 6,
+          "Containers": 7,
+          "NewRows": 41609,
+          "MatchedRows": 241332,
+          "CumulativeRows": 407767
+        },
+        {
+          "Query": 7,
+          "Containers": 6,
+          "NewRows": 33287,
+          "MatchedRows": 241332,
+          "CumulativeRows": 441054
+        },
+        {
+          "Query": 8,
+          "Containers": 6,
+          "NewRows": 33287,
+          "MatchedRows": 241332,
+          "CumulativeRows": 474341
+        },
+        {
+          "Query": 9,
+          "Containers": 6,
+          "NewRows": 33287,
+          "MatchedRows": 241332,
+          "CumulativeRows": 507628
+        },
+        {
+          "Query": 10,
+          "Containers": 6,
+          "NewRows": 33287,
+          "MatchedRows": 241331,
+          "CumulativeRows": 540915
+        }
+      ]
+    }
+  ],
+  "Cold": [
+    {
+      "Scheme": "semantic4h",
+      "Hours": 1,
+      "Samples": 10000,
+      "MeanHours": 5.0147,
+      "MaxHours": 9
+    },
+    {
+      "Scheme": "semantic4h",
+      "Hours": 3,
+      "Samples": 10000,
+      "MeanHours": 6.9992,
+      "MaxHours": 9
+    },
+    {
+      "Scheme": "semantic4h",
+      "Hours": 4,
+      "Samples": 10000,
+      "MeanHours": 8.0065,
+      "MaxHours": 9
+    },
+    {
+      "Scheme": "semantic4h",
+      "Hours": 24,
+      "Samples": 10000,
+      "MeanHours": 28.0101,
+      "MaxHours": 29
+    },
+    {
+      "Scheme": "semantic4h",
+      "Hours": 168,
+      "Samples": 10000,
+      "MeanHours": 172.002,
+      "MaxHours": 173
+    },
+    {
+      "Scheme": "epoch24",
+      "Hours": 1,
+      "Samples": 10000,
+      "MeanHours": 5.647863352889803,
+      "MaxHours": 9.320675555555555
+    },
+    {
+      "Scheme": "epoch24",
+      "Hours": 3,
+      "Samples": 10000,
+      "MeanHours": 7.6471482595568245,
+      "MaxHours": 9.320675555555555
+    },
+    {
+      "Scheme": "epoch24",
+      "Hours": 4,
+      "Samples": 10000,
+      "MeanHours": 8.649586915557041,
+      "MaxHours": 9.320675555555555
+    },
+    {
+      "Scheme": "epoch24",
+      "Hours": 24,
+      "Samples": 10000,
+      "MeanHours": 28.67272817778108,
+      "MaxHours": 32.62236444444444
+    },
+    {
+      "Scheme": "epoch24",
+      "Hours": 168,
+      "Samples": 10000,
+      "MeanHours": 172.6533977884242,
+      "MaxHours": 177.09283555555555
+    },
+    {
+      "Scheme": "epoch4h_control",
+      "Hours": 1,
+      "Samples": 10000,
+      "MeanHours": 5.0076,
+      "MaxHours": 8
+    },
+    {
+      "Scheme": "epoch4h_control",
+      "Hours": 3,
+      "Samples": 10000,
+      "MeanHours": 6.9844,
+      "MaxHours": 8
+    },
+    {
+      "Scheme": "epoch4h_control",
+      "Hours": 4,
+      "Samples": 10000,
+      "MeanHours": 8,
+      "MaxHours": 8
+    },
+    {
+      "Scheme": "epoch4h_control",
+      "Hours": 24,
+      "Samples": 10000,
+      "MeanHours": 28,
+      "MaxHours": 28
+    },
+    {
+      "Scheme": "epoch4h_control",
+      "Hours": 168,
+      "Samples": 10000,
+      "MeanHours": 172,
+      "MaxHours": 172
+    }
+  ]
+}

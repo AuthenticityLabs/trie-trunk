@@ -21,6 +21,13 @@ pub fn read_frame_bytes(
     }
     bytes.push(first[0]);
     append(input, &mut bytes, mask_len - 1, maximum)?;
+    let width_bytes = definition.width_bits(&bytes).div_ceil(8);
+    append(input, &mut bytes, width_bytes, maximum)?;
+    let mut at = mask_len;
+    let plane = definition
+        .plane(&bytes, &bytes[..mask_len], &mut at)
+        .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))?;
+    let mut width_bit = 0;
     let mut direct = 0usize;
     let mut offsets = 0;
     for (index, field) in definition.fields().iter().enumerate() {
@@ -33,6 +40,9 @@ pub fn read_frame_bytes(
                         Type::Array(_) => None,
                     })
                     .ok_or_else(|| invalid("invalid DIRECT field"))?;
+                let width = definition
+                    .wire_width(index, width, plane, &mut width_bit)
+                    .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))?;
                 direct = direct
                     .checked_add(width)
                     .ok_or_else(|| invalid("frame size overflow"))?;

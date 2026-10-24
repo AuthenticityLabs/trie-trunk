@@ -35,7 +35,7 @@ globalThis.onmessage = (event: MessageEvent) => {
           { id: data.id, reply },
           reply.batch
             ? [reply.batch.bytes, reply.batch.rows.buffer as ArrayBuffer]
-            : [],
+            : reply.nativePage ? [reply.nativePage.rows.buffer as ArrayBuffer,reply.nativePage.population.buffer as ArrayBuffer,reply.nativePage.offsets.buffer as ArrayBuffer] : [],
         );
       } catch (error) {
         port.postMessage({

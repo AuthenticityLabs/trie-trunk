@@ -1,0 +1,61 @@
+{
+  "engine": "chromium",
+  "version": "155.0.8059.85",
+  "platform": "darwin",
+  "arch": "arm64",
+  "results": [
+    {
+      "case": {
+        "name": "object-1-full",
+        "objects": 1,
+        "revisionCount": 65536,
+        "stride": 528384,
+        "slots": 1,
+        "seek": true
+      },
+      "before": {
+        "usage": 334,
+        "quota": 10737418574,
+        "details": {
+          "fileSystem": 334
+        }
+      },
+      "reserved": {
+        "usage": 334,
+        "quota": 10737418574,
+        "details": {
+          "fileSystem": 334
+        }
+      },
+      "closed": {
+        "usage": 524686,
+        "quota": 10737942926,
+        "details": {
+          "fileSystem": 524686
+        }
+      },
+      "logical": 524352,
+      "writeFlushMs": 333.7000000476837,
+      "records": 65537,
+      "dataBytes": 524304,
+      "disk": [
+        {
+          "path": "Default/File System/000/t/00/00000000",
+          "logical": 524352,
+          "allocated": 528384
+        }
+      ],
+      "restart": {
+        "verified": 65537,
+        "reopened": {
+          "usage": 334,
+          "quota": 10737418574,
+          "details": {
+            "fileSystem": 334
+          }
+        },
+        "headerReadUs": 1.7000000476837158
+      }
+    }
+  ]
+}

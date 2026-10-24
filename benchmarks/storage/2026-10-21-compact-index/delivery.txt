@@ -1,0 +1,18 @@
+goos: darwin
+goarch: arm64
+pkg: trie-trunk/go/server/cache
+cpu: Apple M1 Max
+BenchmarkSealedPACDelivery/1000/expand_then_gzip-10         	     921	   1100662 ns/op	      1000 records/op	     11131 wire-B/op	 2311354 B/op	   13528 allocs/op
+BenchmarkSealedPACDelivery/1000/expand_then_gzip-10         	    1094	   1103301 ns/op	      1000 records/op	     11131 wire-B/op	 2311384 B/op	   13529 allocs/op
+BenchmarkSealedPACDelivery/1000/expand_then_gzip-10         	    1098	   1102954 ns/op	      1000 records/op	     11131 wire-B/op	 2311384 B/op	   13529 allocs/op
+BenchmarkSealedPACDelivery/1000/whole_pac-10                	    5466	    212174 ns/op	      1000 records/op	     11897 wire-B/op	  256472 B/op	     135 allocs/op
+BenchmarkSealedPACDelivery/1000/whole_pac-10                	    5636	    211635 ns/op	      1000 records/op	     11897 wire-B/op	  259147 B/op	     135 allocs/op
+BenchmarkSealedPACDelivery/1000/whole_pac-10                	    5732	    209927 ns/op	      1000 records/op	     11897 wire-B/op	  252982 B/op	     135 allocs/op
+BenchmarkSealedPACDelivery/10000/expand_then_gzip-10        	     115	   9836484 ns/op	     10000 records/op	    102814 wire-B/op	11033134 B/op	  134655 allocs/op
+BenchmarkSealedPACDelivery/10000/expand_then_gzip-10        	     121	   9891239 ns/op	     10000 records/op	    102814 wire-B/op	11033126 B/op	  134655 allocs/op
+BenchmarkSealedPACDelivery/10000/expand_then_gzip-10        	     121	   9834380 ns/op	     10000 records/op	    102814 wire-B/op	11033036 B/op	  134655 allocs/op
+BenchmarkSealedPACDelivery/10000/whole_pac-10               	     705	   1691659 ns/op	     10000 records/op	    112607 wire-B/op	  510667 B/op	     351 allocs/op
+BenchmarkSealedPACDelivery/10000/whole_pac-10               	     709	   1694118 ns/op	     10000 records/op	    112607 wire-B/op	  516923 B/op	     351 allocs/op
+BenchmarkSealedPACDelivery/10000/whole_pac-10               	     706	   1697114 ns/op	     10000 records/op	    112607 wire-B/op	  520868 B/op	     351 allocs/op
+PASS
+ok  	trie-trunk/go/server/cache	65.491s

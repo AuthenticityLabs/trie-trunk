@@ -14,8 +14,9 @@ chrono = { version = "0.4.45", default-features = false, features = ["std"] }
 ciborium = "0.2.2"
 ciborium-ll = "0.2.2"
 crc32c = "0.6.8"
-serde = "1.0.228"
+serde = { version = "1.0.228", features = ["derive"] }
 serde_json = "1.0.150"
+tantivy = "0.25"
 
 [[bin]]
 name = "trunk-search"
@@ -24,3 +25,6 @@ path = "src/main.rs"
 [[bench]]
 name = "search"
 harness = false
+
+[lib]
+crate-type = ["rlib", "staticlib"]

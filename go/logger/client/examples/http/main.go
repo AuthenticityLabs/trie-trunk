@@ -1,6 +1,8 @@
 package main
 
 import (
+	"context"
+	"flag"
 	"fmt"
 	"log"
 	"net/http"
@@ -9,6 +11,7 @@ import (
 
 	"trie-trunk/go/codec"
 	logging "trie-trunk/go/logger/client"
+	"trie-trunk/go/logger/pil"
 	"trie-trunk/go/models"
 )
 
@@ -20,20 +23,40 @@ const (
 )
 
 func main() {
+	origin := flag.String("trunk", "", "PIL listener origin (omit for readable stdout)")
+	cacheName := flag.String("cache", "demo", "destination cache")
+	flag.Parse()
 	dictionary, err := codec.NewDictionary("customers/v1", map[string]map[uint16]string{
 		"service": {1: "customers"}, "resource": {1: "customer"}, "operation": {1: "lookup"}, "checkpoint": {1: "database"},
 	})
 	if err != nil {
 		log.Fatal(err)
 	}
-	logger, err := logging.New(os.Stdout, logging.Config{
+	config := logging.Config{
 		OnError:    func(err error) { log.Printf("log/response write failed: %v", err) },
-		Format:     codec.ReadableJSON, // Switch to CBOR for binary production output.
+		Format:     codec.ReadableJSON,
 		Dictionary: dictionary, Service: codec.Ref(uint16(CustomerService)), Version: "1.0.0",
-	})
+	}
+	var logger *logging.Logger
+	if *origin == "" {
+		logger, err = logging.New(os.Stdout, config)
+	} else {
+		definition, e := logging.BuildPILDefinition(pil.Binding{
+			Service: "customer", Resource: "requests", Major: 1, Timezone: "UTC",
+			Path: []string{"level", "service", "resource", "operation"},
+		}, dictionary, "16")
+		if e != nil {
+			log.Fatal(e)
+		}
+		logger, err = logging.NewPIL(context.Background(), pil.Config{
+			URL: *origin, Cache: *cacheName, Branch: "read", Definition: definition,
+			Token: os.Getenv("TRUNK_TOKEN"),
+		}, config)
+	}
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer logger.Close()
 	handler := logger.Handle(func(w http.ResponseWriter, r *http.Request) error {
 		entry := logging.FromContext(r.Context()).Resource(CustomerResource).Operation(LookupCustomer)
 		id := r.URL.Query().Get("id")

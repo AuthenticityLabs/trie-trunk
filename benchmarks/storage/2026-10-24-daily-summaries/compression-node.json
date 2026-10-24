@@ -1,0 +1,93 @@
+{
+  "runtime": "v26.5.0",
+  "note": "Native Node codec timings, not browser or Go timings. 32-byte envelope included in packet bytes.",
+  "results": [
+    {
+      "sample": 1,
+      "codec": "gzip6",
+      "decodedBytes": 551,
+      "packetBytes": 165,
+      "encodeMs": 0.01939303333333336,
+      "decodeMs": 0.0049785
+    },
+    {
+      "sample": 1,
+      "codec": "gzip9",
+      "decodedBytes": 551,
+      "packetBytes": 165,
+      "encodeMs": 0.020498633333333297,
+      "decodeMs": 0.003919667000000001
+    },
+    {
+      "sample": 1,
+      "codec": "brotli11",
+      "decodedBytes": 551,
+      "packetBytes": 169,
+      "encodeMs": 0.9667958333333334,
+      "decodeMs": 0.008021540999999998
+    },
+    {
+      "sample": 1,
+      "codec": "gzip9-DecompressionStream-Node",
+      "decodeMs": 0.7424959000000005
+    },
+    {
+      "sample": 2,
+      "codec": "gzip6",
+      "decodedBytes": 3402,
+      "packetBytes": 581,
+      "encodeMs": 0.05148333333333331,
+      "decodeMs": 0.0050726250000000025
+    },
+    {
+      "sample": 2,
+      "codec": "gzip9",
+      "decodedBytes": 3402,
+      "packetBytes": 569,
+      "encodeMs": 0.2182513666666665,
+      "decodeMs": 0.004053584000000001
+    },
+    {
+      "sample": 2,
+      "codec": "brotli11",
+      "decodedBytes": 3402,
+      "packetBytes": 543,
+      "encodeMs": 4.432634733333334,
+      "decodeMs": 0.010677416999999991
+    },
+    {
+      "sample": 2,
+      "codec": "gzip9-DecompressionStream-Node",
+      "decodeMs": 0.19649169999999952
+    },
+    {
+      "sample": 3,
+      "codec": "gzip6",
+      "decodedBytes": 2592,
+      "packetBytes": 478,
+      "encodeMs": 0.03985973333333467,
+      "decodeMs": 0.003061125000000004
+    },
+    {
+      "sample": 3,
+      "codec": "gzip9",
+      "decodedBytes": 2592,
+      "packetBytes": 469,
+      "encodeMs": 0.14664306666666485,
+      "decodeMs": 0.002752375000000029
+    },
+    {
+      "sample": 3,
+      "codec": "brotli11",
+      "decodedBytes": 2592,
+      "packetBytes": 443,
+      "encodeMs": 3.308195833333334,
+      "decodeMs": 0.008951582999999971
+    },
+    {
+      "sample": 3,
+      "codec": "gzip9-DecompressionStream-Node",
+      "decodeMs": 0.21100556666666156
+    }
+  ]
+}

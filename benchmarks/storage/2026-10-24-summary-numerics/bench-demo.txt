@@ -1,0 +1,30 @@
+goos: darwin
+goarch: arm64
+pkg: trie-trunk/go/server/cache
+cpu: Apple M1 Max
+BenchmarkSummaryNumericCodec/demo-20/u64/encode-10         	    3585	     89657 ns/op	       583.0 bytes/day	  826139 B/op	      61 allocs/op
+BenchmarkSummaryNumericCodec/demo-20/u64/encode-10         	    3748	     89246 ns/op	       583.0 bytes/day	  826138 B/op	      61 allocs/op
+BenchmarkSummaryNumericCodec/demo-20/u64/encode-10         	    3800	     89530 ns/op	       583.0 bytes/day	  826138 B/op	      61 allocs/op
+BenchmarkSummaryNumericCodec/demo-20/u64/decode-10         	   18128	     19690 ns/op	   55888 B/op	     181 allocs/op
+BenchmarkSummaryNumericCodec/demo-20/u64/decode-10         	   18172	     19775 ns/op	   55888 B/op	     181 allocs/op
+BenchmarkSummaryNumericCodec/demo-20/u64/decode-10         	   18099	     19608 ns/op	   55888 B/op	     181 allocs/op
+BenchmarkSummaryNumericCodec/demo-20/narrow/encode-10      	    3446	     97425 ns/op	       695.0 bytes/day	  825795 B/op	      64 allocs/op
+BenchmarkSummaryNumericCodec/demo-20/narrow/encode-10      	    3504	     92152 ns/op	       695.0 bytes/day	  825796 B/op	      64 allocs/op
+BenchmarkSummaryNumericCodec/demo-20/narrow/encode-10      	    3817	     92691 ns/op	       695.0 bytes/day	  825795 B/op	      64 allocs/op
+BenchmarkSummaryNumericCodec/demo-20/narrow/decode-10      	   17449	     20624 ns/op	   55120 B/op	     181 allocs/op
+BenchmarkSummaryNumericCodec/demo-20/narrow/decode-10      	   17527	     20518 ns/op	   55120 B/op	     181 allocs/op
+BenchmarkSummaryNumericCodec/demo-20/narrow/decode-10      	   17433	     20656 ns/op	   55120 B/op	     181 allocs/op
+BenchmarkSummaryNumericCodec/demo-20/based/encode-10       	    3510	     96193 ns/op	       691.0 bytes/day	  825794 B/op	      64 allocs/op
+BenchmarkSummaryNumericCodec/demo-20/based/encode-10       	    3772	     95595 ns/op	       691.0 bytes/day	  825794 B/op	      64 allocs/op
+BenchmarkSummaryNumericCodec/demo-20/based/encode-10       	    3772	     95377 ns/op	       691.0 bytes/day	  825793 B/op	      64 allocs/op
+BenchmarkSummaryNumericCodec/demo-20/based/decode-10       	   17282	     20634 ns/op	   55120 B/op	     181 allocs/op
+BenchmarkSummaryNumericCodec/demo-20/based/decode-10       	   17463	     20592 ns/op	   55120 B/op	     181 allocs/op
+BenchmarkSummaryNumericCodec/demo-20/based/decode-10       	   17534	     20719 ns/op	   55120 B/op	     181 allocs/op
+BenchmarkSummaryNumericCodec/demo-20/based-shuffle/encode-10         	    3530	     92327 ns/op	       681.0 bytes/day	  825912 B/op	      66 allocs/op
+BenchmarkSummaryNumericCodec/demo-20/based-shuffle/encode-10         	    3738	     92467 ns/op	       681.0 bytes/day	  825911 B/op	      66 allocs/op
+BenchmarkSummaryNumericCodec/demo-20/based-shuffle/encode-10         	    3745	     92722 ns/op	       681.0 bytes/day	  825914 B/op	      66 allocs/op
+BenchmarkSummaryNumericCodec/demo-20/based-shuffle/decode-10         	   17268	     20766 ns/op	   55240 B/op	     183 allocs/op
+BenchmarkSummaryNumericCodec/demo-20/based-shuffle/decode-10         	   17238	     20615 ns/op	   55240 B/op	     183 allocs/op
+BenchmarkSummaryNumericCodec/demo-20/based-shuffle/decode-10         	   17262	     20908 ns/op	   55240 B/op	     183 allocs/op
+PASS
+ok  	trie-trunk/go/server/cache	12.080s

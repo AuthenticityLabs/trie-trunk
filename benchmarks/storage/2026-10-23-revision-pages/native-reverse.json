@@ -1,0 +1,109 @@
+{
+  "engine": "native",
+  "platform": "darwin",
+  "arch": "arm64",
+  "results": [
+    {
+      "case": {
+        "name": "whole-page-holes-reverse",
+        "count": 1,
+        "stride": 16,
+        "reverse": true,
+        "id": 12,
+        "objects": 4096
+      },
+      "stages": [
+        {
+          "action": "prepare",
+          "measurement": {
+            "action": "prepare",
+            "logical": 8388608,
+            "writtenBytes": 14336,
+            "writeCalls": 512,
+            "milliseconds": 15.762541999999996
+          },
+          "checked": {
+            "verified": true,
+            "stage": "prepare",
+            "bytes": 8388608
+          },
+          "physical": {
+            "logical": 8388608,
+            "allocated": 8388608
+          }
+        },
+        {
+          "action": "fill",
+          "measurement": {
+            "action": "fill",
+            "logical": 8388608,
+            "writtenBytes": 512000,
+            "writeCalls": 256,
+            "milliseconds": 8.914458000000003
+          },
+          "checked": {
+            "verified": true,
+            "stage": "fill",
+            "bytes": 8388608
+          },
+          "physical": {
+            "logical": 8388608,
+            "allocated": 8388608
+          }
+        },
+        {
+          "action": "clear-records",
+          "measurement": {
+            "action": "clear-records",
+            "logical": 8388608,
+            "writtenBytes": 512000,
+            "writeCalls": 256,
+            "milliseconds": 7.857500000000002
+          },
+          "checked": {
+            "verified": true,
+            "stage": "clear-records",
+            "bytes": 8388608
+          },
+          "physical": {
+            "logical": 8388608,
+            "allocated": 8388608
+          }
+        },
+        {
+          "action": "zero-pages",
+          "measurement": {
+            "action": "zero-pages",
+            "logical": 8388608,
+            "writtenBytes": 8388608,
+            "writeCalls": 2048,
+            "milliseconds": 11.931666000000007
+          },
+          "checked": {
+            "verified": true,
+            "stage": "zero-pages",
+            "bytes": 8388608
+          },
+          "physical": {
+            "logical": 8388608,
+            "allocated": 8388608
+          }
+        },
+        {
+          "action": "truncate-half",
+          "measurement": {
+            "action": "truncate-half",
+            "logical": 4194304,
+            "writtenBytes": 0,
+            "writeCalls": 0,
+            "milliseconds": 3.5870419999999967
+          },
+          "physical": {
+            "logical": 4194304,
+            "allocated": 4194304
+          }
+        }
+      ]
+    }
+  ]
+}

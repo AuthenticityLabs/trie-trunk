@@ -1,0 +1,18 @@
+goos: darwin
+goarch: arm64
+pkg: trie-trunk/go/server/cache
+cpu: Apple M1 Max
+BenchmarkFixedCollectionExperiment/packed_26B_binary-10         	 7221633	       149.8 ns/op	       0 B/op	       0 allocs/op
+BenchmarkFixedCollectionExperiment/packed_26B_binary-10         	 8119020	       149.7 ns/op	       0 B/op	       0 allocs/op
+BenchmarkFixedCollectionExperiment/packed_26B_binary-10         	 8144125	       149.6 ns/op	       0 B/op	       0 allocs/op
+BenchmarkFixedCollectionExperiment/object_directory_then_revision_slot-10         	22831809	        52.56 ns/op	       0 B/op	       0 allocs/op
+BenchmarkFixedCollectionExperiment/object_directory_then_revision_slot-10         	22923584	        52.77 ns/op	       0 B/op	       0 allocs/op
+BenchmarkFixedCollectionExperiment/object_directory_then_revision_slot-10         	22845702	        52.63 ns/op	       0 B/op	       0 allocs/op
+BenchmarkFixedSegmentAddressExperiment/current_scattered_directory-10             	15804358	        75.60 ns/op	       0 B/op	       0 allocs/op
+BenchmarkFixedSegmentAddressExperiment/current_scattered_directory-10             	15941282	        75.60 ns/op	       0 B/op	       0 allocs/op
+BenchmarkFixedSegmentAddressExperiment/current_scattered_directory-10             	15846604	        76.34 ns/op	       0 B/op	       0 allocs/op
+BenchmarkFixedSegmentAddressExperiment/fixed_segment_arithmetic-10                	746000926	         1.620 ns/op	       0 B/op	       0 allocs/op
+BenchmarkFixedSegmentAddressExperiment/fixed_segment_arithmetic-10                	743789745	         1.583 ns/op	       0 B/op	       0 allocs/op
+BenchmarkFixedSegmentAddressExperiment/fixed_segment_arithmetic-10                	770392119	         1.557 ns/op	       0 B/op	       0 allocs/op
+PASS
+ok  	trie-trunk/go/server/cache	15.845s

@@ -1,0 +1,47 @@
+{
+  "platform": "macOS-27.0.1-arm64-arm-64bit-Mach-O",
+  "results": [
+    {
+      "case": "headers-every-2KiB",
+      "beforePunch": {
+        "logical": 8388608,
+        "allocated": 8388608
+      },
+      "writtenBytes": 229376,
+      "afterPunch": {
+        "logical": 8388608,
+        "allocated": 8388608
+      },
+      "punchCalls": 0,
+      "verified": true
+    },
+    {
+      "case": "one-page-in-sixteen",
+      "beforePunch": {
+        "logical": 8388608,
+        "allocated": 8388608
+      },
+      "writtenBytes": 14336,
+      "afterPunch": {
+        "logical": 8388608,
+        "allocated": 524288
+      },
+      "punchCalls": 128,
+      "verified": true
+    },
+    {
+      "case": "prior-wide-holes",
+      "beforePunch": {
+        "logical": 67108864,
+        "allocated": 33587200
+      },
+      "writtenBytes": 65536,
+      "afterPunch": {
+        "logical": 67108864,
+        "allocated": 65536
+      },
+      "punchCalls": 3,
+      "verified": true
+    }
+  ]
+}

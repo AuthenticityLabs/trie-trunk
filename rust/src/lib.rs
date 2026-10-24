@@ -227,3 +227,12 @@ mod tests {
 }
 
 pub mod pil;
+
+// Native Tantivy entry points used by Go; no subprocess or wire serialization.
+#[allow(dead_code)]
+#[path = "tantivy/mod.rs"]
+mod tantivy_engine;
+
+mod buffers;
+
+mod live;

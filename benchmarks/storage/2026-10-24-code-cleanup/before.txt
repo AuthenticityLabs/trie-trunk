@@ -1,0 +1,69 @@
+goos: darwin
+goarch: arm64
+pkg: trie-trunk/go/server/cache
+cpu: Apple M1 Max
+BenchmarkCollectionSlottedAccess/1/Latest-10         	  182317	      1161 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCollectionSlottedAccess/1/Latest-10         	  219534	      1090 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCollectionSlottedAccess/1/Latest-10         	  217930	      1104 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCollectionSlottedAccess/1/Exact-10          	  219373	      1157 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCollectionSlottedAccess/1/Exact-10          	  218168	      1099 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCollectionSlottedAccess/1/Exact-10          	  218168	      1150 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCollectionSlottedAccess/9/Latest-10         	  202276	      1204 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCollectionSlottedAccess/9/Latest-10         	  200199	      1178 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCollectionSlottedAccess/9/Latest-10         	  207892	      1221 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCollectionSlottedAccess/9/Exact-10          	  216762	      1210 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCollectionSlottedAccess/9/Exact-10          	  201952	      1201 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCollectionSlottedAccess/9/Exact-10          	  200481	      1210 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCollectionSlottedAccess/61/Latest-10        	  193195	      1225 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCollectionSlottedAccess/61/Latest-10        	  202188	      1122 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCollectionSlottedAccess/61/Latest-10        	  208856	      1153 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCollectionSlottedAccess/61/Exact-10         	  217191	      1114 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCollectionSlottedAccess/61/Exact-10         	  221372	      1234 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCollectionSlottedAccess/61/Exact-10         	  202158	      1120 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCollectionSlottedAccess/489/Latest-10       	  182499	      1315 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCollectionSlottedAccess/489/Latest-10       	  181087	      1378 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCollectionSlottedAccess/489/Latest-10       	  175189	      1386 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCollectionSlottedAccess/489/Exact-10        	  186042	      1421 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCollectionSlottedAccess/489/Exact-10        	  164884	      1388 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCollectionSlottedAccess/489/Exact-10        	  163392	      1392 ns/op	       0 B/op	       0 allocs/op
+--- FAIL: BenchmarkTantivyCandidates/1000/text
+    search_index_benchmark_test.go:90: full-text indexing is disabled for this resource
+BenchmarkTantivyCandidates/1000/numeric/scan-10      	     536	    388985 ns/op	  194644 B/op	    9950 allocs/op
+BenchmarkTantivyCandidates/1000/numeric/scan-10      	     610	    388959 ns/op	  194648 B/op	    9950 allocs/op
+BenchmarkTantivyCandidates/1000/numeric/scan-10      	     615	    388880 ns/op	  194647 B/op	    9950 allocs/op
+BenchmarkTantivyCandidates/1000/numeric/index-10     	    1164	    203226 ns/op	    3597 B/op	      62 allocs/op
+BenchmarkTantivyCandidates/1000/numeric/index-10     	    1113	    203204 ns/op	    3598 B/op	      62 allocs/op
+BenchmarkTantivyCandidates/1000/numeric/index-10     	    1173	    214421 ns/op	    3597 B/op	      62 allocs/op
+--- FAIL: BenchmarkTantivyCandidates/1000/compound
+    search_index_benchmark_test.go:90: full-text indexing is disabled for this resource
+--- FAIL: BenchmarkTantivyCandidates/1000
+    search_index_benchmark_test.go:82: rows=1000 canonical_bytes=256921 index_bytes=214609 ingest=89.034333ms index_build=117.804708ms
+--- FAIL: BenchmarkTantivyCandidates/10000/text
+    search_index_benchmark_test.go:90: full-text indexing is disabled for this resource
+BenchmarkTantivyCandidates/10000/numeric/scan-10     	      58	   3804008 ns/op	 1923810 B/op	   99954 allocs/op
+BenchmarkTantivyCandidates/10000/numeric/scan-10     	      64	   3773651 ns/op	 1923798 B/op	   99955 allocs/op
+BenchmarkTantivyCandidates/10000/numeric/scan-10     	      62	   3774595 ns/op	 1923786 B/op	   99954 allocs/op
+BenchmarkTantivyCandidates/10000/numeric/index-10    	     148	   1615510 ns/op	    3620 B/op	      62 allocs/op
+BenchmarkTantivyCandidates/10000/numeric/index-10    	     142	   1616188 ns/op	    3628 B/op	      62 allocs/op
+BenchmarkTantivyCandidates/10000/numeric/index-10    	     147	   1619224 ns/op	    3627 B/op	      62 allocs/op
+--- FAIL: BenchmarkTantivyCandidates/10000/compound
+    search_index_benchmark_test.go:90: full-text indexing is disabled for this resource
+--- FAIL: BenchmarkTantivyCandidates/10000
+    search_index_benchmark_test.go:82: rows=10000 canonical_bytes=1290301 index_bytes=1998355 ingest=146.096458ms index_build=470.957959ms
+--- FAIL: BenchmarkTantivyCandidates/50000/text
+    search_index_benchmark_test.go:90: full-text indexing is disabled for this resource
+BenchmarkTantivyCandidates/50000/numeric/scan-10     	      10	  20630375 ns/op	 9604328 B/op	  499957 allocs/op
+BenchmarkTantivyCandidates/50000/numeric/scan-10     	      12	  20267215 ns/op	 9604197 B/op	  499957 allocs/op
+BenchmarkTantivyCandidates/50000/numeric/scan-10     	      10	  20099462 ns/op	 9604156 B/op	  499956 allocs/op
+BenchmarkTantivyCandidates/50000/numeric/index-10    	      27	   7906005 ns/op	    3764 B/op	      62 allocs/op
+BenchmarkTantivyCandidates/50000/numeric/index-10    	      28	   7874871 ns/op	    3749 B/op	      62 allocs/op
+BenchmarkTantivyCandidates/50000/numeric/index-10    	      28	   7875632 ns/op	    3759 B/op	      62 allocs/op
+--- FAIL: BenchmarkTantivyCandidates/50000/compound
+    search_index_benchmark_test.go:90: full-text indexing is disabled for this resource
+--- FAIL: BenchmarkTantivyCandidates/50000
+    search_index_benchmark_test.go:82: rows=50000 canonical_bytes=5955232 index_bytes=11136481 ingest=388.883541ms index_build=2.437802417s
+--- FAIL: BenchmarkTantivyCandidates
+FAIL
+exit status 1
+FAIL	trie-trunk/go/server/cache	15.543s
+FAIL

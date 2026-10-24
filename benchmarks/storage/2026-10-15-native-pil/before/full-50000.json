@@ -1,0 +1,166 @@
+{
+  "aggregates": false,
+  "events": 50000,
+  "file_count": 11,
+  "fixture_sha256": "95bf7e878274733cce75360cfa08a65dbc4ea186ff7cf1adb602a787d6368c9f",
+  "format": 5,
+  "go": "go1.26.4",
+  "ingest_ns": 803351584,
+  "logical_bytes": {
+    ".cfg": 119,
+    ".idx": 2600064,
+    ".lock": 0,
+    ".map": 742,
+    ".pop": 3588954,
+    ".state": 64,
+    ".stats": 217,
+    ".tri": 3604
+  },
+  "native_bytes": {
+    "day_cached": {
+      "state": 55
+    },
+    "day_initial": {
+      "index": 86684,
+      "map": 619,
+      "population": 120024,
+      "state": 55,
+      "trie": 113
+    },
+    "three_hours_cached": {
+      "state": 55
+    },
+    "three_hours_initial": {
+      "index": 86684,
+      "map": 619,
+      "population": 15048,
+      "state": 55,
+      "trie": 113
+    }
+  },
+  "native_collection": {
+    "day_cached": {
+      "samples_ns": [
+        19458,
+        21834,
+        20833,
+        20292,
+        17541,
+        97333,
+        86000,
+        22500,
+        23875
+      ],
+      "p50_ns": 21834,
+      "p95_ns": 97333
+    },
+    "day_initial": {
+      "samples_ns": [
+        113833,
+        134167,
+        118875,
+        109375,
+        113792,
+        114958,
+        121375,
+        112708,
+        109250
+      ],
+      "p50_ns": 113833,
+      "p95_ns": 134167
+    },
+    "three_hours_cached": {
+      "samples_ns": [
+        12584,
+        10208,
+        34917,
+        10333,
+        10500,
+        10292,
+        10208,
+        10250,
+        10167
+      ],
+      "p50_ns": 10292,
+      "p95_ns": 34917
+    },
+    "three_hours_initial": {
+      "samples_ns": [
+        59833,
+        54959,
+        56333,
+        55041,
+        57708,
+        54958,
+        54583,
+        60375,
+        54333
+      ],
+      "p50_ns": 55041,
+      "p95_ns": 60375
+    }
+  },
+  "object_index": false,
+  "object_index_bytes": 0,
+  "platform": "darwin/arm64",
+  "reopen_ns": 53168250,
+  "result_counts": {
+    "all": 50000,
+    "day": 1667,
+    "three_hours": 209
+  },
+  "result_hashes": {
+    "all": "95bf7e878274733cce75360cfa08a65dbc4ea186ff7cf1adb602a787d6368c9f",
+    "day": "f13a41f0744f13d1770d997ba77dff4f8ec8189fc125e9e912f2698926125bc8",
+    "three_hours": "49930273ae3ee39168881a59cf57d26a1452c8bf12a4e2fc50dcbc8d3df2b335"
+  },
+  "row_width": 52,
+  "sparse": false,
+  "standalone_query": {
+    "all": {
+      "samples_ns": [
+        34762583,
+        35570291,
+        34813459,
+        36780500,
+        34982333,
+        34322417,
+        33874875,
+        34295500,
+        35131291
+      ],
+      "p50_ns": 34813459,
+      "p95_ns": 36780500
+    },
+    "day": {
+      "samples_ns": [
+        1101958,
+        1098333,
+        1296875,
+        1180042,
+        1100375,
+        1241250,
+        1142542,
+        1078750,
+        1251000
+      ],
+      "p50_ns": 1142542,
+      "p95_ns": 1296875
+    },
+    "three_hours": {
+      "samples_ns": [
+        153292,
+        149667,
+        149958,
+        150667,
+        143375,
+        143375,
+        139917,
+        142708,
+        143166
+      ],
+      "p50_ns": 143375,
+      "p95_ns": 153292
+    }
+  }
+}

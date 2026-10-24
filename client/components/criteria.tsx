@@ -1,6 +1,5 @@
 import { For } from "solid-js";
 import {
-  parameterNames,
   type Choices,
   type Parameters,
 } from "../services/search";
@@ -11,7 +10,9 @@ export function Criteria(props: {
   onParameters: (value: Parameters) => void;
   choices: Choices;
 }) {
-  function options(name: (typeof parameterNames)[number]) {
+  const names = () => [...new Set([...Object.keys(props.choices), ...Object.keys(props.parameters)])]
+    .filter(name => props.choices[name]?.length || props.parameters[name]);
+  function options(name: string) {
     const values = props.choices[name] ?? [];
     const selected = props.parameters[name];
     return selected && !values.includes(selected)
@@ -21,7 +22,7 @@ export function Criteria(props: {
 
   return (
     <div class="field-controls">
-      <For each={parameterNames}>
+      <For each={names()}>
         {(name) => (
           <label class="control">
             <span>{name[0].toUpperCase() + name.slice(1)}</span>

@@ -1,0 +1,30 @@
+goos: darwin
+goarch: arm64
+pkg: trie-trunk/go/server/cache
+cpu: Apple M1 Max
+BenchmarkColumnarSummaryPrototype/sparse/BuildColumnar-10         	     651	    280942 ns/op	    179512 file-bytes	 1305771 B/op	     743 allocs/op
+BenchmarkColumnarSummaryPrototype/sparse/BuildColumnar-10         	     642	    272673 ns/op	    179512 file-bytes	 1305747 B/op	     743 allocs/op
+BenchmarkColumnarSummaryPrototype/sparse/BuildColumnar-10         	     656	    276870 ns/op	    179512 file-bytes	 1305771 B/op	     743 allocs/op
+BenchmarkColumnarSummaryPrototype/sparse/BuildCurrent-10          	    1293	    139356 ns/op	    182232 file-bytes	  553997 B/op	    2160 allocs/op
+BenchmarkColumnarSummaryPrototype/sparse/BuildCurrent-10          	    1290	    138115 ns/op	    182232 file-bytes	  553998 B/op	    2160 allocs/op
+BenchmarkColumnarSummaryPrototype/sparse/BuildCurrent-10          	    1267	    138315 ns/op	    182232 file-bytes	  553992 B/op	    2160 allocs/op
+BenchmarkColumnarSummaryPrototype/sparse/ColumnCount-10           	13816836	        13.07 ns/op	       0 B/op	       0 allocs/op
+BenchmarkColumnarSummaryPrototype/sparse/ColumnCount-10           	13776344	        13.04 ns/op	       0 B/op	       0 allocs/op
+BenchmarkColumnarSummaryPrototype/sparse/ColumnCount-10           	13813257	        13.05 ns/op	       0 B/op	       0 allocs/op
+BenchmarkColumnarSummaryPrototype/sparse/ResidentRowCount-10      	27934221	         6.461 ns/op	       0 B/op	       0 allocs/op
+BenchmarkColumnarSummaryPrototype/sparse/ResidentRowCount-10      	27678825	         6.453 ns/op	       0 B/op	       0 allocs/op
+BenchmarkColumnarSummaryPrototype/sparse/ResidentRowCount-10      	28151391	         6.467 ns/op	       0 B/op	       0 allocs/op
+BenchmarkColumnarSummaryPrototype/dense/BuildColumnar-10          	       9	  17703324 ns/op	  11670712 file-bytes	151563603 B/op	     778 allocs/op
+BenchmarkColumnarSummaryPrototype/dense/BuildColumnar-10          	       9	  17660583 ns/op	  11670712 file-bytes	151563664 B/op	     779 allocs/op
+BenchmarkColumnarSummaryPrototype/dense/BuildColumnar-10          	       9	  17598787 ns/op	  11670712 file-bytes	151563699 B/op	     780 allocs/op
+BenchmarkColumnarSummaryPrototype/dense/BuildCurrent-10           	      54	   3333089 ns/op	  11742552 file-bytes	27465515 B/op	    2162 allocs/op
+BenchmarkColumnarSummaryPrototype/dense/BuildCurrent-10           	      54	   3325490 ns/op	  11742552 file-bytes	27465553 B/op	    2162 allocs/op
+BenchmarkColumnarSummaryPrototype/dense/BuildCurrent-10           	      56	   3323911 ns/op	  11742552 file-bytes	27465540 B/op	    2162 allocs/op
+BenchmarkColumnarSummaryPrototype/dense/ColumnCount-10            	  210715	       844.3 ns/op	       0 B/op	       0 allocs/op
+BenchmarkColumnarSummaryPrototype/dense/ColumnCount-10            	  213891	       843.3 ns/op	       0 B/op	       0 allocs/op
+BenchmarkColumnarSummaryPrototype/dense/ColumnCount-10            	  213843	       843.2 ns/op	       0 B/op	       0 allocs/op
+BenchmarkColumnarSummaryPrototype/dense/ResidentRowCount-10       	  257052	       695.7 ns/op	       0 B/op	       0 allocs/op
+BenchmarkColumnarSummaryPrototype/dense/ResidentRowCount-10       	  260920	       696.3 ns/op	       0 B/op	       0 allocs/op
+BenchmarkColumnarSummaryPrototype/dense/ResidentRowCount-10       	  260875	       697.9 ns/op	       0 B/op	       0 allocs/op
+PASS
+ok  	trie-trunk/go/server/cache	5.286s

@@ -1,0 +1,11 @@
+ok  	trie-trunk/go/server/cache	63.284s
+ok  	trie-trunk/go/server/serve	7.934s
+ok  	trie-trunk/go/logger/client	1.775s
+?   	trie-trunk/go/logger/client/examples/http	[no test files]
+?   	trie-trunk/go/logger/client/keys	[no test files]
+ok  	trie-trunk/go/logger/out	(cached)
+ok  	trie-trunk/go/logger/pil	4.546s
+?   	trie-trunk/go/server/ingest	[no test files]
+?   	trie-trunk/go/server/ingest/cbor	[no test files]
+?   	trie-trunk/go/server/ingest/json	[no test files]
+ok  	trie-trunk/go/server/ingest/sample	(cached)

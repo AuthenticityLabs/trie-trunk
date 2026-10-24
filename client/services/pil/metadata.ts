@@ -1,6 +1,6 @@
 import { cbor } from "./cbor.ts";
-import { compileFields, type Dictionary } from "../dictionary.ts";
-import type { PILDefinition } from "./layout.ts";
+import { compileFields, type Dictionary, type Fields } from "../dictionary.ts";
+import { resourceBinding, type PILDefinition } from "./layout.ts";
 export type Metadata = { digest: string; store: Uint8Array; pil: Uint8Array };
 export type Binding = { stream: number; digest: string; tap: string };
 export type Mapping = {
@@ -8,6 +8,7 @@ export type Mapping = {
   dictionary: Dictionary;
   keys: number[];
   codes: number[][];
+  native?: boolean;
 };
 export function compile(
   metadata: Metadata,
@@ -16,9 +17,54 @@ export function compile(
 ): Mapping {
   const store = cbor(metadata.store) as Record<string, any>;
   const def = cbor(metadata.pil) as PILDefinition;
+  const resource = resourceBinding(store);
+  if (resource) {
+    if (
+      metadata.store.length !== metadata.pil.length ||
+      metadata.store.some((byte, i) => byte !== metadata.pil[i])
+    ) throw Error("PIL/resource maps must be identical");
+    const adaptive = def.adaptive_integers === "16" || def.adaptive_integers === "32";
+    if (def.pil !== (adaptive ? 1 : 0) || !Array.isArray(def.fields)) {
+      throw Error("Unsupported PIL/resource definition");
+    }
+    const keys = def.fields.map((_, i) => i);
+    const fields: Fields = { keys: new Map(), names: new Map() };
+    for (const [i, f] of def.fields.entries()) {
+      const field = {
+        key: i,
+        name: f.name,
+        uuid: f.type === "UUID",
+        enums: new Map((f.values ?? []).map((v, j) => [j, v])),
+      };
+      fields.keys.set(i, field);
+      fields.names.set(f.name, field);
+    }
+    const id = fields.names.get(resource.roles.event_id);
+    if (!id?.uuid) throw Error("Missing event identity");
+    const path = new Set<number>();
+    for (const name of resource.path ?? []) {
+      const field = fields.names.get(name);
+      if (!field) throw Error("Invalid trie path");
+      path.add(field.key);
+    }
+    return {
+      native: true,
+      definition: def,
+      keys,
+      codes: def.fields.map((f) => (f.values ?? []).map((_, i) => i)),
+      dictionary: {
+        tap, digest: metadata.digest, version: def.version,
+        fields, id, path, headers,
+        revisionIdentity: resource.roles.revision_id ? fields.names.get(resource.roles.revision_id) : undefined,
+        objectIdentity: resource.roles.id && fields.names.has(resource.roles.id)
+          ? {field:fields.names.get(resource.roles.id)!,type:def.fields[fields.names.get(resource.roles.id)!.key].type} : undefined,
+      },
+    };
+  }
+
   if (
     (store["4"] !== "UTC" && !(typeof store["4"] === "string" && store["4"].length && [3, 4].includes(store["7"]?.["0"]))) ||
-    def.pil !== 0 ||
+    def.pil !== (def.adaptive_integers === "16" || def.adaptive_integers === "32" ? 1 : 0) ||
     def.version !== store["0"] ||
     def.definition !== `trunk:${metadata.digest}`
   )
@@ -107,7 +153,16 @@ export class Choices {
       compile(defs.get(b.digest)!, b.tap, headers),
     );
   }
-  choices(names: readonly string[]): Record<string, string[]> {
+  fields():import('../query').QueryField[]{
+    const fields=new Map<string,import('../query').QueryField>();
+    for(const m of this.mappings)for(const f of m.definition.fields){
+      const prior=fields.get(f.name);fields.set(f.name,{name:f.name,type:prior&&prior.type!==f.type?'mixed':f.type,values:[...new Set([...(prior?.values??[]),...(f.values??[])])]});
+    }
+    return [...fields.values()].sort((a,b)=>a.name.localeCompare(b.name));
+  }
+  choices(names: readonly string[] = [...new Set(this.mappings.flatMap(m =>
+    [...m.dictionary.fields.names].filter(([, field]) => field.enums.size).map(([name]) => name),
+  ))]): Record<string, string[]> {
     return Object.fromEntries(
       names.map((name) => [
         name,

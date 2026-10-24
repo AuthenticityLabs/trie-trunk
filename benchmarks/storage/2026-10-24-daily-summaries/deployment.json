@@ -1,0 +1,76 @@
+{
+  "url": "https://snoot.auth-enti.city",
+  "manifest": {
+    "Synthetic": true,
+    "Cache": "demo",
+    "Tenant": "local",
+    "From": "2026-09-24T18:50:18Z",
+    "To": "2026-10-24T18:50:18Z",
+    "Events": 50000,
+    "Resources": [
+      {
+        "Resource": "gateway/routes",
+        "Events": 10000,
+        "Branches": {
+          "debug": 200,
+          "error": 286,
+          "read": 3150,
+          "trace": 130,
+          "write": 6234
+        }
+      },
+      {
+        "Resource": "billing/invoices",
+        "Events": 10000,
+        "Branches": {
+          "debug": 200,
+          "error": 291,
+          "read": 3149,
+          "trace": 131,
+          "write": 6229
+        }
+      },
+      {
+        "Resource": "vault/secrets",
+        "Events": 10000,
+        "Branches": {
+          "debug": 199,
+          "error": 293,
+          "read": 3149,
+          "trace": 130,
+          "write": 6229
+        }
+      },
+      {
+        "Resource": "worker/jobs",
+        "Events": 10000,
+        "Branches": {
+          "debug": 200,
+          "error": 291,
+          "read": 3151,
+          "trace": 130,
+          "write": 6228
+        }
+      },
+      {
+        "Resource": "payment/transactions",
+        "Events": 10000,
+        "Branches": {
+          "debug": 201,
+          "error": 287,
+          "read": 3149,
+          "trace": 131,
+          "write": 6232
+        }
+      }
+    ]
+  },
+  "trunk_sha256": "0fcd7d3d047e74697260aa3139ed78ee7cefd5c03fcee6df49a57cad8890e3ea",
+  "summary_only": {
+    "events": 50000,
+    "packets": 465,
+    "bytes": 793162,
+    "repeat_packet_fetches": 0,
+    "event_pacs": 0
+  }
+}

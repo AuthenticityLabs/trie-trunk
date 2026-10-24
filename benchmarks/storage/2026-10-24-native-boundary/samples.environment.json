@@ -1,0 +1,16 @@
+{
+  "platform": "macOS-27.0.1-arm64-arm-64bit-Mach-O",
+  "machine": "arm64",
+  "go": "go version go1.26.4 darwin/arm64",
+  "rust": "rustc 1.97.1 (8bab26f4f 2026-07-14)",
+  "head": "4af4baaa62af645f9721aa84d12eadeb55fcd596",
+  "dirty": true,
+  "repeats": 3,
+  "chunk_bytes": 65536,
+  "source_sha256": {
+    "buffers.rs": "03cd1b8dbe0350f5e3dcd09e960fa4f860ec8c7d2a53e43d5aa09eb45c4b4f83",
+    "main.go": "2ada3537051558506d1939ba03eb725c521454181113b16aed62729349d24fd8",
+    "main_test.go": "c3cb876903fb7a102509c13e1c07c9201cca86bbf522867cd8122e7a0b30d537",
+    "native.go": "e4de1564f878a6ee08784b125abd7fafd825e1082a8663a7cb4014f0beb227dc"
+  }
+}

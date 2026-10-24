@@ -1,0 +1,802 @@
+{
+  "cases": {
+    "dense250k": {
+      "fixture": {
+        "collection_build_ms": [
+          504.85175,
+          494.744208
+        ],
+        "collection_bytes": [
+          12353536,
+          12353536
+        ],
+        "compact_idx": 4003920,
+        "events": 250000,
+        "full_idx": 5004900,
+        "objects": 27778,
+        "per_segment": 1024,
+        "segments": 245,
+        "shared_gzip_pac_bytes": 12050593,
+        "shared_pil_bytes": 31772780,
+        "shared_raw_pac_bytes": 30606940
+      },
+      "packed_collection": {
+        "4": {
+          "leaf_bytes": 1867776,
+          "leaf_pages": 456,
+          "packed_fence_bytes": 9120
+        },
+        "7": {
+          "leaf_bytes": 2777088,
+          "leaf_pages": 678,
+          "packed_fence_bytes": 13560
+        },
+        "8": {
+          "leaf_bytes": 2777088,
+          "leaf_pages": 678,
+          "packed_fence_bytes": 13560
+        }
+      },
+      "collection_publication": {
+        "current_directory_pages": 5,
+        "current_leaf_pages": 1000
+      },
+      "search": {
+        "direct": {
+          "build_ms": 10314.132624999998,
+          "bytes": 27574626,
+          "case": "dense250k",
+          "events": 250000,
+          "fast_field_ns": {
+            "scattered": 3.125833,
+            "sequential": 3.146458
+          },
+          "files": {
+            "fast": 23526,
+            "fieldnorm": 9250393,
+            "idx": 9602185,
+            "json": 8451,
+            "lock": 0,
+            "pos": 1492918,
+            "store": 1006109,
+            "term": 6191044
+          },
+          "merge_ms": 2720.443833,
+          "mode": "direct",
+          "queries": {
+            "compound": {
+              "matches": 1250,
+              "median_us": 1254.2079999999999
+            },
+            "numeric": {
+              "matches": 124999,
+              "median_us": 11884.959
+            },
+            "text": {
+              "matches": 2500,
+              "median_us": 1169.291
+            }
+          },
+          "scope": "broad"
+        },
+        "tuple24": {
+          "build_ms": 10496.143417000001,
+          "bytes": 27322708,
+          "case": "dense250k",
+          "events": 250000,
+          "fast_field_ns": {
+            "scattered": 3.12225,
+            "sequential": 3.143875
+          },
+          "files": {
+            "fast": 25018,
+            "fieldnorm": 9250393,
+            "idx": 9602185,
+            "json": 8451,
+            "lock": 0,
+            "pos": 1492918,
+            "store": 1006109,
+            "term": 5937634
+          },
+          "merge_ms": 2691.603459,
+          "mode": "tuple24",
+          "queries": {
+            "compound": {
+              "matches": 1250,
+              "median_us": 1246.959
+            },
+            "numeric": {
+              "matches": 124999,
+              "median_us": 12295.083
+            },
+            "text": {
+              "matches": 2500,
+              "median_us": 1228.625
+            }
+          },
+          "scope": "broad"
+        }
+      },
+      "compared_component_totals": {
+        "existing_collection": {
+          "compact_tuple": 74287104,
+          "full_direct": 75540002,
+          "compact_direct_control": 74539022
+        },
+        "repacked_collection": {
+          "compact_tuple": 64724216,
+          "full_direct": 65063362,
+          "compact_direct_control": 64976134
+        },
+        "no_collection_gzip": {
+          "compact_tuple": 43377221,
+          "full_direct": 44630119,
+          "compact_direct_control": 43629139
+        }
+      }
+    },
+    "dense250k_small_segments": {
+      "fixture": {
+        "collection_build_ms": [
+          484.774834,
+          490.546167
+        ],
+        "collection_bytes": [
+          12353536,
+          12353536
+        ],
+        "compact_idx": 4031264,
+        "events": 250000,
+        "full_idx": 5039080,
+        "objects": 27778,
+        "per_segment": 128,
+        "segments": 1954,
+        "shared_gzip_pac_bytes": 12504318,
+        "shared_pil_bytes": 31772780,
+        "shared_raw_pac_bytes": 30933724
+      },
+      "packed_collection": {
+        "4": {
+          "leaf_bytes": 1867776,
+          "leaf_pages": 456,
+          "packed_fence_bytes": 9120
+        },
+        "7": {
+          "leaf_bytes": 2777088,
+          "leaf_pages": 678,
+          "packed_fence_bytes": 13560
+        },
+        "8": {
+          "leaf_bytes": 2777088,
+          "leaf_pages": 678,
+          "packed_fence_bytes": 13560
+        }
+      },
+      "collection_publication": {
+        "current_directory_pages": 5,
+        "current_leaf_pages": 1000
+      },
+      "search": {
+        "direct": {
+          "build_ms": 10247.054291999999,
+          "bytes": 27485470,
+          "case": "dense250k_small_segments",
+          "events": 250000,
+          "fast_field_ns": {
+            "scattered": 3.307333,
+            "sequential": 3.311917
+          },
+          "files": {
+            "fast": 54776,
+            "fieldnorm": 9250393,
+            "idx": 9602185,
+            "json": 8451,
+            "lock": 0,
+            "pos": 1492918,
+            "store": 1006109,
+            "term": 6070638
+          },
+          "merge_ms": 2681.188166,
+          "mode": "direct",
+          "queries": {
+            "compound": {
+              "matches": 1250,
+              "median_us": 1271.167
+            },
+            "numeric": {
+              "matches": 124999,
+              "median_us": 11451.833
+            },
+            "text": {
+              "matches": 2500,
+              "median_us": 1235.0
+            }
+          },
+          "scope": "broad"
+        },
+        "tuple24": {
+          "build_ms": 10242.906541,
+          "bytes": 28353825,
+          "case": "dense250k_small_segments",
+          "events": 250000,
+          "fast_field_ns": {
+            "scattered": 3.9848339999999998,
+            "sequential": 3.3530830000000003
+          },
+          "files": {
+            "fast": 1054323,
+            "fieldnorm": 9250393,
+            "idx": 9602185,
+            "json": 8451,
+            "lock": 0,
+            "pos": 1492918,
+            "store": 1006109,
+            "term": 5939446
+          },
+          "merge_ms": 2636.5381660000003,
+          "mode": "tuple24",
+          "queries": {
+            "compound": {
+              "matches": 1250,
+              "median_us": 1277.625
+            },
+            "numeric": {
+              "matches": 124999,
+              "median_us": 12156.834
+            },
+            "text": {
+              "matches": 2500,
+              "median_us": 1222.5
+            }
+          },
+          "scope": "broad"
+        }
+      },
+      "compared_component_totals": {
+        "existing_collection": {
+          "compact_tuple": 75672349,
+          "full_direct": 75811810,
+          "compact_direct_control": 74803994
+        },
+        "repacked_collection": {
+          "compact_tuple": 66109461,
+          "full_direct": 65335170,
+          "compact_direct_control": 65241106
+        },
+        "no_collection_gzip": {
+          "compact_tuple": 44889407,
+          "full_direct": 45028868,
+          "compact_direct_control": 44021052
+        }
+      }
+    },
+    "dense50k": {
+      "fixture": {
+        "collection_build_ms": [
+          96.302292,
+          77.086208
+        ],
+        "collection_bytes": [
+          2441216,
+          2441216
+        ],
+        "compact_idx": 800784,
+        "events": 50000,
+        "full_idx": 1000980,
+        "objects": 5556,
+        "per_segment": 1024,
+        "segments": 49,
+        "shared_gzip_pac_bytes": 2413473,
+        "shared_pil_bytes": 6276780,
+        "shared_raw_pac_bytes": 6069788
+      },
+      "packed_collection": {
+        "4": {
+          "leaf_bytes": 376832,
+          "leaf_pages": 92,
+          "packed_fence_bytes": 1840
+        },
+        "7": {
+          "leaf_bytes": 557056,
+          "leaf_pages": 136,
+          "packed_fence_bytes": 2720
+        },
+        "8": {
+          "leaf_bytes": 557056,
+          "leaf_pages": 136,
+          "packed_fence_bytes": 2720
+        }
+      },
+      "collection_publication": {
+        "current_directory_pages": 1,
+        "current_leaf_pages": 198
+      },
+      "search": {
+        "direct": {
+          "build_ms": 2057.559125,
+          "bytes": 5383750,
+          "case": "dense50k",
+          "events": 50000,
+          "fast_field_ns": {
+            "scattered": 3.1037090000000003,
+            "sequential": 3.103417
+          },
+          "files": {
+            "fast": 4476,
+            "fieldnorm": 1850392,
+            "idx": 1748240,
+            "json": 8448,
+            "lock": 0,
+            "pos": 300087,
+            "store": 201328,
+            "term": 1270779
+          },
+          "merge_ms": 573.2272499999999,
+          "mode": "direct",
+          "queries": {
+            "compound": {
+              "matches": 250,
+              "median_us": 257.667
+            },
+            "numeric": {
+              "matches": 24999,
+              "median_us": 1901.459
+            },
+            "text": {
+              "matches": 500,
+              "median_us": 266.625
+            }
+          },
+          "scope": "broad"
+        },
+        "tuple24": {
+          "build_ms": 2028.710417,
+          "bytes": 5334274,
+          "case": "dense50k",
+          "events": 50000,
+          "fast_field_ns": {
+            "scattered": 3.114542,
+            "sequential": 3.100875
+          },
+          "files": {
+            "fast": 4795,
+            "fieldnorm": 1850392,
+            "idx": 1748240,
+            "json": 8448,
+            "lock": 0,
+            "pos": 300087,
+            "store": 201328,
+            "term": 1220984
+          },
+          "merge_ms": 572.7129170000001,
+          "mode": "tuple24",
+          "queries": {
+            "compound": {
+              "matches": 250,
+              "median_us": 257.375
+            },
+            "numeric": {
+              "matches": 24999,
+              "median_us": 1983.3339999999998
+            },
+            "text": {
+              "matches": 500,
+              "median_us": 265.54200000000003
+            }
+          },
+          "scope": "broad"
+        }
+      },
+      "compared_component_totals": {
+        "existing_collection": {
+          "compact_tuple": 14646062,
+          "full_direct": 14895734,
+          "compact_direct_control": 14695538
+        },
+        "repacked_collection": {
+          "compact_tuple": 12764622,
+          "full_direct": 12833190,
+          "compact_direct_control": 12814098
+        },
+        "no_collection_gzip": {
+          "compact_tuple": 8548531,
+          "full_direct": 8798203,
+          "compact_direct_control": 8598007
+        }
+      }
+    },
+    "sparse250k": {
+      "fixture": {
+        "collection_build_ms": [
+          481.499959,
+          561.902459
+        ],
+        "collection_bytes": [
+          12353536,
+          12353536
+        ],
+        "compact_idx": 4003920,
+        "events": 250000,
+        "full_idx": 5004900,
+        "objects": 27778,
+        "per_segment": 1024,
+        "segments": 245,
+        "shared_gzip_pac_bytes": 8341269,
+        "shared_pil_bytes": 14689445,
+        "shared_raw_pac_bytes": 13773080
+      },
+      "packed_collection": {
+        "4": {
+          "leaf_bytes": 1867776,
+          "leaf_pages": 456,
+          "packed_fence_bytes": 9120
+        },
+        "7": {
+          "leaf_bytes": 2777088,
+          "leaf_pages": 678,
+          "packed_fence_bytes": 13560
+        },
+        "8": {
+          "leaf_bytes": 2777088,
+          "leaf_pages": 678,
+          "packed_fence_bytes": 13560
+        }
+      },
+      "collection_publication": {
+        "current_directory_pages": 5,
+        "current_leaf_pages": 1000
+      },
+      "search": {
+        "direct": {
+          "build_ms": 4619.5227079999995,
+          "bytes": 16827874,
+          "case": "sparse250k",
+          "events": 250000,
+          "fast_field_ns": {
+            "scattered": 3.117042,
+            "sequential": 3.1494999999999997
+          },
+          "files": {
+            "fast": 49792,
+            "fieldnorm": 9250393,
+            "idx": 3466974,
+            "json": 8451,
+            "lock": 0,
+            "pos": 301504,
+            "store": 1006109,
+            "term": 2744651
+          },
+          "merge_ms": 940.193041,
+          "mode": "direct",
+          "queries": {
+            "compound": {
+              "matches": 1250,
+              "median_us": 1774.667
+            },
+            "numeric": {
+              "matches": 62500,
+              "median_us": 6643.959
+            },
+            "text": {
+              "matches": 2500,
+              "median_us": 1178.2089999999998
+            }
+          },
+          "scope": "broad"
+        },
+        "tuple24": {
+          "build_ms": 4662.21325,
+          "bytes": 16575955,
+          "case": "sparse250k",
+          "events": 250000,
+          "fast_field_ns": {
+            "scattered": 3.114583,
+            "sequential": 3.1445420000000004
+          },
+          "files": {
+            "fast": 51284,
+            "fieldnorm": 9250393,
+            "idx": 3466974,
+            "json": 8451,
+            "lock": 0,
+            "pos": 301504,
+            "store": 1006109,
+            "term": 2491240
+          },
+          "merge_ms": 936.547375,
+          "mode": "tuple24",
+          "queries": {
+            "compound": {
+              "matches": 1250,
+              "median_us": 1777.0
+            },
+            "numeric": {
+              "matches": 62500,
+              "median_us": 6626.459000000001
+            },
+            "text": {
+              "matches": 2500,
+              "median_us": 1179.708
+            }
+          },
+          "scope": "broad"
+        }
+      },
+      "compared_component_totals": {
+        "existing_collection": {
+          "compact_tuple": 46706491,
+          "full_direct": 47959390,
+          "compact_direct_control": 46958410
+        },
+        "repacked_collection": {
+          "compact_tuple": 37143603,
+          "full_direct": 37482750,
+          "compact_direct_control": 37395522
+        },
+        "no_collection_gzip": {
+          "compact_tuple": 28921144,
+          "full_direct": 30174043,
+          "compact_direct_control": 29173063
+        }
+      }
+    }
+  },
+  "latency": {
+    "BenchmarkAddressTradeoff/128/sequential/compact_tuple": {
+      "runs_ns": [
+        9.079,
+        9.087,
+        9.071
+      ],
+      "median_ns": 9.079
+    },
+    "BenchmarkAddressTradeoff/128/sequential/compact_tuple_cached": {
+      "runs_ns": [
+        9.16,
+        9.15,
+        9.201
+      ],
+      "median_ns": 9.16
+    },
+    "BenchmarkAddressTradeoff/128/sequential/compact_direct_control": {
+      "runs_ns": [
+        9.571,
+        9.785,
+        9.444
+      ],
+      "median_ns": 9.571
+    },
+    "BenchmarkAddressTradeoff/128/sequential/full_direct": {
+      "runs_ns": [
+        2.921,
+        2.924,
+        2.917
+      ],
+      "median_ns": 2.921
+    },
+    "BenchmarkAddressTradeoff/128/sequential/compact_tuple_pac_context": {
+      "runs_ns": [
+        11.55,
+        11.96,
+        12.29
+      ],
+      "median_ns": 11.96
+    },
+    "BenchmarkAddressTradeoff/128/sequential/full_direct_pac_context": {
+      "runs_ns": [
+        6.245,
+        6.228,
+        6.234
+      ],
+      "median_ns": 6.234
+    },
+    "BenchmarkAddressTradeoff/128/scattered/compact_tuple": {
+      "runs_ns": [
+        41.16,
+        41.93,
+        42.86
+      ],
+      "median_ns": 41.93
+    },
+    "BenchmarkAddressTradeoff/128/scattered/compact_tuple_cached": {
+      "runs_ns": [
+        45.78,
+        43.76,
+        45.65
+      ],
+      "median_ns": 45.65
+    },
+    "BenchmarkAddressTradeoff/128/scattered/compact_direct_control": {
+      "runs_ns": [
+        112.9,
+        115.0,
+        114.7
+      ],
+      "median_ns": 114.7
+    },
+    "BenchmarkAddressTradeoff/128/scattered/full_direct": {
+      "runs_ns": [
+        15.08,
+        15.01,
+        15.02
+      ],
+      "median_ns": 15.02
+    },
+    "BenchmarkAddressTradeoff/128/scattered/compact_tuple_pac_context": {
+      "runs_ns": [
+        113.3,
+        115.3,
+        111.6
+      ],
+      "median_ns": 113.3
+    },
+    "BenchmarkAddressTradeoff/128/scattered/full_direct_pac_context": {
+      "runs_ns": [
+        98.17,
+        98.0,
+        97.37
+      ],
+      "median_ns": 98.0
+    },
+    "BenchmarkAddressTradeoff/128/binary_search/compact": {
+      "runs_ns": [
+        19.03,
+        19.91,
+        19.93
+      ],
+      "median_ns": 19.91
+    },
+    "BenchmarkAddressTradeoff/128/binary_search/full": {
+      "runs_ns": [
+        16.37,
+        16.38,
+        16.69
+      ],
+      "median_ns": 16.38
+    },
+    "BenchmarkAddressTradeoff/128/binary_search/full_byte_loop_control": {
+      "runs_ns": [
+        116.4,
+        118.0,
+        117.8
+      ],
+      "median_ns": 117.8
+    },
+    "BenchmarkAddressTradeoff/4096/sequential/compact_tuple": {
+      "runs_ns": [
+        9.034,
+        9.14,
+        9.158
+      ],
+      "median_ns": 9.14
+    },
+    "BenchmarkAddressTradeoff/4096/sequential/compact_tuple_cached": {
+      "runs_ns": [
+        9.197,
+        9.19,
+        9.285
+      ],
+      "median_ns": 9.197
+    },
+    "BenchmarkAddressTradeoff/4096/sequential/compact_direct_control": {
+      "runs_ns": [
+        9.303,
+        9.338,
+        9.325
+      ],
+      "median_ns": 9.325
+    },
+    "BenchmarkAddressTradeoff/4096/sequential/full_direct": {
+      "runs_ns": [
+        2.984,
+        2.976,
+        3.003
+      ],
+      "median_ns": 2.984
+    },
+    "BenchmarkAddressTradeoff/4096/sequential/compact_tuple_pac_context": {
+      "runs_ns": [
+        11.22,
+        11.22,
+        11.22
+      ],
+      "median_ns": 11.22
+    },
+    "BenchmarkAddressTradeoff/4096/sequential/full_direct_pac_context": {
+      "runs_ns": [
+        5.922,
+        5.927,
+        5.921
+      ],
+      "median_ns": 5.922
+    },
+    "BenchmarkAddressTradeoff/4096/scattered/compact_tuple": {
+      "runs_ns": [
+        42.59,
+        42.57,
+        42.44
+      ],
+      "median_ns": 42.57
+    },
+    "BenchmarkAddressTradeoff/4096/scattered/compact_tuple_cached": {
+      "runs_ns": [
+        43.75,
+        44.16,
+        43.51
+      ],
+      "median_ns": 43.75
+    },
+    "BenchmarkAddressTradeoff/4096/scattered/compact_direct_control": {
+      "runs_ns": [
+        66.93,
+        66.42,
+        66.13
+      ],
+      "median_ns": 66.42
+    },
+    "BenchmarkAddressTradeoff/4096/scattered/full_direct": {
+      "runs_ns": [
+        14.71,
+        14.61,
+        14.67
+      ],
+      "median_ns": 14.67
+    },
+    "BenchmarkAddressTradeoff/4096/scattered/compact_tuple_pac_context": {
+      "runs_ns": [
+        70.06,
+        70.18,
+        70.21
+      ],
+      "median_ns": 70.18
+    },
+    "BenchmarkAddressTradeoff/4096/scattered/full_direct_pac_context": {
+      "runs_ns": [
+        40.29,
+        40.69,
+        39.13
+      ],
+      "median_ns": 40.29
+    },
+    "BenchmarkAddressTradeoff/4096/binary_search/compact": {
+      "runs_ns": [
+        133.5,
+        134.6,
+        130.0
+      ],
+      "median_ns": 133.5
+    },
+    "BenchmarkAddressTradeoff/4096/binary_search/full": {
+      "runs_ns": [
+        147.0,
+        145.7,
+        141.0
+      ],
+      "median_ns": 145.7
+    },
+    "BenchmarkAddressTradeoff/4096/binary_search/full_byte_loop_control": {
+      "runs_ns": [
+        169.9,
+        170.2,
+        168.6
+      ],
+      "median_ns": 169.9
+    },
+    "BenchmarkAddressCollectionLookup/compact_tuple": {
+      "runs_ns": [
+        2347.0,
+        2353.0,
+        2352.0
+      ],
+      "median_ns": 2352.0
+    },
+    "BenchmarkAddressCollectionLookup/full_direct": {
+      "runs_ns": [
+        2324.0,
+        2378.0,
+        2334.0
+      ],
+      "median_ns": 2334.0
+    }
+  }
+}

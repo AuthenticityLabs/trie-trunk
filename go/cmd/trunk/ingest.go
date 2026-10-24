@@ -24,21 +24,24 @@ func runIngestContext(ctx context.Context, args []string) error {
 	}
 	flags := flag.NewFlagSet("ingest", flag.ContinueOnError)
 	flags.String("env", ".env", "environment file; empty disables file loading")
-	root := flags.String("dir", "./taps", "store root")
+	root := flags.String("dir", "./caches", "cache root")
+	cacheName := flags.String("cache", "", "registered cache")
+	tenant := flags.String("tenant", "", "cache tenant owner")
+	definition := flags.String("definition", "", "optional unified PIL/resource definition; otherwise accept client registration or blind CBOR")
 	cert := flags.String("cert", "", "TLS certificate")
 	key := flags.String("key", "", "TLS private key")
 	ca := flags.String("client-ca", "", "client certificate CA (TLS requires this or TRUNK_TOKEN)")
 	host := flags.String("host", "", "listen host; default loopback locally, wildcard with TLS")
 	network := flags.String("network", "", "explicit tcp4/tcp6 or udp4/udp6")
-	transport := flags.String("transport", "websocket", "websocket or http3")
-	interval := flags.Duration("flush", time.Second, "group commit interval")
+	transport := flags.String("transport", "http", "http (HTTP/2 with TLS) or http3")
+	interval := flags.Duration("flush", time.Second, "mature staging promotion interval")
 	if e := flags.Parse(args); e != nil {
 		return e
 	}
 	if flags.NArg() != 0 {
 		return fmt.Errorf("unexpected arguments")
 	}
-	env, e := applyEnvironment(flags, "dir", "cert", "key", "client-ca", "host", "network", "transport", "flush")
+	env, e := applyEnvironment(flags, "dir", "cert", "key", "client-ca", "host", "network", "transport", "flush", "cache", "tenant", "definition")
 	if e != nil {
 		return e
 	}
@@ -56,11 +59,11 @@ func runIngestContext(ctx context.Context, args []string) error {
 	if *interval <= 0 {
 		return fmt.Errorf("flush interval must be positive")
 	}
-	if *transport != "websocket" && *transport != "http3" {
+	if *transport != "http" && *transport != "http3" {
 		return fmt.Errorf("unknown transport")
 	}
 	token, _ := env.lookup("TRUNK_TOKEN")
-	local := *transport == "websocket" && token == "" && *cert == "" && *key == "" && *ca == ""
+	local := *transport == "http" && token == "" && *cert == "" && *key == "" && *ca == ""
 	var tlsConfig *tls.Config
 	if local {
 		if *host == "" || *host == "localhost" {
@@ -74,7 +77,7 @@ func runIngestContext(ctx context.Context, args []string) error {
 		}
 	} else {
 		if *cert == "" || *key == "" {
-			return fmt.Errorf("TLS ingestion requires both --cert and --key; omit TLS/auth settings for local WebSocket ingestion")
+			return fmt.Errorf("TLS ingestion requires both --cert and --key; omit TLS/auth settings for local HTTP PIL ingestion")
 		}
 		if token == "" && *ca == "" {
 			return fmt.Errorf("TLS ingestion requires TRUNK_TOKEN or --client-ca")
@@ -84,15 +87,16 @@ func runIngestContext(ctx context.Context, args []string) error {
 			return e
 		}
 	}
-	handler, e := ingest.New(ingest.Config{Root: *root, Token: token, OnError: func(e error) { log.Printf("ingest: %v", e) }})
+	native, release, e := openNative(ctx, *root, *cacheName, *tenant, *definition)
 	if e != nil {
 		return e
 	}
+	handler := native.Handler(token)
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 	flushDone := make(chan error, 1)
 	go func() {
-		e := handler.Run(ctx, *interval)
+		e := native.Run(ctx, *interval)
 		if e != nil {
 			cancel()
 		}
@@ -121,16 +125,16 @@ func runIngestContext(ctx context.Context, args []string) error {
 			n = "tcp"
 		}
 		if n != "tcp" && n != "tcp4" && n != "tcp6" {
-			e = fmt.Errorf("websocket requires TCP network")
+			e = fmt.Errorf("http requires TCP network")
 		} else {
 			var listener net.Listener
 			listener, e = net.Listen(n, addr)
 			if e == nil {
 				if local {
-					log.Printf("ingest local listening on ws://%s (no authentication)", listener.Addr())
+					log.Printf("ingest PIL listening on http://%s (loopback, no authentication)", listener.Addr())
 					e = ingest.ServeLocal(ctx, listener, handler)
 				} else {
-					log.Printf("ingest websocket listening on wss://%s", listener.Addr())
+					log.Printf("ingest PIL listening on https://%s", listener.Addr())
 					e = ingest.ServeTLS(ctx, listener, tlsConfig, handler)
 				}
 				listener.Close()
@@ -138,5 +142,5 @@ func runIngestContext(ctx context.Context, args []string) error {
 		}
 	}
 	cancel()
-	return errors.Join(e, <-flushDone, handler.Close())
+	return errors.Join(e, <-flushDone, release())
 }

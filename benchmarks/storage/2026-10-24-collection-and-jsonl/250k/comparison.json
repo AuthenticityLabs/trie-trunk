@@ -1,0 +1,23 @@
+{
+  "expanded": {
+    "raw_bytes": 107057591,
+    "allocated_bytes": 117669888,
+    "whole_file_gzip6_bytes": 6530777,
+    "whole_file_brotli6_bytes": 4649673
+  },
+  "payload": {
+    "raw_bytes": 79686281,
+    "allocated_bytes": 84197376,
+    "whole_file_gzip6_bytes": 4671762,
+    "whole_file_brotli6_bytes": 3502281
+  },
+  "trie": {
+    "all_files_bytes": 61226004,
+    "excluding_tantivy_bytes": 40944412,
+    "pac_payload_bytes": 14906238,
+    "allocated_bytes": 68837376
+  },
+  "notes": [
+    "Compressed JSONL is an archive reference, without indexes, summaries, or independently retrievable hours. It uses the exact exported events, ordered by resource/branch/time."
+  ]
+}

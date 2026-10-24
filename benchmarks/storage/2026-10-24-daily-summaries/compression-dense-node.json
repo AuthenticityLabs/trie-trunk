@@ -1,0 +1,27 @@
+{
+  "runtime": "v26.5.0",
+  "note": "Node native codecs; 240k-event synthetic day, not browser measurements.",
+  "results": [
+    {
+      "codec": "gzip6",
+      "bodyBytes": 2608720,
+      "packetBytes": 265060,
+      "encodeMs": 77.349236,
+      "decodeMs": 1.8935375000000005
+    },
+    {
+      "codec": "gzip9",
+      "bodyBytes": 2608720,
+      "packetBytes": 264694,
+      "encodeMs": 965.8681113333333,
+      "decodeMs": 1.8116533400000026
+    },
+    {
+      "codec": "brotli11",
+      "bodyBytes": 2608720,
+      "packetBytes": 166259,
+      "encodeMs": 1367.5070833333332,
+      "decodeMs": 2.9607083200000126
+    }
+  ]
+}

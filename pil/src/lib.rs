@@ -31,3 +31,10 @@ mod borrowed_cbor;
 pub use borrowed_cbor::{CborMap, CborRef};
 mod index;
 pub use index::{ABSENT, FrameIndex, NULL};
+pub mod pac;
+
+mod adaptive;
+pub use adaptive::AdaptiveIntegers;
+
+#[cfg(feature = "gzip")]
+pub mod compression;

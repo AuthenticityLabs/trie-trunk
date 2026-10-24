@@ -27,11 +27,11 @@ export function ExpansionDialog(props: {
     >
       <div class="modal-body">
         <div class="modal-heading">
-          <h2 id="expansion-title">Expand collection set?</h2>
+          <h2 id="expansion-title">Expand Collection Set?</h2>
           <button
             type="button"
             class="icon-button"
-            aria-label="Close expansion dialog"
+            aria-label="Close Expansion Dialog"
             onClick={props.onClose}
           >
             <Icon name="close" size={16} />
@@ -67,7 +67,7 @@ export function ExpansionDialog(props: {
             class="button primary"
             onClick={props.onConfirm}
           >
-            {props.running ? "Stop and expand" : "Expand collection"}
+            {props.running ? "Stop and Expand" : "Expand Collection"}
           </button>
         </div>
       </div>

@@ -1,0 +1,8 @@
+PASS: 108 publication cases across two PostgreSQL sync methods; three rotated rounds, 1/10/100 subscribers, two payload sizes, native binary PIL only.
+PASS: full benchmark race tests with staging observer in both runners.
+PASS: subscriber applies before durable ACK while sync boundary gated; injected boundary failure remains failure; retained sender frame retry deduplicates.
+PASS: fresh and persistent native compression: 400 cases, 819200 byte-exact checks, finalized streams verified.
+PASS: warm-compression sizes match all 200 previous native-PIL cases exactly after adding fresh-context mode.
+PASS: recorded source hashes verified for both publication matrices.
+No production store or deployed listener modified; early publication tested through a build-only store observation point.
+No .pop compression format implemented.

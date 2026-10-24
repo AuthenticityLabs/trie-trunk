@@ -53,12 +53,12 @@ func (h *Handler) serve(w http.ResponseWriter, r *http.Request, remote bool) {
 		http.Error(w, "unauthorized", http.StatusUnauthorized)
 		return
 	}
-	if (r.URL.Path != "/collect" && r.URL.Path != "/events" && r.URL.Path != "/schemas" && r.URL.Path != "/taps") || r.URL.EscapedPath() != r.URL.Path || r.URL.RawQuery != "" && !(r.URL.Path == "/collect" && r.Method == http.MethodGet) {
+	if (r.URL.Path != "/collect" && r.URL.Path != "/events" && r.URL.Path != "/schemas" && r.URL.Path != "/taps" && r.URL.Path != "/caches") || r.URL.EscapedPath() != r.URL.Path || r.URL.RawQuery != "" && !(r.URL.Path == "/collect" && r.Method == http.MethodGet) {
 		http.NotFound(w, r)
 		return
 	}
 	method := http.MethodPost
-	if r.URL.Path == "/taps" || r.URL.Path == "/collect" && r.Method == http.MethodGet {
+	if r.URL.Path == "/caches" || r.URL.Path == "/taps" || r.URL.Path == "/collect" && r.Method == http.MethodGet {
 		method = http.MethodGet
 	}
 	if r.Method != method {
@@ -113,9 +113,9 @@ func (h *Handler) serve(w http.ResponseWriter, r *http.Request, remote bool) {
 		h.active.Done()
 	}()
 	controller := http.NewResponseController(w)
-	if r.URL.Path == "/taps" {
+	if r.URL.Path == "/caches" || r.URL.Path == "/taps" {
 		_ = controller.SetWriteDeadline(time.Now().Add(30 * time.Second))
-		h.listTaps(w, r)
+		h.listCaches(w, r)
 		return
 	}
 	_ = controller.SetReadDeadline(time.Now().Add(10 * time.Second))

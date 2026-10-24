@@ -1,4 +1,4 @@
-use crate::{Error, Scalar, Type, cbor};
+use crate::{AdaptiveIntegers, Error, Scalar, Type, adaptive::IntegerField, cbor};
 use ciborium::Value;
 use std::collections::HashSet;
 
@@ -45,6 +45,9 @@ pub struct Definition {
     identity: String,
     version: u64,
     fields: Vec<Field>,
+    adaptive_integers: AdaptiveIntegers,
+    pub(crate) integers: Vec<IntegerField>,
+    pub(crate) integer_controls: Vec<[u8; 256]>,
 }
 
 impl Definition {
@@ -84,10 +87,44 @@ impl Definition {
         Ok(Self {
             identity,
             version,
+            integers: fields
+                .iter()
+                .map(|f| IntegerField::new(f.kind, AdaptiveIntegers::None))
+                .collect(),
             fields,
+            adaptive_integers: AdaptiveIntegers::None,
+            integer_controls: Vec::new(),
         })
     }
 
+    pub fn adaptive_integers(&self) -> AdaptiveIntegers {
+        self.adaptive_integers
+    }
+    pub fn with_adaptive_integers(mut self, mode: AdaptiveIntegers) -> Self {
+        self.adaptive_integers = mode;
+        self.integers = self
+            .fields
+            .iter()
+            .map(|f| IntegerField::new(f.kind, mode))
+            .collect();
+        self.integer_controls = if mode == AdaptiveIntegers::None {
+            Vec::new()
+        } else {
+            vec![[0; 256]; self.fields.len().div_ceil(4)]
+        };
+        for (i, table) in self.integer_controls.iter_mut().enumerate() {
+            for (m, entry) in table.iter_mut().enumerate() {
+                for j in 0..4 {
+                    if let Some(f) = self.integers.get(i * 4 + j) {
+                        if (m >> (6 - 2 * j)) & 3 == 2 {
+                            *entry += f.bits as u8
+                        }
+                    }
+                }
+            }
+        }
+        self
+    }
     pub fn identity(&self) -> &str {
         &self.identity
     }
@@ -116,15 +153,29 @@ impl Definition {
                 Value::Map(entries)
             })
             .collect();
-        let value = Value::Map(vec![
-            (Value::from("pil"), Value::from(0)),
+        let mut entries = vec![
+            (
+                Value::from("pil"),
+                Value::from(if self.adaptive_integers == AdaptiveIntegers::None {
+                    0
+                } else {
+                    1
+                }),
+            ),
             (
                 Value::from("definition"),
                 Value::from(self.identity.clone()),
             ),
             (Value::from("version"), Value::from(self.version)),
             (Value::from("fields"), Value::Array(fields)),
-        ]);
+        ];
+        if self.adaptive_integers != AdaptiveIntegers::None {
+            entries.push((
+                Value::from("adaptive_integers"),
+                Value::from(self.adaptive_integers.name()),
+            ))
+        }
+        let value = Value::Map(entries);
         let mut bytes = Vec::new();
         ciborium::ser::into_writer(&value, &mut bytes)
             .map_err(|_| Error::Invalid("cannot encode Definition CBOR"))?;
@@ -134,7 +185,11 @@ impl Definition {
     pub fn from_cbor(bytes: &[u8]) -> Result<Self, Error> {
         let value = cbor::parse(bytes)?;
         let map = map(&value)?;
-        if integer(required(map, "pil")?)? != 0 {
+        let mode = match get(map, "adaptive_integers") {
+            Some(v) => AdaptiveIntegers::parse(text(v)?)?,
+            None => AdaptiveIntegers::None,
+        };
+        if integer(required(map, "pil")?)? != if mode == AdaptiveIntegers::None { 0 } else { 1 } {
             return Err(Error::Definition("unsupported PIL version".into()));
         }
         let identity = text(required(map, "definition")?)?.to_owned();
@@ -161,7 +216,7 @@ impl Definition {
             }
             fields.push(Field { name, kind, values });
         }
-        Self::new(identity, version, fields)
+        Self::new(identity, version, fields).map(|d| d.with_adaptive_integers(mode))
     }
 }
 

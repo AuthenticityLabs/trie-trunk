@@ -1,0 +1,129 @@
+goos: darwin
+goarch: arm64
+pkg: trie-trunk/go/server/cache
+cpu: Apple M1 Max
+BenchmarkCollectionChainAccess/734-10  	  165658	      1376 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCollectionChainAccess/734-10  	  157191	      1465 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCollectionChainAccess/734-10  	  158554	      1379 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCollectionChainAccess/735-10  	   89823	      2544 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCollectionChainAccess/735-10  	   90039	      2545 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCollectionChainAccess/735-10  	   89618	      2549 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCollectionChainAccess/5000-10 	   22650	     10629 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCollectionChainAccess/5000-10 	   22690	     10580 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCollectionChainAccess/5000-10 	   22545	     10588 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCollectionSlottedAccess/1/Latest-10         	  218208	      1065 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCollectionSlottedAccess/1/Latest-10         	  226596	      1063 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCollectionSlottedAccess/1/Latest-10         	  225962	      1062 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCollectionSlottedAccess/1/Exact-10          	  219777	      1054 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCollectionSlottedAccess/1/Exact-10          	  227594	      1060 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCollectionSlottedAccess/1/Exact-10          	  228001	      1055 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCollectionSlottedAccess/9/Latest-10         	  210519	      1098 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCollectionSlottedAccess/9/Latest-10         	  218905	      1097 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCollectionSlottedAccess/9/Latest-10         	  216264	      1098 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCollectionSlottedAccess/9/Exact-10          	  226316	      1060 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCollectionSlottedAccess/9/Exact-10          	  225903	      1065 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCollectionSlottedAccess/9/Exact-10          	  226442	      1061 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCollectionSlottedAccess/61/Latest-10        	  215966	      1085 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCollectionSlottedAccess/61/Latest-10        	  221886	      1081 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCollectionSlottedAccess/61/Latest-10        	  221847	      1084 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCollectionSlottedAccess/61/Exact-10         	  221656	      1077 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCollectionSlottedAccess/61/Exact-10         	  218962	      1077 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCollectionSlottedAccess/61/Exact-10         	  223449	      1076 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCollectionSlottedAccess/489/Latest-10       	  178701	      1293 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCollectionSlottedAccess/489/Latest-10       	  185457	      1295 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCollectionSlottedAccess/489/Latest-10       	  186054	      1297 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCollectionSlottedAccess/489/Exact-10        	  190774	      1259 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCollectionSlottedAccess/489/Exact-10        	  190646	      1259 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCollectionSlottedAccess/489/Exact-10        	  191097	      1258 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCollectionPlatform100K-10                   	  109744	      2069 ns/op	       0 B/op	       0 allocs/op
+--- BENCH: BenchmarkCollectionPlatform100K-10
+    collection_platform_test.go:266: 100K UUIDs: build=1.607446958s file=10211328 bytes current fences=1157 (23140 packed bytes)
+    collection_platform_test.go:266: 100K UUIDs: build=1.6664125s file=10211328 bytes current fences=1157 (23140 packed bytes)
+    collection_platform_test.go:266: 100K UUIDs: build=1.723486959s file=10211328 bytes current fences=1157 (23140 packed bytes)
+    collection_platform_test.go:266: 100K UUIDs: build=1.751621834s file=10211328 bytes current fences=1157 (23140 packed bytes)
+BenchmarkCollectionPlatform100K-10                   	  108044	      2031 ns/op	       0 B/op	       0 allocs/op
+--- BENCH: BenchmarkCollectionPlatform100K-10
+    collection_platform_test.go:266: 100K UUIDs: build=1.639251625s file=10211328 bytes current fences=1157 (23140 packed bytes)
+    collection_platform_test.go:266: 100K UUIDs: build=1.676514125s file=10211328 bytes current fences=1157 (23140 packed bytes)
+    collection_platform_test.go:266: 100K UUIDs: build=1.630362583s file=10211328 bytes current fences=1157 (23140 packed bytes)
+    collection_platform_test.go:266: 100K UUIDs: build=1.664107042s file=10211328 bytes current fences=1157 (23140 packed bytes)
+BenchmarkCollectionPlatform100K-10                   	  114703	      2040 ns/op	       0 B/op	       0 allocs/op
+--- BENCH: BenchmarkCollectionPlatform100K-10
+    collection_platform_test.go:266: 100K UUIDs: build=1.656216s file=10211328 bytes current fences=1157 (23140 packed bytes)
+    collection_platform_test.go:266: 100K UUIDs: build=1.632567833s file=10211328 bytes current fences=1157 (23140 packed bytes)
+    collection_platform_test.go:266: 100K UUIDs: build=1.663365625s file=10211328 bytes current fences=1157 (23140 packed bytes)
+    collection_platform_test.go:266: 100K UUIDs: build=1.636342958s file=10211328 bytes current fences=1157 (23140 packed bytes)
+BenchmarkResidentObjectHistory/1/pending-10          	  510276	       457.5 ns/op	        78.00 PIL-B/op	    1008 B/op	       8 allocs/op
+BenchmarkResidentObjectHistory/1/pending-10          	  529060	       458.8 ns/op	        78.00 PIL-B/op	    1008 B/op	       8 allocs/op
+BenchmarkResidentObjectHistory/1/pending-10          	  522964	       461.4 ns/op	        78.00 PIL-B/op	    1008 B/op	       8 allocs/op
+BenchmarkResidentObjectHistory/1/sealed-resident-10  	  352670	       583.7 ns/op	        78.00 PIL-B/op	    1136 B/op	      12 allocs/op
+BenchmarkResidentObjectHistory/1/sealed-resident-10  	  415242	       585.6 ns/op	        78.00 PIL-B/op	    1136 B/op	      12 allocs/op
+BenchmarkResidentObjectHistory/1/sealed-resident-10  	  411237	       585.0 ns/op	        78.00 PIL-B/op	    1136 B/op	      12 allocs/op
+BenchmarkResidentObjectHistory/1/expired-resident-warm-disk-10         	    9452	     23951 ns/op	        78.00 PIL-B/op	    2653 B/op	      32 allocs/op
+BenchmarkResidentObjectHistory/1/expired-resident-warm-disk-10         	   10000	     23768 ns/op	        78.00 PIL-B/op	    2654 B/op	      32 allocs/op
+BenchmarkResidentObjectHistory/1/expired-resident-warm-disk-10         	   10000	     23576 ns/op	        78.00 PIL-B/op	    2651 B/op	      32 allocs/op
+BenchmarkResidentObjectHistory/9/pending-10                            	  199362	      1192 ns/op	       534.0 PIL-B/op	    3488 B/op	      14 allocs/op
+BenchmarkResidentObjectHistory/9/pending-10                            	  202281	      1174 ns/op	       534.0 PIL-B/op	    3488 B/op	      14 allocs/op
+BenchmarkResidentObjectHistory/9/pending-10                            	  204177	      1192 ns/op	       534.0 PIL-B/op	    3488 B/op	      14 allocs/op
+BenchmarkResidentObjectHistory/9/sealed-resident-10                    	  114464	      1883 ns/op	       534.0 PIL-B/op	    4016 B/op	      31 allocs/op
+BenchmarkResidentObjectHistory/9/sealed-resident-10                    	  125064	      1893 ns/op	       534.0 PIL-B/op	    4016 B/op	      31 allocs/op
+BenchmarkResidentObjectHistory/9/sealed-resident-10                    	  129692	      1873 ns/op	       534.0 PIL-B/op	    4016 B/op	      31 allocs/op
+BenchmarkResidentObjectHistory/9/expired-resident-warm-disk-10         	    7414	     31199 ns/op	       534.0 PIL-B/op	   13542 B/op	     135 allocs/op
+BenchmarkResidentObjectHistory/9/expired-resident-warm-disk-10         	    7867	     30614 ns/op	       534.0 PIL-B/op	   13543 B/op	     135 allocs/op
+BenchmarkResidentObjectHistory/9/expired-resident-warm-disk-10         	    7663	     30642 ns/op	       534.0 PIL-B/op	   13545 B/op	     135 allocs/op
+BenchmarkResidentObjectHistory/61/pending-10                           	   60054	      3425 ns/op	      3638 PIL-B/op	   11552 B/op	      16 allocs/op
+BenchmarkResidentObjectHistory/61/pending-10                           	   70830	      3391 ns/op	      3638 PIL-B/op	   11552 B/op	      16 allocs/op
+BenchmarkResidentObjectHistory/61/pending-10                           	   70340	      3386 ns/op	      3638 PIL-B/op	   11552 B/op	      16 allocs/op
+BenchmarkResidentObjectHistory/61/sealed-resident-10                   	   30952	      7390 ns/op	      3638 PIL-B/op	   13680 B/op	      87 allocs/op
+BenchmarkResidentObjectHistory/61/sealed-resident-10                   	   32368	      7365 ns/op	      3638 PIL-B/op	   13680 B/op	      87 allocs/op
+BenchmarkResidentObjectHistory/61/sealed-resident-10                   	   32488	      7487 ns/op	      3638 PIL-B/op	   13680 B/op	      87 allocs/op
+BenchmarkResidentObjectHistory/61/expired-resident-warm-disk-10        	    3591	     65831 ns/op	      3638 PIL-B/op	   68649 B/op	     677 allocs/op
+BenchmarkResidentObjectHistory/61/expired-resident-warm-disk-10        	    3650	     66338 ns/op	      3638 PIL-B/op	   68642 B/op	     677 allocs/op
+BenchmarkResidentObjectHistory/61/expired-resident-warm-disk-10        	    3435	     66101 ns/op	      3638 PIL-B/op	   68659 B/op	     677 allocs/op
+BenchmarkIndexHour/hour18-10                                           	 1000000	       200.9 ns/op	  18000000 index_bytes	       0 B/op	       0 allocs/op
+BenchmarkIndexHour/hour18-10                                           	 1000000	       201.6 ns/op	  18000000 index_bytes	       0 B/op	       0 allocs/op
+BenchmarkIndexHour/hour18-10                                           	 1000000	       207.7 ns/op	  18000000 index_bytes	       0 B/op	       0 allocs/op
+BenchmarkIndexHour/hour16-10                                           	 1243836	       191.4 ns/op	  16000000 index_bytes	       0 B/op	       0 allocs/op
+BenchmarkIndexHour/hour16-10                                           	 1240032	       191.9 ns/op	  16000000 index_bytes	       0 B/op	       0 allocs/op
+BenchmarkIndexHour/hour16-10                                           	 1241394	       192.0 ns/op	  16000000 index_bytes	       0 B/op	       0 allocs/op
+BenchmarkIndexHour/reconstruct_uuid-10                                 	45452392	         5.292 ns/op	       0 B/op	       0 allocs/op
+BenchmarkIndexHour/reconstruct_uuid-10                                 	45439837	         5.312 ns/op	       0 B/op	       0 allocs/op
+BenchmarkIndexHour/reconstruct_uuid-10                                 	45373268	         5.303 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSealedPACDelivery/1000/expand_then_gzip-10                    	     219	   1084518 ns/op	      1000 records/op	     12470 wire-B/op	 2305377 B/op	   11526 allocs/op
+BenchmarkSealedPACDelivery/1000/expand_then_gzip-10                    	     220	   1076201 ns/op	      1000 records/op	     12470 wire-B/op	 2305365 B/op	   11526 allocs/op
+BenchmarkSealedPACDelivery/1000/expand_then_gzip-10                    	     222	   1081081 ns/op	      1000 records/op	     12470 wire-B/op	 2305357 B/op	   11526 allocs/op
+BenchmarkSealedPACDelivery/1000/whole_pac-10                           	    4196	     54759 ns/op	      1000 records/op	     21822 wire-B/op	  148148 B/op	     123 allocs/op
+BenchmarkSealedPACDelivery/1000/whole_pac-10                           	    4374	     54286 ns/op	      1000 records/op	     21822 wire-B/op	  148149 B/op	     123 allocs/op
+BenchmarkSealedPACDelivery/1000/whole_pac-10                           	    4551	     54601 ns/op	      1000 records/op	     21822 wire-B/op	  148162 B/op	     123 allocs/op
+BenchmarkSealedPACDelivery/10000/expand_then_gzip-10                   	      22	   9096466 ns/op	     10000 records/op	    108826 wire-B/op	10619188 B/op	  113926 allocs/op
+BenchmarkSealedPACDelivery/10000/expand_then_gzip-10                   	      26	   9051662 ns/op	     10000 records/op	    108826 wire-B/op	10619121 B/op	  113926 allocs/op
+BenchmarkSealedPACDelivery/10000/expand_then_gzip-10                   	      25	   9107108 ns/op	     10000 records/op	    108826 wire-B/op	10619136 B/op	  113926 allocs/op
+BenchmarkSealedPACDelivery/10000/whole_pac-10                          	    1490	    156334 ns/op	     10000 records/op	    205051 wire-B/op	  237210 B/op	     124 allocs/op
+BenchmarkSealedPACDelivery/10000/whole_pac-10                          	    1507	    155567 ns/op	     10000 records/op	    205051 wire-B/op	  237246 B/op	     124 allocs/op
+BenchmarkSealedPACDelivery/10000/whole_pac-10                          	    1503	    156677 ns/op	     10000 records/op	    205051 wire-B/op	  237213 B/op	     124 allocs/op
+BenchmarkPositionalTimeTrie/1_events_per_hour/January/positional-10    	 3852141	        61.76 ns/op	       0 B/op	       0 allocs/op
+BenchmarkPositionalTimeTrie/1_events_per_hour/January/positional-10    	 3906477	        62.83 ns/op	       0 B/op	       0 allocs/op
+BenchmarkPositionalTimeTrie/1_events_per_hour/January/positional-10    	 3907177	        61.93 ns/op	       0 B/op	       0 allocs/op
+BenchmarkPositionalTimeTrie/1_events_per_hour/January/map_baseline-10  	  882555	       272.6 ns/op	       0 B/op	       0 allocs/op
+BenchmarkPositionalTimeTrie/1_events_per_hour/January/map_baseline-10  	  878450	       272.3 ns/op	       0 B/op	       0 allocs/op
+BenchmarkPositionalTimeTrie/1_events_per_hour/January/map_baseline-10  	  881636	       272.1 ns/op	       0 B/op	       0 allocs/op
+BenchmarkPositionalTimeTrie/1_events_per_hour/December/positional-10   	 3807196	        60.72 ns/op	       0 B/op	       0 allocs/op
+BenchmarkPositionalTimeTrie/1_events_per_hour/December/positional-10   	 3834577	        61.41 ns/op	       0 B/op	       0 allocs/op
+BenchmarkPositionalTimeTrie/1_events_per_hour/December/positional-10   	 3851214	        61.59 ns/op	       0 B/op	       0 allocs/op
+BenchmarkPositionalTimeTrie/1_events_per_hour/December/map_baseline-10 	  881258	       272.8 ns/op	       0 B/op	       0 allocs/op
+BenchmarkPositionalTimeTrie/1_events_per_hour/December/map_baseline-10 	  884384	       272.2 ns/op	       0 B/op	       0 allocs/op
+BenchmarkPositionalTimeTrie/1_events_per_hour/December/map_baseline-10 	  860240	       274.3 ns/op	       0 B/op	       0 allocs/op
+BenchmarkPositionalTimeTrie/10000_events_per_hour/January/positional-10         	 3870956	        61.31 ns/op	       0 B/op	       0 allocs/op
+BenchmarkPositionalTimeTrie/10000_events_per_hour/January/positional-10         	 3891339	        61.94 ns/op	       0 B/op	       0 allocs/op
+BenchmarkPositionalTimeTrie/10000_events_per_hour/January/positional-10         	 3784879	        62.33 ns/op	       0 B/op	       0 allocs/op
+BenchmarkPositionalTimeTrie/10000_events_per_hour/January/map_baseline-10       	  895034	       267.6 ns/op	       0 B/op	       0 allocs/op
+BenchmarkPositionalTimeTrie/10000_events_per_hour/January/map_baseline-10       	  896259	       267.8 ns/op	       0 B/op	       0 allocs/op
+BenchmarkPositionalTimeTrie/10000_events_per_hour/January/map_baseline-10       	  896916	       267.6 ns/op	       0 B/op	       0 allocs/op
+BenchmarkPositionalTimeTrie/10000_events_per_hour/December/positional-10        	 3843489	        62.08 ns/op	       0 B/op	       0 allocs/op
+BenchmarkPositionalTimeTrie/10000_events_per_hour/December/positional-10        	 3888339	        62.15 ns/op	       0 B/op	       0 allocs/op
+BenchmarkPositionalTimeTrie/10000_events_per_hour/December/positional-10        	 3831088	        61.09 ns/op	       0 B/op	       0 allocs/op
+BenchmarkPositionalTimeTrie/10000_events_per_hour/December/map_baseline-10      	  878530	       273.1 ns/op	       0 B/op	       0 allocs/op
+BenchmarkPositionalTimeTrie/10000_events_per_hour/December/map_baseline-10      	  876925	       272.7 ns/op	       0 B/op	       0 allocs/op
+BenchmarkPositionalTimeTrie/10000_events_per_hour/December/map_baseline-10      	  878785	       272.8 ns/op	       0 B/op	       0 allocs/op
+PASS
+ok  	trie-trunk/go/server/cache	98.141s

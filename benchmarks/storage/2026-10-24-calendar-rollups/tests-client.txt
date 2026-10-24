@@ -1,0 +1,18 @@
+✔ daily columns render aligned counts, errors and exact p95 (16.648833ms)
+✔ daily columns render border counts, errors and exact p95 (6.786041ms)
+✔ daily decoder rejects corrupt, short and over-expanding packets (3.542292ms)
+✔ daily cache reuses content, partitions authorization and checks manifest (15.904792ms)
+✔ Snoot summary-only request fetches daily summaries and no event PACs (12.270042ms)
+✔ daily count columns cover a whole hour in one bucket and widen past U24 (4.642583ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 172.4845
+
+> snoot@0.1.0 check
+> tsc --noEmit
+

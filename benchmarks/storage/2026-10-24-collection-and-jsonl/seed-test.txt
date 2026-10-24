@@ -1,0 +1,1 @@
+ok  	trie-trunk/go/cmd/seed-demo	14.678s

@@ -1,0 +1,16 @@
+{
+  "engine": "webkit",
+  "version": "26.5",
+  "written": {
+    "written": 675840
+  },
+  "result": {
+    "pages": 165,
+    "queries": 4100,
+    "references": 42574,
+    "extensions": 10234,
+    "elapsed_ms": 21,
+    "bytes": 675840
+  },
+  "reopened_context": true
+}

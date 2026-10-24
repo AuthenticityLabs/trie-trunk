@@ -1,0 +1,514 @@
+{
+  "engine": "installed-safari",
+  "platform": "darwin",
+  "arch": "arm64",
+  "visits": [
+    {
+      "phase": 0,
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.0.1 Safari/605.1.15",
+      "results": [
+        {
+          "mode": "seek",
+          "action": "prepare",
+          "result": {
+            "action": "prepare",
+            "mode": "seek",
+            "before": {
+              "usage": 0,
+              "quota": 82463372084
+            },
+            "after": {
+              "usage": 134217728,
+              "quota": 82463372084
+            },
+            "elapsedMs": 4,
+            "files": [
+              {
+                "name": "data.sap",
+                "size": 67108864
+              }
+            ],
+            "verified": false
+          }
+        },
+        {
+          "mode": "truncate",
+          "action": "prepare",
+          "result": {
+            "action": "prepare",
+            "mode": "truncate",
+            "before": {
+              "usage": 134217728,
+              "quota": 82463372084
+            },
+            "after": {
+              "usage": 268435456,
+              "quota": 82463372084
+            },
+            "elapsedMs": 3,
+            "files": [
+              {
+                "name": "data.sap",
+                "size": 67108864
+              }
+            ],
+            "verified": false
+          }
+        },
+        {
+          "mode": "zero-control",
+          "action": "prepare",
+          "result": {
+            "action": "prepare",
+            "mode": "zero-control",
+            "before": {
+              "usage": 268435456,
+              "quota": 82463372084
+            },
+            "after": {
+              "usage": 335544320,
+              "quota": 82463372084
+            },
+            "elapsedMs": 12,
+            "files": [
+              {
+                "name": "data.sap",
+                "size": 67108864
+              }
+            ],
+            "verified": false
+          }
+        },
+        {
+          "mode": "keyed-pages",
+          "action": "prepare",
+          "result": {
+            "action": "prepare",
+            "mode": "keyed-pages",
+            "before": {
+              "usage": 335544320,
+              "quota": 82463372084
+            },
+            "after": {
+              "usage": 339738624,
+              "quota": 82463372084
+            },
+            "elapsedMs": 3,
+            "files": [
+              {
+                "name": "2048.sap",
+                "size": 16384
+              },
+              {
+                "name": "1024.sap",
+                "size": 16384
+              },
+              {
+                "name": "0.sap",
+                "size": 16384
+              },
+              {
+                "name": "4095.sap",
+                "size": 16384
+              }
+            ],
+            "verified": false
+          }
+        }
+      ],
+      "receivedAt": "2026-10-23T01:43:48.845Z"
+    },
+    {
+      "phase": 1,
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.0.1 Safari/605.1.15",
+      "results": [
+        {
+          "mode": "seek",
+          "action": "verify",
+          "result": {
+            "action": "verify",
+            "mode": "seek",
+            "before": {
+              "usage": 339738624,
+              "quota": 82463372084
+            },
+            "after": {
+              "usage": 339738624,
+              "quota": 82463372084
+            },
+            "elapsedMs": 4,
+            "files": [
+              {
+                "name": "data.sap",
+                "size": 67108864
+              }
+            ],
+            "verified": true
+          }
+        },
+        {
+          "mode": "seek",
+          "action": "fill",
+          "result": {
+            "action": "fill",
+            "mode": "seek",
+            "before": {
+              "usage": 339738624,
+              "quota": 82463372084
+            },
+            "after": {
+              "usage": 339738624,
+              "quota": 82463372084
+            },
+            "elapsedMs": 5,
+            "files": [
+              {
+                "name": "data.sap",
+                "size": 67108864
+              }
+            ],
+            "verified": true
+          }
+        },
+        {
+          "mode": "truncate",
+          "action": "verify",
+          "result": {
+            "action": "verify",
+            "mode": "truncate",
+            "before": {
+              "usage": 339738624,
+              "quota": 82463372084
+            },
+            "after": {
+              "usage": 339738624,
+              "quota": 82463372084
+            },
+            "elapsedMs": 4,
+            "files": [
+              {
+                "name": "data.sap",
+                "size": 67108864
+              }
+            ],
+            "verified": true
+          }
+        },
+        {
+          "mode": "truncate",
+          "action": "fill",
+          "result": {
+            "action": "fill",
+            "mode": "truncate",
+            "before": {
+              "usage": 339738624,
+              "quota": 82463372084
+            },
+            "after": {
+              "usage": 339738624,
+              "quota": 82463372084
+            },
+            "elapsedMs": 4,
+            "files": [
+              {
+                "name": "data.sap",
+                "size": 67108864
+              }
+            ],
+            "verified": true
+          }
+        },
+        {
+          "mode": "zero-control",
+          "action": "verify",
+          "result": {
+            "action": "verify",
+            "mode": "zero-control",
+            "before": {
+              "usage": 339738624,
+              "quota": 82463372084
+            },
+            "after": {
+              "usage": 339738624,
+              "quota": 82463372084
+            },
+            "elapsedMs": 4,
+            "files": [
+              {
+                "name": "data.sap",
+                "size": 67108864
+              }
+            ],
+            "verified": true
+          }
+        },
+        {
+          "mode": "zero-control",
+          "action": "fill",
+          "result": {
+            "action": "fill",
+            "mode": "zero-control",
+            "before": {
+              "usage": 339738624,
+              "quota": 82463372084
+            },
+            "after": {
+              "usage": 339738624,
+              "quota": 82463372084
+            },
+            "elapsedMs": 4,
+            "files": [
+              {
+                "name": "data.sap",
+                "size": 67108864
+              }
+            ],
+            "verified": true
+          }
+        },
+        {
+          "mode": "keyed-pages",
+          "action": "verify",
+          "result": {
+            "action": "verify",
+            "mode": "keyed-pages",
+            "before": {
+              "usage": 339738624,
+              "quota": 82463372084
+            },
+            "after": {
+              "usage": 339738624,
+              "quota": 82463372084
+            },
+            "elapsedMs": 4,
+            "files": [
+              {
+                "name": "2048.sap",
+                "size": 16384
+              },
+              {
+                "name": "1024.sap",
+                "size": 16384
+              },
+              {
+                "name": "0.sap",
+                "size": 16384
+              },
+              {
+                "name": "4095.sap",
+                "size": 16384
+              }
+            ],
+            "verified": true
+          }
+        },
+        {
+          "mode": "keyed-pages",
+          "action": "fill",
+          "result": {
+            "action": "fill",
+            "mode": "keyed-pages",
+            "before": {
+              "usage": 339738624,
+              "quota": 82463372084
+            },
+            "after": {
+              "usage": 340787200,
+              "quota": 82463372084
+            },
+            "elapsedMs": 5,
+            "files": [
+              {
+                "name": "2048.sap",
+                "size": 16384
+              },
+              {
+                "name": "1024.sap",
+                "size": 16384
+              },
+              {
+                "name": "0.sap",
+                "size": 16384
+              },
+              {
+                "name": "4095.sap",
+                "size": 16384
+              },
+              {
+                "name": "3072.sap",
+                "size": 16384
+              }
+            ],
+            "verified": true
+          }
+        }
+      ],
+      "receivedAt": "2026-10-23T01:53:31.886Z"
+    },
+    {
+      "phase": 2,
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.0.1 Safari/605.1.15",
+      "results": [
+        {
+          "mode": "seek",
+          "action": "verify-filled",
+          "result": {
+            "action": "verify-filled",
+            "mode": "seek",
+            "before": {
+              "usage": 201408512,
+              "quota": 82463372084
+            },
+            "after": {
+              "usage": 201408512,
+              "quota": 82463372084
+            },
+            "elapsedMs": 4,
+            "files": [
+              {
+                "name": "data.sap",
+                "size": 67108864
+              }
+            ],
+            "verified": true
+          }
+        },
+        {
+          "mode": "seek",
+          "action": "delete",
+          "result": true
+        },
+        {
+          "mode": "truncate",
+          "action": "verify-filled",
+          "result": {
+            "action": "verify-filled",
+            "mode": "truncate",
+            "before": {
+              "usage": 201408512,
+              "quota": 82463372084
+            },
+            "after": {
+              "usage": 201408512,
+              "quota": 82463372084
+            },
+            "elapsedMs": 3,
+            "files": [
+              {
+                "name": "data.sap",
+                "size": 67108864
+              }
+            ],
+            "verified": true
+          }
+        },
+        {
+          "mode": "truncate",
+          "action": "delete",
+          "result": true
+        },
+        {
+          "mode": "zero-control",
+          "action": "verify-filled",
+          "result": {
+            "action": "verify-filled",
+            "mode": "zero-control",
+            "before": {
+              "usage": 201408512,
+              "quota": 82463372084
+            },
+            "after": {
+              "usage": 201408512,
+              "quota": 82463372084
+            },
+            "elapsedMs": 3,
+            "files": [
+              {
+                "name": "data.sap",
+                "size": 67108864
+              }
+            ],
+            "verified": true
+          }
+        },
+        {
+          "mode": "zero-control",
+          "action": "delete",
+          "result": true
+        },
+        {
+          "mode": "keyed-pages",
+          "action": "verify-filled",
+          "result": {
+            "action": "verify-filled",
+            "mode": "keyed-pages",
+            "before": {
+              "usage": 201408512,
+              "quota": 82463372084
+            },
+            "after": {
+              "usage": 201408512,
+              "quota": 82463372084
+            },
+            "elapsedMs": 4,
+            "files": [
+              {
+                "name": "2048.sap",
+                "size": 16384
+              },
+              {
+                "name": "1024.sap",
+                "size": 16384
+              },
+              {
+                "name": "0.sap",
+                "size": 16384
+              },
+              {
+                "name": "4095.sap",
+                "size": 16384
+              },
+              {
+                "name": "3072.sap",
+                "size": 16384
+              }
+            ],
+            "verified": true
+          }
+        },
+        {
+          "mode": "keyed-pages",
+          "action": "delete",
+          "result": true
+        }
+      ],
+      "receivedAt": "2026-10-23T01:54:15.323Z"
+    },
+    {
+      "phase": 2,
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.0.1 Safari/605.1.15",
+      "results": [],
+      "error": "@http://127.0.0.1:9485/:13:76",
+      "receivedAt": "2026-10-23T01:54:15.712Z"
+    }
+  ],
+  "restartEvidence": [
+    {
+      "source": "user confirmation",
+      "message": "restarted",
+      "scope": "Browser restart confirmed by user; harness records phase visits but does not independently count process restarts."
+    }
+  ],
+  "assessment": {
+    "successfulPhases": [
+      0,
+      1,
+      2
+    ],
+    "postCleanupNavigationErrors": 1,
+    "finalOriginUsageBytes": 201408512,
+    "expectedLogicalBytes": 201408512,
+    "physicalAllocationMeasured": false,
+    "forcedQuotaTest": false
+  }
+}

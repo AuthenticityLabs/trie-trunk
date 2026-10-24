@@ -1,0 +1,15 @@
+goos: darwin
+goarch: arm64
+pkg: trie-trunk/go/server/cache
+cpu: Apple M1 Max
+BenchmarkResidentObjectHistory/1/pending-10         	   21786	      5317 ns/op	        78.00 PIL-B/op	   22560 B/op	      19 allocs/op
+BenchmarkResidentObjectHistory/1/sealed-resident-10 	   21453	      5580 ns/op	        78.00 PIL-B/op	   22704 B/op	      24 allocs/op
+BenchmarkResidentObjectHistory/1/expired-resident-warm-disk-10         	    4144	     27570 ns/op	        78.00 PIL-B/op	   13545 B/op	      42 allocs/op
+BenchmarkResidentObjectHistory/9/pending-10                            	   16029	      6900 ns/op	       534.0 PIL-B/op	   26304 B/op	      29 allocs/op
+BenchmarkResidentObjectHistory/9/sealed-resident-10                    	   14972	      7854 ns/op	       534.0 PIL-B/op	   26096 B/op	      59 allocs/op
+BenchmarkResidentObjectHistory/9/expired-resident-warm-disk-10         	    3403	     35385 ns/op	       534.0 PIL-B/op	   24962 B/op	     161 allocs/op
+BenchmarkResidentObjectHistory/61/pending-10                           	    8742	     12417 ns/op	      3638 PIL-B/op	   38848 B/op	      33 allocs/op
+BenchmarkResidentObjectHistory/61/sealed-resident-10                   	    4906	     20927 ns/op	      3638 PIL-B/op	   39090 B/op	     219 allocs/op
+BenchmarkResidentObjectHistory/61/expired-resident-warm-disk-10        	    1592	     73832 ns/op	      3638 PIL-B/op	   83376 B/op	     807 allocs/op
+PASS
+ok  	trie-trunk/go/server/cache	2.246s

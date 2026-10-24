@@ -1,4 +1,4 @@
-import { Show, createEffect } from "solid-js";
+import { For, Show, createEffect, createSignal } from "solid-js";
 import { Icon } from "./icon";
 
 export type Panel = "connection" | "help";
@@ -8,7 +8,23 @@ export function Settings(props: {
   token: string;
   onToken: (token: string) => void;
   onClose: () => void;
+  sources:string[];
+  onRebase:(source:string)=>Promise<void>;
 }) {
+  const [rebaseSource,setRebaseSource]=createSignal("");
+  const [rebuilding,setRebuilding]=createSignal(false);
+  const [rebaseMessage,setRebaseMessage]=createSignal("");
+  const [rebaseError,setRebaseError]=createSignal("");
+  const collections=()=>[...new Set(props.sources.filter(s=>s.split("/").length===4).map(s=>s.split("/").slice(0,3).join("/")+"/write"))];
+  async function rebuild(){
+    const source=rebaseSource();if(!source||rebuilding())return;
+    const name=source.split("/").slice(0,3).join("/");
+    if(!window.confirm(`Rebuild the local replica of ${name}? This clears its cached ranges and the current search view. Server data and notebook references remain. The next search will collect again.`))return;
+    setRebuilding(true);setRebaseMessage("");setRebaseError("");
+    try{await props.onRebase(source);setRebaseMessage("Local replica reset. Search again to collect from the server.");}
+    catch(cause){setRebaseError(cause instanceof Error?cause.message:String(cause));}
+    finally{setRebuilding(false);}
+  }
   let dialog: HTMLDialogElement | undefined;
   createEffect(() => {
     if (props.panel) dialog?.showModal();
@@ -30,12 +46,12 @@ export function Settings(props: {
             <h2>
               {props.panel === "connection"
                 ? "Connection"
-                : "A little search fluency."}
+                : "Search Guide"}
             </h2>
           </div>
           <button
             class="icon-button"
-            aria-label="Close dialog"
+            aria-label="Close Dialog"
             onClick={() => dialog?.close()}
           >
             <Icon name="close" />
@@ -46,39 +62,38 @@ export function Settings(props: {
           fallback={
             <div class="guide-content">
               <p>
-                Collect events from the server, then search that working set in
-                your browser.
+                Search combines time, object, and field predicates. Event pages load
+                as you scroll; charts describe the complete matching range.
               </p>
               <dl>
                 <div>
-                  <dt>Collect</dt>
+                  <dt>Source Scope</dt>
                   <dd>
-                    Choose a tap, time window and fields. Collect retrieves all
-                    matching events and replaces the working set. The collected
-                    count grows as events arrive.
+                    Choose a cache, service, resource and time window. Use level and
+                    access in your query to narrow the events.
                   </dd>
                 </div>
                 <div>
                   <dt>Search</dt>
                   <dd>
-                    Use the controls below Collect to find events already in
-                    this tab. The matched count shows your results alongside the
-                    total collected. Search makes no server request.
+                    Use where for exact values and ranges. search("timeout") keeps
+                    literal substring matching. Add a mode for indexed full-text
+                    search: search("connection timeout", terms), phrase, prefix,
+                    or fuzzy. Pipeline syntax uses search "timeout" mode terms.
                   </dd>
                 </div>
                 <div>
-                  <dt>Clear search</dt>
+                  <dt>Clear</dt>
                   <dd>
-                    Restore the entire working set without collecting it again.
-                    Changing a selector edits your choices; press Collect or
-                    Search to apply them.
+                    Remove predicates to see the selected time range again. Changing
+                    the query edits your choices; press Search to apply them.
                   </dd>
                 </div>
                 <div>
-                  <dt>Follow live</dt>
+                  <dt>Follow Live</dt>
                   <dd>
                     Continue collecting new arrivals from the server. The
-                    current search applies to each new event. Stop following to
+                    current search applies to each new event. Stop Following to
                     keep the collection as it stands.
                   </dd>
                 </div>
@@ -99,10 +114,10 @@ export function Settings(props: {
             <p>Collect events from this trie-trunk server.</p>
             <label class="form-label">
               Endpoint
-              <input value={`${location.origin}/events`} readonly />
+              <input value={`${location.origin}/collect`} readonly />
             </label>
             <label class="form-label">
-              Bearer token <span>if required</span>
+              Bearer Token <span>if required</span>
               <input
                 type="password"
                 value={props.token}
@@ -121,6 +136,18 @@ export function Settings(props: {
               <Icon name="check" size={16} />
               Done
             </button>
+            <Show when={collections().length}>
+              <hr/>
+              <label class="form-label">Rebuild Local Resource Cache
+                <select aria-label="Resource Cache to Rebuild" value={rebaseSource()} disabled={rebuilding()} onChange={e=>{setRebaseSource(e.currentTarget.value);setRebaseMessage("");setRebaseError("");}}>
+                  <option value="">Choose a Resource</option>
+                  <For each={collections()}>{source=><option value={source}>{source.split("/").slice(0,3).join("/")}</option>}</For>
+                </select>
+              </label>
+              <button class="button secondary" type="button" disabled={!rebaseSource()||rebuilding()} onClick={()=>void rebuild()}>{rebuilding()?"Rebuilding…":"Rebuild Local Cache"}</button>
+              <Show when={rebaseMessage()}><p role="status">{rebaseMessage()}</p></Show>
+              <Show when={rebaseError()}><p role="alert">{rebaseError()}</p></Show>
+            </Show>
           </form>
         </Show>
       </div>

@@ -1,0 +1,7 @@
+{
+  "benchmarks/replay/compression/stream.c": "c57f51dc48c55621aadc9d46d86bed2472db15f33650d2d2fc57f55698ca52ed",
+  "benchmarks/replay/postgres/compression_fixture.go": "273421494119ee96b3119ef5810cf47a1df3678f590a1a8f07188a6c9c4592ef",
+  "benchmarks/replay/postgres/main.go": "da95fb036ca9079c43b491f1218d0864d6d729156f3d00cf6831996da06391f5",
+  "benchmarks/replay/postgres/stream.go": "85159863f5993e60fd57aee0234f32dd6f93153d1af2e3be0a57a41ca2ffb1fa",
+  "benchmark_binary": "b79e6ae55711c42b1ccc25ba4f2f913e39f8853fcf00c1cc67163f484e558d64"
+}

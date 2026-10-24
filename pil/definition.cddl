@@ -1,0 +1,64 @@
+; PIL Definition, version-zero structural contract (RFC 8610 CDDL).
+; This describes the emitted CBOR map, not PIL frame bytes.
+; The resource annotation is optional for generic PIL.
+; Codec validation additionally enforces nonempty/unique field names,
+; supported @fields usage, dictionary uniqueness and STRING-only dictionaries,
+; role/type agreement, and immutable Definition binding.
+
+pil-definition = fixed-definition / adaptive-definition
+fixed-definition = {
+  pil: 0,
+  ? adaptive_integers: "none",
+  definition-members
+}
+adaptive-definition = {
+  pil: 1,
+  adaptive_integers: "16" / "32",
+  definition-members
+}
+definition-members = (
+  definition: tstr,
+  version: uint,
+  fields: [+ pil-field],
+  ? resource: trunk-resource
+)
+pil-field = {
+  name: tstr,
+  type: pil-scalar / pil-array,
+  ? values: [* tstr]
+}
+pil-scalar = "BOOL" / "I8" / "I16" / "I32" / "I64"
+           / "U8" / "U16" / "U32" / "U64" / "F32" / "F64"
+           / "UUID" / "TIMESTAMP_MS" / "TIMESTAMP_US" / "TIMESTAMP_NS"
+           / "REF16" / "STRING" / "BYTES" / "CBOR"
+pil-array = "ARRAY<BOOL>" / "ARRAY<I8>" / "ARRAY<I16>" / "ARRAY<I32>" / "ARRAY<I64>"
+          / "ARRAY<U8>" / "ARRAY<U16>" / "ARRAY<U32>" / "ARRAY<U64>"
+          / "ARRAY<F32>" / "ARRAY<F64>" / "ARRAY<UUID>"
+          / "ARRAY<TIMESTAMP_MS>" / "ARRAY<TIMESTAMP_US>" / "ARRAY<TIMESTAMP_NS>"
+          / "ARRAY<REF16>" / "ARRAY<STRING>" / "ARRAY<BYTES>" / "ARRAY<CBOR>"
+
+; Trie-Trunk storage binding. Format selector 6 is the current implementation
+; value; it is distinct from pil, Definition version, major, and minor.
+trunk-resource = {
+  format: 6,
+  service: tstr,
+  resource: tstr,
+  major: 1..4095,
+  minor: 0..1048575,
+  timezone: tstr, ; validated IANA timezone name; storage uses UTC
+  roles: {
+    event_id: tstr,
+    ? id: tstr,
+    ? revision_id: tstr,
+    ? duration: tstr,
+    ? shared: tstr
+  },
+  ? path: [* tstr],
+  ? aggregations: [* tstr],
+  ? references: [* reference-translation]
+}
+reference-translation = {
+  source_definition: tstr,
+  field: tstr,
+  values: {+ (0..65535) => (0..65535)}
+}

@@ -1,0 +1,857 @@
+--- a/go/server/cache/history.go
++++ b/go/server/cache/history.go
+@@ -61,8 +61,6 @@
+ 	source  *historySource
+ 	row     uint64
+ 	binding string
+-	id      [16]byte
+-	raw     []byte // immutable resident or provisional full PIL frame
+ }
+ type historySnapshot struct {
+ 	sources   []*historySource
+@@ -72,12 +70,8 @@
+ 
+ func (h *historySnapshot) close() {
+ 	for _, s := range h.sources {
+-		if s.branch.pop != nil {
+-			s.branch.pop.Close()
+-		}
+-		if s.release != nil {
+-			s.release()
+-		}
++		s.branch.pop.Close()
++		s.release()
+ 	}
+ }
+ func (h *historySnapshot) visit(ctx context.Context, visit func(EventReference, []byte) error) error {
+@@ -87,19 +81,14 @@
+ 			return err
+ 		}
+ 		s := v.source
+-		var err error
+-		if v.raw != nil {
+-			output = append(output[:0], v.raw...)
+-		} else {
+-			raw, e := s.reader.read(&s.branch, v.row, s.row)
+-			if e != nil {
+-				return e
+-			}
+-			row := s.branch.rows[v.row*uint64(s.row.Width) : (v.row+1)*uint64(s.row.Width)]
+-			output, err = s.assembler.assemble(row, raw, output)
+-			if err != nil {
+-				return err
+-			}
++		raw, err := s.reader.read(&s.branch, v.row, s.row)
++		if err != nil {
++			return err
++		}
++		row := s.branch.rows[v.row*uint64(s.row.Width) : (v.row+1)*uint64(s.row.Width)]
++		output, err = s.assembler.assemble(row, raw, output)
++		if err != nil {
++			return err
+ 		}
+ 		if err = visit(EventReference{s.layout.Digest, s.branch.generation, Write, v.row}, output); err != nil {
+ 			return err
+@@ -109,8 +98,7 @@
+ }
+ 
+ // History follows optional nuts.idx postings across all immutable minors in
+-// event order, including acknowledged pending writes. Revisions are opaque.
+-// Provisional callbacks use ProvisionalRow, never a durable physical address.
++// event order. Revisions are opaque; only committed writes enter replay history.
+ // Callback bytes are borrowed until the next callback. No writer lock is held
+ // during payload reads or callbacks, and no object-ID scan fallback is possible.
+ func (p *Endpoint) History(ctx context.Context, identity string, major uint32, id Value, from, to time.Time, visit func(EventReference, []byte) error) error {
+@@ -151,61 +139,58 @@
+ 		if err = s.check(); err != nil {
+ 			return nil, err
+ 		}
+-		if !s.config.ObjectIndex || s.objects == nil {
+-			return nil, ErrObjectIndexDisabled
+-		}
+-		object := s.layout.identityValue(s.layout.Object, id)
+-		if e := s.validateObject(object); e != nil {
++		locations, e := s.objectLocations(id)
++		if e != nil {
+ 			return nil, e
+ 		}
+-		h.token = s.token(object)
++		h.token = s.token(id)
+ 		b := s.branches[Write]
+ 		if b == nil {
+ 			continue
+ 		}
+-		if e := s.flush(b); e != nil {
+-			return nil, s.fail(e)
++		var selected []uint64
++		for _, loc := range locations {
++			if loc.Minor != s.layout.Definition.Nuts.Minor || loc.Generation != b.generation {
++				continue
++			}
++			if loc.Row >= uint64(len(b.rows)/s.row.Width) {
++				return nil, fmt.Errorf("object reference beyond source")
++			}
++			ms := eventTime(b.rows[loc.Row*uint64(s.row.Width):])
++			if ms >= timeBound(from) && ms < timeBound(to) {
++				selected = append(selected, loc.Row)
++			}
+ 		}
+-		if e := s.indexObjects(b); e != nil {
+-			return nil, s.fail(e)
++		if len(selected) == 0 {
++			continue
+ 		}
+-		selected, e := s.objectRows(b, object, from, to)
++		rows, release, e := b.snapshotIndex()
+ 		if e != nil {
+ 			return nil, e
+ 		}
+-		pending := pendingWindow(b.pendingObjects[string(object.Bytes)], from, to)
+-		if len(selected)+len(pending) == 0 {
+-			continue
++		pop, e := os.Open(b.pop.Name())
++		if e != nil {
++			release()
++			return nil, e
+ 		}
+-		source := &historySource{layout: s.layout, row: s.row, branch: branchStore{generation: b.generation, popEnd: b.popEnd}, trie: sharedTrie{nodes: s.trie.nodes}, reader: populationReader{point: true}}
++		source := &historySource{layout: s.layout, row: s.row, branch: branchStore{
++			rows: rows, pop: pop, popEnd: b.popEnd, generation: b.generation,
++		}, trie: sharedTrie{nodes: s.trie.nodes}, release: release}
+ 		source.assembler = frameAssembler{layout: source.layout, trie: &source.trie}
+ 		h.sources = append(h.sources, source)
+ 		for _, row := range selected {
+-			at := row * uint64(s.row.Width)
+-			var event [16]byte
+-			copy(event[:], b.rows[at:at+16])
+-			raw := b.hot.get(event[:], s.config.Now())
+-			if raw == nil && source.branch.pop == nil {
+-				source.branch.rows, source.release, e = b.snapshotIndex()
+-				if e != nil {
+-					return nil, e
+-				}
+-				source.branch.pop, e = os.Open(b.pop.Name())
+-				if e != nil {
+-					return nil, e
+-				}
+-			}
+-			h.locations = append(h.locations, historyLocation{source: source, row: row, binding: s.binding, id: event, raw: raw})
+-		}
+-		for _, p := range pending {
+-			h.locations = append(h.locations, historyLocation{source: source, row: ProvisionalRow, binding: s.binding, id: p.id, raw: p.frame})
++			h.locations = append(h.locations, historyLocation{source, row, s.binding})
+ 		}
+ 	}
+ 	if !found {
+ 		return nil, fmt.Errorf("unknown collection")
+ 	}
++	eventID := func(v historyLocation) []byte {
++		at := v.row * uint64(v.source.row.Width)
++		return v.source.branch.rows[at : at+16]
++	}
+ 	sort.Slice(h.locations, func(i, j int) bool {
+-		if c := bytes.Compare(h.locations[i].id[:], h.locations[j].id[:]); c != 0 {
++		if c := bytes.Compare(eventID(h.locations[i]), eventID(h.locations[j])); c != 0 {
+ 			return c < 0
+ 		}
+ 		return h.locations[i].binding < h.locations[j].binding
+--- a/go/server/cache/objects.go
++++ b/go/server/cache/objects.go
+@@ -8,7 +8,6 @@
+ 	"fmt"
+ 	"os"
+ 	"path/filepath"
+-	"sort"
+ 	"time"
+ )
+ 
+@@ -34,7 +33,7 @@
+ type objectIndex struct {
+ 	file      *os.File
+ 	batches   []postingBatch
+-	locations map[string]map[objectBinding][]postingRef
++	locations map[string][]postingRef
+ 	through   map[objectBinding]uint64
+ }
+ type postingRef struct{ Batch, Entry int }
+@@ -45,7 +44,7 @@
+ 
+ func (i *objectIndex) add(p postingBatch) error {
+ 	if i.locations == nil {
+-		i.locations = map[string]map[objectBinding][]postingRef{}
++		i.locations = map[string][]postingRef{}
+ 		i.through = map[objectBinding]uint64{}
+ 	}
+ 	key := objectBinding{p.Minor, p.Generation}
+@@ -59,10 +58,7 @@
+ 		}
+ 		prior = entry.Row
+ 		id := string(entry.Object)
+-		if i.locations[id] == nil {
+-			i.locations[id] = map[objectBinding][]postingRef{}
+-		}
+-		i.locations[id][key] = append(i.locations[id][key], postingRef{len(i.batches), n})
++		i.locations[id] = append(i.locations[id], postingRef{len(i.batches), n})
+ 	}
+ 	i.batches = append(i.batches, p)
+ 	i.through[key] = p.Through
+@@ -199,17 +195,7 @@
+ 		}
+ 	}
+ 	var out []ObjectLocation
+-	var ordered []postingRef
+-	for _, refs := range s.objects.locations[string(id.Bytes)] {
+-		ordered = append(ordered, refs...)
+-	}
+-	sort.Slice(ordered, func(i, j int) bool {
+-		if ordered[i].Batch != ordered[j].Batch {
+-			return ordered[i].Batch < ordered[j].Batch
+-		}
+-		return ordered[i].Entry < ordered[j].Entry
+-	})
+-	for _, ref := range ordered {
++	for _, ref := range s.objects.locations[string(id.Bytes)] {
+ 		batch := s.objects.batches[ref.Batch]
+ 		n := s.layout.Definition.Nuts
+ 		binding := fmt.Sprintf("%s/%s.v%d/%d", n.Domain, n.Collection, n.Major, batch.Minor)
+@@ -232,39 +218,8 @@
+ 	return out, nil
+ }
+ 
+-// objectRows intersects a source's time-index ranges with its sorted object
+-// postings. No copying/scanning of older revisions; revisions remain opaque.
+-// Caller holds s.mu and has flushed/indexed the branch.
+-func (s *Store) objectRows(b *branchStore, id Value, from, to time.Time) ([]uint64, error) {
+-	if !s.config.ObjectIndex || s.objects == nil {
+-		return nil, ErrObjectIndexDisabled
+-	}
+-	id = s.layout.identityValue(s.layout.Object, id)
+-	if e := s.validateObject(id); e != nil {
+-		return nil, e
+-	}
+-	key := objectBinding{s.layout.Definition.Nuts.Minor, b.generation}
+-	refs := s.objects.locations[string(id.Bytes)][key]
+-	rowAt := func(i int) uint64 { r := refs[i]; return s.objects.batches[r.Batch].Entries[r.Entry].Row }
+-	var selected []uint64
+-	spans := b.candidates(from, to, s.row.Width)
+-	for i := 0; i < len(spans); i++ {
+-		span := spans[i]
+-		for i+1 < len(spans) && span.end == spans[i+1].at {
+-			i++
+-			span.end = spans[i].end
+-		}
+-		a := sort.Search(len(refs), func(i int) bool { return rowAt(i) >= span.at })
+-		z := sort.Search(len(refs), func(i int) bool { return rowAt(i) >= span.end })
+-		for i := a; i < z; i++ {
+-			selected = append(selected, rowAt(i))
+-		}
+-	}
+-	return selected, nil
+-}
+-
+-// History merges the current minor's object postings and durable pending writes.
+-// ProvisionalRow marks pending events. Cross-minor callers use Endpoint.History.
++// History requires the current minor's object postings; there is no scan fallback.
++// Cross-minor callers use ObjectLocations and resolve each immutable source map.
+ func (s *Store) History(ctx context.Context, id Value, from, to time.Time, visit func(uint64, []byte) error) error {
+ 	s.mu.Lock()
+ 	if e := s.check(); e != nil {
+@@ -276,7 +231,7 @@
+ 	if !enabled {
+ 		return ErrObjectIndexDisabled
+ 	}
+-	return s.searchView(ctx, Query{Branch: Write, From: from, To: to, Equals: map[string]Value{role: id}}, visit, s.assembledReader(true), true)
++	return s.Search(ctx, Query{Branch: Write, From: from, To: to, Equals: map[string]Value{role: id}}, visit)
+ }
+ 
+ type StateToken struct {
+--- a/go/server/cache/population.go
++++ b/go/server/cache/population.go
+@@ -9,7 +9,6 @@
+ 	start, end uint64
+ 	data       []byte
+ 	reads      uint64
+-	point      bool // Object lookups read exact extents; sequential scans keep read-ahead.
+ }
+ 
+ func (r *populationReader) read(b *branchStore, number uint64, row RowLayout) ([]byte, error) {
+@@ -21,9 +20,6 @@
+ 		return r.data[start-r.start : end-r.start], nil
+ 	}
+ 	through := start + 1<<20
+-	if r.point {
+-		through = end
+-	}
+ 	if through < end {
+ 		through = end
+ 	}
+--- a/go/server/cache/query.go
++++ b/go/server/cache/query.go
+@@ -34,9 +34,6 @@
+ 	return v
+ }
+ func (s *Store) frame(b *branchStore, number uint64, dst []byte) ([]byte, error) {
+-	if raw := b.hot.get(b.rows[number*uint64(s.row.Width):], s.config.Now()); raw != nil {
+-		return append(dst[:0], raw...), nil
+-	}
+ 	start, end, e := b.populationRange(number, s.row)
+ 	if e != nil {
+ 		return nil, e
+@@ -93,16 +90,12 @@
+ // order. Callback bytes are borrowed until the next callback. Source rows are
+ // stable logical addresses in the returned branch generation.
+ func (s *Store) Search(ctx context.Context, q Query, visit func(uint64, []byte) error) error {
+-	_, point := q.Equals[s.layout.Definition.Nuts.Roles.Object]
+-	return s.search(ctx, q, visit, s.assembledReader(point))
+-}
+-func (s *Store) assembledReader(point ...bool) func(*branchStore, uint64, []byte) ([]byte, error) {
+-	reader := populationReader{point: len(point) > 0 && point[0]}
++	return s.search(ctx, q, visit, s.assembledReader())
++}
++func (s *Store) assembledReader() func(*branchStore, uint64, []byte) ([]byte, error) {
++	var reader populationReader
+ 	assembler := frameAssembler{layout: s.layout, trie: &s.trie}
+ 	return func(b *branchStore, number uint64, dst []byte) ([]byte, error) {
+-		if raw := b.hot.get(b.rows[number*uint64(s.row.Width):], s.config.Now()); raw != nil {
+-			return append(dst[:0], raw...), nil
+-		}
+ 		raw, e := reader.read(b, number, s.row)
+ 		if e != nil {
+ 			return nil, e
+@@ -114,8 +107,7 @@
+ // SearchLive includes durable but unfinalized PIL frames without assigning them
+ // physical row references. Replication/object postings use committed Search.
+ func (s *Store) SearchLive(ctx context.Context, q Query, visit func([]byte) error) error {
+-	_, point := q.Equals[s.layout.Definition.Nuts.Roles.Object]
+-	return s.searchView(ctx, q, func(_ uint64, raw []byte) error { return visit(raw) }, s.assembledReader(point), true)
++	return s.searchView(ctx, q, func(_ uint64, raw []byte) error { return visit(raw) }, s.assembledReader(), true)
+ }
+ 
+ // A reader parameter keeps traversal identical when measuring population codecs.
+@@ -151,7 +143,7 @@
+ 			return ErrObjectIndexDisabled
+ 		}
+ 		if q.Branch != Write {
+-			return fmt.Errorf("nuts.idx supports object lookup on writes only")
++			return fmt.Errorf("nuts.idx supports object lookup on committed writes only")
+ 		}
+ 		if e := s.validateObject(objectID); e != nil {
+ 			return e
+@@ -166,15 +158,22 @@
+ 	}
+ 	var candidates []cursor
+ 	if objectLookup {
+-		if e := s.indexObjects(b); e != nil {
+-			return e
+-		}
+-		rows, e := s.objectRows(b, objectID, q.From, q.To)
++		locations, e := s.objectLocations(objectID)
+ 		if e != nil {
+ 			return e
+ 		}
+-		for _, row := range rows {
+-			candidates = append(candidates, cursor{row, row + 1})
++		lo, hi := timeBound(q.From), timeBound(q.To)
++		for _, loc := range locations {
++			if loc.Minor != s.layout.Definition.Nuts.Minor || loc.Generation != b.generation {
++				continue
++			}
++			if loc.Row >= uint64(len(b.rows)/s.row.Width) {
++				return fmt.Errorf("object locator beyond source")
++			}
++			ms := eventTime(b.rows[loc.Row*uint64(s.row.Width):])
++			if ms >= lo && ms < hi {
++				candidates = append(candidates, cursor{loc.Row, loc.Row + 1})
++			}
+ 		}
+ 	} else {
+ 		candidates = b.candidates(q.From, q.To, s.row.Width)
+@@ -187,12 +186,13 @@
+ 	decisions := make([]uint8, len(s.trie.nodes))
+ 	var staged []pending
+ 	if live {
+-		values := b.pending
+-		if objectLookup {
+-			id := s.layout.identityValue(s.layout.Object, objectID)
+-			values = b.pendingObjects[string(id.Bytes)]
+-		}
+-		staged = pendingWindow(values, q.From, q.To)
++		// flush already sorted the pending tail under this same lock.
++		for _, p := range b.pending {
++			ms := eventTime(p.id[:])
++			if ms >= timeBound(q.From) && ms < timeBound(q.To) {
++				staged = append(staged, p)
++			}
++		}
+ 	}
+ 	for h.Len() > 0 || len(staged) > 0 {
+ 		if e := ctx.Err(); e != nil {
+@@ -212,7 +212,7 @@
+ 				}
+ 			}
+ 			if match {
+-				if e := visit(ProvisionalRow, p.frame); e != nil {
++				if e := visit(^uint64(0), p.frame); e != nil {
+ 					return e
+ 				}
+ 			}
+--- a/go/server/cache/retention.go
++++ b/go/server/cache/retention.go
+@@ -343,15 +343,6 @@
+ 	replacement.swap, old.swap = old.swap, nil
+ 	replacement.pending, replacement.pendingIDs = old.pending, old.pendingIDs
+ 	replacement.pendingBytes = old.pendingBytes
+-	replacement.pendingObjects = old.pendingObjects
+-	replacement.pendingVersion = old.pendingVersion
+-	replacement.pendingUnsorted = old.pendingUnsorted
+-	if err = s.warmHot(replacement); err != nil {
+-		return err
+-	}
+-	for _, p := range replacement.pending {
+-		replacement.hot.add(p.id, p.frame, s.config.Now())
+-	}
+ 	replacement.finalizedBefore = old.finalizedBefore
+ 	s.branches[branch] = replacement
+ 	if err = old.close(); err != nil {
+--- a/go/server/cache/staging.go
++++ b/go/server/cache/staging.go
+@@ -96,7 +96,7 @@
+ 		b.pending = append(b.pending, pending{id, raw})
+ 		b.pendingIDs[id] = raw
+ 		b.pendingBytes += len(raw)
+-		return s.rememberPending(b, pending{id, raw})
++		return nil
+ 	})
+ 	if e != nil {
+ 		return e
+@@ -112,15 +112,11 @@
+ }
+ 
+ func (s *Store) flush(b *branchStore) error {
+-	b.hot.prune(s.config.Now())
+ 	cutoff := s.config.Now().Truncate(FinalizationCycle).Add(-FinalizationCycles * FinalizationCycle).UnixMilli()
+ 	if cutoff < b.finalizedBefore {
+ 		cutoff = b.finalizedBefore
+ 	}
+-	if b.pendingUnsorted {
+-		sort.Slice(b.pending, func(i, j int) bool { return bytes.Compare(b.pending[i].id[:], b.pending[j].id[:]) < 0 })
+-		b.pendingUnsorted = false
+-	}
++	sort.Slice(b.pending, func(i, j int) bool { return bytes.Compare(b.pending[i].id[:], b.pending[j].id[:]) < 0 })
+ 	count := sort.Search(len(b.pending), func(i int) bool { return eventTime(b.pending[i].id[:]) >= cutoff })
+ 	for start := 0; start < count; {
+ 		end, size := start, 0
+@@ -145,12 +141,6 @@
+ 		delete(b.pendingIDs, p.id)
+ 		b.pendingBytes -= len(p.frame)
+ 	}
+-	if count > 0 {
+-		b.pendingVersion++
+-	}
+-	if e := s.forgetPending(b, b.pending[:count]); e != nil {
+-		return e
+-	}
+ 	copy(b.pending, b.pending[count:])
+ 	clear(b.pending[len(b.pending)-count:])
+ 	b.pending = b.pending[:len(b.pending)-count]
+--- a/go/server/cache/store.go
++++ b/go/server/cache/store.go
+@@ -47,11 +47,6 @@
+ 	time               timeTrie
+ 	pending            []pending
+ 	pendingIDs         map[[16]byte][]byte
+-	pendingObjects     map[string][]pending
+-	hot                hotFrames
+-	liveViews          map[string]liveViewSnapshot
+-	pendingVersion     uint64
+-	pendingUnsorted    bool
+ 	pendingBytes       int
+ 	popEnd, sumEnd     uint64
+ 	summaries          []Summary
+@@ -427,9 +422,6 @@
+ 	if err = b.mapIndex(); err != nil {
+ 		return nil, err
+ 	}
+-	if err = s.warmHot(b); err != nil {
+-		return nil, err
+-	}
+ 	if err = s.openSwap(b); err != nil {
+ 		return nil, err
+ 	}
+@@ -508,9 +500,6 @@
+ 	b.pending = append(b.pending, pending{id, copyFrame})
+ 	b.pendingIDs[id] = copyFrame
+ 	b.pendingBytes += len(raw)
+-	if e = s.rememberPending(b, pending{id, copyFrame}); e != nil {
+-		return false, s.fail(e)
+-	}
+ 	return false, nil
+ }
+ 
+--- a/go/server/cache/view_http.go
++++ b/go/server/cache/view_http.go
+@@ -39,7 +39,6 @@
+ 	Branch     Branch
+ 	Tail       uint64
+ 	Finalized  int64
+-	Live       string `json:",omitempty"`
+ }
+ type viewCursor struct {
+ 	Scope      string
+@@ -51,11 +50,10 @@
+ 	LastRow    uint64
+ }
+ type ViewReference struct {
+-	Stream      uint32 `json:"stream"`
+-	Row         uint64 `json:"row"`
+-	Key         string `json:"key"`
+-	Cached      bool   `json:"cached"`
+-	Provisional bool   `json:"provisional,omitempty"`
++	Stream uint32 `json:"stream"`
++	Row    uint64 `json:"row"`
++	Key    string `json:"key"`
++	Cached bool   `json:"cached"`
+ }
+ type ViewSummary struct {
+ 	Statistics *ViewStatistics `json:"statistics,omitempty"`
+@@ -88,8 +86,6 @@
+ 	ranges    []cursor
+ 	assembler frameAssembler
+ 	snap      branchStore
+-	pending   []pending
+-	store     *Store
+ }
+ 
+ func (s *viewSource) close() {
+@@ -145,19 +141,14 @@
+ 	if err = s.flush(b); err != nil {
+ 		return nil, err
+ 	}
+-	binding := viewBinding{Definition: fmtDigestNative(s.layout.Digest), Generation: fmt.Sprintf("%x", b.generation), Branch: branch, Tail: uint64(len(b.rows) / s.row.Width), Finalized: b.finalizedBefore}
++	binding := viewBinding{fmtDigestNative(s.layout.Digest), fmt.Sprintf("%x", b.generation), branch, uint64(len(b.rows) / s.row.Width), b.finalizedBefore}
+ 	if prior != nil {
+ 		if prior.Definition != binding.Definition || prior.Generation != binding.Generation || prior.Tail > binding.Tail {
+ 			return nil, fmt.Errorf("source generation changed; restart search")
+ 		}
+ 		binding = *prior
+ 	}
+-	live, events, e := b.captureLive(from, to, prior)
+-	if e != nil {
+-		return nil, e
+-	}
+-	binding.Live = live
+-	v = &viewSource{branch: branch, binding: binding, pending: events, store: s}
++	v = &viewSource{branch: branch, binding: binding}
+ 	defer func() {
+ 		if err != nil {
+ 			v.close()
+@@ -168,13 +159,12 @@
+ 		return nil, err
+ 	}
+ 	v.rows = v.rows[:binding.Tail*26]
+-	v.snap = branchStore{rows: v.rows, popEnd: b.popEnd, generation: b.generation}
++	v.snap = branchStore{rows: v.rows, popEnd: b.popEnd}
+ 	if payload {
+ 		v.pop, err = os.Open(b.pop.Name())
+ 		if err != nil {
+ 			return nil, err
+ 		}
+-		v.snap.pop = v.pop
+ 		v.assembler = frameAssembler{layout: s.layout, trie: &sharedTrie{nodes: append([]sharedNode(nil), s.trie.nodes...)}}
+ 	}
+ 	for _, c := range b.candidates(from, to, 26) {
+@@ -232,21 +222,6 @@
+ 			}
+ 		}
+ 	}
+-	if summary != nil {
+-		for _, p := range v.pending {
+-			i := (eventTime(p.id[:]) - summary.From) / summary.Step
+-			if i >= 0 && i < int64(len(summary.Counts)) {
+-				summary.Counts[i]++
+-				summary.Count++
+-				if branch == Error {
+-					summary.Errors[i]++
+-				}
+-			}
+-		}
+-	}
+-	if len(v.pending) > 0 {
+-		v.ranges = append(v.ranges, cursor{binding.Tail, binding.Tail + uint64(len(v.pending))})
+-	}
+ 	return v, nil
+ }
+ 
+@@ -262,7 +237,7 @@
+ func (h viewHeap) Len() int { return len(h.hits) }
+ func (h viewHeap) Less(i, j int) bool {
+ 	a, b := h.hits[i], h.hits[j]
+-	x := bytes.Compare(h.sources[a.source].eventID(a.row), h.sources[b.source].eventID(b.row))
++	x := bytes.Compare(h.sources[a.source].rows[a.row*26:a.row*26+16], h.sources[b.source].rows[b.row*26:b.row*26+16])
+ 	if x != 0 {
+ 		return x < 0
+ 	}
+@@ -470,11 +445,6 @@
+ 			step = 300000
+ 		}
+ 		summary := &ViewSummary{From: timeBound(from), To: timeBound(to), Step: step, Status: "committed-snapshot"}
+-		for _, s := range sources {
+-			if s.binding.Live != "" {
+-				summary.Status = "live-snapshot"
+-			}
+-		}
+ 		n := (summary.To - summary.From + step - 1) / step
+ 		summary.Counts = make([]uint64, n)
+ 		summary.Errors = make([]uint64, n)
+@@ -510,7 +480,7 @@
+ 			if len(last) > 0 {
+ 				at += uint64(sort.Search(int(span.end-at), func(n int) bool {
+ 					row := span.at + uint64(n)
+-					cmp := bytes.Compare(s.eventID(row), last)
++					cmp := bytes.Compare(s.rows[row*26:row*26+16], last)
+ 					return cmp > 0 || cmp == 0 && (i > c.LastSource || i == c.LastSource && row > c.LastRow)
+ 				}))
+ 			}
+@@ -534,25 +504,12 @@
+ 			}
+ 			hit := queue.hits[0]
+ 			s := sources[hit.source]
+-			row := s.eventID(hit.row)
+-			provisional := hit.row >= s.binding.Tail
++			row := s.rows[hit.row*26 : (hit.row+1)*26]
+ 			key := viewDigest(struct {
+ 				Binding viewBinding
+ 				Row     uint64
+ 			}{viewBinding{Definition: s.binding.Definition, Generation: s.binding.Generation, Branch: s.branch}, hit.row})
+-			var start, end uint64
+-			var err error
+-			if provisional {
+-				end = uint64(len(s.pending[hit.row-s.binding.Tail].frame))
+-				key = viewDigest(struct {
+-					Definition string
+-					Generation string
+-					Branch     Branch
+-					ID         string
+-				}{s.binding.Definition, s.binding.Generation, s.branch, hex.EncodeToString(row)})
+-			} else {
+-				start, end, err = s.snap.populationRange(hit.row, s.api.Store.row)
+-			}
++			start, end, err := s.snap.populationRange(hit.row, s.api.Store.row)
+ 			if err != nil {
+ 				http.Error(w, err.Error(), 500)
+ 				return
+@@ -562,7 +519,7 @@
+ 				break
+ 			}
+ 			bucketKnown := false
+-			if wantBuckets && !provisional {
++			if wantBuckets {
+ 				ms := eventTime(row)
+ 				var bucket *ViewBucket
+ 				for i := range bucketBySource[hit.source] {
+@@ -584,10 +541,13 @@
+ 				}
+ 				bucketKnown = bucket.Sealed && knownBuckets[bucket.Key]
+ 			}
+-			ref := ViewReference{Stream: uint32(hit.source), Row: hit.row, Key: key, Cached: knownEvents[key] || bucketKnown, Provisional: provisional}
++			ref := ViewReference{uint32(hit.source), hit.row, key, knownEvents[key] || bucketKnown}
+ 			result.Page = append(result.Page, ref)
+ 			if !ref.Cached {
+-				raw, err := s.fullFrame(hit.row)
++				raw, err := readBytes(s.pop, start, end)
++				if err == nil {
++					raw, err = s.assembler.assemble(row, raw, nil)
++				}
+ 				if err != nil {
+ 					http.Error(w, err.Error(), 500)
+ 					return
+--- a/go/server/cache/view_statistics.go
++++ b/go/server/cache/view_statistics.go
+@@ -49,6 +49,7 @@
+ 	out.Operations.Latency = []ViewRank{}
+ 	services, levels := map[string]uint64{}, map[string]uint64{}
+ 	operations := map[operationKey]*operationStats{}
++	var buffer []byte
+ 	for _, s := range sources {
+ 		l := s.api.Store.layout
+ 		resource := fmt.Sprintf("%s.v%d", l.Definition.Nuts.Collection, l.Definition.Nuts.Major)
+@@ -61,82 +62,107 @@
+ 				}
+ 			}
+ 		}
++		shared := map[uint16][4]string{}
+ 		var frame Frame
+-		var output []byte
+-		var reader populationReader
+ 		for _, span := range s.ranges {
+-			for row := span.at; row < span.end; row++ {
+-				if e := ctx.Err(); e != nil {
+-					return nil, e
+-				}
+-				var raw []byte
+-				if row >= s.binding.Tail {
+-					raw = s.pending[row-s.binding.Tail].frame
+-				} else {
+-					raw = s.resident(row)
+-					if raw == nil {
+-						pop, e := reader.read(&s.snap, row, l.RowLayout())
+-						if e != nil {
+-							return nil, e
++			for at := span.at; at < span.end; {
++				if err := ctx.Err(); err != nil {
++					return nil, err
++				}
++				start, end, err := s.snap.populationRange(at, l.RowLayout())
++				if err != nil {
++					return nil, err
++				}
++				stop := at + 1
++				for stop < span.end {
++					next := order.Uint64(s.rows[stop*26+18:])
++					if next-start > 1<<20 {
++						break
++					}
++					end = next
++					stop++
++				}
++				n := int(end - start)
++				if cap(buffer) < n {
++					buffer = make([]byte, n)
++				}
++				buffer = buffer[:n]
++				if _, err = s.pop.ReadAt(buffer, int64(start)); err != nil {
++					return nil, err
++				}
++				offset := uint64(0)
++				for ; at < stop; at++ {
++					row := s.rows[at*26 : (at+1)*26]
++					limit := order.Uint64(row[18:]) - start
++					if limit <= offset || limit > uint64(len(buffer)) {
++						return nil, fmt.Errorf("invalid statistics population boundary")
++					}
++					if err = l.Scan(buffer[offset:limit], &frame); err != nil {
++						return nil, err
++					}
++					offset = limit
++					ref := order.Uint16(row[16:])
++					dimensions, ok := shared[ref]
++					if !ok {
++						values := make([]Value, len(l.Widths))
++						if err = s.assembler.trie.expand(ref, values); err != nil {
++							return nil, err
+ 						}
+-						output, e = s.assembler.assemble(s.rows[row*26:(row+1)*26], pop, output)
+-						if e != nil {
+-							return nil, e
++						for j, i := range fields {
++							if i >= 0 {
++								dimensions[j] = statLabel(l.Definition.Fields[i], values[i])
++							}
+ 						}
+-						raw = output
+-					}
+-				}
+-				if e := l.Scan(raw, &frame); e != nil {
+-					return nil, e
+-				}
+-				var dimensions [4]string
+-				for j, i := range fields {
+-					if i >= 0 {
+-						dimensions[j] = statLabel(l.Definition.Fields[i], frame.Values[i])
+-					}
+-				}
+-				if dimensions[0] == "" {
+-					dimensions[0] = l.Definition.Nuts.Domain
+-				}
+-				if dimensions[1] == "" {
+-					dimensions[1] = resource
+-				}
+-				if dimensions[2] == "" {
+-					dimensions[2] = "Unspecified"
+-				}
+-				if dimensions[3] == "" {
+-					dimensions[3] = defaultLevel
+-				}
+-				dimensions[3] = strings.ToUpper(dimensions[3])
+-				services[dimensions[0]]++
+-				levels[dimensions[3]]++
+-				if !s.branch.Aggregates() {
+-					continue
+-				}
+-				key := operationKey{dimensions[0], dimensions[1], dimensions[2]}
+-				group := operations[key]
+-				if group == nil {
+-					group = &operationStats{}
+-					operations[key] = group
+-				}
+-				if s.branch == Error {
+-					group.errors++
+-				}
+-				if l.Duration < 0 || frame.Values[l.Duration].State != Direct {
+-					continue
+-				}
+-				duration := unsigned(frame.Values[l.Duration].Bytes)
+-				group.durations = append(group.durations, duration)
+-				d := &out.Duration
+-				v := float64(duration)
+-				if d.Count == 0 || v < d.Min {
+-					d.Min = v
+-				}
+-				if v > d.Max {
+-					d.Max = v
+-				}
+-				d.Count++
+-				d.Average += (v - d.Average) / float64(d.Count)
++						shared[ref] = dimensions
++					}
++					for j, i := range fields {
++						if i >= 0 && dimensions[j] == "" {
++							dimensions[j] = statLabel(l.Definition.Fields[i], frame.Values[i])
++						}
++					}
++					if dimensions[0] == "" {
++						dimensions[0] = l.Definition.Nuts.Domain
++					}
++					if dimensions[1] == "" {
++						dimensions[1] = resource
++					}
++					if dimensions[2] == "" {
++						dimensions[2] = "Unspecified"
++					}
++					if dimensions[3] == "" {
++						dimensions[3] = defaultLevel
++					}
++					dimensions[3] = strings.ToUpper(dimensions[3])
++					services[dimensions[0]]++
++					levels[dimensions[3]]++
++					if !s.branch.Aggregates() {
++						continue
++					}
++					key := operationKey{dimensions[0], dimensions[1], dimensions[2]}
++					group := operations[key]
++					if group == nil {
++						group = &operationStats{}
++						operations[key] = group
++					}
++					if s.branch == Error {
++						group.errors++
++					}
++					if l.Duration < 0 || frame.Values[l.Duration].State != Direct {
++						continue
++					}
++					duration := unsigned(frame.Values[l.Duration].Bytes)
++					group.durations = append(group.durations, duration)
++					d := &out.Duration
++					v := float64(duration)
++					if d.Count == 0 || v < d.Min {
++						d.Min = v
++					}
++					if v > d.Max {
++						d.Max = v
++					}
++					d.Count++
++					d.Average += (v - d.Average) / float64(d.Count)
++				}
+ 			}
+ 		}
+ 	}

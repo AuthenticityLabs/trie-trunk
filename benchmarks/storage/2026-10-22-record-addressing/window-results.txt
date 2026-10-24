@@ -1,0 +1,18 @@
+goos: darwin
+goarch: arm64
+pkg: trie-trunk/go/server/cache
+cpu: Apple M1 Max
+BenchmarkIndexMemberWindow/sequential/previous_reader-10         	108971001	        10.91 ns/op	       0 B/op	       0 allocs/op
+BenchmarkIndexMemberWindow/sequential/previous_reader-10         	100000000	        10.91 ns/op	       0 B/op	       0 allocs/op
+BenchmarkIndexMemberWindow/sequential/previous_reader-10         	100000000	        10.91 ns/op	       0 B/op	       0 allocs/op
+BenchmarkIndexMemberWindow/sequential/window20-10                	679199146	         1.762 ns/op	       0 B/op	       0 allocs/op
+BenchmarkIndexMemberWindow/sequential/window20-10                	680015271	         1.769 ns/op	       0 B/op	       0 allocs/op
+BenchmarkIndexMemberWindow/sequential/window20-10                	681653902	         1.764 ns/op	       0 B/op	       0 allocs/op
+BenchmarkIndexMemberWindow/scattered/previous_reader-10          	32966466	        35.23 ns/op	       0 B/op	       0 allocs/op
+BenchmarkIndexMemberWindow/scattered/previous_reader-10          	29084944	        35.39 ns/op	       0 B/op	       0 allocs/op
+BenchmarkIndexMemberWindow/scattered/previous_reader-10          	29542309	        34.57 ns/op	       0 B/op	       0 allocs/op
+BenchmarkIndexMemberWindow/scattered/window20-10                 	157261843	         7.580 ns/op	       0 B/op	       0 allocs/op
+BenchmarkIndexMemberWindow/scattered/window20-10                 	157950105	         7.609 ns/op	       0 B/op	       0 allocs/op
+BenchmarkIndexMemberWindow/scattered/window20-10                 	149170672	         8.637 ns/op	       0 B/op	       0 allocs/op
+PASS
+ok  	trie-trunk/go/server/cache	17.946s

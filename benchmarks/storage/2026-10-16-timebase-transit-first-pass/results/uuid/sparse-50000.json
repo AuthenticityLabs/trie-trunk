@@ -1,0 +1,522 @@
+{
+  "absolute_frame_bytes": 1250000,
+  "all_records_validated": true,
+  "allocations_per_query": {
+    "all/absolute_compact": 0,
+    "all/absolute_forward": 0,
+    "all/relative_expand": 0,
+    "all/relative_forward": 0,
+    "boundary_3h/absolute_compact": 0,
+    "boundary_3h/absolute_forward": 0,
+    "boundary_3h/relative_expand": 0,
+    "boundary_3h/relative_forward": 0,
+    "scattered_1pct/absolute_compact": 0,
+    "scattered_1pct/absolute_forward": 0,
+    "scattered_1pct/relative_expand": 0,
+    "scattered_1pct/relative_forward": 0,
+    "single/absolute_compact": 0,
+    "single/absolute_forward": 0,
+    "single/relative_expand": 0,
+    "single/relative_forward": 0
+  },
+  "codec": {
+    "all/absolute_compact": {
+      "samples_ns": [
+        776000,
+        760875,
+        759708,
+        749833,
+        757541,
+        750625,
+        749958,
+        764542,
+        773208,
+        773167,
+        768416,
+        767417
+      ],
+      "p50_ns": 764542,
+      "p95_ns": 776000
+    },
+    "all/absolute_forward": {
+      "samples_ns": [
+        349959,
+        317042,
+        309417,
+        309375,
+        307833,
+        315833,
+        311167,
+        324333,
+        334167,
+        325625,
+        330458,
+        365875
+      ],
+      "p50_ns": 324333,
+      "p95_ns": 365875
+    },
+    "all/relative_expand": {
+      "samples_ns": [
+        743083,
+        735458,
+        723917,
+        718083,
+        730167,
+        721125,
+        720916,
+        730417,
+        747375,
+        739500,
+        721458,
+        735250
+      ],
+      "p50_ns": 730417,
+      "p95_ns": 747375
+    },
+    "all/relative_forward": {
+      "samples_ns": [
+        329292,
+        331708,
+        313916,
+        312291,
+        312334,
+        315334,
+        315500,
+        314792,
+        322042,
+        324959,
+        321208,
+        331667
+      ],
+      "p50_ns": 321208,
+      "p95_ns": 331708
+    },
+    "boundary_3h/absolute_compact": {
+      "samples_ns": [
+        14500,
+        14417,
+        14208,
+        14375,
+        14334,
+        14334,
+        14292,
+        14375,
+        14291,
+        14958,
+        14250,
+        14084
+      ],
+      "p50_ns": 14334,
+      "p95_ns": 14958
+    },
+    "boundary_3h/absolute_forward": {
+      "samples_ns": [
+        6083,
+        5500,
+        5458,
+        5583,
+        5667,
+        5583,
+        5500,
+        5500,
+        5417,
+        5917,
+        5584,
+        5458
+      ],
+      "p50_ns": 5583,
+      "p95_ns": 6083
+    },
+    "boundary_3h/relative_expand": {
+      "samples_ns": [
+        14000,
+        16000,
+        13542,
+        13750,
+        13833,
+        13708,
+        13500,
+        13625,
+        13667,
+        13667,
+        14292,
+        13583
+      ],
+      "p50_ns": 13708,
+      "p95_ns": 16000
+    },
+    "boundary_3h/relative_forward": {
+      "samples_ns": [
+        5583,
+        5458,
+        5416,
+        5417,
+        5542,
+        5375,
+        5375,
+        5416,
+        5458,
+        5417,
+        6000,
+        5416
+      ],
+      "p50_ns": 5417,
+      "p95_ns": 6000
+    },
+    "scattered_1pct/absolute_compact": {
+      "samples_ns": [
+        17459,
+        17291,
+        17375,
+        17208,
+        17334,
+        17250,
+        17291,
+        17292,
+        17875,
+        17667,
+        17375,
+        17750
+      ],
+      "p50_ns": 17375,
+      "p95_ns": 17875
+    },
+    "scattered_1pct/absolute_forward": {
+      "samples_ns": [
+        8750,
+        6959,
+        7000,
+        7000,
+        7083,
+        6959,
+        7041,
+        7000,
+        7042,
+        6959,
+        7000,
+        7500
+      ],
+      "p50_ns": 7000,
+      "p95_ns": 8750
+    },
+    "scattered_1pct/relative_expand": {
+      "samples_ns": [
+        17125,
+        16792,
+        16666,
+        16833,
+        16791,
+        16792,
+        16708,
+        16833,
+        17000,
+        17375,
+        17667,
+        17666
+      ],
+      "p50_ns": 16833,
+      "p95_ns": 17667
+    },
+    "scattered_1pct/relative_forward": {
+      "samples_ns": [
+        9292,
+        7583,
+        7500,
+        7458,
+        7500,
+        7459,
+        7500,
+        7417,
+        7667,
+        7875,
+        8083,
+        7416
+      ],
+      "p50_ns": 7500,
+      "p95_ns": 9292
+    },
+    "single/absolute_compact": {
+      "samples_ns": [
+        21458,
+        21500,
+        21625,
+        21834,
+        21541,
+        20208,
+        20125,
+        20417,
+        20416,
+        20292,
+        20250,
+        20250
+      ],
+      "p50_ns": 20417,
+      "p95_ns": 21834
+    },
+    "single/absolute_forward": {
+      "samples_ns": [
+        12417,
+        12375,
+        12208,
+        12166,
+        12334,
+        11500,
+        11500,
+        11542,
+        11500,
+        11500,
+        11541,
+        11542
+      ],
+      "p50_ns": 11542,
+      "p95_ns": 12417
+    },
+    "single/relative_expand": {
+      "samples_ns": [
+        20083,
+        19917,
+        20375,
+        20042,
+        19917,
+        18667,
+        18792,
+        18667,
+        18666,
+        18792,
+        18666,
+        18792
+      ],
+      "p50_ns": 18792,
+      "p95_ns": 20375
+    },
+    "single/relative_forward": {
+      "samples_ns": [
+        12166,
+        12166,
+        12166,
+        12084,
+        12042,
+        11834,
+        11375,
+        11334,
+        11375,
+        11375,
+        11375,
+        11417
+      ],
+      "p50_ns": 11834,
+      "p95_ns": 12166
+    }
+  },
+  "definition": {
+    "pil": 0,
+    "definition": "payment/transactions",
+    "version": 1048576,
+    "fields": [
+      {
+        "name": "event_id",
+        "type": "UUID"
+      },
+      {
+        "name": "id",
+        "type": "U16"
+      },
+      {
+        "name": "revision_id",
+        "type": "U8"
+      },
+      {
+        "name": "duration",
+        "type": "U32"
+      },
+      {
+        "name": "level",
+        "type": "STRING",
+        "values": [
+          "INFO",
+          "ERROR"
+        ]
+      },
+      {
+        "name": "operation",
+        "type": "STRING",
+        "values": [
+          "create",
+          "update",
+          "cancel"
+        ]
+      },
+      {
+        "name": "state",
+        "type": "STRING",
+        "values": [
+          "pending",
+          "authorized",
+          "canceled"
+        ]
+      },
+      {
+        "name": "message",
+        "type": "STRING"
+      },
+      {
+        "name": "amount",
+        "type": "U32"
+      },
+      {
+        "name": "customer_id",
+        "type": "U16"
+      },
+      {
+        "name": "instance",
+        "type": "STRING"
+      },
+      {
+        "name": "attempt",
+        "type": "U8"
+      }
+    ],
+    "nuts": {
+      "format": 6,
+      "domain": "payment",
+      "collection": "transactions",
+      "major": 1,
+      "minor": 0,
+      "timezone": "UTC",
+      "roles": {
+        "event_id": "event_id",
+        "id": "id",
+        "revision_id": "revision_id"
+      },
+      "path": [
+        "level",
+        "operation",
+        "state"
+      ]
+    }
+  },
+  "events": 50000,
+  "go": "go1.26.4",
+  "output": {
+    "all/absolute_compact": {
+      "Bytes": 1150416,
+      "Packets": 26,
+      "Records": 50000
+    },
+    "all/absolute_forward": {
+      "Bytes": 1250208,
+      "Packets": 26,
+      "Records": 50000
+    },
+    "all/relative_expand": {
+      "Bytes": 1250208,
+      "Packets": 26,
+      "Records": 50000
+    },
+    "all/relative_forward": {
+      "Bytes": 1150416,
+      "Packets": 26,
+      "Records": 50000
+    },
+    "boundary_3h/absolute_compact": {
+      "Bytes": 2394,
+      "Packets": 3,
+      "Records": 102
+    },
+    "boundary_3h/absolute_forward": {
+      "Bytes": 2574,
+      "Packets": 3,
+      "Records": 102
+    },
+    "boundary_3h/relative_expand": {
+      "Bytes": 2574,
+      "Packets": 3,
+      "Records": 102
+    },
+    "boundary_3h/relative_forward": {
+      "Bytes": 2394,
+      "Packets": 3,
+      "Records": 102
+    },
+    "scattered_1pct/absolute_compact": {
+      "Bytes": 12708,
+      "Packets": 13,
+      "Records": 500
+    },
+    "scattered_1pct/absolute_forward": {
+      "Bytes": 13604,
+      "Packets": 13,
+      "Records": 500
+    },
+    "scattered_1pct/relative_expand": {
+      "Bytes": 13604,
+      "Packets": 13,
+      "Records": 500
+    },
+    "scattered_1pct/relative_forward": {
+      "Bytes": 12708,
+      "Packets": 13,
+      "Records": 500
+    },
+    "single/absolute_compact": {
+      "Bytes": 41,
+      "Packets": 1,
+      "Records": 1
+    },
+    "single/absolute_forward": {
+      "Bytes": 35,
+      "Packets": 1,
+      "Records": 1
+    },
+    "single/relative_expand": {
+      "Bytes": 35,
+      "Packets": 1,
+      "Records": 1
+    },
+    "single/relative_forward": {
+      "Bytes": 41,
+      "Packets": 1,
+      "Records": 1
+    }
+  },
+  "platform": "darwin/arm64",
+  "profile": "uuid",
+  "received_sha256": {
+    "all/absolute_compact": "04d0985674eb7eed9247ed005554512fa6d4efc3b4e159b6e03ff7e6d86c6bd1",
+    "all/absolute_forward": "04d0985674eb7eed9247ed005554512fa6d4efc3b4e159b6e03ff7e6d86c6bd1",
+    "all/relative_expand": "04d0985674eb7eed9247ed005554512fa6d4efc3b4e159b6e03ff7e6d86c6bd1",
+    "all/relative_forward": "04d0985674eb7eed9247ed005554512fa6d4efc3b4e159b6e03ff7e6d86c6bd1",
+    "boundary_3h/absolute_compact": "9b95546e83959ede7ea1b83dcfebf306490664a6ada60ee2f11e34611ee9d45a",
+    "boundary_3h/absolute_forward": "9b95546e83959ede7ea1b83dcfebf306490664a6ada60ee2f11e34611ee9d45a",
+    "boundary_3h/relative_expand": "9b95546e83959ede7ea1b83dcfebf306490664a6ada60ee2f11e34611ee9d45a",
+    "boundary_3h/relative_forward": "9b95546e83959ede7ea1b83dcfebf306490664a6ada60ee2f11e34611ee9d45a",
+    "scattered_1pct/absolute_compact": "6af33f7ecbc9dfcaac29e2e016abb0b6be0c9fea0ff13f7ddc4d05f8812d8d8a",
+    "scattered_1pct/absolute_forward": "6af33f7ecbc9dfcaac29e2e016abb0b6be0c9fea0ff13f7ddc4d05f8812d8d8a",
+    "scattered_1pct/relative_expand": "6af33f7ecbc9dfcaac29e2e016abb0b6be0c9fea0ff13f7ddc4d05f8812d8d8a",
+    "scattered_1pct/relative_forward": "6af33f7ecbc9dfcaac29e2e016abb0b6be0c9fea0ff13f7ddc4d05f8812d8d8a",
+    "single/absolute_compact": "756cf37f387c9ac078d5481f745226b665160bb9c31c6d8d6f588064bf8d856a",
+    "single/absolute_forward": "756cf37f387c9ac078d5481f745226b665160bb9c31c6d8d6f588064bf8d856a",
+    "single/relative_expand": "756cf37f387c9ac078d5481f745226b665160bb9c31c6d8d6f588064bf8d856a",
+    "single/relative_forward": "756cf37f387c9ac078d5481f745226b665160bb9c31c6d8d6f588064bf8d856a"
+  },
+  "relative_base_bytes": 112,
+  "relative_frame_bytes": 1150000,
+  "repeats_per_sample": {
+    "all": 1,
+    "boundary_3h": 9,
+    "scattered_1pct": 2,
+    "single": 1000
+  },
+  "samples": 12,
+  "scope": "in-memory output assembly after candidate selection; no disk, index search, HTTP, compression, or actual .idx/.pop layout changes",
+  "selected_counts": {
+    "all": 50000,
+    "boundary_3h": 102,
+    "scattered_1pct": 500,
+    "single": 1
+  },
+  "source_block_max_rows": 4096,
+  "source_blocks": 14,
+  "sparse": true
+}

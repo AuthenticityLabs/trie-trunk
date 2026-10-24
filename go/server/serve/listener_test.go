@@ -176,7 +176,7 @@ func TestHTTP2HTTP3AndSocket(t *testing.T) {
 				defer tr.Close()
 			}
 			client := &http.Client{Transport: transport, Timeout: 5 * time.Second}
-			tapsRequest, _ := http.NewRequest(http.MethodGet, "https://"+address+"/taps", nil)
+			tapsRequest, _ := http.NewRequest(http.MethodGet, "https://"+address+"/caches", nil)
 			tapsRequest.Header.Set("Authorization", "Bearer test-token")
 			tapsResponse, err := client.Do(tapsRequest)
 			if err != nil {
@@ -184,7 +184,7 @@ func TestHTTP2HTTP3AndSocket(t *testing.T) {
 			}
 			tapsBody, err := io.ReadAll(tapsResponse.Body)
 			tapsResponse.Body.Close()
-			if err != nil || tapsResponse.StatusCode != 200 || tapsResponse.ProtoMajor != version || string(tapsBody) != "{\"taps\":[\"test\"]}\n" {
+			if err != nil || tapsResponse.StatusCode != 200 || tapsResponse.ProtoMajor != version || string(tapsBody) != "{\"caches\":[\"test\"]}\n" {
 				t.Fatal(tapsResponse.Status, string(tapsBody), err)
 			}
 			for _, test := range []struct {
@@ -437,13 +437,13 @@ func TestLoopbackHTTPOrigin(t *testing.T) {
 			}
 			if token != "" {
 				for _, auth := range []string{"", "wrong"} {
-					_, resp = request("/taps", auth, "")
+					_, resp = request("/caches", auth, "")
 					if resp.StatusCode != 401 {
 						t.Fatalf("missing auth check: %s", resp.Status)
 					}
 				}
 			}
-			body, resp = request("/taps", token, "")
+			body, resp = request("/caches", token, "")
 			if resp.StatusCode != 200 || !bytes.Contains(body, []byte(`"test"`)) {
 				t.Fatalf("taps: %s %s", resp.Status, body)
 			}

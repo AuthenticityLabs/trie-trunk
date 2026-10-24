@@ -21,7 +21,7 @@ type Catalog = {
 
 type Binding = Catalog & { digest: string };
 
-export type Dictionary = Binding & { tap: string; headers: readonly string[] };
+export type Dictionary = Binding & { tap: string; headers: readonly string[]; objectIdentity?: {field:Field;type:string}; revisionIdentity?: Field };
 
 export type Layout = {
   keys: readonly number[];
@@ -77,16 +77,19 @@ function labels(value: unknown): Record<string, string> {
 
 function uuidBytes(value: unknown): string {
   if (!(value instanceof Uint8Array) && typeof value !== "string")
-    throw new Error("Invalid UUIDv7 bytes.");
-  const bytes =
-    value instanceof Uint8Array
-      ? String.fromCharCode(...value)
-      : atob(value as string);
-  if (
-    bytes.length !== 16 ||
-    bytes.charCodeAt(6) >> 4 !== 7 ||
-    bytes.charCodeAt(8) >> 6 !== 2
-  )
+    throw new Error("Invalid UUID bytes.");
+  const bytes = value instanceof Uint8Array
+    ? String.fromCharCode(...value)
+    : atob(value as string);
+  if (bytes.length !== 16) throw new Error("Invalid UUID bytes.");
+  return bytes;
+}
+
+// Only the event identity carries time and requires UUIDv7. Object identities
+// and other Definition UUID fields must retain their own UUID version.
+function eventUUIDBytes(value: unknown): string {
+  const bytes = uuidBytes(value);
+  if (bytes.charCodeAt(6) >> 4 !== 7 || bytes.charCodeAt(8) >> 6 !== 2)
     throw new Error("Invalid UUIDv7 bytes.");
   return bytes;
 }
@@ -96,7 +99,7 @@ const hex = Array.from({ length: 256 }, (_, i) =>
 );
 
 export function eventId(event: LogEvent): string {
-  return event.pil ? formatUUID(event.uuid) : formatUUID(uuidBytes(event.uuid));
+  return event.pil ? formatUUID(event.uuid) : formatUUID(eventUUIDBytes(event.uuid));
 }
 
 export function formatUUID(bytes: string): string {
@@ -308,7 +311,7 @@ export function objectEntries(value: Values): [string, unknown, Field?][] {
 }
 
 export function valueAt(event: LogEvent, name: string): unknown {
-  if (name === "id") return eventId(event);
+  if (name === event.dictionary.id.name) return eventId(event);
   if (name === "time") return eventTime(event);
   const field = event.dictionary.fields.names.get(name);
   if (field) return decodeValue(rawValue(event, field), field);
@@ -329,7 +332,7 @@ export function* entries(
 ): Generator<[string, unknown, Field?]> {
   const { dictionary } = event;
   for (const name of dictionary.headers) {
-    if (name === "id") yield [name, eventId(event)];
+    if (name === dictionary.id.name) yield [name, eventId(event)];
     else if (name === "time") yield [name, eventTime(event)];
     else {
       const field = dictionary.fields.names.get(name);
@@ -337,10 +340,10 @@ export function* entries(
       if (value !== undefined) yield [name, value, field];
     }
   }
-  if (!dictionary.headers.includes("id")) yield ["id", eventId(event)];
+  if (!dictionary.headers.includes(dictionary.id.name)) yield [dictionary.id.name, eventId(event)];
   if (!dictionary.headers.includes("time")) yield ["time", eventTime(event)];
   for (const [name, raw, field] of objectEntries(event)) {
-    if (name !== "id" && name !== "time" && !dictionary.headers.includes(name))
+    if (name !== dictionary.id.name && name !== "time" && !dictionary.headers.includes(name))
       yield [name, raw, field];
   }
 }
@@ -387,10 +390,10 @@ export function bindPath(dictionary: Dictionary, path: readonly string[]) {
     }
   }
   return {
-    field: path[0] === "id" || path[0] === "time" ? undefined : field,
+    field: path[0] === dictionary.id.name || path[0] === "time" ? undefined : field,
     read(event: LogEvent): unknown {
       let value =
-        path[0] === "id" || path[0] === "time"
+        path[0] === dictionary.id.name || path[0] === "time"
           ? valueAt(event, path[0])
           : first
             ? rawValue(event, first)
@@ -558,7 +561,7 @@ export class Dictionaries {
     if (idPosition === undefined)
       throw new Error("Event is missing its UUIDv7 id.");
     const uuid = value[idPosition * 2 + 1];
-    const bytes = uuidBytes(uuid);
+    const bytes = eventUUIDBytes(uuid);
     let millis = 0;
     for (let i = 0; i < 6; i++) millis = millis * 256 + bytes.charCodeAt(i);
     const values = new Array<unknown>(shape.keys.length);

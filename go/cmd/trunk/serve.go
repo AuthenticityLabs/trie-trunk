@@ -7,21 +7,27 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"net/http"
 	"os"
 	"strconv"
 	"strings"
 
+	"time"
+	"trie-trunk/go/server/cache"
 	"trie-trunk/go/server/search"
 	"trie-trunk/go/server/serve"
 )
 
-func runServe(ctx context.Context, args []string) error {
+func runServe(ctx context.Context, args []string) (result error) {
 	portText := ""
 	if len(args) > 0 && !strings.HasPrefix(args[0], "-") {
 		portText, args = args[0], args[1:]
 	}
 	flags := flag.NewFlagSet("serve", flag.ContinueOnError)
 	flags.String("env", ".env", "environment file; empty disables file loading")
+	cacheName := flags.String("cache", "", "serve a collection-native cache")
+	tenant := flags.String("tenant", "", "cache tenant owner")
+	definition := flags.String("definition", "", "unified PIL/resource definition for cache serving")
 	root := flags.String("dir", "./taps", "store root")
 	web := flags.String("web", "./web", "built web app directory; empty disables static files")
 	host := flags.String("host", "127.0.0.1", "listen host")
@@ -38,9 +44,12 @@ func runServe(ctx context.Context, args []string) error {
 	if flags.NArg() != 0 {
 		return fmt.Errorf("unexpected serve arguments")
 	}
-	env, err := applyEnvironment(flags, "dir", "web", "host", "http-address", "cert", "key", "client-ca", "socket", "queries", "entry-headers")
+	env, err := applyEnvironment(flags, "dir", "web", "host", "http-address", "cert", "key", "client-ca", "socket", "queries", "entry-headers", "cache", "tenant", "definition")
 	if err != nil {
 		return err
+	}
+	if *cacheName == "" && (*definition != "" || *tenant != "") {
+		return fmt.Errorf("--definition and --tenant require --cache")
 	}
 	if portText == "" {
 		portText, _ = env.lookup("TRUNK_SERVE_PORT")
@@ -66,7 +75,18 @@ func runServe(ctx context.Context, args []string) error {
 	if *socket == "" {
 		*socket = search.SocketPath(*root)
 	}
-	err = serve.Run(ctx, serve.Config{
+	var native *cache.Endpoint
+	var api http.Handler
+	if *cacheName != "" {
+		var release func() error
+		native, release, err = openNative(ctx, *root, *cacheName, *tenant, *definition)
+		if err != nil {
+			return err
+		}
+		defer func() { result = errors.Join(result, release()) }()
+		api = native.Handler(token)
+	}
+	config := serve.Config{
 		Root: *root, Web: *web, Address: net.JoinHostPort(*host, strconv.Itoa(port)), Socket: *socket,
 		HTTPAddress: *httpAddress,
 		TLS:         tlsConfig, Token: token, Headers: strings.Split(*headers, ","), MaxQueries: *queries,
@@ -77,7 +97,25 @@ func runServe(ctx context.Context, args []string) error {
 			log.Printf("serve HTTP origin listening on http://%s (trusted local proxy)", address)
 		},
 		OnError: func(err error) { log.Printf("search: %v", err) },
-	})
+	}
+	if api != nil {
+		config.API = api
+	}
+	if native != nil {
+		var cancel context.CancelFunc
+		ctx, cancel = context.WithCancel(ctx)
+		defer cancel()
+		done := make(chan error, 1)
+		go func() {
+			e := native.Run(ctx, time.Second)
+			if e != nil {
+				cancel()
+			}
+			done <- e
+		}()
+		defer func() { cancel(); result = errors.Join(result, <-done) }()
+	}
+	err = serve.Run(ctx, config)
 	if errors.Is(err, os.ErrPermission) && port < 1024 {
 		return fmt.Errorf("serve port %d requires privileged-port binding permission; use 8443 or run with permission to bind port %d: %w", port, port, err)
 	}

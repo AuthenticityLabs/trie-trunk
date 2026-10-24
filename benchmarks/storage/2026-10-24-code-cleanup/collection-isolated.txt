@@ -1,0 +1,30 @@
+goos: darwin
+goarch: arm64
+pkg: trie-trunk/go/server/cache
+cpu: Apple M1 Max
+BenchmarkCollectionSlottedAccess/1/Latest-10         	  185186	      1200 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCollectionSlottedAccess/1/Latest-10         	  194726	      1223 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCollectionSlottedAccess/1/Latest-10         	  197503	      1162 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCollectionSlottedAccess/1/Exact-10          	  206308	      1124 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCollectionSlottedAccess/1/Exact-10          	  216650	      1133 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCollectionSlottedAccess/1/Exact-10          	  211723	      1111 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCollectionSlottedAccess/9/Latest-10         	  210441	      1159 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCollectionSlottedAccess/9/Latest-10         	  195366	      1191 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCollectionSlottedAccess/9/Latest-10         	  205389	      1169 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCollectionSlottedAccess/9/Exact-10          	  209992	      1132 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCollectionSlottedAccess/9/Exact-10          	  220426	      1164 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCollectionSlottedAccess/9/Exact-10          	  197890	      1221 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCollectionSlottedAccess/61/Latest-10        	  195325	      1233 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCollectionSlottedAccess/61/Latest-10        	  202910	      1205 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCollectionSlottedAccess/61/Latest-10        	  197622	      1227 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCollectionSlottedAccess/61/Exact-10         	  195792	      1205 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCollectionSlottedAccess/61/Exact-10         	  189723	      1208 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCollectionSlottedAccess/61/Exact-10         	  205226	      1149 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCollectionSlottedAccess/489/Latest-10       	  183864	      1400 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCollectionSlottedAccess/489/Latest-10       	  163652	      1335 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCollectionSlottedAccess/489/Latest-10       	  186957	      1313 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCollectionSlottedAccess/489/Exact-10        	  183045	      1315 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCollectionSlottedAccess/489/Exact-10        	  171842	      1282 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCollectionSlottedAccess/489/Exact-10        	  192103	      1281 ns/op	       0 B/op	       0 allocs/op
+PASS
+ok  	trie-trunk/go/server/cache	6.540s

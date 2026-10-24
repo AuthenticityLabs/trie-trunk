@@ -17,6 +17,7 @@ type API = WebAssembly.Exports & {
   lineage(handle: number, leaf: number): number;
   close(handle: number): void;
   checksum(): number;
+  inflate(length:number):number;
   output(): number;
   error_ptr(): number;
   error_len(): number;
@@ -136,6 +137,7 @@ export class StoreCodec {
   close(id: number) {
     this.api.close(id);
   }
+  inflate(bytes:Uint8Array,length:number){this.upload(bytes);return this.output(this.api.inflate(length));}
   checksum(b: Uint8Array) {
     this.upload(b);
     return this.api.checksum() >>> 0;

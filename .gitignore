@@ -5,6 +5,7 @@
 /certs/
 /taps/
 /logs/
+/caches/
 .backups/
 
 # Build outputs and dependencies at every crate/package level.
@@ -14,6 +15,7 @@ build/
 dist/
 .vite/
 .cache/
+.wrangler/
 *.tsbuildinfo
 /web/
 
@@ -24,7 +26,10 @@ dist/
 # Root executables; do not hide the go/cmd/trunk source directory.
 /trunk
 /trunk-search
+/trunk-tantivy
 /go/trunk
+/benchmarks/storage/**/storage-bench
+/benchmarks/storage/**/trunk-search
 
 # Test, coverage, and profiling outputs.
 coverage/
@@ -54,3 +59,24 @@ Thumbs.db
 *.swo
 *.tmp
 *~
+
+# Isolated native ownership measurement binaries.
+/benchmarks/native-boundary/build/
+
+# Generated marketing site and visual verification artifacts.
+/site/dist/
+/site/artifacts/
+
+# Regenerable bulk benchmark exports; retain reports, results and source snapshots.
+/benchmarks/**/expanded.jsonl*
+/benchmarks/**/payload.jsonl*
+/benchmarks/**/*.sumday
+/benchmarks/**/summaries/
+/benchmarks/**/source.tar.gz
+
+# Keep one public README; agent instructions, plans and reports stay local.
+*.md
+*.MD
+!/README.md
+.agents/
+.codex/

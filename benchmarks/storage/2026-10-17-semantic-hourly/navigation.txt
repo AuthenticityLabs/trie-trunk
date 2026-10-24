@@ -1,0 +1,26 @@
+goos: darwin
+goarch: arm64
+pkg: trie-trunk/go/server/cache
+cpu: Apple M1 Max
+BenchmarkHourlyNavigation/aligned1h/daily_baseline-10         	  413108	       581.0 ns/op	      59 B/op	       3 allocs/op
+BenchmarkHourlyNavigation/aligned1h/daily_baseline-10         	  405907	       585.8 ns/op	      59 B/op	       3 allocs/op
+BenchmarkHourlyNavigation/aligned1h/daily_baseline-10         	  405544	       582.0 ns/op	      60 B/op	       3 allocs/op
+BenchmarkHourlyNavigation/aligned1h/daily_baseline-10         	  404547	       584.4 ns/op	      59 B/op	       3 allocs/op
+BenchmarkHourlyNavigation/aligned1h/daily_baseline-10         	  406345	       583.8 ns/op	      59 B/op	       3 allocs/op
+BenchmarkHourlyNavigation/aligned1h/semantic1h-10             	  515371	       448.3 ns/op	      75 B/op	       4 allocs/op
+BenchmarkHourlyNavigation/aligned1h/semantic1h-10             	  553867	       451.8 ns/op	      75 B/op	       4 allocs/op
+BenchmarkHourlyNavigation/aligned1h/semantic1h-10             	  560616	       451.7 ns/op	      76 B/op	       4 allocs/op
+BenchmarkHourlyNavigation/aligned1h/semantic1h-10             	  555025	       449.9 ns/op	      75 B/op	       4 allocs/op
+BenchmarkHourlyNavigation/aligned1h/semantic1h-10             	  559902	       450.3 ns/op	      75 B/op	       4 allocs/op
+BenchmarkHourlyNavigation/partial1h/daily_baseline-10         	  415872	       589.9 ns/op	      61 B/op	       3 allocs/op
+BenchmarkHourlyNavigation/partial1h/daily_baseline-10         	  398353	       588.1 ns/op	      61 B/op	       3 allocs/op
+BenchmarkHourlyNavigation/partial1h/daily_baseline-10         	  418485	       590.9 ns/op	      61 B/op	       3 allocs/op
+BenchmarkHourlyNavigation/partial1h/daily_baseline-10         	  398544	       587.9 ns/op	      61 B/op	       3 allocs/op
+BenchmarkHourlyNavigation/partial1h/daily_baseline-10         	  417751	       594.0 ns/op	      61 B/op	       3 allocs/op
+BenchmarkHourlyNavigation/partial1h/semantic1h-10             	  400809	       623.5 ns/op	     189 B/op	       7 allocs/op
+BenchmarkHourlyNavigation/partial1h/semantic1h-10             	  408409	       611.4 ns/op	     189 B/op	       7 allocs/op
+BenchmarkHourlyNavigation/partial1h/semantic1h-10             	  405396	       619.9 ns/op	     189 B/op	       7 allocs/op
+BenchmarkHourlyNavigation/partial1h/semantic1h-10             	  393883	       590.2 ns/op	     189 B/op	       7 allocs/op
+BenchmarkHourlyNavigation/partial1h/semantic1h-10             	  403188	       587.2 ns/op	     189 B/op	       7 allocs/op
+PASS
+ok  	trie-trunk/go/server/cache	5.338s

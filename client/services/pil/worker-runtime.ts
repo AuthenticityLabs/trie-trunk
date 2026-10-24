@@ -1,6 +1,10 @@
+import type { Selection } from "../events.ts";
+import { ViewCache } from "./view.ts";
 import { cbor } from "./cbor.ts";
 import type { PILDefinition } from "./layout.ts";
-import type { Archive } from "../store/protocol.ts";
+import type { Archive, NativeSelection } from "../store/protocol.ts";
+import { conditions } from "../store/conditions.ts";
+import { collectNative } from "./native-collect.ts";
 import { Codec } from "./wasm.ts";
 import {
   PILStream,
@@ -12,26 +16,30 @@ import {
 import type { Binding, Metadata } from "./metadata.ts";
 import type { Request, Reply } from "./protocol.ts";
 import { collectionURL } from "./selection.ts";
+import { historyURL, observedState } from "../replay.ts";
 export function workerService(
   modulePromise: Promise<WebAssembly.Module>,
   fetcher: typeof fetch = fetch,
   archive?: Archive,
 ) {
   type Session = {
+    views: ViewCache;
     codec: Codec;
     definitions: Map<string, StoredDefinition>;
     bindings: Binding[];
     negotiation: string;
+    native: boolean;
     loading?: Promise<void>;
   };
   const sessions = new Map<string, Promise<Session>>();
   const credentials = new Map<
     string,
-    Promise<Pick<Session, "codec" | "definitions">>
+    Promise<Pick<Session, "codec" | "definitions" | "views">>
   >();
   const headers = (token: string) => ({
     Accept: pilType,
     "PIL-Version": "2",
+    "PIL-Features": "adaptive-integers,event-gzip-v1",
     "Trunk-Completion": "body",
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
   });
@@ -53,7 +61,7 @@ export function workerService(
                 definition: cbor(m.pil) as PILDefinition,
               });
           }
-          return { codec, definitions };
+          return { codec, definitions, views: new ViewCache(fetcher) };
         });
         credentials.set(token, shared);
         shared.catch(() => credentials.delete(token));
@@ -64,6 +72,7 @@ export function workerService(
         ...shared,
         bindings: [],
         negotiation: "",
+        native: false,
       }));
       sessions.set(key, value);
       value.catch(() => sessions.delete(key));
@@ -108,6 +117,7 @@ export function workerService(
         if (!negotiation || !/^[a-f0-9]{64}$/.test(negotiation))
           throw Error("Missing schema negotiation token");
         s.bindings = bindings;
+        s.native=(response.headers.get("Trunk-Features")??"").split(",").map(v=>v.trim()).includes("native-ranges");
         if (storage)
           await storage(token, {
             kind: "remember",
@@ -141,6 +151,59 @@ export function workerService(
       job?.ack?.();
       jobs.delete(id);
     };
+    async function nativePages(id:number,token:string,selections:NativeSelection[],signal:AbortSignal){
+      if(!archive)throw Error("Local native storage is unavailable");
+      const cached=await session("",token,archive);
+      const sources=new Map<string,NonNullable<Awaited<ReturnType<Archive>>["nativeDependencies"]>>();
+      for(const selection of selections){
+        if(sources.has(selection.source))continue;
+        signal.throwIfAborted();
+        const deps=(await archive(token,{kind:"native-dependencies",source:selection.source})).nativeDependencies;
+        if(!deps)throw Error("Missing native source dependencies");
+        sources.set(selection.source,deps);
+        if(!cached.definitions.has(deps.definition.digest))cached.definitions.set(deps.definition.digest,{
+          ...deps.definition,handle:cached.codec.define(deps.definition.pil),definition:cbor(deps.definition.pil) as PILDefinition,
+        });
+      }
+      const bindings=[...sources.values()].map((s,stream)=>({stream,digest:s.definition.digest,tap:s.source.tap}));
+      send({id,kind:"schemas",definitions:[...sources.values()].map(s=>s.definition),bindings});
+      send({id,kind:"connected",headers:[]});
+      let stream=0;
+      for(const [key,deps] of sources){
+        send({id,kind:"native-source",source:key,definition:deps.definition,binding:bindings[stream++],trie:deps.trie});
+      }
+      for(const selection of selections){
+        let after:number|undefined;
+        for(;;){
+          signal.throwIfAborted();
+          const page=(await archive(token,{kind:"native-page",source:selection.source,from:selection.from,to:selection.to,after})).nativePage;
+          if(!page||page.rows.length%16||page.bases.length!==page.rows.length/16||page.offsets.length!==page.rows.length/16*2)throw Error("Invalid native page");
+          const definition=cached.definitions.get(sources.get(selection.source)!.definition.digest)!;
+          // Validate original population frames without filling UUID/shared
+          // positions or allocating expanded field-value objects.
+          cached.codec.upload(page.population);
+          let end=0;
+          for(let i=0;i<page.offsets.length;i+=2){
+            const start=page.offsets[i],next=page.offsets[i+1];
+            if(start!==end||next<=start||next>page.population.length||cached.codec.scan(definition.handle,start,next-start)!==next-start)
+              throw Error("Invalid native population frame");
+            end=next;
+          }
+          if(end!==page.population.length)throw Error("Trailing native population bytes");
+          if(page.rows.length){
+            const job=jobs.get(id);if(!job)signal.throwIfAborted();
+            const ack=new Promise<void>(resolve=>job!.ack=resolve);
+            send({id,kind:"native-batch",source:selection.source,page,where:selection.where},[
+              page.rows.buffer as ArrayBuffer,page.population.buffer as ArrayBuffer,page.offsets.buffer as ArrayBuffer,
+            ]);
+            await ack;if(job)job.ack=undefined;
+          }
+          if(page.done)break;
+          if(page.after===undefined||after!==undefined&&page.after<=after)throw Error("Native page did not advance");
+          after=page.after;
+        }
+      }
+    }
     port.onmessage = (event: MessageEvent<Request>) => {
       const request = event.data;
       if (request.kind === "close") {
@@ -174,6 +237,37 @@ export function workerService(
         id = request.id;
       void (async () => {
         const token = request.token.trim();
+        if(request.kind==="persist-view"){
+          if(!archive)return;
+          const cached=await session("",token,archive);
+          signal.throwIfAborted();
+          await archive(token,{kind:"remember",definitions:request.definitions,bindings:request.bindings});
+          await cached.views.persistHours(async hour=>{
+            signal.throwIfAborted();
+            await collectNative({tap:hour.tap,from:new Date(hour.from).toISOString(),to:new Date(hour.to).toISOString(),token,signal,codec:cached.codec,definitions:cached.definitions,archive,fetcher});
+          });
+          return;
+        }
+        if(request.kind === "remember-view") {
+          const cached=await session("",token,archive);
+          signal.throwIfAborted();
+          // Session storage already contains validated full PIL pages. Seed the
+          // worker's bounded cache so later searches can reuse complete buckets.
+          cached.views.remember(request.view);
+          return;
+        }
+        if(request.kind === "view") {
+          const cached = await session("", token, archive);
+          const view = await cached.views.query(request.query, token, signal, cached.codec, cached.definitions, archive);
+          signal.throwIfAborted();
+          send({id,kind:"view",view},[view.batch.bytes,view.batch.rows.buffer as ArrayBuffer]);
+          return;
+        }
+        if(request.kind==="rebase"){
+          if(!archive)throw Error("Local native storage is unavailable");
+          await archive(token,{kind:"native-rebase",source:request.source});
+          return;
+        }
         if (request.kind === "begin") {
           if (!archive) throw Error("Local event storage is unavailable");
           await archive(token, {
@@ -234,6 +328,47 @@ export function workerService(
           } finally {
             await archive(token, { kind: "release", cursor });
           }
+          if(restored.nativeSelections?.length)
+            await nativePages(id,token,restored.nativeSelections,signal);
+          return;
+        }
+        if (request.kind === "history") {
+          const cached = await session("", token, archive);
+          const response = await fetcher(historyURL(request.query), {
+            method: "GET", signal, cache: "no-store",
+            headers: { ...headers(token), "Definition-Known": [...cached.definitions.keys()].slice(-128).join(",") },
+          });
+          await checkResponse(response);
+          const version = response.headers.get("Definition-Version");
+          if (!version || !/^[a-f0-9]{64}$/.test(version) || response.headers.get("Trunk-Replay") !== "retained-history") {
+            await response.body?.cancel();
+            throw Error("Object history was not negotiated");
+          }
+          const state = observedState(request.query, response.headers.get("Trunk-State") ?? "");
+          const bindings: Binding[] = [];
+          const emitted = new Set<string>();
+          send({ id, kind: "connected", headers: [] });
+          await consume(response, new PILStream(cached.codec, cached.definitions,
+            metadata => { emitted.add(metadata.digest); send({ id, kind: "definition", definition: metadata }); },
+            binding => {
+              if (binding.tap !== state.source) throw Error("History escaped the selected collection");
+              if (!emitted.has(binding.digest)) {
+                const { digest, store, pil } = cached.definitions.get(binding.digest)!;
+                send({ id, kind: "definition", definition: { digest, store, pil } }); emitted.add(digest);
+              }
+              bindings.push(binding); send({ id, kind: "binding", binding });
+            },
+            async batch => {
+              signal.throwIfAborted();
+              const ack = new Promise<void>(resolve => job.ack = resolve);
+              send({ id, kind: "batch", batch }, [batch.bytes, batch.rows.buffer as ArrayBuffer]);
+              await ack; job.ack = undefined;
+            }), signal);
+          if (archive) await archive(token, { kind: "remember", bindings,
+            definitions: [...new Set(bindings.map(b => b.digest))].map(digest => {
+              const { store, pil } = cached.definitions.get(digest)!; return { digest, store, pil };
+            }) });
+          send({ id, kind: "history-state", state });
           return;
         }
         const tap =
@@ -250,6 +385,26 @@ export function workerService(
           });
           return;
         }
+        let nativeTail:Selection[]|undefined;
+        const where=conditions(request.selection);
+        if(archive&&request.collection&&s.native&&where&&request.selection.to&&
+          !request.selection.follow&&!request.selection.tail&&request.selection.limit===null){
+          nativeTail=[];
+          const sources=await collectNative({
+            onProvisional:(tap,from,to)=>{
+              from=Math.max(from,Date.parse(request.selection.from));to=Math.min(to,Date.parse(request.selection.to!));
+              if(from<to&&!nativeTail!.some(s=>s.tap===tap&&Date.parse(s.from)===from&&Date.parse(s.to!)===to))nativeTail!.push({...request.selection,tap,from:new Date(from).toISOString(),to:new Date(to).toISOString()});
+            },
+            tap:request.selection.tap,from:request.selection.from,to:request.selection.to,
+            token,signal,codec:s.codec,definitions:s.definitions,archive,fetcher,
+            definitionVersion:s.negotiation,onVersion:version=>s.negotiation=version,
+            collection:request.collection,selection:request.selection,
+          });
+          await nativePages(id,token,sources.map(source=>({source,
+            from:Date.parse(request.selection.from),to:Date.parse(request.selection.to!),where,
+          })),signal);
+          if(!nativeTail.length)return;
+        }
         signal.throwIfAborted();
         send({
           id,
@@ -259,9 +414,9 @@ export function workerService(
         });
         const sentDefinitions = new Set(metadata(s).map((m) => m.digest));
         const started = Date.now();
-        let selections = [request.selection];
+        let selections = nativeTail??[request.selection];
         let planned = false;
-        if (archive && request.collection) {
+        if (archive && request.collection && !nativeTail) {
           const local = await archive(token, {
             kind: "lookup",
             collection: request.collection,
@@ -380,7 +535,7 @@ export function workerService(
               },
               async (batch) => {
                 signal.throwIfAborted();
-                if (archive && request.collection) {
+                if (archive && request.collection && !nativeTail) {
                   const used = [
                     ...new Set(
                       Array.from(batch.rows).filter((_, i) => i % 3 === 0),
@@ -422,7 +577,7 @@ export function workerService(
             ),
             signal,
           );
-          if (archive && request.collection)
+          if (archive && request.collection && !nativeTail)
             await archive(token, {
               kind: "finish",
               collection: request.collection,

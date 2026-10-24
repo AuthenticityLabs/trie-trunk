@@ -110,12 +110,12 @@ export function NotebookPicker(props: {
         }}
       >
         <div class="notebook-heading">
-          <strong id="notebook-title">Save to notebook</strong>
+          <strong id="notebook-title">Save to Notebook</strong>
           <button
             type="button"
             class="icon-button"
-            aria-label="New notebook"
-            title="New notebook"
+            aria-label="New Notebook"
+            title="New Notebook"
             disabled={busy()}
             onClick={() => setCreating(true)}
           >
@@ -124,7 +124,7 @@ export function NotebookPicker(props: {
           <button
             type="button"
             class="icon-button"
-            aria-label="Close notebook menu"
+            aria-label="Close Notebook Menu"
             disabled={busy()}
             onClick={props.onClose}
           >

@@ -1,0 +1,735 @@
+{
+  "engine": "chromium",
+  "version": "155.0.8059.85",
+  "platform": "darwin",
+  "arch": "arm64",
+  "results": [
+    {
+      "case": {
+        "name": "pac-1MiB-seek",
+        "stride": 1048576,
+        "payload": 16384,
+        "slots": 32,
+        "groups": [
+          [
+            31,
+            1
+          ],
+          [
+            0,
+            1
+          ],
+          [
+            7,
+            1
+          ],
+          [
+            15,
+            1
+          ]
+        ],
+        "seek": true
+      },
+      "before": {
+        "usage": 334,
+        "quota": 10737418574,
+        "details": {
+          "fileSystem": 334
+        }
+      },
+      "reserved": {
+        "usage": 334,
+        "quota": 10737418574,
+        "details": {
+          "fileSystem": 334
+        }
+      },
+      "closed": {
+        "usage": 32522564,
+        "quota": 10769940804,
+        "details": {
+          "fileSystem": 32522564
+        }
+      },
+      "logical": 32522230,
+      "writeFlushMs": 8.300000190734863,
+      "records": 4,
+      "dataBytes": 65516,
+      "disk": [
+        {
+          "path": "Default/File System/000/t/00/00000000",
+          "logical": 32522230,
+          "allocated": 32522240
+        }
+      ],
+      "restart": {
+        "verified": 4,
+        "reopened": {
+          "usage": 334,
+          "quota": 10737418574,
+          "details": {
+            "fileSystem": 334
+          }
+        },
+        "headerReadUs": 1.4499999284744263
+      }
+    },
+    {
+      "case": {
+        "name": "pac-16MiB-seek",
+        "stride": 16777216,
+        "payload": 16384,
+        "slots": 32,
+        "groups": [
+          [
+            31,
+            1
+          ],
+          [
+            0,
+            1
+          ],
+          [
+            7,
+            1
+          ],
+          [
+            15,
+            1
+          ]
+        ],
+        "seek": true
+      },
+      "before": {
+        "usage": 334,
+        "quota": 10737418574,
+        "details": {
+          "fileSystem": 334
+        }
+      },
+      "reserved": {
+        "usage": 334,
+        "quota": 10737418574,
+        "details": {
+          "fileSystem": 334
+        }
+      },
+      "closed": {
+        "usage": 520110404,
+        "quota": 11257528644,
+        "details": {
+          "fileSystem": 520110404
+        }
+      },
+      "logical": 520110070,
+      "writeFlushMs": 3.3999998569488525,
+      "records": 4,
+      "dataBytes": 65516,
+      "disk": [
+        {
+          "path": "Default/File System/000/t/00/00000000",
+          "logical": 520110070,
+          "allocated": 81920
+        }
+      ],
+      "restart": {
+        "verified": 4,
+        "reopened": {
+          "usage": 334,
+          "quota": 10737418574,
+          "details": {
+            "fileSystem": 334
+          }
+        },
+        "headerReadUs": 1.5
+      }
+    },
+    {
+      "case": {
+        "name": "pac-64MiB-seek",
+        "stride": 67108864,
+        "payload": 16384,
+        "slots": 32,
+        "groups": [
+          [
+            31,
+            1
+          ],
+          [
+            0,
+            1
+          ],
+          [
+            7,
+            1
+          ],
+          [
+            15,
+            1
+          ]
+        ],
+        "seek": true
+      },
+      "before": {
+        "usage": 334,
+        "quota": 10737418574,
+        "details": {
+          "fileSystem": 334
+        }
+      },
+      "reserved": {
+        "usage": 334,
+        "quota": 10737418574,
+        "details": {
+          "fileSystem": 334
+        }
+      },
+      "closed": {
+        "usage": 2080391492,
+        "quota": 12817809732,
+        "details": {
+          "fileSystem": 2080391492
+        }
+      },
+      "logical": 2080391158,
+      "writeFlushMs": 3.299999952316284,
+      "records": 4,
+      "dataBytes": 65516,
+      "disk": [
+        {
+          "path": "Default/File System/000/t/00/00000000",
+          "logical": 2080391158,
+          "allocated": 81920
+        }
+      ],
+      "restart": {
+        "verified": 4,
+        "reopened": {
+          "usage": 334,
+          "quota": 10737418574,
+          "details": {
+            "fileSystem": 334
+          }
+        },
+        "headerReadUs": 1.4499999284744263
+      }
+    },
+    {
+      "case": {
+        "name": "pac-1MiB",
+        "stride": 1048576,
+        "payload": 16384,
+        "slots": 32,
+        "groups": [
+          [
+            31,
+            1
+          ],
+          [
+            0,
+            1
+          ],
+          [
+            7,
+            1
+          ],
+          [
+            15,
+            1
+          ]
+        ]
+      },
+      "before": {
+        "usage": 334,
+        "quota": 10737418574,
+        "details": {
+          "fileSystem": 334
+        }
+      },
+      "reserved": {
+        "usage": 33554766,
+        "quota": 10770973006,
+        "details": {
+          "fileSystem": 33554766
+        }
+      },
+      "closed": {
+        "usage": 33554766,
+        "quota": 10770973006,
+        "details": {
+          "fileSystem": 33554766
+        }
+      },
+      "logical": 33554432,
+      "writeFlushMs": 11,
+      "records": 4,
+      "dataBytes": 65516,
+      "disk": [
+        {
+          "path": "Default/File System/000/t/00/00000000",
+          "logical": 33554432,
+          "allocated": 33554432
+        }
+      ],
+      "restart": {
+        "verified": 4,
+        "reopened": {
+          "usage": 334,
+          "quota": 10737418574,
+          "details": {
+            "fileSystem": 334
+          }
+        },
+        "headerReadUs": 2.25
+      }
+    },
+    {
+      "case": {
+        "name": "pac-16MiB",
+        "stride": 16777216,
+        "payload": 16384,
+        "slots": 32,
+        "groups": [
+          [
+            31,
+            1
+          ],
+          [
+            0,
+            1
+          ],
+          [
+            7,
+            1
+          ],
+          [
+            15,
+            1
+          ]
+        ]
+      },
+      "before": {
+        "usage": 334,
+        "quota": 10737418574,
+        "details": {
+          "fileSystem": 334
+        }
+      },
+      "reserved": {
+        "usage": 536871246,
+        "quota": 11274289486,
+        "details": {
+          "fileSystem": 536871246
+        }
+      },
+      "closed": {
+        "usage": 536871246,
+        "quota": 11274289486,
+        "details": {
+          "fileSystem": 536871246
+        }
+      },
+      "logical": 536870912,
+      "writeFlushMs": 5.799999952316284,
+      "records": 4,
+      "dataBytes": 65516,
+      "disk": [
+        {
+          "path": "Default/File System/000/t/00/00000000",
+          "logical": 536870912,
+          "allocated": 16842752
+        }
+      ],
+      "restart": {
+        "verified": 4,
+        "reopened": {
+          "usage": 334,
+          "quota": 10737418574,
+          "details": {
+            "fileSystem": 334
+          }
+        },
+        "headerReadUs": 1.600000023841858
+      }
+    },
+    {
+      "case": {
+        "name": "pac-64MiB",
+        "stride": 67108864,
+        "payload": 16384,
+        "slots": 32,
+        "groups": [
+          [
+            31,
+            1
+          ],
+          [
+            0,
+            1
+          ],
+          [
+            7,
+            1
+          ],
+          [
+            15,
+            1
+          ]
+        ]
+      },
+      "before": {
+        "usage": 334,
+        "quota": 10737418574,
+        "details": {
+          "fileSystem": 334
+        }
+      },
+      "reserved": {
+        "usage": 2147483982,
+        "quota": 12884902222,
+        "details": {
+          "fileSystem": 2147483982
+        }
+      },
+      "closed": {
+        "usage": 2147483982,
+        "quota": 12884902222,
+        "details": {
+          "fileSystem": 2147483982
+        }
+      },
+      "logical": 2147483648,
+      "writeFlushMs": 2.799999952316284,
+      "records": 4,
+      "dataBytes": 65516,
+      "disk": [
+        {
+          "path": "Default/File System/000/t/00/00000000",
+          "logical": 2147483648,
+          "allocated": 81920
+        }
+      ],
+      "restart": {
+        "verified": 4,
+        "reopened": {
+          "usage": 334,
+          "quota": 10737418574,
+          "details": {
+            "fileSystem": 334
+          }
+        },
+        "headerReadUs": 1.350000023841858
+      }
+    },
+    {
+      "case": {
+        "name": "records-128B-dense",
+        "stride": 128,
+        "payload": 80,
+        "slots": 4096,
+        "groups": [
+          [
+            0,
+            4096
+          ]
+        ]
+      },
+      "before": {
+        "usage": 334,
+        "quota": 10737418574,
+        "details": {
+          "fileSystem": 334
+        }
+      },
+      "reserved": {
+        "usage": 524622,
+        "quota": 10737942862,
+        "details": {
+          "fileSystem": 524622
+        }
+      },
+      "closed": {
+        "usage": 524622,
+        "quota": 10737942862,
+        "details": {
+          "fileSystem": 524622
+        }
+      },
+      "logical": 524288,
+      "writeFlushMs": 25.799999952316284,
+      "records": 4096,
+      "dataBytes": 311304,
+      "disk": [
+        {
+          "path": "Default/File System/000/t/00/00000000",
+          "logical": 524288,
+          "allocated": 524288
+        }
+      ],
+      "restart": {
+        "verified": 4096,
+        "reopened": {
+          "usage": 334,
+          "quota": 10737418574,
+          "details": {
+            "fileSystem": 334
+          }
+        },
+        "headerReadUs": 1.1999999284744263
+      }
+    },
+    {
+      "case": {
+        "name": "records-512B-dense",
+        "stride": 512,
+        "payload": 80,
+        "slots": 4096,
+        "groups": [
+          [
+            0,
+            4096
+          ]
+        ]
+      },
+      "before": {
+        "usage": 334,
+        "quota": 10737418574,
+        "details": {
+          "fileSystem": 334
+        }
+      },
+      "reserved": {
+        "usage": 2097486,
+        "quota": 10739515726,
+        "details": {
+          "fileSystem": 2097486
+        }
+      },
+      "closed": {
+        "usage": 2097486,
+        "quota": 10739515726,
+        "details": {
+          "fileSystem": 2097486
+        }
+      },
+      "logical": 2097152,
+      "writeFlushMs": 25.5,
+      "records": 4096,
+      "dataBytes": 311304,
+      "disk": [
+        {
+          "path": "Default/File System/000/t/00/00000000",
+          "logical": 2097152,
+          "allocated": 2097152
+        }
+      ],
+      "restart": {
+        "verified": 4096,
+        "reopened": {
+          "usage": 334,
+          "quota": 10737418574,
+          "details": {
+            "fileSystem": 334
+          }
+        },
+        "headerReadUs": 1.1999999284744263
+      }
+    },
+    {
+      "case": {
+        "name": "records-4KiB-dense",
+        "stride": 4096,
+        "payload": 80,
+        "slots": 4096,
+        "groups": [
+          [
+            0,
+            4096
+          ]
+        ]
+      },
+      "before": {
+        "usage": 334,
+        "quota": 10737418574,
+        "details": {
+          "fileSystem": 334
+        }
+      },
+      "reserved": {
+        "usage": 16777550,
+        "quota": 10754195790,
+        "details": {
+          "fileSystem": 16777550
+        }
+      },
+      "closed": {
+        "usage": 16777550,
+        "quota": 10754195790,
+        "details": {
+          "fileSystem": 16777550
+        }
+      },
+      "logical": 16777216,
+      "writeFlushMs": 33.799999952316284,
+      "records": 4096,
+      "dataBytes": 311304,
+      "disk": [
+        {
+          "path": "Default/File System/000/t/00/00000000",
+          "logical": 16777216,
+          "allocated": 16777216
+        }
+      ],
+      "restart": {
+        "verified": 4096,
+        "reopened": {
+          "usage": 334,
+          "quota": 10737418574,
+          "details": {
+            "fileSystem": 334
+          }
+        },
+        "headerReadUs": 1.5499999523162842
+      }
+    },
+    {
+      "case": {
+        "name": "records-4KiB-fragmented",
+        "stride": 4096,
+        "payload": 80,
+        "slots": 65536,
+        "groups": [
+          [
+            65408,
+            128
+          ],
+          [
+            0,
+            128
+          ],
+          [
+            16384,
+            128
+          ],
+          [
+            32768,
+            128
+          ]
+        ]
+      },
+      "before": {
+        "usage": 334,
+        "quota": 10737418574,
+        "details": {
+          "fileSystem": 334
+        }
+      },
+      "reserved": {
+        "usage": 268435790,
+        "quota": 11005854030,
+        "details": {
+          "fileSystem": 268435790
+        }
+      },
+      "closed": {
+        "usage": 268435790,
+        "quota": 11005854030,
+        "details": {
+          "fileSystem": 268435790
+        }
+      },
+      "logical": 268435456,
+      "writeFlushMs": 7.199999809265137,
+      "records": 512,
+      "dataBytes": 38896,
+      "disk": [
+        {
+          "path": "Default/File System/000/t/00/00000000",
+          "logical": 268435456,
+          "allocated": 2097152
+        }
+      ],
+      "restart": {
+        "verified": 512,
+        "reopened": {
+          "usage": 334,
+          "quota": 10737418574,
+          "details": {
+            "fileSystem": 334
+          }
+        },
+        "headerReadUs": 1.1500000953674316
+      }
+    },
+    {
+      "case": {
+        "name": "pac-16MiB-zero-control",
+        "stride": 16777216,
+        "payload": 16384,
+        "slots": 32,
+        "groups": [
+          [
+            31,
+            1
+          ],
+          [
+            0,
+            1
+          ],
+          [
+            7,
+            1
+          ],
+          [
+            15,
+            1
+          ]
+        ],
+        "zero": true
+      },
+      "before": {
+        "usage": 334,
+        "quota": 10737418574,
+        "details": {
+          "fileSystem": 334
+        }
+      },
+      "reserved": {
+        "usage": 536871246,
+        "quota": 11274289486,
+        "details": {
+          "fileSystem": 536871246
+        }
+      },
+      "closed": {
+        "usage": 536871246,
+        "quota": 11274289486,
+        "details": {
+          "fileSystem": 536871246
+        }
+      },
+      "logical": 536870912,
+      "writeFlushMs": 105,
+      "records": 4,
+      "dataBytes": 65516,
+      "disk": [
+        {
+          "path": "Default/File System/000/t/00/00000000",
+          "logical": 536870912,
+          "allocated": 536870912
+        }
+      ],
+      "restart": {
+        "verified": 4,
+        "reopened": {
+          "usage": 334,
+          "quota": 10737418574,
+          "details": {
+            "fileSystem": 334
+          }
+        },
+        "headerReadUs": 1.4499999284744263
+      }
+    }
+  ]
+}

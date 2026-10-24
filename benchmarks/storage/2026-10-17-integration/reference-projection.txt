@@ -1,0 +1,16 @@
+goos: darwin
+goarch: arm64
+pkg: trie-trunk/go/server/cache
+cpu: Apple M1 Max
+BenchmarkReferenceProjection/same-map-10         	 3632551	        58.59 ns/op	     136 B/op	       2 allocs/op
+BenchmarkReferenceProjection/same-map-10         	 3964195	        59.13 ns/op	     136 B/op	       2 allocs/op
+BenchmarkReferenceProjection/same-map-10         	 3868749	        59.79 ns/op	     136 B/op	       2 allocs/op
+BenchmarkReferenceProjection/same-map-10         	 3985198	        59.78 ns/op	     136 B/op	       2 allocs/op
+BenchmarkReferenceProjection/same-map-10         	 4112112	        59.16 ns/op	     136 B/op	       2 allocs/op
+BenchmarkReferenceProjection/translated-10       	 3623778	        66.01 ns/op	     136 B/op	       2 allocs/op
+BenchmarkReferenceProjection/translated-10       	 3516764	        66.51 ns/op	     136 B/op	       2 allocs/op
+BenchmarkReferenceProjection/translated-10       	 3595076	        67.24 ns/op	     136 B/op	       2 allocs/op
+BenchmarkReferenceProjection/translated-10       	 3588435	        66.70 ns/op	     136 B/op	       2 allocs/op
+BenchmarkReferenceProjection/translated-10       	 3616885	        67.05 ns/op	     136 B/op	       2 allocs/op
+PASS
+ok  	trie-trunk/go/server/cache	3.140s

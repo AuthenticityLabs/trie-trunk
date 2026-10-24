@@ -1,0 +1,134 @@
+{
+  "medians_ns": {
+    "BenchmarkCollectionChainAccess/734": 1379.0,
+    "BenchmarkCollectionChainAccess/735": 2545.0,
+    "BenchmarkCollectionChainAccess/5000": 10588.0,
+    "BenchmarkCollectionSlottedAccess/1/Latest": 1063.0,
+    "BenchmarkCollectionSlottedAccess/1/Exact": 1055.0,
+    "BenchmarkCollectionSlottedAccess/9/Latest": 1098.0,
+    "BenchmarkCollectionSlottedAccess/9/Exact": 1061.0,
+    "BenchmarkCollectionSlottedAccess/61/Latest": 1084.0,
+    "BenchmarkCollectionSlottedAccess/61/Exact": 1077.0,
+    "BenchmarkCollectionSlottedAccess/489/Latest": 1295.0,
+    "BenchmarkCollectionSlottedAccess/489/Exact": 1259.0,
+    "BenchmarkCollectionPlatform100K": 2040.0,
+    "BenchmarkResidentObjectHistory/1/pending": 458.8,
+    "BenchmarkResidentObjectHistory/1/sealed-resident": 585.0,
+    "BenchmarkResidentObjectHistory/1/expired-resident-warm-disk": 23768.0,
+    "BenchmarkResidentObjectHistory/9/pending": 1192.0,
+    "BenchmarkResidentObjectHistory/9/sealed-resident": 1883.0,
+    "BenchmarkResidentObjectHistory/9/expired-resident-warm-disk": 30642.0,
+    "BenchmarkResidentObjectHistory/61/pending": 3391.0,
+    "BenchmarkResidentObjectHistory/61/sealed-resident": 7390.0,
+    "BenchmarkResidentObjectHistory/61/expired-resident-warm-disk": 66101.0,
+    "BenchmarkIndexHour/hour18": 201.6,
+    "BenchmarkIndexHour/hour16": 191.9,
+    "BenchmarkIndexHour/reconstruct_uuid": 5.303,
+    "BenchmarkSealedPACDelivery/1000/expand_then_gzip": 1081081.0,
+    "BenchmarkSealedPACDelivery/1000/whole_pac": 54601.0,
+    "BenchmarkSealedPACDelivery/10000/expand_then_gzip": 9096466.0,
+    "BenchmarkSealedPACDelivery/10000/whole_pac": 156334.0,
+    "BenchmarkPositionalTimeTrie/1_events_per_hour/January/positional": 61.93,
+    "BenchmarkPositionalTimeTrie/1_events_per_hour/January/map_baseline": 272.3,
+    "BenchmarkPositionalTimeTrie/1_events_per_hour/December/positional": 61.41,
+    "BenchmarkPositionalTimeTrie/1_events_per_hour/December/map_baseline": 272.8,
+    "BenchmarkPositionalTimeTrie/10000_events_per_hour/January/positional": 61.94,
+    "BenchmarkPositionalTimeTrie/10000_events_per_hour/January/map_baseline": 267.6,
+    "BenchmarkPositionalTimeTrie/10000_events_per_hour/December/positional": 62.08,
+    "BenchmarkPositionalTimeTrie/10000_events_per_hour/December/map_baseline": 272.8
+  },
+  "historical_comparison": {
+    "BenchmarkCollectionSlottedAccess/1/Latest": {
+      "old_ns": 1361.0,
+      "current_ns": 1063.0,
+      "latency_change_pct": -21.895664952241
+    },
+    "BenchmarkCollectionSlottedAccess/1/Exact": {
+      "old_ns": 1330.0,
+      "current_ns": 1055.0,
+      "latency_change_pct": -20.676691729323306
+    },
+    "BenchmarkCollectionSlottedAccess/9/Latest": {
+      "old_ns": 1388.0,
+      "current_ns": 1098.0,
+      "latency_change_pct": -20.893371757925074
+    },
+    "BenchmarkCollectionSlottedAccess/9/Exact": {
+      "old_ns": 1369.0,
+      "current_ns": 1061.0,
+      "latency_change_pct": -22.498173849525205
+    },
+    "BenchmarkCollectionSlottedAccess/61/Latest": {
+      "old_ns": 1870.0,
+      "current_ns": 1084.0,
+      "latency_change_pct": -42.032085561497325
+    },
+    "BenchmarkCollectionSlottedAccess/61/Exact": {
+      "old_ns": 1839.0,
+      "current_ns": 1077.0,
+      "latency_change_pct": -41.43556280587276
+    },
+    "BenchmarkCollectionSlottedAccess/489/Latest": {
+      "old_ns": 32337.0,
+      "current_ns": 1295.0,
+      "latency_change_pct": -95.99529950211831
+    },
+    "BenchmarkCollectionSlottedAccess/489/Exact": {
+      "old_ns": 32301.0,
+      "current_ns": 1259.0,
+      "latency_change_pct": -96.10228785486518
+    },
+    "BenchmarkResidentObjectHistory/1/pending": {
+      "old_ns": 441.1,
+      "current_ns": 458.8,
+      "latency_change_pct": 4.012695533892541
+    },
+    "BenchmarkResidentObjectHistory/1/sealed-resident": {
+      "old_ns": 566.9,
+      "current_ns": 585.0,
+      "latency_change_pct": 3.1928029634856303
+    },
+    "BenchmarkResidentObjectHistory/1/expired-resident-warm-disk": {
+      "old_ns": 23144.0,
+      "current_ns": 23768.0,
+      "latency_change_pct": 2.6961631524369256
+    },
+    "BenchmarkResidentObjectHistory/9/pending": {
+      "old_ns": 1131.0,
+      "current_ns": 1192.0,
+      "latency_change_pct": 5.393457117595046
+    },
+    "BenchmarkResidentObjectHistory/9/sealed-resident": {
+      "old_ns": 1822.0,
+      "current_ns": 1883.0,
+      "latency_change_pct": 3.347969264544459
+    },
+    "BenchmarkResidentObjectHistory/9/expired-resident-warm-disk": {
+      "old_ns": 29038.0,
+      "current_ns": 30642.0,
+      "latency_change_pct": 5.523796404711079
+    },
+    "BenchmarkResidentObjectHistory/61/pending": {
+      "old_ns": 3320.0,
+      "current_ns": 3391.0,
+      "latency_change_pct": 2.138554216867461
+    },
+    "BenchmarkResidentObjectHistory/61/sealed-resident": {
+      "old_ns": 7324.0,
+      "current_ns": 7390.0,
+      "latency_change_pct": 0.9011469142545137
+    },
+    "BenchmarkResidentObjectHistory/61/expired-resident-warm-disk": {
+      "old_ns": 60237.0,
+      "current_ns": 66101.0,
+      "latency_change_pct": 9.734880555140535
+    },
+    "BenchmarkCollectionPlatform100K": {
+      "old_ns": 2095.0,
+      "current_ns": 2040.0,
+      "latency_change_pct": -2.6252983293556076
+    }
+  },
+  "old_build_median_s": 1.3302313749999999,
+  "current_build_median_s": 1.6597908124999998
+}

@@ -1,0 +1,473 @@
+{
+  "engine": "chromium",
+  "version": "155.0.8059.85",
+  "quotaOverride": 0,
+  "platform": "darwin",
+  "arch": "arm64",
+  "results": [
+    {
+      "mode": "seek",
+      "prepare": {
+        "result": {
+          "action": "prepare",
+          "mode": "seek",
+          "before": {
+            "usage": 180,
+            "quota": 10737418420
+          },
+          "after": {
+            "usage": 67109206,
+            "quota": 10804527446
+          },
+          "elapsedMs": 9.399999856948853,
+          "files": [
+            {
+              "name": "data.sap",
+              "size": 67108864
+            }
+          ],
+          "verified": false
+        }
+      },
+      "backingFiles": [
+        {
+          "path": "Default/File System/000/t/00/00000000",
+          "logical": 67108864,
+          "allocated": 65536
+        }
+      ],
+      "verify": {
+        "result": {
+          "action": "verify",
+          "mode": "seek",
+          "before": {
+            "usage": 342,
+            "quota": 10737418582
+          },
+          "after": {
+            "usage": 342,
+            "quota": 10737418582
+          },
+          "elapsedMs": 4.299999952316284,
+          "files": [
+            {
+              "name": "data.sap",
+              "size": 67108864
+            }
+          ],
+          "verified": true
+        }
+      },
+      "fill": {
+        "result": {
+          "action": "fill",
+          "mode": "seek",
+          "before": {
+            "usage": 342,
+            "quota": 10737418582
+          },
+          "after": {
+            "usage": 342,
+            "quota": 10737418582
+          },
+          "elapsedMs": 6.400000095367432,
+          "files": [
+            {
+              "name": "data.sap",
+              "size": 67108864
+            }
+          ],
+          "verified": true
+        }
+      },
+      "backingFilesAfterFill": [
+        {
+          "path": "Default/File System/000/t/00/00000000",
+          "logical": 67108864,
+          "allocated": 81920
+        }
+      ],
+      "secondRestart": {
+        "result": {
+          "action": "verify-filled",
+          "mode": "seek",
+          "before": {
+            "usage": 342,
+            "quota": 10737418582
+          },
+          "after": {
+            "usage": 342,
+            "quota": 10737418582
+          },
+          "elapsedMs": 4.200000047683716,
+          "files": [
+            {
+              "name": "data.sap",
+              "size": 67108864
+            }
+          ],
+          "verified": true
+        }
+      }
+    },
+    {
+      "mode": "truncate",
+      "prepare": {
+        "result": {
+          "action": "prepare",
+          "mode": "truncate",
+          "before": {
+            "usage": 180,
+            "quota": 10737418420
+          },
+          "after": {
+            "usage": 67109206,
+            "quota": 10804527446
+          },
+          "elapsedMs": 6.5,
+          "files": [
+            {
+              "name": "data.sap",
+              "size": 67108864
+            }
+          ],
+          "verified": false
+        }
+      },
+      "backingFiles": [
+        {
+          "path": "Default/File System/000/t/00/00000000",
+          "logical": 67108864,
+          "allocated": 65536
+        }
+      ],
+      "verify": {
+        "result": {
+          "action": "verify",
+          "mode": "truncate",
+          "before": {
+            "usage": 342,
+            "quota": 10737418582
+          },
+          "after": {
+            "usage": 342,
+            "quota": 10737418582
+          },
+          "elapsedMs": 3.799999952316284,
+          "files": [
+            {
+              "name": "data.sap",
+              "size": 67108864
+            }
+          ],
+          "verified": true
+        }
+      },
+      "fill": {
+        "result": {
+          "action": "fill",
+          "mode": "truncate",
+          "before": {
+            "usage": 342,
+            "quota": 10737418582
+          },
+          "after": {
+            "usage": 342,
+            "quota": 10737418582
+          },
+          "elapsedMs": 6,
+          "files": [
+            {
+              "name": "data.sap",
+              "size": 67108864
+            }
+          ],
+          "verified": true
+        }
+      },
+      "backingFilesAfterFill": [
+        {
+          "path": "Default/File System/000/t/00/00000000",
+          "logical": 67108864,
+          "allocated": 81920
+        }
+      ],
+      "secondRestart": {
+        "result": {
+          "action": "verify-filled",
+          "mode": "truncate",
+          "before": {
+            "usage": 342,
+            "quota": 10737418582
+          },
+          "after": {
+            "usage": 342,
+            "quota": 10737418582
+          },
+          "elapsedMs": 4.700000047683716,
+          "files": [
+            {
+              "name": "data.sap",
+              "size": 67108864
+            }
+          ],
+          "verified": true
+        }
+      }
+    },
+    {
+      "mode": "zero-control",
+      "prepare": {
+        "result": {
+          "action": "prepare",
+          "mode": "zero-control",
+          "before": {
+            "usage": 180,
+            "quota": 10737418420
+          },
+          "after": {
+            "usage": 67109206,
+            "quota": 10804527446
+          },
+          "elapsedMs": 30.200000047683716,
+          "files": [
+            {
+              "name": "data.sap",
+              "size": 67108864
+            }
+          ],
+          "verified": false
+        }
+      },
+      "backingFiles": [
+        {
+          "path": "Default/File System/000/t/00/00000000",
+          "logical": 67108864,
+          "allocated": 67108864
+        }
+      ],
+      "verify": {
+        "result": {
+          "action": "verify",
+          "mode": "zero-control",
+          "before": {
+            "usage": 342,
+            "quota": 10737418582
+          },
+          "after": {
+            "usage": 342,
+            "quota": 10737418582
+          },
+          "elapsedMs": 4.599999904632568,
+          "files": [
+            {
+              "name": "data.sap",
+              "size": 67108864
+            }
+          ],
+          "verified": true
+        }
+      },
+      "fill": {
+        "result": {
+          "action": "fill",
+          "mode": "zero-control",
+          "before": {
+            "usage": 342,
+            "quota": 10737418582
+          },
+          "after": {
+            "usage": 342,
+            "quota": 10737418582
+          },
+          "elapsedMs": 6.799999952316284,
+          "files": [
+            {
+              "name": "data.sap",
+              "size": 67108864
+            }
+          ],
+          "verified": true
+        }
+      },
+      "backingFilesAfterFill": [
+        {
+          "path": "Default/File System/000/t/00/00000000",
+          "logical": 67108864,
+          "allocated": 67108864
+        }
+      ],
+      "secondRestart": {
+        "result": {
+          "action": "verify-filled",
+          "mode": "zero-control",
+          "before": {
+            "usage": 342,
+            "quota": 10737418582
+          },
+          "after": {
+            "usage": 342,
+            "quota": 10737418582
+          },
+          "elapsedMs": 4.5,
+          "files": [
+            {
+              "name": "data.sap",
+              "size": 67108864
+            }
+          ],
+          "verified": true
+        }
+      }
+    },
+    {
+      "mode": "keyed-pages",
+      "prepare": {
+        "result": {
+          "action": "prepare",
+          "mode": "keyed-pages",
+          "before": {
+            "usage": 180,
+            "quota": 10737418420
+          },
+          "after": {
+            "usage": 66358,
+            "quota": 10737484598
+          },
+          "elapsedMs": 8.699999809265137,
+          "files": [
+            {
+              "name": "4095.sap",
+              "size": 16384
+            },
+            {
+              "name": "2048.sap",
+              "size": 16384
+            },
+            {
+              "name": "1024.sap",
+              "size": 16384
+            },
+            {
+              "name": "0.sap",
+              "size": 16384
+            }
+          ],
+          "verified": false
+        }
+      },
+      "backingFiles": [],
+      "verify": {
+        "result": {
+          "action": "verify",
+          "mode": "keyed-pages",
+          "before": {
+            "usage": 822,
+            "quota": 10737419062
+          },
+          "after": {
+            "usage": 822,
+            "quota": 10737419062
+          },
+          "elapsedMs": 5.300000190734863,
+          "files": [
+            {
+              "name": "4095.sap",
+              "size": 16384
+            },
+            {
+              "name": "2048.sap",
+              "size": 16384
+            },
+            {
+              "name": "1024.sap",
+              "size": 16384
+            },
+            {
+              "name": "0.sap",
+              "size": 16384
+            }
+          ],
+          "verified": true
+        }
+      },
+      "fill": {
+        "result": {
+          "action": "fill",
+          "mode": "keyed-pages",
+          "before": {
+            "usage": 822,
+            "quota": 10737419062
+          },
+          "after": {
+            "usage": 17368,
+            "quota": 10737435608
+          },
+          "elapsedMs": 8.399999856948853,
+          "files": [
+            {
+              "name": "4095.sap",
+              "size": 16384
+            },
+            {
+              "name": "3072.sap",
+              "size": 16384
+            },
+            {
+              "name": "2048.sap",
+              "size": 16384
+            },
+            {
+              "name": "1024.sap",
+              "size": 16384
+            },
+            {
+              "name": "0.sap",
+              "size": 16384
+            }
+          ],
+          "verified": true
+        }
+      },
+      "backingFilesAfterFill": [],
+      "secondRestart": {
+        "result": {
+          "action": "verify-filled",
+          "mode": "keyed-pages",
+          "before": {
+            "usage": 984,
+            "quota": 10737419224
+          },
+          "after": {
+            "usage": 984,
+            "quota": 10737419224
+          },
+          "elapsedMs": 7.1000001430511475,
+          "files": [
+            {
+              "name": "4095.sap",
+              "size": 16384
+            },
+            {
+              "name": "3072.sap",
+              "size": 16384
+            },
+            {
+              "name": "2048.sap",
+              "size": 16384
+            },
+            {
+              "name": "1024.sap",
+              "size": 16384
+            },
+            {
+              "name": "0.sap",
+              "size": 16384
+            }
+          ],
+          "verified": true
+        }
+      }
+    }
+  ]
+}

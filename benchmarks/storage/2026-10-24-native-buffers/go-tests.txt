@@ -1,0 +1,19 @@
+ok  	trie-trunk/go/cmd/seed-demo	18.328s
+?   	trie-trunk/go/cmd/storage-bench	[no test files]
+ok  	trie-trunk/go/cmd/trunk	3.336s
+?   	trie-trunk/go/cmd/trunk/os	[no test files]
+ok  	trie-trunk/go/codec	(cached)
+ok  	trie-trunk/go/logger/client	1.653s
+?   	trie-trunk/go/logger/client/examples/http	[no test files]
+?   	trie-trunk/go/logger/client/keys	[no test files]
+ok  	trie-trunk/go/logger/out	(cached)
+ok  	trie-trunk/go/logger/pil	3.782s
+?   	trie-trunk/go/models	[no test files]
+ok  	trie-trunk/go/server/cache	50.979s
+?   	trie-trunk/go/server/ingest	[no test files]
+?   	trie-trunk/go/server/ingest/cbor	[no test files]
+?   	trie-trunk/go/server/ingest/json	[no test files]
+ok  	trie-trunk/go/server/ingest/sample	(cached)
+ok  	trie-trunk/go/server/search	(cached)
+ok  	trie-trunk/go/server/serve	9.284s
+ok  	trie-trunk/go/server/store	(cached)

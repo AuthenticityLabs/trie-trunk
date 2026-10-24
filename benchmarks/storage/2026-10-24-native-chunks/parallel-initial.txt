@@ -1,0 +1,15 @@
+goos: darwin
+goarch: arm64
+pkg: trie-trunk/go/server/cache
+cpu: Apple M1 Max
+BenchmarkNativeIngressParallel/go-10 	 3625728	        88.12 ns/op	1577.31 MB/s	     216 B/op	       3 allocs/op
+BenchmarkNativeIngressParallel/go-10 	 4131482	        86.77 ns/op	1601.99 MB/s	     216 B/op	       3 allocs/op
+BenchmarkNativeIngressParallel/go-10 	 4117683	        79.45 ns/op	1749.57 MB/s	     216 B/op	       3 allocs/op
+BenchmarkNativeIngressParallel/native-record-10         	  256285	      1430 ns/op	  97.22 MB/s	      48 B/op	       1 allocs/op
+BenchmarkNativeIngressParallel/native-record-10         	  248035	      1453 ns/op	  95.66 MB/s	      48 B/op	       1 allocs/op
+BenchmarkNativeIngressParallel/native-record-10         	  258054	      1427 ns/op	  97.43 MB/s	      48 B/op	       1 allocs/op
+BenchmarkNativeIngressParallel/native-chunk-10          	 1000000	       307.8 ns/op	 451.61 MB/s	       0 B/op	       0 allocs/op
+BenchmarkNativeIngressParallel/native-chunk-10          	 1000000	       308.0 ns/op	 451.31 MB/s	       0 B/op	       0 allocs/op
+BenchmarkNativeIngressParallel/native-chunk-10          	 1000000	       306.0 ns/op	 454.20 MB/s	       0 B/op	       0 allocs/op
+PASS
+ok  	trie-trunk/go/server/cache	3.616s

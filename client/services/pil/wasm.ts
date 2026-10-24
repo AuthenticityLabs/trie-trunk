@@ -4,6 +4,10 @@ export type Wasm = WebAssembly.Exports & {
   definition(): number;
   scan(handle: number, offset: number, length: number): number;
   release(handle: number): void;
+  scan_pac(handle:number,offset:number,length:number,native:number):number;
+  pac_members():number;
+  inflate(length:number):number;
+  inflated_ptr():number;
   error_ptr(): number;
   error_len(): number;
 };
@@ -38,6 +42,15 @@ export class Codec {
     const n = this.api.scan(id, offset, length) >>> 0;
     if (n === 0xffffffff) throw this.error();
     return n;
+  }
+  pac(id:number,offset:number,length:number,count:number,native=false):Uint32Array {
+    const n=this.api.scan_pac(id,offset,length,native?1:0)>>>0;
+    if(n===0xffffffff)throw this.error();if(n!==length)throw Error('Truncated PAC');
+    return new Uint32Array(this.api.memory.buffer,this.api.pac_members(),count*2).slice();
+  }
+  inflate(bytes:Uint8Array,length:number):Uint8Array {
+    this.upload(bytes);const n=this.api.inflate(length)>>>0;if(n===0xffffffff)throw this.error();
+    return new Uint8Array(this.api.memory.buffer,this.api.inflated_ptr(),n).slice();
   }
   release(id: number) {
     this.api.release(id);

@@ -1,0 +1,164 @@
+{
+  "aggregates": false,
+  "events": 1000000,
+  "file_count": 11,
+  "fixture_sha256": "f6d05f75db1441f9465e23e8ed0023247cee46f7fe15720dc40f857a49a0075f",
+  "format": 5,
+  "go": "go1.26.4",
+  "ingest_ns": 20001929333,
+  "logical_bytes": {
+    ".cfg": 119,
+    ".idx": 52000064,
+    ".lock": 0,
+    ".map": 742,
+    ".pop": 8000064,
+    ".state": 64,
+    ".stats": 118,
+    ".tri": 70213
+  },
+  "native_bytes": {
+    "day_cached": {
+      "state": 55
+    },
+    "day_initial": {
+      "index": 1733368,
+      "map": 619,
+      "population": 266672,
+      "state": 55
+    },
+    "three_hours_cached": {
+      "state": 55
+    },
+    "three_hours_initial": {
+      "index": 1733368,
+      "map": 619,
+      "population": 33340,
+      "state": 55
+    }
+  },
+  "native_collection": {
+    "day_cached": {
+      "samples_ns": [
+        669625,
+        532875,
+        527000,
+        520333,
+        580584,
+        569709,
+        601583,
+        529208,
+        621958
+      ],
+      "p50_ns": 569709,
+      "p95_ns": 669625
+    },
+    "day_initial": {
+      "samples_ns": [
+        1340292,
+        1448250,
+        1328042,
+        1495792,
+        1407125,
+        1446250,
+        1455833,
+        1375291,
+        1374958
+      ],
+      "p50_ns": 1407125,
+      "p95_ns": 1495792
+    },
+    "three_hours_cached": {
+      "samples_ns": [
+        183334,
+        181042,
+        333834,
+        179458,
+        179209,
+        176125,
+        177750,
+        181083,
+        177333
+      ],
+      "p50_ns": 179458,
+      "p95_ns": 333834
+    },
+    "three_hours_initial": {
+      "samples_ns": [
+        915167,
+        902084,
+        918291,
+        909833,
+        1132333,
+        906375,
+        908125,
+        912166,
+        902500
+      ],
+      "p50_ns": 909833,
+      "p95_ns": 1132333
+    }
+  },
+  "object_index": false,
+  "object_index_bytes": 0,
+  "platform": "darwin/arm64",
+  "reopen_ns": 86141708,
+  "result_counts": {
+    "all": 1000000,
+    "day": 33334,
+    "three_hours": 4167
+  },
+  "result_hashes": {
+    "all": "f6d05f75db1441f9465e23e8ed0023247cee46f7fe15720dc40f857a49a0075f",
+    "day": "d0208fb44dceeb1443877f2726f595d1b9a15f27198ab7d02aee8320754ae534",
+    "three_hours": "e7d7678715e6058f5decc749796eed49578b5cf0efc757b79e40ea29a87cb2e8"
+  },
+  "row_width": 52,
+  "sparse": true,
+  "standalone_query": {
+    "all": {
+      "samples_ns": [
+        650927875,
+        652614416,
+        655254459,
+        652765750,
+        651692541,
+        647781416,
+        649984709,
+        648981917,
+        649314416
+      ],
+      "p50_ns": 650927875,
+      "p95_ns": 655254459
+    },
+    "day": {
+      "samples_ns": [
+        21693542,
+        22084041,
+        22550583,
+        21539666,
+        21460292,
+        21704167,
+        21344250,
+        21391417,
+        21604917
+      ],
+      "p50_ns": 21604917,
+      "p95_ns": 22550583
+    },
+    "three_hours": {
+      "samples_ns": [
+        2822333,
+        2818166,
+        2781000,
+        2987958,
+        2986333,
+        2774041,
+        2579583,
+        2848042,
+        2886542
+      ],
+      "p50_ns": 2822333,
+      "p95_ns": 2987958
+    }
+  }
+}

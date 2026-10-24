@@ -1,0 +1,40 @@
+{
+  "created_utc": "2026-10-12T18:49:05.770158+00:00",
+  "base_commit": "4af4baaa62af645f9721aa84d12eadeb55fcd596",
+  "sources": {
+    "go/cmd/storage-bench/main.go": "ef1d7a96c532acadea6e16dd907bfc11660043cc64a18699acb4e24850d38145",
+    "go/cmd/storage-bench/native.go": "a886b4202c307cf79ba458b12dac49adb229301169a74ecce770229d6fd051f2",
+    "go/cmd/trunk/cache.go": "377846fb32f7e40cf36f89d491d30594d0cc1e6b76d1042938b88aad0b19cbd0",
+    "go/cmd/trunk/cache_test.go": "1a0baa088b89b2cb7cbc1ff8b2be385ed210ce6053f0675bdc242014d175c954",
+    "go/cmd/trunk/main.go": "9a7c1dd312398a1551bbc0526eea907c5a475d4d64b2e408d6d10399b74827d2",
+    "go/go.mod": "9e4bc7489e44f628737f5cdd9f66577f0eeb2f96b63f051e20ed5306237895da",
+    "go/go.sum": "04732da1e9ba0a9a899a5f317a9c614111007c0e18cdb4464b44093799e6268f",
+    "go/server/cache/aggregate.go": "772500c120c813fbc41915f03a5e6c7550ccddf27a48a7e3d47efbf9f3d8553f",
+    "go/server/cache/binding.go": "b0b03e5fa7de39109a84b76a0b56e89e685ec2d9cc696c0cf66ad97d4fd13e26",
+    "go/server/cache/definition.go": "11ce67726f665a94470f6f7f8d42e7be343d9dfeab2d91efd8d6e9d605a86004",
+    "go/server/cache/files.go": "bc24eb488eb7a12549d69278f8572ce17de7f916035575b7f86566caba388b44",
+    "go/server/cache/frame.go": "17f60e749c2a1cd34566fd512241f8b70da919440420807a98a69b11129164de",
+    "go/server/cache/index.go": "1d6cd912808d766c8ebb5a017305088a276a911ae02e8728a30300a3c3af905e",
+    "go/server/cache/lock_other.go": "5c69509196930563511f84944528f10365e150ddfffda2bdc3a8081c23fc3f3d",
+    "go/server/cache/lock_unix.go": "86c8d996631cdc4e3f2f6cd83259bcb30f686b20b3a000ac0368998636c7cfe1",
+    "go/server/cache/mapping_other.go": "a1c5abd94e5f3b8487cd5d3e814af34cdfe4567ddc6019fb92269c8088c8224d",
+    "go/server/cache/mapping_unix.go": "0aa1b23d4859e3d25626dc75790b927cdee60bafb541dd3ac82051c7c13a63c4",
+    "go/server/cache/objects.go": "7bc9f0e32595b247b2a526eec81fe2baa944a7d6114553dd929bb3b2bc48e4ed",
+    "go/server/cache/policy.go": "077830ff5bc96d511e910b018f852d48d2f8ff796cfbfbc1b7e5bddc53c601a8",
+    "go/server/cache/query.go": "9e9de609f4fb35b85dcbe1c1a24cd16987e1a2f2e7e139856a66e592d03a6887",
+    "go/server/cache/replication.go": "d10b42aeddb76f027ec6fd169ec2ff93b8db4553e14725d1feb0730effd6a1de",
+    "go/server/cache/replication_test.go": "aef19aee4a58b7b4801f29b6f6f29d446e4efc3509453152486d59d9b550f77f",
+    "go/server/cache/retention.go": "dcb82f80ed5a439c8569cdc58b1826ceac52780d471f9e08b65284020ce05cf7",
+    "go/server/cache/rollup.go": "204cbfe6fb5e775beabc1e54d59fcd4044d6cf08c8c7d28387527c42baa40dea",
+    "go/server/cache/statistics.go": "cde94395280163966a4d2707077648907874296ebc46c4031308ee47b8087ec1",
+    "go/server/cache/store.go": "205b0624738070ea6d2ec13b1850e45e761060c0b1d7f5faffc351b0c797097b",
+    "go/server/cache/store_test.go": "76244889e4d1a23e8688d0a694ec4db037c12df9daafdd4b05a0ccd80a7e5fa8",
+    "go/server/cache/trie.go": "24186d389b517a03fce5f522484909bf3d3ade492fca4c5f9ece98aeab78ff11",
+    "pil/examples/cache_interop.rs": "ee65928011652ec3b916a66a1e37cf8369c1235e2d954d6ba9af72c4796304e7"
+  },
+  "binaries": {
+    "native_storage_bench": "fe23a66601416d9a7271f29ece58abb277964a5af493931ee63bbcb449f0921e",
+    "baseline_storage_bench": "ab37118fbd62302d31f9d2de73272feac896f9ce96ea5a476b63e1616daf113a",
+    "baseline_rust_reader": "262927a4ba3b0c5121f980e1e975fa70cab6b5458792eac904f27238d03b8128"
+  }
+}

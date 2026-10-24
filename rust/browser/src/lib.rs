@@ -343,6 +343,7 @@ impl Store {
             &chain,
             pop.get(start..end).ok_or("invalid population range")?,
             &mut self.encoder,
+            &mut self.frame,
         )
     }
 }

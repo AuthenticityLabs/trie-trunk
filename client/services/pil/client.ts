@@ -1,8 +1,13 @@
+import { viewEvents } from "./view-events.ts";
+import type { ViewResponse, ViewQuery, ViewResult } from "./view.ts";
 import type { Collection } from "../store/protocol.ts";
 import { PILEvent } from "./event.ts";
-import { compile, Choices, type Metadata, type Mapping } from "./metadata.ts";
+import { NativeEvent, NativeTrie } from "./native-event.ts";
+import { valueAt } from "../dictionary.ts";
+import { compile, Choices, type Metadata, type Mapping, type Binding } from "./metadata.ts";
 import type { Request, Reply } from "./protocol.ts";
 import type { Selection, LogEvent } from "../events.ts";
+import type { HistoryQuery, ObservedState } from "../replay.ts";
 let transport: MessagePort | undefined;
 let owner: SharedWorker | Worker | undefined;
 let fileWorker: Worker | undefined;
@@ -62,7 +67,12 @@ function port(): MessagePort {
 }
 function request(
   command:
+    | { kind:"persist-view"; definitions:Metadata[]; bindings:Binding[]; token:string }
+    | { kind:"remember-view"; view:ViewResponse; token:string }
+    | { kind:"view"; query:ViewQuery; token:string }
+    | { kind:"rebase"; source:string; token:string }
     | { kind: "schemas"; tap: string; token: string }
+    | { kind: "history"; query: HistoryQuery; token: string }
     | {
         kind: "events";
         selection: Selection;
@@ -101,7 +111,7 @@ function request(
             return;
           }
           receive(reply);
-          if (reply.kind === "batch") {
+          if (reply.kind === "batch" || reply.kind === "native-batch") {
             // Release the next batch on a new task, without capping throughput
             // to one network chunk per animation frame. Only one port batch
             // is in flight; the tab already owns these PIL buffers.
@@ -150,6 +160,7 @@ export async function streamEvents(
 }
 async function receiveEvents(
   command:
+    | { kind: "history"; query: HistoryQuery; token: string }
     | {
         kind: "events";
         selection: Selection;
@@ -165,16 +176,33 @@ async function receiveEvents(
     collection: Collection,
     coverage: { from: number; to: number }[],
   ) => void,
+  onHistory?: (state: ObservedState) => void,
 ) {
   const definitions = new Map<string, Metadata>();
   const streams = new Map<number, Mapping>();
+  const native = new Map<string, NativeTrie>();
   let headers: string[] = [];
   await request(command, signal, (reply) => {
+    if (reply.kind === "history-state") onHistory?.(reply.state);
     if (reply.kind === "collection")
       onCollection?.(reply.collection, reply.coverage);
     if (reply.kind === "schemas") {
       for (const d of reply.definitions) definitions.set(d.digest, d);
       onDictionaries?.(new Choices(reply.definitions, reply.bindings));
+    } else if (reply.kind === "native-source") {
+      const trie = new NativeTrie(compile(reply.definition,reply.binding.tap,headers));
+      for(const chunk of reply.trie)trie.append(chunk.start,chunk.bytes);
+      native.set(reply.source,trie);
+    } else if(reply.kind === "native-batch") {
+      const trie=native.get(reply.source);
+      if(!trie)throw Error("Missing native source dependencies");
+      const {rows,population,offsets}=reply.page;
+      const events:LogEvent[]=[];
+      for(let i=0;i<offsets.length;i+=2){
+        const event=new NativeEvent(rows.subarray(i/2*16,(i/2+1)*16),population.subarray(offsets[i],offsets[i+1]),trie,reply.page.common?.[i/2],reply.page.bases[i/2]);
+        if(reply.where.every(([name,value])=>valueAt(event,name)===value))events.push(event);
+      }
+      receive(events);
     } else if (reply.kind === "definition")
       definitions.set(reply.definition.digest, reply.definition);
     else if (reply.kind === "binding") {
@@ -195,6 +223,7 @@ async function receiveEvents(
           new PILEvent(
             new Uint8Array(bytes, rows[i + 1], rows[i + 2] - rows[i + 1]),
             mapping,
+            reply.batch.common?.[i/3],
           ),
         );
       }
@@ -204,12 +233,29 @@ async function receiveEvents(
   return true;
 }
 
+// Retained write history is not a full object snapshot. The returned token is
+// evidence of the observed invalidation state, not proof that a replay base
+// exists or that the object is still current after this request completes.
+export async function streamObjectHistory(
+  query: HistoryQuery, token: string, signal: AbortSignal,
+  receive: (events: LogEvent[]) => void,
+): Promise<ObservedState> {
+  let state: ObservedState | undefined;
+  await receiveEvents({ kind: "history", query, token }, signal, receive, () => {},
+    undefined, undefined, observed => state = observed);
+  if (!state) throw Error("Missing completed history state");
+  return state;
+}
+
 export function beginCollection(
   collection: Collection,
   token: string,
   signal: AbortSignal,
 ) {
   return request({ kind: "begin", collection, token }, signal, () => {});
+}
+export function rebaseCollection(source:string,token:string,signal:AbortSignal){
+  return request({kind:"rebase",source,token},signal,()=>{});
 }
 export function restoreCollection(
   token: string,
@@ -229,4 +275,24 @@ export function restoreCollection(
     undefined,
     onCollection,
   );
+}
+
+/** A bounded PIL page is not evidence of complete native replication coverage. */
+export async function loadView(query:ViewQuery,token:string,signal:AbortSignal):Promise<{result:ViewResult;events:LogEvent[];view:ViewResponse}> {
+  let output:{result:ViewResult;events:LogEvent[];view:ViewResponse}|undefined;
+  await request({kind:"view",query,token},signal,reply=>{
+    if(reply.kind!=="view")return;
+    output={result:reply.view.result,events:viewEvents(reply.view),view:reply.view};
+  });
+  if(!output)throw Error("Missing event page");
+  return output;
+}
+
+export function rememberView(view:ViewResponse,token:string,signal:AbortSignal) {
+  return request({kind:"remember-view",view,token},signal,()=>{});
+}
+
+/** Durable hour promotion is separate from delivering a visible search page. */
+export function persistView(view:ViewResponse,token:string,signal:AbortSignal) {
+  return request({kind:"persist-view",definitions:view.definitions,bindings:view.bindings,token},signal,()=>{});
 }

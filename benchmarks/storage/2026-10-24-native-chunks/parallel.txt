@@ -1,0 +1,21 @@
+goos: darwin
+goarch: arm64
+pkg: trie-trunk/go/server/cache
+cpu: Apple M1 Max
+BenchmarkNativeIngressParallel/go-10 	 4211383	        89.09 ns/op	1560.14 MB/s	     216 B/op	       3 allocs/op
+BenchmarkNativeIngressParallel/go-10 	 4197612	        78.89 ns/op	1761.99 MB/s	     216 B/op	       3 allocs/op
+BenchmarkNativeIngressParallel/go-10 	 4910409	        69.22 ns/op	2008.17 MB/s	     216 B/op	       3 allocs/op
+BenchmarkNativeIngressParallel/go-10 	 5166212	        70.30 ns/op	1977.31 MB/s	     216 B/op	       3 allocs/op
+BenchmarkNativeIngressParallel/go-10 	 5211747	        69.36 ns/op	2004.13 MB/s	     216 B/op	       3 allocs/op
+BenchmarkNativeIngressParallel/native-record-10         	  238593	      1558 ns/op	  89.21 MB/s	      48 B/op	       1 allocs/op
+BenchmarkNativeIngressParallel/native-record-10         	  232395	      1593 ns/op	  87.28 MB/s	      48 B/op	       1 allocs/op
+BenchmarkNativeIngressParallel/native-record-10         	  240452	      1534 ns/op	  90.61 MB/s	      48 B/op	       1 allocs/op
+BenchmarkNativeIngressParallel/native-record-10         	  223194	      1565 ns/op	  88.84 MB/s	      48 B/op	       1 allocs/op
+BenchmarkNativeIngressParallel/native-record-10         	  254926	      1535 ns/op	  90.58 MB/s	      48 B/op	       1 allocs/op
+BenchmarkNativeIngressParallel/native-chunk-10          	 4862008	        75.71 ns/op	1836.07 MB/s	       0 B/op	       0 allocs/op
+BenchmarkNativeIngressParallel/native-chunk-10          	 4961635	        73.16 ns/op	1899.96 MB/s	       0 B/op	       0 allocs/op
+BenchmarkNativeIngressParallel/native-chunk-10          	 4970103	        74.72 ns/op	1860.35 MB/s	       0 B/op	       0 allocs/op
+BenchmarkNativeIngressParallel/native-chunk-10          	 4919340	        79.30 ns/op	1752.94 MB/s	       0 B/op	       0 allocs/op
+BenchmarkNativeIngressParallel/native-chunk-10          	 4555286	        84.91 ns/op	1636.94 MB/s	       0 B/op	       0 allocs/op
+PASS
+ok  	trie-trunk/go/server/cache	6.950s

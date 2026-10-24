@@ -1,33 +1,36 @@
+import { validSource } from "./source.ts";
 import { valueAt, jsonText, type LogEvent } from "./dictionary.ts";
 
 export const dictionaryJSONL = "application/vnd.trie-trunk.dictionary+jsonl";
 
 export type { LogEvent } from "./dictionary.ts";
 
-export async function listTaps(
+export async function listCaches(
   token: string,
   signal: AbortSignal,
+  collections?: (sources:string[])=>void,
 ): Promise<string[]> {
   const headers: Record<string, string> = { Accept: "application/json" };
   if (token.trim()) headers.Authorization = `Bearer ${token.trim()}`;
-  const response = await fetch("/taps", { headers, signal, cache: "no-store" });
+  const response = await fetch("/caches", { headers, signal, cache: "no-store" });
   await checkResponse(response);
   if (
     response.headers.get("Content-Type")?.split(";", 1)[0].trim() !==
     "application/json"
   )
-    throw new Error("No tap listing at this address.");
+    throw new Error("No cache listing at this address.");
   const value = await response.json();
   if (
     !value ||
-    !Array.isArray(value.taps) ||
-    !value.taps.every(
-      (tap: unknown) =>
-        typeof tap === "string" && /^[a-z0-9][a-z0-9._-]{0,63}$/.test(tap),
-    )
+    !Array.isArray(value.caches) ||
+    !value.caches.every(validSource)
   )
-    throw new Error("Invalid tap listing.");
-  return value.taps;
+    throw new Error("Invalid cache listing.");
+  const replay=value.collections??[];
+  if(!Array.isArray(replay)||!replay.every((s:unknown)=>validSource(s)&&s.endsWith('/write')&&value.caches.includes(s)))
+    throw new Error("Invalid collection capabilities.");
+  collections?.(replay);
+  return value.caches;
 }
 
 export type Selection = {
@@ -60,7 +63,16 @@ async function checkResponse(response: Response) {
 
 export function field(event: LogEvent, name: string): string {
   const value = valueAt(event, name);
-  if (value == null) return "";
+  if (value == null) {
+    // Classification moved into the source hierarchy; render its binding at the
+    // view edge without adding synthetic fields to the PIL object.
+    const source=event.dictionary.tap.split("/");
+    if(source.length===4 && !event.dictionary.fields.names.has(name)) {
+      if(name==="service")return source[1];
+      if(name==="resource")return source[2];
+    }
+    return "";
+  }
   return typeof value === "object" ? jsonText(value) : String(value);
 }
 

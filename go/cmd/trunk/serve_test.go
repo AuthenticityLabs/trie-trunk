@@ -9,6 +9,7 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"crypto/x509/pkix"
+	"encoding/json"
 	"encoding/pem"
 	"fmt"
 	"io"
@@ -17,10 +18,11 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"strings"
 	"testing"
 	"time"
 
+	"trie-trunk/go/codec"
+	"trie-trunk/go/server/cache"
 	"trie-trunk/go/server/search"
 )
 
@@ -38,7 +40,7 @@ func TestServiceCommandBoundaries(t *testing.T) {
 	}
 }
 
-func TestCombinedIngestServeAndSearch(t *testing.T) {
+func TestCombinedPILIngestServeAndSearch(t *testing.T) {
 	clearTrunkEnvironment(t)
 	root, err := os.MkdirTemp("", "trunk-")
 	if err != nil {
@@ -93,6 +95,34 @@ func TestCombinedIngestServeAndSearch(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	definition := cache.Definition{Identity: "payment/transactions", Version: 1 << 20, Fields: []cache.Field{{Name: "event_id", Type: "UUID"}, {Name: "message", Type: "STRING"}}, Resource: cache.Binding{Format: cache.Format, Service: "payment", Resource: "transactions", Major: 1, Timezone: "UTC", Roles: cache.Roles{Event: "event_id"}}}
+	layout, err := cache.Compile(definition)
+	if err != nil {
+		t.Fatal(err)
+	}
+	definitionPath := filepath.Join(root, "definition.json")
+	defBytes, _ := json.Marshal(definition)
+	if err = os.WriteFile(definitionPath, defBytes, 0600); err != nil {
+		t.Fatal(err)
+	}
+	f, err = os.OpenFile(env, os.O_APPEND|os.O_WRONLY, 0600)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = fmt.Fprintf(f, "TRUNK_CACHE=demo\nTRUNK_TENANT=owner\nTRUNK_DEFINITION=%s\n", definitionPath)
+	f.Close()
+	if err != nil {
+		t.Fatal(err)
+	}
+	at := time.Now().Add(-time.Hour)
+	id, err := codec.NewUUIDv7(at)
+	if err != nil {
+		t.Fatal(err)
+	}
+	frame, err := layout.Encode(nil, []cache.Value{{State: cache.Direct, Bytes: id[:]}, cache.Text("combined services")})
+	if err != nil {
+		t.Fatal(err)
+	}
 	args := []string{"ingest", ingestPort, "--env", env, "serve", servePort, "--env", env}
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -131,8 +161,10 @@ func TestCombinedIngestServeAndSearch(t *testing.T) {
 	transport := &http.Transport{TLSClientConfig: &tls.Config{RootCAs: pool, MinVersion: tls.VersionTLS13}}
 	defer transport.CloseIdleConnections()
 	client := &http.Client{Transport: transport, Timeout: 5 * time.Second}
-	req, _ := http.NewRequest("POST", "https://127.0.0.1:"+ingestPort+"/test", strings.NewReader("{\"service\":\"vault\",\"message\":\"combined services\"}\n"))
-	req.Header.Set("Content-Type", "application/x-ndjson")
+	req, _ := http.NewRequest("POST", "https://127.0.0.1:"+ingestPort+"/ingest?tap=demo/payment/transactions.v1/write", bytes.NewReader(frame))
+	req.Header.Set("Content-Type", "Application/PIL")
+	req.Header.Set("PIL-Version", "2")
+	req.Header.Set("Definition-Version", fmt.Sprintf("%x", layout.Digest))
 	req.Header.Set("Authorization", "Bearer testing")
 	var response *http.Response
 	for {
@@ -147,25 +179,38 @@ func TestCombinedIngestServeAndSearch(t *testing.T) {
 	}
 	body, err := io.ReadAll(response.Body)
 	response.Body.Close()
-	if err != nil || response.StatusCode != 204 {
+	if err != nil || response.StatusCode != 200 {
 		t.Fatalf("%s %s %v", response.Status, body, err)
 	}
-	var local, remote, direct bytes.Buffer
-	common := []string{"--env", env, "--all", "--tap", "test"}
-	if err := runSearch(ctx, common, &local); err != nil {
-		t.Fatal(err)
-	}
-	if !strings.Contains(local.String(), "combined services") {
-		t.Fatal(local.String())
-	}
-	if err := runSearch(ctx, append(append([]string{}, common...), "--endpoint", "https://127.0.0.1:"+servePort, "--ca", certFile), &remote); err != nil {
-		t.Fatal(err)
-	}
-	if err := runSearch(ctx, append(append([]string{}, common...), "--local"), &direct); err != nil {
-		t.Fatal(err)
-	}
-	if !bytes.Equal(local.Bytes(), remote.Bytes()) || !bytes.Equal(local.Bytes(), direct.Bytes()) {
-		t.Fatal("remote, socket and direct output differ")
+	unixTransport := &http.Transport{DialContext: func(ctx context.Context, _, _ string) (net.Conn, error) {
+		return (&net.Dialer{}).DialContext(ctx, "unix", socket)
+	}}
+	defer unixTransport.CloseIdleConnections()
+	unixClient := &http.Client{Transport: unixTransport, Timeout: 5 * time.Second}
+	var collected []byte
+	for _, path := range []string{"https://127.0.0.1:" + servePort, "http://local"} {
+		r, _ := http.NewRequest("GET", path+"/events?page=50&tap=demo/payment/transactions.v1/write&from="+at.Add(-time.Minute).UTC().Format(time.RFC3339)+"&to="+at.Add(time.Minute).UTC().Format(time.RFC3339), nil)
+		r.Header.Set("Accept", "application/pil")
+		r.Header.Set("PIL-Version", "2")
+		r.Header.Set("PIL-Features", "pac-arrays")
+		r.Header.Set("Authorization", "Bearer testing")
+		cl := client
+		if path == "http://local" {
+			cl = unixClient
+		}
+		response, err = cl.Do(r)
+		if err != nil {
+			t.Fatal(err)
+		}
+		body, err = io.ReadAll(response.Body)
+		response.Body.Close()
+		if err != nil || response.StatusCode != 200 || response.Header.Get("Trunk-Format") != "pac-view/0" || !bytes.HasPrefix(body, []byte{'T', 'P', 'I', 'L', 2}) {
+			t.Fatalf("collect: %v %s %s", err, response.Status, body)
+		}
+		if collected != nil && !bytes.Equal(collected[:5], body[:5]) {
+			t.Fatal("socket/remote mismatch")
+		}
+		collected = body
 	}
 	response, err = client.Get("https://127.0.0.1:" + servePort + "/")
 	if err != nil {

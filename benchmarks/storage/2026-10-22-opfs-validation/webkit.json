@@ -1,0 +1,437 @@
+{
+  "engine": "webkit",
+  "version": "26.5",
+  "quotaOverride": 0,
+  "platform": "darwin",
+  "arch": "arm64",
+  "results": [
+    {
+      "mode": "seek",
+      "prepare": {
+        "result": {
+          "action": "prepare",
+          "mode": "seek",
+          "before": {
+            "usage": 0,
+            "quota": 20615843021
+          },
+          "after": {
+            "usage": 134217728,
+            "quota": 20615843021
+          },
+          "elapsedMs": 7,
+          "files": [
+            {
+              "name": "data.sap",
+              "size": 67108864
+            }
+          ],
+          "verified": false
+        }
+      },
+      "backingFiles": [],
+      "verify": {
+        "result": {
+          "action": "verify",
+          "mode": "seek",
+          "before": {
+            "usage": 67108864,
+            "quota": 20615843021
+          },
+          "after": {
+            "usage": 67108864,
+            "quota": 20615843021
+          },
+          "elapsedMs": 5,
+          "files": [
+            {
+              "name": "data.sap",
+              "size": 67108864
+            }
+          ],
+          "verified": true
+        }
+      },
+      "fill": {
+        "result": {
+          "action": "fill",
+          "mode": "seek",
+          "before": {
+            "usage": 67108864,
+            "quota": 20615843021
+          },
+          "after": {
+            "usage": 67108864,
+            "quota": 20615843021
+          },
+          "elapsedMs": 3,
+          "files": [
+            {
+              "name": "data.sap",
+              "size": 67108864
+            }
+          ],
+          "verified": true
+        }
+      },
+      "backingFilesAfterFill": [],
+      "secondRestart": {
+        "result": {
+          "action": "verify-filled",
+          "mode": "seek",
+          "before": {
+            "usage": 67108864,
+            "quota": 20615843021
+          },
+          "after": {
+            "usage": 67108864,
+            "quota": 20615843021
+          },
+          "elapsedMs": 4,
+          "files": [
+            {
+              "name": "data.sap",
+              "size": 67108864
+            }
+          ],
+          "verified": true
+        }
+      }
+    },
+    {
+      "mode": "truncate",
+      "prepare": {
+        "result": {
+          "action": "prepare",
+          "mode": "truncate",
+          "before": {
+            "usage": 0,
+            "quota": 20615843021
+          },
+          "after": {
+            "usage": 134217728,
+            "quota": 20615843021
+          },
+          "elapsedMs": 5,
+          "files": [
+            {
+              "name": "data.sap",
+              "size": 67108864
+            }
+          ],
+          "verified": false
+        }
+      },
+      "backingFiles": [],
+      "verify": {
+        "result": {
+          "action": "verify",
+          "mode": "truncate",
+          "before": {
+            "usage": 67108864,
+            "quota": 20615843021
+          },
+          "after": {
+            "usage": 67108864,
+            "quota": 20615843021
+          },
+          "elapsedMs": 4,
+          "files": [
+            {
+              "name": "data.sap",
+              "size": 67108864
+            }
+          ],
+          "verified": true
+        }
+      },
+      "fill": {
+        "result": {
+          "action": "fill",
+          "mode": "truncate",
+          "before": {
+            "usage": 67108864,
+            "quota": 20615843021
+          },
+          "after": {
+            "usage": 67108864,
+            "quota": 20615843021
+          },
+          "elapsedMs": 2,
+          "files": [
+            {
+              "name": "data.sap",
+              "size": 67108864
+            }
+          ],
+          "verified": true
+        }
+      },
+      "backingFilesAfterFill": [],
+      "secondRestart": {
+        "result": {
+          "action": "verify-filled",
+          "mode": "truncate",
+          "before": {
+            "usage": 67108864,
+            "quota": 20615843021
+          },
+          "after": {
+            "usage": 67108864,
+            "quota": 20615843021
+          },
+          "elapsedMs": 4,
+          "files": [
+            {
+              "name": "data.sap",
+              "size": 67108864
+            }
+          ],
+          "verified": true
+        }
+      }
+    },
+    {
+      "mode": "zero-control",
+      "prepare": {
+        "result": {
+          "action": "prepare",
+          "mode": "zero-control",
+          "before": {
+            "usage": 0,
+            "quota": 20615843021
+          },
+          "after": {
+            "usage": 67108864,
+            "quota": 20615843021
+          },
+          "elapsedMs": 14,
+          "files": [
+            {
+              "name": "data.sap",
+              "size": 67108864
+            }
+          ],
+          "verified": false
+        }
+      },
+      "backingFiles": [],
+      "verify": {
+        "result": {
+          "action": "verify",
+          "mode": "zero-control",
+          "before": {
+            "usage": 67108864,
+            "quota": 20615843021
+          },
+          "after": {
+            "usage": 67108864,
+            "quota": 20615843021
+          },
+          "elapsedMs": 3,
+          "files": [
+            {
+              "name": "data.sap",
+              "size": 67108864
+            }
+          ],
+          "verified": true
+        }
+      },
+      "fill": {
+        "result": {
+          "action": "fill",
+          "mode": "zero-control",
+          "before": {
+            "usage": 67108864,
+            "quota": 20615843021
+          },
+          "after": {
+            "usage": 67108864,
+            "quota": 20615843021
+          },
+          "elapsedMs": 2,
+          "files": [
+            {
+              "name": "data.sap",
+              "size": 67108864
+            }
+          ],
+          "verified": true
+        }
+      },
+      "backingFilesAfterFill": [],
+      "secondRestart": {
+        "result": {
+          "action": "verify-filled",
+          "mode": "zero-control",
+          "before": {
+            "usage": 67108864,
+            "quota": 20615843021
+          },
+          "after": {
+            "usage": 67108864,
+            "quota": 20615843021
+          },
+          "elapsedMs": 4,
+          "files": [
+            {
+              "name": "data.sap",
+              "size": 67108864
+            }
+          ],
+          "verified": true
+        }
+      }
+    },
+    {
+      "mode": "keyed-pages",
+      "prepare": {
+        "result": {
+          "action": "prepare",
+          "mode": "keyed-pages",
+          "before": {
+            "usage": 0,
+            "quota": 20615843021
+          },
+          "after": {
+            "usage": 4194304,
+            "quota": 20615843021
+          },
+          "elapsedMs": 5,
+          "files": [
+            {
+              "name": "2048.sap",
+              "size": 16384
+            },
+            {
+              "name": "1024.sap",
+              "size": 16384
+            },
+            {
+              "name": "0.sap",
+              "size": 16384
+            },
+            {
+              "name": "4095.sap",
+              "size": 16384
+            }
+          ],
+          "verified": false
+        }
+      },
+      "backingFiles": [],
+      "verify": {
+        "result": {
+          "action": "verify",
+          "mode": "keyed-pages",
+          "before": {
+            "usage": 65536,
+            "quota": 20615843021
+          },
+          "after": {
+            "usage": 65536,
+            "quota": 20615843021
+          },
+          "elapsedMs": 5,
+          "files": [
+            {
+              "name": "2048.sap",
+              "size": 16384
+            },
+            {
+              "name": "1024.sap",
+              "size": 16384
+            },
+            {
+              "name": "0.sap",
+              "size": 16384
+            },
+            {
+              "name": "4095.sap",
+              "size": 16384
+            }
+          ],
+          "verified": true
+        }
+      },
+      "fill": {
+        "result": {
+          "action": "fill",
+          "mode": "keyed-pages",
+          "before": {
+            "usage": 65536,
+            "quota": 20615843021
+          },
+          "after": {
+            "usage": 1114112,
+            "quota": 20615843021
+          },
+          "elapsedMs": 4,
+          "files": [
+            {
+              "name": "2048.sap",
+              "size": 16384
+            },
+            {
+              "name": "1024.sap",
+              "size": 16384
+            },
+            {
+              "name": "0.sap",
+              "size": 16384
+            },
+            {
+              "name": "4095.sap",
+              "size": 16384
+            },
+            {
+              "name": "3072.sap",
+              "size": 16384
+            }
+          ],
+          "verified": true
+        }
+      },
+      "backingFilesAfterFill": [],
+      "secondRestart": {
+        "result": {
+          "action": "verify-filled",
+          "mode": "keyed-pages",
+          "before": {
+            "usage": 81920,
+            "quota": 20615843021
+          },
+          "after": {
+            "usage": 81920,
+            "quota": 20615843021
+          },
+          "elapsedMs": 5,
+          "files": [
+            {
+              "name": "2048.sap",
+              "size": 16384
+            },
+            {
+              "name": "1024.sap",
+              "size": 16384
+            },
+            {
+              "name": "0.sap",
+              "size": 16384
+            },
+            {
+              "name": "4095.sap",
+              "size": 16384
+            },
+            {
+              "name": "3072.sap",
+              "size": 16384
+            }
+          ],
+          "verified": true
+        }
+      }
+    }
+  ]
+}

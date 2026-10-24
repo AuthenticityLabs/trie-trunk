@@ -1,0 +1,5 @@
+# Reproducible bulk fixture exports; keep reports and compact accounting in Git.
+/expanded.jsonl
+/expanded.jsonl.gz
+/payload.jsonl
+/summaries/

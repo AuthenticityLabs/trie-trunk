@@ -24,6 +24,8 @@ impl FrameIndex {
         if count % 4 != 0 && mask[mask.len() - 1] & ((1 << ((4 - count % 4) * 2)) - 1) != 0 {
             return Err(Error::Invalid("nonzero unused mask bits"));
         }
+        let plane = definition.plane(input, mask, &mut cursor)?;
+        let mut width_bit = 0;
         self.spans.clear();
         let state = |i: usize| (mask[i / 4] >> (6 - 2 * (i % 4))) & 3;
         for (i, field) in definition.fields().iter().enumerate() {
@@ -43,6 +45,7 @@ impl FrameIndex {
                             _ => None,
                         })
                         .ok_or(Error::Invalid("invalid DIRECT field"))?;
+                    let width = definition.wire_width(i, width, plane, &mut width_bit)?;
                     let start = cursor;
                     let bytes = uint::take(input, &mut cursor, width)?;
                     if field.reference_width().is_some() {
@@ -51,8 +54,8 @@ impl FrameIndex {
                         if u64::from_le_bytes(n) >= field.values.len() as u64 {
                             return Err(Error::Invalid("mapped reference is outside dictionary"));
                         }
-                    } else if let Type::Scalar(k) = field.kind {
-                        value::read(k, bytes, false)?;
+                    } else if let Type::Scalar(_) = field.kind {
+                        definition.integer_value(i, bytes)?;
                     }
                     [
                         u32::try_from(start).map_err(|_| Error::Overflow)?,

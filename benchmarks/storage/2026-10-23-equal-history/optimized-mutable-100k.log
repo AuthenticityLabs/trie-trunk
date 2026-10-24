@@ -1,0 +1,15 @@
+   Compiling trunk-uuid-index v0.0.0 (/Users/Shared/code/applications/trie-trunk/rust/uuid-index)
+    Finished `release` profile [optimized] target(s) in 0.41s
+     Running `rust/uuid-index/target/release/examples/slotted_measure 100000`
+v7 objects=100000 reopen_ms=3.572 seed_bytes=4960000
+random objects=100000 reopen_ms=3.607 seed_bytes=4960000
+pointer_scan revisions=1 method=mixed ns=6.51 probes=1.80
+pointer_scan revisions=1 method=derived_starts ns=6.86 probes=0.00
+pointer_scan revisions=5 method=mixed ns=7.01 probes=3.00
+pointer_scan revisions=5 method=derived_starts ns=6.82 probes=0.00
+pointer_scan revisions=61 method=mixed ns=13.77 probes=14.20
+pointer_scan revisions=61 method=derived_starts ns=6.88 probes=0.00
+pointer_scan revisions=241 method=mixed ns=40.71 probes=51.00
+pointer_scan revisions=241 method=derived_starts ns=6.85 probes=0.00
+pointer_scan revisions=481 method=mixed ns=80.01 probes=99.00
+pointer_scan revisions=481 method=derived_starts ns=6.80 probes=0.00

@@ -1,0 +1,362 @@
+[
+  {
+    "variant": "pg-json",
+    "description_bytes": 256,
+    "gzip_level": 1,
+    "round": 1,
+    "updates": 2032,
+    "raw_bytes_per_update": 483.3902559055118,
+    "gzip_bytes_per_update": 112.78887795275591,
+    "compression_us_per_update": 5.349409448818897
+  },
+  {
+    "variant": "pg-json",
+    "description_bytes": 256,
+    "gzip_level": -1,
+    "round": 1,
+    "updates": 2032,
+    "raw_bytes_per_update": 483.3902559055118,
+    "gzip_bytes_per_update": 25.368602362204726,
+    "compression_us_per_update": 3.2002952755905514
+  },
+  {
+    "variant": "pg-pil",
+    "description_bytes": 256,
+    "gzip_level": 1,
+    "round": 1,
+    "updates": 2032,
+    "raw_bytes_per_update": 463.4340551181102,
+    "gzip_bytes_per_update": 137.89714566929135,
+    "compression_us_per_update": 6.118479330708661
+  },
+  {
+    "variant": "pg-pil",
+    "description_bytes": 256,
+    "gzip_level": -1,
+    "round": 1,
+    "updates": 2032,
+    "raw_bytes_per_update": 463.4340551181102,
+    "gzip_bytes_per_update": 28.617125984251967,
+    "compression_us_per_update": 3.4653464566929135
+  },
+  {
+    "variant": "trunk-direct",
+    "description_bytes": 256,
+    "gzip_level": 1,
+    "round": 1,
+    "updates": 2032,
+    "raw_bytes_per_update": 67.9990157480315,
+    "gzip_bytes_per_update": 77.96850393700787,
+    "compression_us_per_update": 4.273581200787401
+  },
+  {
+    "variant": "trunk-direct",
+    "description_bytes": 256,
+    "gzip_level": -1,
+    "round": 1,
+    "updates": 2032,
+    "raw_bytes_per_update": 67.9990157480315,
+    "gzip_bytes_per_update": 19.6003937007874,
+    "compression_us_per_update": 2.3491633858267718
+  },
+  {
+    "variant": "pg-json",
+    "description_bytes": 4096,
+    "gzip_level": 1,
+    "round": 1,
+    "updates": 2032,
+    "raw_bytes_per_update": 4323.390255905511,
+    "gzip_bytes_per_update": 675.8818897637796,
+    "compression_us_per_update": 19.876291830708663
+  },
+  {
+    "variant": "pg-json",
+    "description_bytes": 4096,
+    "gzip_level": -1,
+    "round": 1,
+    "updates": 2032,
+    "raw_bytes_per_update": 4323.390255905511,
+    "gzip_bytes_per_update": 66.87450787401575,
+    "compression_us_per_update": 10.624610728346456
+  },
+  {
+    "variant": "pg-pil",
+    "description_bytes": 4096,
+    "gzip_level": 1,
+    "round": 1,
+    "updates": 2032,
+    "raw_bytes_per_update": 5583.43405511811,
+    "gzip_bytes_per_update": 1175.7298228346456,
+    "compression_us_per_update": 34.508673720472444
+  },
+  {
+    "variant": "pg-pil",
+    "description_bytes": 4096,
+    "gzip_level": -1,
+    "round": 1,
+    "updates": 2032,
+    "raw_bytes_per_update": 5583.43405511811,
+    "gzip_bytes_per_update": 84.16141732283465,
+    "compression_us_per_update": 14.360195374015749
+  },
+  {
+    "variant": "trunk-direct",
+    "description_bytes": 4096,
+    "gzip_level": 1,
+    "round": 1,
+    "updates": 2032,
+    "raw_bytes_per_update": 67.9990157480315,
+    "gzip_bytes_per_update": 77.96850393700787,
+    "compression_us_per_update": 4.167405019685039
+  },
+  {
+    "variant": "trunk-direct",
+    "description_bytes": 4096,
+    "gzip_level": -1,
+    "round": 1,
+    "updates": 2032,
+    "raw_bytes_per_update": 67.9990157480315,
+    "gzip_bytes_per_update": 19.6003937007874,
+    "compression_us_per_update": 2.348794291338583
+  },
+  {
+    "variant": "pg-json",
+    "description_bytes": 256,
+    "gzip_level": 1,
+    "round": 2,
+    "updates": 2032,
+    "raw_bytes_per_update": 483.3902559055118,
+    "gzip_bytes_per_update": 112.78887795275591,
+    "compression_us_per_update": 5.07839124015748
+  },
+  {
+    "variant": "pg-json",
+    "description_bytes": 256,
+    "gzip_level": -1,
+    "round": 2,
+    "updates": 2032,
+    "raw_bytes_per_update": 483.3902559055118,
+    "gzip_bytes_per_update": 25.368602362204726,
+    "compression_us_per_update": 3.2386397637795277
+  },
+  {
+    "variant": "pg-pil",
+    "description_bytes": 256,
+    "gzip_level": 1,
+    "round": 2,
+    "updates": 2032,
+    "raw_bytes_per_update": 463.4340551181102,
+    "gzip_bytes_per_update": 137.89714566929135,
+    "compression_us_per_update": 6.094324311023621
+  },
+  {
+    "variant": "pg-pil",
+    "description_bytes": 256,
+    "gzip_level": -1,
+    "round": 2,
+    "updates": 2032,
+    "raw_bytes_per_update": 463.4340551181102,
+    "gzip_bytes_per_update": 28.617125984251967,
+    "compression_us_per_update": 3.48937844488189
+  },
+  {
+    "variant": "trunk-direct",
+    "description_bytes": 256,
+    "gzip_level": 1,
+    "round": 2,
+    "updates": 2032,
+    "raw_bytes_per_update": 67.9990157480315,
+    "gzip_bytes_per_update": 77.96850393700787,
+    "compression_us_per_update": 4.181758858267717
+  },
+  {
+    "variant": "trunk-direct",
+    "description_bytes": 256,
+    "gzip_level": -1,
+    "round": 2,
+    "updates": 2032,
+    "raw_bytes_per_update": 67.9990157480315,
+    "gzip_bytes_per_update": 19.6003937007874,
+    "compression_us_per_update": 2.3856628937007875
+  },
+  {
+    "variant": "pg-json",
+    "description_bytes": 4096,
+    "gzip_level": 1,
+    "round": 2,
+    "updates": 2032,
+    "raw_bytes_per_update": 4323.390255905511,
+    "gzip_bytes_per_update": 675.8818897637796,
+    "compression_us_per_update": 19.86097440944882
+  },
+  {
+    "variant": "pg-json",
+    "description_bytes": 4096,
+    "gzip_level": -1,
+    "round": 2,
+    "updates": 2032,
+    "raw_bytes_per_update": 4323.390255905511,
+    "gzip_bytes_per_update": 66.87450787401575,
+    "compression_us_per_update": 10.686782480314962
+  },
+  {
+    "variant": "pg-pil",
+    "description_bytes": 4096,
+    "gzip_level": 1,
+    "round": 2,
+    "updates": 2032,
+    "raw_bytes_per_update": 5583.43405511811,
+    "gzip_bytes_per_update": 1175.7298228346456,
+    "compression_us_per_update": 34.685306102362205
+  },
+  {
+    "variant": "pg-pil",
+    "description_bytes": 4096,
+    "gzip_level": -1,
+    "round": 2,
+    "updates": 2032,
+    "raw_bytes_per_update": 5583.43405511811,
+    "gzip_bytes_per_update": 84.16141732283465,
+    "compression_us_per_update": 14.265051181102361
+  },
+  {
+    "variant": "trunk-direct",
+    "description_bytes": 4096,
+    "gzip_level": 1,
+    "round": 2,
+    "updates": 2032,
+    "raw_bytes_per_update": 67.9990157480315,
+    "gzip_bytes_per_update": 77.96850393700787,
+    "compression_us_per_update": 4.188135334645669
+  },
+  {
+    "variant": "trunk-direct",
+    "description_bytes": 4096,
+    "gzip_level": -1,
+    "round": 2,
+    "updates": 2032,
+    "raw_bytes_per_update": 67.9990157480315,
+    "gzip_bytes_per_update": 19.6003937007874,
+    "compression_us_per_update": 2.404896653543307
+  },
+  {
+    "variant": "pg-json",
+    "description_bytes": 256,
+    "gzip_level": 1,
+    "round": 3,
+    "updates": 2032,
+    "raw_bytes_per_update": 483.3902559055118,
+    "gzip_bytes_per_update": 112.78887795275591,
+    "compression_us_per_update": 4.852977362204724
+  },
+  {
+    "variant": "pg-json",
+    "description_bytes": 256,
+    "gzip_level": -1,
+    "round": 3,
+    "updates": 2032,
+    "raw_bytes_per_update": 483.3902559055118,
+    "gzip_bytes_per_update": 25.368602362204726,
+    "compression_us_per_update": 3.2111013779527555
+  },
+  {
+    "variant": "pg-pil",
+    "description_bytes": 256,
+    "gzip_level": 1,
+    "round": 3,
+    "updates": 2032,
+    "raw_bytes_per_update": 463.4340551181102,
+    "gzip_bytes_per_update": 137.89714566929135,
+    "compression_us_per_update": 6.156475393700788
+  },
+  {
+    "variant": "pg-pil",
+    "description_bytes": 256,
+    "gzip_level": -1,
+    "round": 3,
+    "updates": 2032,
+    "raw_bytes_per_update": 463.4340551181102,
+    "gzip_bytes_per_update": 28.617125984251967,
+    "compression_us_per_update": 3.5495
+  },
+  {
+    "variant": "trunk-direct",
+    "description_bytes": 256,
+    "gzip_level": 1,
+    "round": 3,
+    "updates": 2032,
+    "raw_bytes_per_update": 67.9990157480315,
+    "gzip_bytes_per_update": 77.96850393700787,
+    "compression_us_per_update": 4.194389763779528
+  },
+  {
+    "variant": "trunk-direct",
+    "description_bytes": 256,
+    "gzip_level": -1,
+    "round": 3,
+    "updates": 2032,
+    "raw_bytes_per_update": 67.9990157480315,
+    "gzip_bytes_per_update": 19.6003937007874,
+    "compression_us_per_update": 2.3365939960629922
+  },
+  {
+    "variant": "pg-json",
+    "description_bytes": 4096,
+    "gzip_level": 1,
+    "round": 3,
+    "updates": 2032,
+    "raw_bytes_per_update": 4323.390255905511,
+    "gzip_bytes_per_update": 675.8818897637796,
+    "compression_us_per_update": 19.723978838582678
+  },
+  {
+    "variant": "pg-json",
+    "description_bytes": 4096,
+    "gzip_level": -1,
+    "round": 3,
+    "updates": 2032,
+    "raw_bytes_per_update": 4323.390255905511,
+    "gzip_bytes_per_update": 66.87450787401575,
+    "compression_us_per_update": 10.65731594488189
+  },
+  {
+    "variant": "pg-pil",
+    "description_bytes": 4096,
+    "gzip_level": 1,
+    "round": 3,
+    "updates": 2032,
+    "raw_bytes_per_update": 5583.43405511811,
+    "gzip_bytes_per_update": 1175.7298228346456,
+    "compression_us_per_update": 34.650754921259846
+  },
+  {
+    "variant": "pg-pil",
+    "description_bytes": 4096,
+    "gzip_level": -1,
+    "round": 3,
+    "updates": 2032,
+    "raw_bytes_per_update": 5583.43405511811,
+    "gzip_bytes_per_update": 84.16141732283465,
+    "compression_us_per_update": 13.970923720472442
+  },
+  {
+    "variant": "trunk-direct",
+    "description_bytes": 4096,
+    "gzip_level": 1,
+    "round": 3,
+    "updates": 2032,
+    "raw_bytes_per_update": 67.9990157480315,
+    "gzip_bytes_per_update": 77.96850393700787,
+    "compression_us_per_update": 4.267614173228346
+  },
+  {
+    "variant": "trunk-direct",
+    "description_bytes": 4096,
+    "gzip_level": -1,
+    "round": 3,
+    "updates": 2032,
+    "raw_bytes_per_update": 67.9990157480315,
+    "gzip_bytes_per_update": 19.6003937007874,
+    "compression_us_per_update": 2.428415846456693
+  }
+]

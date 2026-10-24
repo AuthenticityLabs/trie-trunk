@@ -1,0 +1,8 @@
+Checking all-event search
+All-event count: 50000
+Cached Daily Summaries: 128
+Checking reload
+Checking full-text search
+Checking write search
+Checking Object History: 00000000-0000-4000-8000-0000000000f9
+{"origin":"https://snoot.auth-enti.city","events":50000,"paging":true,"reload":true,"textMatches":1448,"writes":30114,"object":"00000000-0000-4000-8000-0000000000f9","revisions":24,"errors":[]}

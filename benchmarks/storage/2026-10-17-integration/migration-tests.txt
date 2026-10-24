@@ -1,0 +1,44 @@
+=== RUN   TestMigrationLegacyRoundTripAndRollback
+=== RUN   TestMigrationLegacyRoundTripAndRollback/false
+=== RUN   TestMigrationLegacyRoundTripAndRollback/true
+--- PASS: TestMigrationLegacyRoundTripAndRollback (3.47s)
+    --- PASS: TestMigrationLegacyRoundTripAndRollback/false (1.51s)
+    --- PASS: TestMigrationLegacyRoundTripAndRollback/true (1.96s)
+=== RUN   TestMigrationFailureDoesNotPublish
+=== RUN   TestMigrationFailureDoesNotPublish/cancel
+=== RUN   TestMigrationFailureDoesNotPublish/missing-field
+=== RUN   TestMigrationFailureDoesNotPublish/branch
+=== RUN   TestMigrationFailureDoesNotPublish/live-writer
+=== RUN   TestMigrationFailureDoesNotPublish/duplicate
+--- PASS: TestMigrationFailureDoesNotPublish (1.38s)
+    --- PASS: TestMigrationFailureDoesNotPublish/cancel (0.19s)
+    --- PASS: TestMigrationFailureDoesNotPublish/missing-field (0.36s)
+    --- PASS: TestMigrationFailureDoesNotPublish/branch (0.38s)
+    --- PASS: TestMigrationFailureDoesNotPublish/live-writer (0.25s)
+    --- PASS: TestMigrationFailureDoesNotPublish/duplicate (0.19s)
+=== RUN   TestMigrationSortMultiPassAndCorruption
+--- PASS: TestMigrationSortMultiPassAndCorruption (0.02s)
+=== RUN   TestMigrationMinorReplayAndPreference
+--- PASS: TestMigrationMinorReplayAndPreference (1.12s)
+=== RUN   TestMigrationValueStatesAndRangeChecks
+--- PASS: TestMigrationValueStatesAndRangeChecks (0.00s)
+=== RUN   TestMigrationKillAndRetry
+--- PASS: TestMigrationKillAndRetry (1.31s)
+PASS
+ok  	trie-trunk/go/server/cache	7.454s
+=== RUN   TestExportSnapshotPreservesOriginalAndWriterLease
+=== RUN   TestExportSnapshotPreservesOriginalAndWriterLease/legacy
+=== RUN   TestExportSnapshotPreservesOriginalAndWriterLease/events
+--- PASS: TestExportSnapshotPreservesOriginalAndWriterLease (2.04s)
+    --- PASS: TestExportSnapshotPreservesOriginalAndWriterLease/legacy (0.40s)
+    --- PASS: TestExportSnapshotPreservesOriginalAndWriterLease/events (1.64s)
+=== RUN   TestExportSnapshotCancellationSymlinkAndCallbackFailure
+--- PASS: TestExportSnapshotCancellationSymlinkAndCallbackFailure (0.42s)
+=== RUN   TestExportSnapshotRecoveryOnlyChangesCopy
+--- PASS: TestExportSnapshotRecoveryOnlyChangesCopy (0.28s)
+PASS
+ok  	trie-trunk/go/server/store	2.811s
+=== RUN   TestCacheMigrationCLIRequiresExplicitPlan
+--- PASS: TestCacheMigrationCLIRequiresExplicitPlan (0.01s)
+PASS
+ok  	trie-trunk/go/cmd/trunk	0.133s

@@ -10,6 +10,7 @@ import {
 import { duration, field, type LogEvent } from "../services/events";
 import type { Signal } from "../services/indicators";
 import { Icon } from "./icon";
+import { Histogram, ChartMeter, chartColors } from "./charts";
 
 import type { Results } from "../services/results";
 import type { OperationRank } from "../services/operations";
@@ -26,6 +27,9 @@ const indicatorOperators = {
 export function Activity(props: {
   summary: Summary;
   count: number;
+  onWindow: (from: number, to: number) => void;
+  onResetWindow: () => void;
+  hasWindow: boolean;
   onRemoveIndicator: (id: string) => Promise<void>;
   onRevealEvent: (event: LogEvent) => void;
 }) {
@@ -56,10 +60,6 @@ export function Activity(props: {
     Number.isFinite(value)
       ? new Date(value).toISOString().replace("T", " ").slice(5, 19)
       : "—";
-  const bucketTime = (index: number) =>
-    props.summary.first +
-    ((props.summary.last - props.summary.first) * index) /
-      props.summary.buckets.length;
   const rate = (errors: number, count: number) =>
     count ? `${((100 * errors) / count).toFixed(1)}%` : "0%";
   let panel: HTMLDivElement | undefined;
@@ -114,11 +114,14 @@ export function Activity(props: {
     <section class="card activity-card">
       <div class="card-heading">
         <h2>
-          <Icon name="activity" size={17} /> Event activity
+          <Icon name="activity" size={17} /> Event Activity
         </h2>
-        <span class="subtle">
-          {rate(props.summary.errors, props.count)} errors · matched events
-        </span>
+        <div class="chart-heading-actions">
+          <span class="subtle">{rate(props.summary.errors, props.count)} errors</span>
+          <Show when={props.hasWindow}>
+            <button class="text-button" onClick={props.onResetWindow}>Reset Time</button>
+          </Show>
+        </div>
       </div>
       <div class="chart-legend">
         <span>
@@ -130,37 +133,14 @@ export function Activity(props: {
         <span>UTC</span>
       </div>
       <div class="timeline-plot">
-        <div
-          class="histogram"
-          role="img"
-          aria-label={`${props.count} loaded events; ${props.summary.errors} errors, shown in red`}
-        >
-          <For each={props.summary.buckets}>
-            {(count, index) => (
-              <div
-                class="bar-track"
-                title={`${time(bucketTime(index()))} UTC · ${count} events · ${props.summary.errorBuckets[index()]} errors (${rate(props.summary.errorBuckets[index()], count)})`}
-              >
-                <div
-                  class="activity-bar"
-                  style={{
-                    height: count
-                      ? `${Math.max(4, (count / maximum()) * 100)}%`
-                      : "2px",
-                  }}
-                  classList={{ empty: !count }}
-                >
-                  <div
-                    class="error-bar"
-                    style={{
-                      height: `${count ? (props.summary.errorBuckets[index()] / count) * 100 : 0}%`,
-                    }}
-                  />
-                </div>
-              </div>
-            )}
-          </For>
-        </div>
+        <Histogram
+          counts={props.summary.buckets}
+          errors={props.summary.errorBuckets}
+          first={props.summary.first}
+          last={props.summary.last}
+          count={props.count}
+          onWindow={(from, to) => { close(); props.onWindow(from, to); }}
+        />
         <For each={markers()}>
           {(marker) => (
             <button
@@ -203,7 +183,7 @@ export function Activity(props: {
               ref={panel}
               class="signal-detail tone-blue"
               role="dialog"
-              aria-label="Timeline event details"
+              aria-label="Timeline Event Details"
               style={{
                 left: `clamp(0px, calc(${position(marker.bucket)}% - 165px), max(0px, calc(100% - 330px)))`,
                 top: `calc(var(--plot-height) * ${1 - Math.max(0.04, props.summary.buckets[marker.bucket] / maximum())} + 30px)`,
@@ -222,7 +202,7 @@ export function Activity(props: {
                 </strong>
                 <button
                   class="icon-button"
-                  aria-label="Close indicator details"
+                  aria-label="Close Indicator Details"
                   onClick={close}
                 >
                   <Icon name="close" size={14} />
@@ -327,13 +307,7 @@ export function Breakdown(props: {
                     </small>
                   </strong>
                 </div>
-                <div class="meter">
-                  <div
-                    style={{
-                      width: `${(count / Math.max(1, props.total)) * 100}%`,
-                    }}
-                  />
-                </div>
+                <ChartMeter value={count} maximum={props.total} />
                 <Show
                   when={
                     props.onSelect &&
@@ -342,13 +316,6 @@ export function Breakdown(props: {
                   }
                 >
                   <div class="breakdown-actions">
-                    <button
-                      class="text-button"
-                      aria-label={`Use ${name} in Collect`}
-                      onClick={() => props.onSelect?.("Collect", name)}
-                    >
-                      Use in Collect
-                    </button>
                     <button
                       class="text-button"
                       aria-label={`Use ${name} in Search`}
@@ -370,7 +337,7 @@ export function Breakdown(props: {
 export function Overview(props: { summary: Summary; count: number }) {
   return (
     <section class="card overview-card">
-      <h2>Matched overview</h2>
+      <h2>Matched Overview</h2>
       <div class="large-stat">
         {props.count.toLocaleString()}
         <span>events matched</span>
@@ -385,7 +352,7 @@ export function Overview(props: { summary: Summary; count: number }) {
           <dd>{props.summary.errors.toLocaleString()}</dd>
         </div>
         <div>
-          <dt>Average duration</dt>
+          <dt>Average Duration</dt>
           <dd>{duration(props.summary.average)}</dd>
         </div>
       </dl>
@@ -455,14 +422,8 @@ export function OperationRanking(props: {
                       {row.samples === 1 ? "sample" : "samples"}
                     </small>
                   </Show>
-                  <div
-                    class="meter"
-                    classList={{ "error-meter": props.kind === "errors" }}
-                  >
-                    <div
-                      style={{ width: `${(100 * row.value) / maximum()}%` }}
-                    />
-                  </div>
+                  <ChartMeter value={row.value} maximum={maximum()}
+                    color={props.kind === "errors" ? chartColors.error : chartColors.volume} />
                 </div>
               </li>
             )}

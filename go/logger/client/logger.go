@@ -10,6 +10,7 @@ import (
 
 	"trie-trunk/go/codec"
 	"trie-trunk/go/logger/out"
+	"trie-trunk/go/logger/pil"
 	"trie-trunk/go/models"
 )
 
@@ -38,6 +39,8 @@ type Config struct {
 // Logger serializes writes to its writer. JSON uses newline-delimited records;
 // Local CBOR output is raw; negotiated connections add a two-byte length prefix.
 type Logger struct {
+	pil       *pil.Logger
+	pilPlan   *pilEntryPlan
 	session   *out.Writer
 	writer    io.Writer
 	config    Config
@@ -300,6 +303,26 @@ func (b *Builder) Finish() error {
 			s.finishErr = s.initErr
 			return
 		}
+		if s.logger.pil != nil {
+			s.logger.writeMu.Lock()
+			defer s.logger.writeMu.Unlock()
+			values, err := s.logger.pilPlan.values(&e)
+			if err == nil {
+				// Completion must remain deliverable after request cancellation;
+				// the PIL transport enforces its own bounded delivery timeout.
+				branch := s.logger.pilPlan.accessFor(&e)
+				if e.Error != nil || e.HttpStatus >= 400 || e.Level == ERROR {
+					branch = "error"
+				} else if e.Level == DEBUG {
+					branch = "debug"
+				} else if e.Level == TRACE {
+					branch = "trace"
+				}
+				err = s.logger.pil.WriteValuesTo(context.Background(), branch, values)
+			}
+			s.finishErr = err
+			return
+		}
 		data, err := e.Encode(s.logger.config.Format, s.logger.config.Dictionary)
 		if err != nil {
 			s.finishErr = err
@@ -355,6 +378,9 @@ func NewStream(ctx context.Context, connector out.Connector, config Config) (*Lo
 }
 
 func (l *Logger) Reconnect(ctx context.Context) error {
+	if l.pil != nil {
+		return l.pil.Register(ctx)
+	}
 	if l.session == nil {
 		return ErrLocalWriter
 	}
@@ -363,6 +389,9 @@ func (l *Logger) Reconnect(ctx context.Context) error {
 
 // Close owns negotiated connections only. Local io.Writers remain caller-owned.
 func (l *Logger) Close() error {
+	if l.pil != nil {
+		return l.pil.Close()
+	}
 	if l.session == nil {
 		return nil
 	}

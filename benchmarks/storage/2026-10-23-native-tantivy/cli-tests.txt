@@ -1,0 +1,1 @@
+ok  	trie-trunk/go/cmd/trunk	1.873s

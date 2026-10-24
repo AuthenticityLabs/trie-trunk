@@ -1,0 +1,103 @@
+{
+  "format": "legacy-format-4",
+  "event_count": 500000,
+  "shape": "full",
+  "aggregates": true,
+  "fixture_sha256": "492c577f5db1c4af6ee74d3ae43aab8e73ff3f825be9058a26d72866af3f4353",
+  "from": "2026-09-01T00:00:00Z",
+  "to": "2026-10-01T00:00:00Z",
+  "go": "go1.26.4",
+  "platform": "darwin/arm64",
+  "logical_cpus": 10,
+  "ingest_ns": 76703201875,
+  "reopen_ns": 9264691875,
+  "logical_bytes": {
+    "": 189233,
+    ".idx": 13080640,
+    ".json": 348,
+    ".lock": 0,
+    ".map": 359,
+    ".pop": 10438390,
+    ".sum": 2224800,
+    ".tri": 308
+  },
+  "file_count": 4325,
+  "pil_response_bytes": {
+    "all": 37072292,
+    "day": 1234992,
+    "errors": 1854777,
+    "three_hours": 155268
+  },
+  "query_latency": {
+    "all": {
+      "samples_ns": [
+        884503917,
+        852785875,
+        862736833,
+        861183417,
+        866847792,
+        861879584,
+        871199375,
+        891975792,
+        898479667
+      ],
+      "p50_ns": 866847792,
+      "p95_ns": 898479667
+    },
+    "day": {
+      "samples_ns": [
+        42157791,
+        38610625,
+        38856917,
+        39167875,
+        38404417,
+        39016667,
+        39357334,
+        39287791,
+        39931041
+      ],
+      "p50_ns": 39167875,
+      "p95_ns": 42157791
+    },
+    "errors": {
+      "samples_ns": [
+        161367250,
+        160933500,
+        160240625,
+        162271375,
+        161414084,
+        161737458,
+        158688458,
+        159520667,
+        160018500
+      ],
+      "p50_ns": 160933500,
+      "p95_ns": 162271375
+    },
+    "three_hours": {
+      "samples_ns": [
+        16094250,
+        15979084,
+        15794084,
+        15751084,
+        15572792,
+        15865458,
+        15476708,
+        15218666,
+        14965750
+      ],
+      "p50_ns": 15751084,
+      "p95_ns": 16094250
+    }
+  },
+  "aggregate_count": 500000,
+  "aggregate_sum": 25024750000,
+  "notes": [
+    "Source records generated and definitions installed before ingest timing.",
+    "Ingest includes CBOR decode, trie insertion, population/index/summary writes and final durable close.",
+    "Reopen includes store recovery; query latency is warm resident Rust PIL return over local IPC, not HTTP or browser rendering.",
+    "Operating-system page cache is not flushed; no physical-disk-cold latency claim.",
+    "Percentiles describe the recorded sample set, not a production latency SLA.",
+    "Logical bytes include metadata and summaries; filesystem allocation is not inferred from file length."
+  ]
+}

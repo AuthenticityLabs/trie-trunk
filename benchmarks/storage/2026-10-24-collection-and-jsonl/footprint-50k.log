@@ -1,0 +1,5 @@
+=== RUN   TestDemoFootprint
+    footprint_test.go:245: 50000 events: expanded=21405555 payload=15931303 trie=20758828 allocated=22712320
+--- PASS: TestDemoFootprint (212.62s)
+PASS
+ok  	trie-trunk/go/cmd/seed-demo	212.870s

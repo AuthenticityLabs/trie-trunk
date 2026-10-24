@@ -1,0 +1,16 @@
+{
+  "engine": "chromium",
+  "version": "155.0.8059.85",
+  "written": {
+    "written": 675840
+  },
+  "result": {
+    "pages": 165,
+    "queries": 4100,
+    "references": 42574,
+    "extensions": 10234,
+    "elapsed_ms": 17.399999856948853,
+    "bytes": 675840
+  },
+  "reopened_context": true
+}

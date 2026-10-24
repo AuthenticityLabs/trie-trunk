@@ -1,0 +1,86 @@
+import type { Archive } from "../store/protocol.ts";
+import { PILStream, consume, type StoredDefinition } from "./stream.ts";
+import { Codec } from "./wasm.ts";
+import type { Selection } from "../events.ts";
+
+// A native collection is one negotiated GET. The server subtracts byte coverage;
+// no schema fetch, full-event conversion, or local re-interning is necessary.
+// The worker selects this path after the server advertises native-ranges.
+// Older servers keep their existing standalone PIL collection behavior.
+export type NativeCollectOptions = {
+  tap: string;
+  from: string;
+  to: string;
+  token: string;
+  signal: AbortSignal;
+  codec: Codec;
+  definitions: Map<string, StoredDefinition>;
+  archive: Archive;
+  fetcher?: typeof fetch;
+  population?: "none";
+  definitionVersion?: string;
+  onVersion?: (version:string)=>void;
+  onProvisional?: (tap:string,from:number,to:number)=>void;
+  collection?: string;
+  selection?: Selection;
+};
+export async function collectNative(options:NativeCollectOptions):Promise<string[]> {
+  for(let attempt=0;;attempt++){
+    try{return await collectOnce(options);}
+    catch(error){
+      // Another tab can compact state while this response is in flight. Retry
+      // once with newly committed coverage; discarded offsets never publish.
+      if(attempt!==0||options.signal.aborted||!(error instanceof Error)||
+        !["Native state compacted; retry collection","Native cache rebased; retry collection"].some(message=>error.message.includes(message)))throw error;
+    }
+  }
+}
+async function collectOnce(options:NativeCollectOptions):Promise<string[]> {
+  const {tap,from,to,token,signal,codec,definitions,archive}=options;
+  if(!Number.isFinite(Date.parse(from))||!Number.isFinite(Date.parse(to))||Date.parse(from)>=Date.parse(to))
+    throw Error("Invalid native collection window");
+  signal.throwIfAborted();
+  const session=crypto.randomUUID();
+  await archive(token,{kind:"native-begin",session});
+  let complete=false;
+  const provisional:{tap:string;from:number;to:number}[]=[];
+  try{
+    const known=await archive(token,{kind:"native-coverage",tap});
+    const coverage=known.nativeCoverage??[];
+    // Omitting excess spans only causes extra transfer; never overstate cached
+    // coverage or use a truncated/invalid header. Keep under the server's 16KiB.
+    let have="";
+    for(let n=Math.min(coverage.length,128);n>0;n--){
+      const candidate=btoa(JSON.stringify(coverage.slice(0,n))).replaceAll("+","-").replaceAll("/","_").replace(/=+$/,"");
+      if(candidate.length<=16384){have=candidate;break;}
+    }
+    const query=new URLSearchParams({format:"native",tap,from,to});
+    if(options.definitionVersion)query.set("definition",options.definitionVersion);
+    if(options.population)query.set("population",options.population);
+    const response=await (options.fetcher??fetch)(`/collect?${query}`,{
+      method:"GET",signal,cache:"no-store",
+      headers:{Accept:"application/pil","PIL-Version":"2","PIL-Features":"native-ranges,native-state-pages,adaptive-integers",
+        "Definition-Version":options.definitionVersion??"",
+        "Definition-Known":[...definitions.keys()].slice(-128).join(","),
+        ...(have?{"Trunk-Coverage":have}:{}),...(token?{Authorization:`Bearer ${token}`}:{})},
+    });
+    const version=response.headers.get("Definition-Version");
+    if(response.ok&&(response.headers.get("Trunk-Format")!=="native-pac/0"||!version||!/^[a-f0-9]{64}$/.test(version))){
+      await response.body?.cancel();throw Error("Native collection was not negotiated");
+    }
+    await consume(response,new PILStream(codec,definitions,()=>{},()=>{},async()=>{
+      throw Error("Expanded event in native response");
+    },async record=>{
+      signal.throwIfAborted();
+      const d=record.kind==="manifest"?definitions.get(record.binding.digest):undefined;
+      await archive(token,{kind:"native-record",session,record,
+        ...(d?{definition:{digest:d.digest,store:d.store,pil:d.pil}}:{})});
+      if(record.kind==="manifest"&&record.manifest.Provisional)provisional.push({tap:record.binding.tap,from:Number(record.manifest.From)*1000,to:Number(record.manifest.To)*1000});
+    }),signal);
+    signal.throwIfAborted();
+    const saved=await archive(token,{kind:"native-finish",session,collection:options.collection,selection:options.selection});
+    complete=true;options.onVersion?.(version!);for(const p of provisional)options.onProvisional?.(p.tap,p.from,p.to);return saved.nativeSources??[];
+  }finally{
+    if(!complete)await archive(token,{kind:"native-abort",session}).catch(()=>{});
+  }
+}

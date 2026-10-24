@@ -1,0 +1,39 @@
+goos: darwin
+goarch: arm64
+pkg: trie-trunk/go/server/cache
+cpu: Apple M1 Max
+BenchmarkIndexHour/hour18-10      	 5851888	       203.1 ns/op	       0 B/op	       0 allocs/op
+BenchmarkIndexHour/hour18-10      	 5877230	       202.6 ns/op	       0 B/op	       0 allocs/op
+BenchmarkIndexHour/hour18-10      	 5755167	       203.5 ns/op	       0 B/op	       0 allocs/op
+BenchmarkIndexHour/hour16-10      	 6274844	       193.1 ns/op	       0 B/op	       0 allocs/op
+BenchmarkIndexHour/hour16-10      	 6205213	       193.8 ns/op	       0 B/op	       0 allocs/op
+BenchmarkIndexHour/hour16-10      	 6265744	       193.0 ns/op	       0 B/op	       0 allocs/op
+BenchmarkIndexHour/reconstruct_uuid-10         	226192226	         5.309 ns/op	       0 B/op	       0 allocs/op
+BenchmarkIndexHour/reconstruct_uuid-10         	226334950	         5.314 ns/op	       0 B/op	       0 allocs/op
+BenchmarkIndexHour/reconstruct_uuid-10         	225890112	         5.308 ns/op	       0 B/op	       0 allocs/op
+BenchmarkPositionalTimeTrie/1_events_per_hour/January/positional-10         	19817527	        61.55 ns/op	       0 B/op	       0 allocs/op
+BenchmarkPositionalTimeTrie/1_events_per_hour/January/positional-10         	18957732	        61.82 ns/op	       0 B/op	       0 allocs/op
+BenchmarkPositionalTimeTrie/1_events_per_hour/January/positional-10         	19412239	        62.18 ns/op	       0 B/op	       0 allocs/op
+BenchmarkPositionalTimeTrie/1_events_per_hour/January/map_baseline-10       	 4400551	       274.7 ns/op	       0 B/op	       0 allocs/op
+BenchmarkPositionalTimeTrie/1_events_per_hour/January/map_baseline-10       	 4083420	       365.5 ns/op	       0 B/op	       0 allocs/op
+BenchmarkPositionalTimeTrie/1_events_per_hour/January/map_baseline-10       	 3393079	       424.7 ns/op	       0 B/op	       0 allocs/op
+BenchmarkPositionalTimeTrie/1_events_per_hour/December/positional-10        	18447453	        64.57 ns/op	       0 B/op	       0 allocs/op
+BenchmarkPositionalTimeTrie/1_events_per_hour/December/positional-10        	18476781	        64.03 ns/op	       0 B/op	       0 allocs/op
+BenchmarkPositionalTimeTrie/1_events_per_hour/December/positional-10        	18871088	        63.30 ns/op	       0 B/op	       0 allocs/op
+BenchmarkPositionalTimeTrie/1_events_per_hour/December/map_baseline-10      	 4126716	       290.1 ns/op	       0 B/op	       0 allocs/op
+BenchmarkPositionalTimeTrie/1_events_per_hour/December/map_baseline-10      	 4154871	       303.1 ns/op	       0 B/op	       0 allocs/op
+BenchmarkPositionalTimeTrie/1_events_per_hour/December/map_baseline-10      	 4166578	       287.5 ns/op	       0 B/op	       0 allocs/op
+BenchmarkPositionalTimeTrie/10000_events_per_hour/January/positional-10     	19112818	        64.02 ns/op	       0 B/op	       0 allocs/op
+BenchmarkPositionalTimeTrie/10000_events_per_hour/January/positional-10     	18897091	        62.81 ns/op	       0 B/op	       0 allocs/op
+BenchmarkPositionalTimeTrie/10000_events_per_hour/January/positional-10     	18939928	        62.88 ns/op	       0 B/op	       0 allocs/op
+BenchmarkPositionalTimeTrie/10000_events_per_hour/January/map_baseline-10   	 4327750	       277.4 ns/op	       0 B/op	       0 allocs/op
+BenchmarkPositionalTimeTrie/10000_events_per_hour/January/map_baseline-10   	 4329795	       277.1 ns/op	       0 B/op	       0 allocs/op
+BenchmarkPositionalTimeTrie/10000_events_per_hour/January/map_baseline-10   	 4329006	       277.7 ns/op	       0 B/op	       0 allocs/op
+BenchmarkPositionalTimeTrie/10000_events_per_hour/December/positional-10    	19226712	        63.13 ns/op	       0 B/op	       0 allocs/op
+BenchmarkPositionalTimeTrie/10000_events_per_hour/December/positional-10    	18903764	        63.51 ns/op	       0 B/op	       0 allocs/op
+BenchmarkPositionalTimeTrie/10000_events_per_hour/December/positional-10    	19028024	        63.34 ns/op	       0 B/op	       0 allocs/op
+BenchmarkPositionalTimeTrie/10000_events_per_hour/December/map_baseline-10  	 4161352	       289.3 ns/op	       0 B/op	       0 allocs/op
+BenchmarkPositionalTimeTrie/10000_events_per_hour/December/map_baseline-10  	 4143450	       289.4 ns/op	       0 B/op	       0 allocs/op
+BenchmarkPositionalTimeTrie/10000_events_per_hour/December/map_baseline-10  	 4140364	       289.7 ns/op	       0 B/op	       0 allocs/op
+PASS
+ok  	trie-trunk/go/server/cache	47.845s

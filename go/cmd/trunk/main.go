@@ -27,10 +27,10 @@ func run(args []string) error {
 	}
 	var err error
 	switch args[0] {
+	case "cache":
+		err = runCache(ctx, args[1:], os.Stdin, os.Stdout)
 	case "tap":
 		err = runTap(args[1:])
-	case "migrate-events":
-		err = runMigrate(ctx, args[1:])
 	case "search":
 		err = runSearch(ctx, args[1:], os.Stdout)
 	case "ingest", "serve":
@@ -82,6 +82,7 @@ func runServices(ctx context.Context, args []string) error {
 	}
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
+	ctx = context.WithValue(ctx, nativePoolKey{}, &nativePool{entries: map[string]*nativeEntry{}})
 	done := make(chan error, len(commands))
 	for _, command := range commands {
 		go func() {
@@ -101,23 +102,31 @@ func runServices(ctx context.Context, args []string) error {
 }
 
 const usage = `usage:
+  trunk cache init|ingest|search|verify|prune|prefer --cache name --tenant owner --definition resource.map
+  trunk cache definitions --cache name --tenant owner [--dir ./caches]
+  trunk cache cleanup --cache name --tenant owner [--dir ./caches] [--apply]
+    Preview unreferenced generations/unpublished maps; --apply removes verified candidates.
   trunk tap create <tap> [--dir ./taps] [--definition definition.json]
     Register a named object definition; versions are object major / definition minor.
-  trunk migrate-events --from ./logs --to ./taps [--timezone America/New_York]
-    Offline, verified copy into a new root. Does not switch the running service.
   trunk ingest 5410 serve 443
   trunk serve [443] [--dir ./taps] [--socket path] [--queries 4]
     Serve HTTP/2 (TCP) and HTTP/3 (UDP), plus a private local Unix socket.
     Requires --cert, --key and TRUNK_TOKEN or --client-ca.
     --http-address 127.0.0.1:3020 adds an HTTP origin for a trusted local proxy.
     Each command's flags follow its own name and port.
+    --cache name --tenant owner --definition resource.map selects the collection-native
+    backend under --dir ./caches, using optimized PIL storage and stream assembly.
   trunk search [--endpoint https://host[:port] | --socket path | --local]
     Default: <dir>/.trunk/search.sock. --local reads files without a server.
     Remote TLS: --ca file [--client-cert file --client-key file].
-  trunk ingest [5140] [--dir ./taps]
-    Local WebSocket: ws://127.0.0.1:5140/<tap>, no credentials needed.
-  trunk ingest [5140] --dir ./taps --cert cert.pem --key key.pem [--transport websocket|http3]
-    Set TRUNK_TOKEN or use --client-ca ca.pem.
+  trunk ingest [5140] --dir ./caches --cache name --tenant owner [--definition resource.map]
+    Local HTTP PIL: POST /ingest?tap=<cache>/<service>/<resources>.v<major>/<branch>.
+    Requires Content-Type: application/pil, PIL-Version: 2 and Definition-Version.
+    Acknowledgements follow durable staging; finalization waits three 5-minute cycles.
+    Add --cert cert.pem --key key.pem [--transport http|http3] for remote ingestion.
+    Set TRUNK_TOKEN or use --client-ca ca.pem. Without --definition, register through
+    HEAD/PUT /definitions before PIL writes, or send blind CBOR to /ingest.
+    Standard CBOR is independent ingress; JSONL/plain-text/syslog are TODO adapters.
     Loads .env, then .env.<ENVIRONMENT> when selected; --env path selects one file.
     Precedence: explicit arguments > process environment > profile > .env > defaults.
   trunk search [--tail [N] | --head [N]] [--pretty] [-f]

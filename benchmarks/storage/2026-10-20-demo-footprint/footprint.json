@@ -1,0 +1,757 @@
+{
+  "generated_at": "2026-10-20T19:05:51.028Z",
+  "events": 50000,
+  "from": "2026-09-20T18:41:34Z",
+  "to": "2026-10-20T18:41:34Z",
+  "expanded_jsonl_bytes": 18736735,
+  "payload_only_jsonl_bytes": 13326483,
+  "jsonl_gzip6_bytes": 1239722,
+  "jsonl_brotli6_bytes": 876363,
+  "trie_trunk_bytes": 11349425,
+  "trie_trunk_allocated_bytes": 12992512,
+  "file_count": 144,
+  "by_component": {
+    ".lock": 0,
+    ".idx": 1300552,
+    ".pod": 3747292,
+    ".sed": 5871,
+    ".tri": 2514823,
+    ".sum": 2848080,
+    ".map": 4777,
+    ".stats": 3385,
+    "optional collection index/state": 924245,
+    ".cfg": 400
+  },
+  "savings_vs_expanded_percent": 39.42687986994532,
+  "savings_vs_payload_only_percent": 14.83555713836876,
+  "expanded_jsonl_sha256": "86e9eb9995538df5acc2a1cd1c2baf41cb25afc16a4c3c0a68f906d83ac51549",
+  "files": [
+    {
+      "name": "demo/.writer.lock",
+      "bytes": 0,
+      "allocated_bytes": 0
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/debug.idx",
+      "bytes": 5272,
+      "allocated_bytes": 8192
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/debug.pod",
+      "bytes": 59248,
+      "allocated_bytes": 61440
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/debug.sed",
+      "bytes": 88,
+      "allocated_bytes": 4096
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/debug.tri",
+      "bytes": 49570,
+      "allocated_bytes": 53248
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/error.idx",
+      "bytes": 7638,
+      "allocated_bytes": 8192
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/error.pod",
+      "bytes": 60229,
+      "allocated_bytes": 61440
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/error.sed",
+      "bytes": 88,
+      "allocated_bytes": 4096
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/error.sum",
+      "bytes": 22746,
+      "allocated_bytes": 24576
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/error.tri",
+      "bytes": 50111,
+      "allocated_bytes": 53248
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/read.idx",
+      "bytes": 81868,
+      "allocated_bytes": 135168
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/read.pod",
+      "bytes": 228517,
+      "allocated_bytes": 266240
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/read.sed",
+      "bytes": 315,
+      "allocated_bytes": 4096
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/read.sum",
+      "bytes": 195840,
+      "allocated_bytes": 200704
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/read.tri",
+      "bytes": 184762,
+      "allocated_bytes": 200704
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/resource.map",
+      "bytes": 835,
+      "allocated_bytes": 4096
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/resource.stats",
+      "bytes": 677,
+      "allocated_bytes": 4096
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/resource.tri",
+      "bytes": 398,
+      "allocated_bytes": 4096
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/trace.idx",
+      "bytes": 3478,
+      "allocated_bytes": 4096
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/trace.pod",
+      "bytes": 38909,
+      "allocated_bytes": 40960
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/trace.sed",
+      "bytes": 88,
+      "allocated_bytes": 4096
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/trace.tri",
+      "bytes": 32589,
+      "allocated_bytes": 32768
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/write.idx",
+      "bytes": 161870,
+      "allocated_bytes": 200704
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/write.pod",
+      "bytes": 368919,
+      "allocated_bytes": 397312
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/write.sed",
+      "bytes": 555,
+      "allocated_bytes": 4096
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/write.sum",
+      "bytes": 351420,
+      "allocated_bytes": 397312
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/write.tri",
+      "bytes": 186486,
+      "allocated_bytes": 200704
+    },
+    {
+      "name": "demo/billing/invoices.v1/collection.idx",
+      "bytes": 171445,
+      "allocated_bytes": 200704
+    },
+    {
+      "name": "demo/billing/invoices.v1/collection.state",
+      "bytes": 13471,
+      "allocated_bytes": 16384
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/debug.idx",
+      "bytes": 5272,
+      "allocated_bytes": 8192
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/debug.pod",
+      "bytes": 59850,
+      "allocated_bytes": 61440
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/debug.sed",
+      "bytes": 88,
+      "allocated_bytes": 4096
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/debug.tri",
+      "bytes": 49570,
+      "allocated_bytes": 53248
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/error.idx",
+      "bytes": 7508,
+      "allocated_bytes": 8192
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/error.pod",
+      "bytes": 59281,
+      "allocated_bytes": 61440
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/error.sed",
+      "bytes": 88,
+      "allocated_bytes": 4096
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/error.sum",
+      "bytes": 22464,
+      "allocated_bytes": 24576
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/error.tri",
+      "bytes": 49352,
+      "allocated_bytes": 53248
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/read.idx",
+      "bytes": 81894,
+      "allocated_bytes": 135168
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/read.pod",
+      "bytes": 228591,
+      "allocated_bytes": 266240
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/read.sed",
+      "bytes": 313,
+      "allocated_bytes": 4096
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/read.sum",
+      "bytes": 195882,
+      "allocated_bytes": 200704
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/read.tri",
+      "bytes": 184758,
+      "allocated_bytes": 200704
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/resource.map",
+      "bytes": 830,
+      "allocated_bytes": 4096
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/resource.stats",
+      "bytes": 677,
+      "allocated_bytes": 4096
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/resource.tri",
+      "bytes": 398,
+      "allocated_bytes": 4096
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/trace.idx",
+      "bytes": 3452,
+      "allocated_bytes": 4096
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/trace.pod",
+      "bytes": 38561,
+      "allocated_bytes": 40960
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/trace.sed",
+      "bytes": 88,
+      "allocated_bytes": 4096
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/trace.tri",
+      "bytes": 32340,
+      "allocated_bytes": 32768
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/write.idx",
+      "bytes": 162000,
+      "allocated_bytes": 200704
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/write.pod",
+      "bytes": 367891,
+      "allocated_bytes": 397312
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/write.sed",
+      "bytes": 557,
+      "allocated_bytes": 4096
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/write.sum",
+      "bytes": 350814,
+      "allocated_bytes": 397312
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/write.tri",
+      "bytes": 186495,
+      "allocated_bytes": 200704
+    },
+    {
+      "name": "demo/gateway/routes.v1/collection.idx",
+      "bytes": 171550,
+      "allocated_bytes": 200704
+    },
+    {
+      "name": "demo/gateway/routes.v1/collection.state",
+      "bytes": 13236,
+      "allocated_bytes": 16384
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/debug.idx",
+      "bytes": 5298,
+      "allocated_bytes": 8192
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/debug.pod",
+      "bytes": 60548,
+      "allocated_bytes": 61440
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/debug.sed",
+      "bytes": 88,
+      "allocated_bytes": 4096
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/debug.tri",
+      "bytes": 49818,
+      "allocated_bytes": 53248
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/error.idx",
+      "bytes": 7534,
+      "allocated_bytes": 8192
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/error.pod",
+      "bytes": 60311,
+      "allocated_bytes": 61440
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/error.sed",
+      "bytes": 88,
+      "allocated_bytes": 4096
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/error.sum",
+      "bytes": 22476,
+      "allocated_bytes": 24576
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/error.tri",
+      "bytes": 49349,
+      "allocated_bytes": 53248
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/read.idx",
+      "bytes": 81842,
+      "allocated_bytes": 135168
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/read.pod",
+      "bytes": 231068,
+      "allocated_bytes": 266240
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/read.sed",
+      "bytes": 390,
+      "allocated_bytes": 4096
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/read.sum",
+      "bytes": 195726,
+      "allocated_bytes": 200704
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/read.tri",
+      "bytes": 184510,
+      "allocated_bytes": 200704
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/resource.map",
+      "bytes": 846,
+      "allocated_bytes": 4096
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/resource.stats",
+      "bytes": 677,
+      "allocated_bytes": 4096
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/resource.tri",
+      "bytes": 398,
+      "allocated_bytes": 4096
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/trace.idx",
+      "bytes": 3478,
+      "allocated_bytes": 4096
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/trace.pod",
+      "bytes": 38916,
+      "allocated_bytes": 40960
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/trace.sed",
+      "bytes": 88,
+      "allocated_bytes": 4096
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/trace.tri",
+      "bytes": 32589,
+      "allocated_bytes": 32768
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/write.idx",
+      "bytes": 161948,
+      "allocated_bytes": 200704
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/write.pod",
+      "bytes": 371410,
+      "allocated_bytes": 397312
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/write.sed",
+      "bytes": 557,
+      "allocated_bytes": 4096
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/write.sum",
+      "bytes": 351654,
+      "allocated_bytes": 397312
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/write.tri",
+      "bytes": 186245,
+      "allocated_bytes": 200704
+    },
+    {
+      "name": "demo/payment/transactions.v1/collection.idx",
+      "bytes": 171457,
+      "allocated_bytes": 200704
+    },
+    {
+      "name": "demo/payment/transactions.v1/collection.state",
+      "bytes": 13283,
+      "allocated_bytes": 16384
+    },
+    {
+      "name": "demo/registry.cfg",
+      "bytes": 400,
+      "allocated_bytes": 4096
+    },
+    {
+      "name": "demo/registry.map",
+      "bytes": 609,
+      "allocated_bytes": 4096
+    },
+    {
+      "name": "demo/registry.tri",
+      "bytes": 110,
+      "allocated_bytes": 4096
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/debug.idx",
+      "bytes": 5246,
+      "allocated_bytes": 8192
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/debug.pod",
+      "bytes": 58070,
+      "allocated_bytes": 61440
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/debug.sed",
+      "bytes": 88,
+      "allocated_bytes": 4096
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/debug.tri",
+      "bytes": 49322,
+      "allocated_bytes": 53248
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/error.idx",
+      "bytes": 7690,
+      "allocated_bytes": 8192
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/error.pod",
+      "bytes": 58620,
+      "allocated_bytes": 61440
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/error.sed",
+      "bytes": 88,
+      "allocated_bytes": 4096
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/error.sum",
+      "bytes": 22764,
+      "allocated_bytes": 24576
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/error.tri",
+      "bytes": 49366,
+      "allocated_bytes": 53248
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/read.idx",
+      "bytes": 81842,
+      "allocated_bytes": 135168
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/read.pod",
+      "bytes": 225736,
+      "allocated_bytes": 266240
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/read.sed",
+      "bytes": 382,
+      "allocated_bytes": 4096
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/read.sum",
+      "bytes": 195750,
+      "allocated_bytes": 200704
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/read.tri",
+      "bytes": 184491,
+      "allocated_bytes": 200704
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/resource.map",
+      "bytes": 830,
+      "allocated_bytes": 4096
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/resource.stats",
+      "bytes": 677,
+      "allocated_bytes": 4096
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/resource.tri",
+      "bytes": 398,
+      "allocated_bytes": 4096
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/trace.idx",
+      "bytes": 3452,
+      "allocated_bytes": 4096
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/trace.pod",
+      "bytes": 38262,
+      "allocated_bytes": 40960
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/trace.sed",
+      "bytes": 88,
+      "allocated_bytes": 4096
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/trace.tri",
+      "bytes": 32340,
+      "allocated_bytes": 32768
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/write.idx",
+      "bytes": 161870,
+      "allocated_bytes": 200704
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/write.pod",
+      "bytes": 354320,
+      "allocated_bytes": 397312
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/write.sed",
+      "bytes": 545,
+      "allocated_bytes": 4096
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/write.sum",
+      "bytes": 351090,
+      "allocated_bytes": 397312
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/write.tri",
+      "bytes": 186179,
+      "allocated_bytes": 200704
+    },
+    {
+      "name": "demo/vault/secrets.v1/collection.idx",
+      "bytes": 171394,
+      "allocated_bytes": 200704
+    },
+    {
+      "name": "demo/vault/secrets.v1/collection.state",
+      "bytes": 13565,
+      "allocated_bytes": 16384
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/debug.idx",
+      "bytes": 5272,
+      "allocated_bytes": 8192
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/debug.pod",
+      "bytes": 58552,
+      "allocated_bytes": 61440
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/debug.sed",
+      "bytes": 88,
+      "allocated_bytes": 4096
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/debug.tri",
+      "bytes": 49570,
+      "allocated_bytes": 53248
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/error.idx",
+      "bytes": 7638,
+      "allocated_bytes": 8192
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/error.pod",
+      "bytes": 58927,
+      "allocated_bytes": 61440
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/error.sed",
+      "bytes": 88,
+      "allocated_bytes": 4096
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/error.sum",
+      "bytes": 22662,
+      "allocated_bytes": 24576
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/error.tri",
+      "bytes": 49609,
+      "allocated_bytes": 53248
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/read.idx",
+      "bytes": 81894,
+      "allocated_bytes": 135168
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/read.pod",
+      "bytes": 225221,
+      "allocated_bytes": 266240
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/read.sed",
+      "bytes": 386,
+      "allocated_bytes": 4096
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/read.sum",
+      "bytes": 195870,
+      "allocated_bytes": 200704
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/read.tri",
+      "bytes": 184749,
+      "allocated_bytes": 200704
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/resource.map",
+      "bytes": 827,
+      "allocated_bytes": 4096
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/resource.stats",
+      "bytes": 677,
+      "allocated_bytes": 4096
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/resource.tri",
+      "bytes": 398,
+      "allocated_bytes": 4096
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/trace.idx",
+      "bytes": 3452,
+      "allocated_bytes": 4096
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/trace.pod",
+      "bytes": 38084,
+      "allocated_bytes": 40960
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/trace.sed",
+      "bytes": 88,
+      "allocated_bytes": 4096
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/trace.tri",
+      "bytes": 32340,
+      "allocated_bytes": 32768
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/write.idx",
+      "bytes": 161844,
+      "allocated_bytes": 200704
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/write.pod",
+      "bytes": 359251,
+      "allocated_bytes": 397312
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/write.sed",
+      "bytes": 551,
+      "allocated_bytes": 4096
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/write.sum",
+      "bytes": 350922,
+      "allocated_bytes": 397312
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/write.tri",
+      "bytes": 186213,
+      "allocated_bytes": 196608
+    },
+    {
+      "name": "demo/worker/jobs.v1/collection.idx",
+      "bytes": 171373,
+      "allocated_bytes": 200704
+    },
+    {
+      "name": "demo/worker/jobs.v1/collection.state",
+      "bytes": 13471,
+      "allocated_bytes": 16384
+    }
+  ],
+  "notes": [
+    "Expanded JSONL contains all named fields, expanded dictionary values, textual UUIDs, derived ISO time, and cache/service/resource/branch context.",
+    "Payload-only JSONL omits derived time and catalog context, so trie-trunk is not credited solely for moving those into metadata.",
+    "Trie-trunk total includes every regular file inside the demo cache: optional collection index/state, aggregates, maps, tries, PAC directories, staging, configuration, and payloads. Demo-generation manifest is excluded.",
+    "Whole-file gzip6/Brotli6 JSONL are size references only, without equivalent indexes, aggregates, or independent hourly access.",
+    "No search, ingestion, or transport latency claim is made by this footprint comparison."
+  ]
+}

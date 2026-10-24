@@ -1,0 +1,5 @@
+2026-10-18 16:23:12.353 EDT [27503] LOG:  starting PostgreSQL 16.14 (Homebrew) on aarch64-apple-darwin25.4.0, compiled by Apple clang version 21.0.0 (clang-2100.0.123.102), 64-bit
+2026-10-18 16:23:12.353 EDT [27503] LOG:  listening on IPv4 address "127.0.0.1", port 15439
+2026-10-18 16:23:12.364 EDT [27503] LOG:  listening on Unix socket "/tmp/trie-publication-bench.HYGcYV/socket/.s.PGSQL.15439"
+2026-10-18 16:23:12.376 EDT [27506] LOG:  database system was shut down at 2026-10-18 16:23:12 EDT
+2026-10-18 16:23:12.383 EDT [27503] LOG:  database system is ready to accept connections

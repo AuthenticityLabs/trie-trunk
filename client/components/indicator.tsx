@@ -65,11 +65,11 @@ export function IndicatorDialog(props: {
     >
       <form class="modal-body" onSubmit={save}>
         <div class="modal-heading">
-          <h2 id="indicator-title">Add indicator</h2>
+          <h2 id="indicator-title">Add Indicator</h2>
           <button
             type="button"
             class="icon-button"
-            aria-label="Close indicator dialog"
+            aria-label="Close Indicator Dialog"
             disabled={saving()}
             onClick={props.onClose}
           >
@@ -102,11 +102,11 @@ export function IndicatorDialog(props: {
             }
             disabled={saving()}
           >
-            <option value="text">Text contains</option>
-            <option value="equals">String equals</option>
-            <option value="regex">Regular expression</option>
-            <option value="lte">Less than or equal to (≤)</option>
-            <option value="gte">Greater than or equal to (≥)</option>
+            <option value="text">Text Contains</option>
+            <option value="equals">String Equals</option>
+            <option value="regex">Regular Expression</option>
+            <option value="lte">Less Than or Equal to (≤)</option>
+            <option value="gte">Greater Than or Equal to (≥)</option>
           </select>
         </label>
         <label class="form-label">
@@ -129,7 +129,7 @@ export function IndicatorDialog(props: {
               onChange={(event) => setIgnoreCase(event.currentTarget.checked)}
               disabled={saving()}
             />
-            Ignore case
+            Ignore Case
           </label>
         </Show>
         <p class="helper">
@@ -164,7 +164,7 @@ export function IndicatorDialog(props: {
             Cancel
           </button>
           <button class="button primary" type="submit" disabled={saving()}>
-            {saving() ? "Saving…" : "Add indicator"}
+            {saving() ? "Saving…" : "Add Indicator"}
           </button>
         </div>
       </form>

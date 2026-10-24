@@ -1,11 +1,21 @@
 import { cbor } from "./cbor.ts";
 export type PILField = { name: string; type: string; values?: string[] };
+export type ResourceBinding = {
+  service?: string; resource?: string;
+  roles: {event_id:string; id?:string; revision_id?:string; shared?:string};
+  path?: string[];
+};
 export type PILDefinition = {
   pil: number;
+  adaptive_integers?: "none" | "16" | "32";
   definition: string;
   version: number;
   fields: PILField[];
+  resource?: ResourceBinding;
 };
+export function resourceBinding(def: Pick<PILDefinition,'resource'>): ResourceBinding | undefined {
+  return def.resource;
+}
 const widths: Record<string, number> = {
   BOOL: 1,
   I8: 1,
@@ -53,6 +63,19 @@ export function extended(view: DataView, offset: number): [number, number] {
   }
   return [n, offset];
 }
+const integerSelectors = new WeakMap<PILDefinition, Uint8Array>();
+function selectors(def: PILDefinition): Uint8Array {
+  let result = integerSelectors.get(def);
+  if (!result) {
+    result = Uint8Array.from(def.fields, (f) => {
+      if (f.values?.length) return 0;
+      if (/^[IU](32|64)$/.test(f.type)) return 2;
+      return def.adaptive_integers === "16" && /^[IU]16$/.test(f.type) ? 1 : 0;
+    });
+    integerSelectors.set(def, result);
+  }
+  return result;
+}
 export type Span = { state: number; start: number; end: number };
 // The WASM validator has already checked this frame. Resolve just one position,
 // without allocating a field/value array for each retained event.
@@ -64,10 +87,31 @@ export function span(
   const state = (i: number) => (bytes[i >> 2] >> (6 - 2 * (i % 4))) & 3;
   const kind = state(index);
   if (kind < 2) return { state: kind, start: 0, end: 0 };
-  let direct = Math.ceil(def.fields.length / 4);
+  const mask = Math.ceil(def.fields.length / 4);
+  const adaptive = def.adaptive_integers === "16" || def.adaptive_integers === "32";
+  const bits = adaptive ? selectors(def) : undefined;
+  let bit = 0;
+  let total = 0;
+  if (bits) {
+    for (let i = 0; i < bits.length; i++) {
+      if (state(i) === 2) total += bits[i];
+    }
+  }
+  let direct = mask + Math.ceil(total / 8);
   for (let i = 0; i < def.fields.length; i++)
     if (state(i) === 2) {
-      const end = direct + width(def.fields[i]);
+      let w = width(def.fields[i]);
+      const n = bits?.[i] ?? 0;
+      if (n) {
+        const offset = bit % 8;
+        const at = mask + Math.floor(bit / 8);
+        const code = offset + n <= 8
+          ? (bytes[at] >> (8 - offset - n)) & ((1 << n) - 1)
+          : ((bytes[at] & 1) << 1) | (bytes[at + 1] >> 7);
+        w = 1 << code;
+        bit += n;
+      }
+      const end = direct + w;
       if (i === index) return { state: kind, start: direct, end };
       direct = end;
     }
@@ -113,26 +157,48 @@ export function read(
     field = def.fields[index];
   if (s.state === 0) return undefined;
   if (s.state === 1) return null;
-  const value = bytes.subarray(s.start, s.end),
-    view = new DataView(value.buffer, value.byteOffset, value.length);
-  if (s.state === 2 && field.values?.length) return integer(view, width(field));
-  if (field.type === "CBOR") return cbor(value);
-  if (field.type === "STRING") return textDecoder.decode(value);
-  if (field.type === "UUID" || field.type === "BYTES") return value;
-  if (field.type === "BOOL") return value[0] === 1;
-  if (field.type === "F32") return view.getFloat32(0, true);
-  if (field.type === "F64") return view.getFloat64(0, true);
-  if ((field.type === "ARRAY<U16>" || field.type === "ARRAY<REF16>")) {
-    const [n, offset] = extended(view, 0);
-    return Array.from({ length: n }, (_, i) =>
-      view.getUint16(offset + i * 2, true),
+  const value = bytes.subarray(s.start, s.end);
+  if (s.state === 2 && field.values?.length) {
+    return integer(
+      new DataView(value.buffer, value.byteOffset, value.length),
+      width(field),
     );
   }
-  if (widths[field.type])
+  return scalar(value, field.type);
+}
+export function scalar(value: Uint8Array, type: string): unknown {
+  const view = new DataView(value.buffer, value.byteOffset, value.length);
+  if (type === "CBOR") return cbor(value);
+  if (type === "STRING") return textDecoder.decode(value);
+  if (type === "UUID" || type === "BYTES") return value;
+  if (type === "BOOL") return value[0] === 1;
+  if (type === "F32") return view.getFloat32(0, true);
+  if (type === "F64") return view.getFloat64(0, true);
+  if (type.startsWith("ARRAY<")) {
+    const element = type.slice(6, -1);
+    const w = widths[element] ?? 0;
+    const [count, offset] = extended(view, 0);
+    if (w) {
+      return Array.from({ length: count }, (_, i) =>
+        scalar(value.subarray(offset + i * w, offset + (i + 1) * w), element),
+      );
+    }
+    const ends: number[] = [];
+    let cursor = offset;
+    for (let i = 0; i < count; i++) {
+      let end;
+      [end, cursor] = extended(view, cursor);
+      ends.push(end);
+    }
+    return ends.map((end, i) =>
+      scalar(value.subarray(cursor + (i ? ends[i - 1] : 0), cursor + end), element),
+    );
+  }
+  if (widths[type])
     return integer(
       view,
-      widths[field.type],
-      field.type.startsWith("I") || field.type.startsWith("TIMESTAMP"),
+      value.length,
+      type.startsWith("I") || type.startsWith("TIMESTAMP"),
     );
-  throw Error(`Unsupported browser field type ${field.type}`);
+  throw Error(`Unsupported browser field type ${type}`);
 }

@@ -8,7 +8,7 @@ render(
     <ErrorBoundary
       fallback={(cause) => (
         <main class="startup-error" role="alert">
-          <h1>Snoot couldn’t start</h1>
+          <h1>Snoot Couldn’t Start</h1>
           <p>{cause instanceof Error ? cause.message : String(cause)}</p>
           <button class="button" onClick={() => location.reload()}>
             Reload

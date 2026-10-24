@@ -1,0 +1,17 @@
+goos: darwin
+goarch: arm64
+pkg: trie-trunk/go/server/cache
+cpu: Apple M1 Max
+BenchmarkSealPhases/read/records=1000-10         	       1	  65912041 ns/op	  37749667 outside-lock-ns	    326417 publication-ns	       333.0 publication-wait-ns	  28156458 total-locked-ns
+BenchmarkSealPhases/read/records=1000-10         	       1	  75064667 ns/op	  42933875 outside-lock-ns	    390000 publication-ns	       209.0 publication-wait-ns	  32126833 total-locked-ns
+BenchmarkSealPhases/read/records=1000-10         	       1	  73041458 ns/op	  39874041 outside-lock-ns	    390166 publication-ns	       250.0 publication-wait-ns	  33158876 total-locked-ns
+BenchmarkSealPhases/read/records=10000-10        	       1	  67892250 ns/op	  43102917 outside-lock-ns	   2162000 publication-ns	        42.00 publication-wait-ns	  24781874 total-locked-ns
+BenchmarkSealPhases/read/records=10000-10        	       1	  66985417 ns/op	  38314875 outside-lock-ns	   2204416 publication-ns	       125.0 publication-wait-ns	  28667875 total-locked-ns
+BenchmarkSealPhases/read/records=10000-10        	       1	  61941041 ns/op	  37106709 outside-lock-ns	   1994167 publication-ns	       125.0 publication-wait-ns	  24831457 total-locked-ns
+BenchmarkSealPhases/write/records=1000-10        	       1	  72947749 ns/op	  37917666 outside-lock-ns	  14580917 publication-ns	       208.0 publication-wait-ns	  35027376 total-locked-ns
+BenchmarkSealPhases/write/records=1000-10        	       1	  81785333 ns/op	  45816833 outside-lock-ns	  14068792 publication-ns	       166.0 publication-wait-ns	  35964209 total-locked-ns
+BenchmarkSealPhases/write/records=1000-10        	       1	  83803083 ns/op	  46917875 outside-lock-ns	  16098500 publication-ns	       458.0 publication-wait-ns	  36881042 total-locked-ns
+BenchmarkSealPhases/write/records=10000-10       	       1	 176858958 ns/op	  43880500 outside-lock-ns	 112338667 publication-ns	       166.0 publication-wait-ns	 132974417 total-locked-ns
+BenchmarkSealPhases/write/records=10000-10       	       1	 172920584 ns/op	  47101500 outside-lock-ns	 102496000 publication-ns	       167.0 publication-wait-ns	 125815791 total-locked-ns
+BenchmarkSealPhases/write/records=10000-10       	       1	 174884749 ns/op	  40066375 outside-lock-ns	 109095042 publication-ns	       125.0 publication-wait-ns	 134815416 total-locked-ns
+PASS

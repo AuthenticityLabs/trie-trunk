@@ -1,0 +1,28 @@
+=== RUN   TestCleanupPreviewApplyAndReplay
+--- PASS: TestCleanupPreviewApplyAndReplay (0.52s)
+=== RUN   TestCleanupPreservesReferencedAndDataBearingUnregisteredMaps
+--- PASS: TestCleanupPreservesReferencedAndDataBearingUnregisteredMaps (0.37s)
+=== RUN   TestCleanupRefusesWriterCorruptionAndSymlinks
+=== RUN   TestCleanupRefusesWriterCorruptionAndSymlinks/writer
+=== RUN   TestCleanupRefusesWriterCorruptionAndSymlinks/orphan-header
+=== RUN   TestCleanupRefusesWriterCorruptionAndSymlinks/active-data
+=== RUN   TestCleanupRefusesWriterCorruptionAndSymlinks/missing-active
+=== RUN   TestCleanupRefusesWriterCorruptionAndSymlinks/symlink
+=== RUN   TestCleanupRefusesWriterCorruptionAndSymlinks/cancel
+=== RUN   TestCleanupRefusesWriterCorruptionAndSymlinks/tenant
+--- PASS: TestCleanupRefusesWriterCorruptionAndSymlinks (1.66s)
+    --- PASS: TestCleanupRefusesWriterCorruptionAndSymlinks/writer (0.27s)
+    --- PASS: TestCleanupRefusesWriterCorruptionAndSymlinks/orphan-header (0.23s)
+    --- PASS: TestCleanupRefusesWriterCorruptionAndSymlinks/active-data (0.22s)
+    --- PASS: TestCleanupRefusesWriterCorruptionAndSymlinks/missing-active (0.24s)
+    --- PASS: TestCleanupRefusesWriterCorruptionAndSymlinks/symlink (0.24s)
+    --- PASS: TestCleanupRefusesWriterCorruptionAndSymlinks/cancel (0.22s)
+    --- PASS: TestCleanupRefusesWriterCorruptionAndSymlinks/tenant (0.25s)
+=== RUN   TestCleanupRetiredDefaultGeneration
+--- PASS: TestCleanupRetiredDefaultGeneration (0.39s)
+PASS
+ok  	trie-trunk/go/server/cache	3.109s
+=== RUN   TestCacheCLI
+--- PASS: TestCacheCLI (0.84s)
+PASS
+ok  	trie-trunk/go/cmd/trunk	0.987s

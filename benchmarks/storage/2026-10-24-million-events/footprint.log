@@ -1,0 +1,11 @@
+=== RUN   TestDemoFootprint
+    footprint_test.go:65: seeded and verified 1000000 events in 11m28.339206875s
+    footprint_test.go:84: exporting and indexing gateway/routes
+    footprint_test.go:84: exporting and indexing billing/invoices
+    footprint_test.go:84: exporting and indexing vault/secrets
+    footprint_test.go:84: exporting and indexing worker/jobs
+    footprint_test.go:84: exporting and indexing payment/transactions
+    footprint_test.go:275: 1000000 events: expanded=428597753 payload=319112488 trie=168411129 allocated=179720192
+--- PASS: TestDemoFootprint (709.34s)
+PASS
+ok  	trie-trunk/go/cmd/seed-demo	709.657s

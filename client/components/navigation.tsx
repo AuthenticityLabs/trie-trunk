@@ -1,12 +1,12 @@
 import { For, Show, type JSX } from "solid-js";
-import type { Theme } from "../services/preferences";
-import { Icon, Mark, type IconName } from "./icon";
-import portrait from "../assets/snoot-portrait.png";
+import { nextTheme, themeNames, type Theme } from "../services/preferences";
+import { Icon, ProfileMark, type IconName } from "./icon";
 import forward from "../assets/snoot-forward.png";
 
-export type Page = "Search" | "Dashboard" | "Alerts";
+export type Page = "Search" | "Dashboard" | "Alerts" | "Object History";
 const navigation: { title: Page; icon: IconName }[] = [
   { title: "Search", icon: "search" },
+  { title: "Object History", icon: "clock" },
   { title: "Dashboard", icon: "dashboard" },
   { title: "Alerts", icon: "bell" },
 ];
@@ -25,19 +25,18 @@ export function Navigation(props: {
   children?: JSX.Element;
 }) {
   return (
-    <aside class="sidebar" aria-label="Main navigation">
+    <aside class="sidebar" aria-label="Main Navigation">
       <button
         type="button"
         class="brand"
         onClick={props.onToggleTheme}
         disabled={props.themeBusy}
-        aria-label="Dark mode"
-        aria-pressed={props.theme === "dark"}
-        title={`Switch to ${props.theme === "dark" ? "light" : "dark"} mode`}
+        aria-label={`${themeNames[props.theme]} Theme. Switch to ${themeNames[nextTheme(props.theme)]} Theme`}
+        title={`Switch to ${themeNames[nextTheme(props.theme)]} Theme`}
       >
         <img
           class="brand-portrait"
-          src={props.theme === "dark" ? forward : portrait}
+          src={forward}
           alt=""
           width="1254"
           height="1254"
@@ -48,7 +47,7 @@ export function Navigation(props: {
       </Show>
       <div class="workspace-label">
         <span class="workspace-dot" />
-        <span>Local workspace</span>
+        <span>Local Workspace</span>
       </div>
       <div class="nav-label">EXPLORE</div>
       <nav>
@@ -93,10 +92,10 @@ export function Navigation(props: {
         <button
           class="nav-item"
           onClick={() => props.onHelp()}
-          title="Search guide"
+          title="Search Guide"
         >
           <Icon name="help" />
-          <span>Search guide</span>
+          <span>Search Guide</span>
         </button>
         <button
           class="nav-item"
@@ -111,10 +110,10 @@ export function Navigation(props: {
         </button>
         <div class="sidebar-footer">
           <span class="avatar">
-            <Mark size={24} />
+            <ProfileMark size={24} />
           </span>
           <div>
-            <strong>Your workspace</strong>
+            <strong>Your Workspace</strong>
             <small>Built for the details</small>
           </div>
         </div>

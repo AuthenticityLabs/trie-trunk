@@ -1,0 +1,2 @@
+Spliced gzip: firstsecond and two complete PACs; Browser: webkit 26.5 concatenated gzip probe: first
+PAC transport passed: browser decoded two precompressed PACs byte for byte; UI/OPFS not tested

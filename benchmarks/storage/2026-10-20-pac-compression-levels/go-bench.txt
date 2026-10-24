@@ -1,0 +1,54 @@
+goos: darwin
+goarch: arm64
+pkg: trie-trunk/go/server/cache
+cpu: Apple M1 Max
+BenchmarkPACCompressionLevels/dense12/level1/seal-10         	     589	    402996 ns/op	 245.61 MB/s	     98980 decoded-bytes/PAC	     21817 encoded-bytes/PAC	   67533 B/op	      11 allocs/op
+BenchmarkPACCompressionLevels/dense12/level1/seal-10         	     600	    405055 ns/op	 244.36 MB/s	     98980 decoded-bytes/PAC	     21817 encoded-bytes/PAC	   67505 B/op	      11 allocs/op
+BenchmarkPACCompressionLevels/dense12/level1/seal-10         	     598	    403725 ns/op	 245.17 MB/s	     98980 decoded-bytes/PAC	     21817 encoded-bytes/PAC	   67503 B/op	      11 allocs/op
+BenchmarkPACCompressionLevels/dense12/level1/decode-10       	     844	    278919 ns/op	 354.87 MB/s	   20002 B/op	     188 allocs/op
+BenchmarkPACCompressionLevels/dense12/level1/decode-10       	     854	    281883 ns/op	 351.14 MB/s	   20011 B/op	     188 allocs/op
+BenchmarkPACCompressionLevels/dense12/level1/decode-10       	     852	    279405 ns/op	 354.25 MB/s	   20001 B/op	     188 allocs/op
+BenchmarkPACCompressionLevels/dense12/level3/seal-10         	     404	    588484 ns/op	 168.20 MB/s	     98980 decoded-bytes/PAC	     21314 encoded-bytes/PAC	   67493 B/op	      11 allocs/op
+BenchmarkPACCompressionLevels/dense12/level3/seal-10         	     409	    591532 ns/op	 167.33 MB/s	     98980 decoded-bytes/PAC	     21314 encoded-bytes/PAC	   67467 B/op	      11 allocs/op
+BenchmarkPACCompressionLevels/dense12/level3/seal-10         	     403	    590968 ns/op	 167.49 MB/s	     98980 decoded-bytes/PAC	     21314 encoded-bytes/PAC	   67498 B/op	      11 allocs/op
+BenchmarkPACCompressionLevels/dense12/level3/decode-10       	     895	    268572 ns/op	 368.54 MB/s	   17761 B/op	     138 allocs/op
+BenchmarkPACCompressionLevels/dense12/level3/decode-10       	     858	    269332 ns/op	 367.50 MB/s	   17761 B/op	     138 allocs/op
+BenchmarkPACCompressionLevels/dense12/level3/decode-10       	     894	    269421 ns/op	 367.38 MB/s	   17761 B/op	     138 allocs/op
+BenchmarkPACCompressionLevels/dense12/level6/seal-10         	     163	   1467118 ns/op	  67.47 MB/s	     98980 decoded-bytes/PAC	     20228 encoded-bytes/PAC	   70477 B/op	      11 allocs/op
+BenchmarkPACCompressionLevels/dense12/level6/seal-10         	     163	   1471152 ns/op	  67.28 MB/s	     98980 decoded-bytes/PAC	     20228 encoded-bytes/PAC	   70476 B/op	      11 allocs/op
+BenchmarkPACCompressionLevels/dense12/level6/seal-10         	     163	   1464776 ns/op	  67.57 MB/s	     98980 decoded-bytes/PAC	     20228 encoded-bytes/PAC	   70476 B/op	      11 allocs/op
+BenchmarkPACCompressionLevels/dense12/level6/decode-10       	     960	    249732 ns/op	 396.35 MB/s	   15440 B/op	     126 allocs/op
+BenchmarkPACCompressionLevels/dense12/level6/decode-10       	     961	    250006 ns/op	 395.91 MB/s	   15439 B/op	     126 allocs/op
+BenchmarkPACCompressionLevels/dense12/level6/decode-10       	     964	    250019 ns/op	 395.89 MB/s	   15439 B/op	     126 allocs/op
+BenchmarkPACCompressionLevels/dense12/level9/seal-10         	      44	   5243221 ns/op	  18.88 MB/s	     98980 decoded-bytes/PAC	     19939 encoded-bytes/PAC	   65504 B/op	      11 allocs/op
+BenchmarkPACCompressionLevels/dense12/level9/seal-10         	      45	   5310190 ns/op	  18.64 MB/s	     98980 decoded-bytes/PAC	     19939 encoded-bytes/PAC	   83588 B/op	      11 allocs/op
+BenchmarkPACCompressionLevels/dense12/level9/seal-10         	      44	   5261233 ns/op	  18.81 MB/s	     98980 decoded-bytes/PAC	     19939 encoded-bytes/PAC	   84001 B/op	      11 allocs/op
+BenchmarkPACCompressionLevels/dense12/level9/decode-10       	     962	    249871 ns/op	 396.13 MB/s	   28005 B/op	     130 allocs/op
+BenchmarkPACCompressionLevels/dense12/level9/decode-10       	     964	    249809 ns/op	 396.22 MB/s	   28005 B/op	     130 allocs/op
+BenchmarkPACCompressionLevels/dense12/level9/decode-10       	     963	    250082 ns/op	 395.79 MB/s	   28005 B/op	     130 allocs/op
+BenchmarkPACCompressionLevels/sparse1to2/level1/seal-10      	    1161	    203919 ns/op	 250.16 MB/s	     51013 decoded-bytes/PAC	     12530 encoded-bytes/PAC	   32692 B/op	      10 allocs/op
+BenchmarkPACCompressionLevels/sparse1to2/level1/seal-10      	    1191	    204955 ns/op	 248.90 MB/s	     51013 decoded-bytes/PAC	     12530 encoded-bytes/PAC	   35733 B/op	      10 allocs/op
+BenchmarkPACCompressionLevels/sparse1to2/level1/seal-10      	    1184	    202864 ns/op	 251.46 MB/s	     51013 decoded-bytes/PAC	     12530 encoded-bytes/PAC	   33713 B/op	      10 allocs/op
+BenchmarkPACCompressionLevels/sparse1to2/level1/decode-10    	    1600	    151363 ns/op	 337.02 MB/s	    6744 B/op	      78 allocs/op
+BenchmarkPACCompressionLevels/sparse1to2/level1/decode-10    	    1604	    149953 ns/op	 340.19 MB/s	    6739 B/op	      78 allocs/op
+BenchmarkPACCompressionLevels/sparse1to2/level1/decode-10    	    1564	    156286 ns/op	 326.41 MB/s	    6739 B/op	      78 allocs/op
+BenchmarkPACCompressionLevels/sparse1to2/level3/seal-10      	     672	    358896 ns/op	 142.14 MB/s	     51013 decoded-bytes/PAC	     12368 encoded-bytes/PAC	   33902 B/op	      10 allocs/op
+BenchmarkPACCompressionLevels/sparse1to2/level3/seal-10      	     667	    361783 ns/op	 141.00 MB/s	     51013 decoded-bytes/PAC	     12368 encoded-bytes/PAC	   32691 B/op	      10 allocs/op
+BenchmarkPACCompressionLevels/sparse1to2/level3/seal-10      	     670	    343276 ns/op	 148.61 MB/s	     51013 decoded-bytes/PAC	     12368 encoded-bytes/PAC	   33905 B/op	      10 allocs/op
+BenchmarkPACCompressionLevels/sparse1to2/level3/decode-10    	    1669	    142718 ns/op	 357.44 MB/s	    6424 B/op	      75 allocs/op
+BenchmarkPACCompressionLevels/sparse1to2/level3/decode-10    	    1690	    142902 ns/op	 356.98 MB/s	    6419 B/op	      75 allocs/op
+BenchmarkPACCompressionLevels/sparse1to2/level3/decode-10    	    1666	    144926 ns/op	 351.99 MB/s	    6419 B/op	      75 allocs/op
+BenchmarkPACCompressionLevels/sparse1to2/level6/seal-10      	     206	   1158474 ns/op	  44.03 MB/s	     51013 decoded-bytes/PAC	     12318 encoded-bytes/PAC	   32692 B/op	      10 allocs/op
+BenchmarkPACCompressionLevels/sparse1to2/level6/seal-10      	     206	   1164650 ns/op	  43.80 MB/s	     51013 decoded-bytes/PAC	     12318 encoded-bytes/PAC	   40601 B/op	      10 allocs/op
+BenchmarkPACCompressionLevels/sparse1to2/level6/seal-10      	     207	   1158662 ns/op	  44.03 MB/s	     51013 decoded-bytes/PAC	     12318 encoded-bytes/PAC	   36624 B/op	      10 allocs/op
+BenchmarkPACCompressionLevels/sparse1to2/level6/decode-10    	    1694	    142071 ns/op	 359.07 MB/s	    6488 B/op	      76 allocs/op
+BenchmarkPACCompressionLevels/sparse1to2/level6/decode-10    	    1630	    141922 ns/op	 359.44 MB/s	    6483 B/op	      76 allocs/op
+BenchmarkPACCompressionLevels/sparse1to2/level6/decode-10    	    1699	    143045 ns/op	 356.62 MB/s	    6488 B/op	      76 allocs/op
+BenchmarkPACCompressionLevels/sparse1to2/level9/seal-10      	      40	   5830768 ns/op	   8.75 MB/s	     51013 decoded-bytes/PAC	     12345 encoded-bytes/PAC	   53053 B/op	      10 allocs/op
+BenchmarkPACCompressionLevels/sparse1to2/level9/seal-10      	      40	   5806815 ns/op	   8.79 MB/s	     51013 decoded-bytes/PAC	     12345 encoded-bytes/PAC	   53053 B/op	      10 allocs/op
+BenchmarkPACCompressionLevels/sparse1to2/level9/seal-10      	      40	   5900229 ns/op	   8.65 MB/s	     51013 decoded-bytes/PAC	     12345 encoded-bytes/PAC	   53053 B/op	      10 allocs/op
+BenchmarkPACCompressionLevels/sparse1to2/level9/decode-10    	    1419	    157356 ns/op	 324.19 MB/s	    6488 B/op	      76 allocs/op
+BenchmarkPACCompressionLevels/sparse1to2/level9/decode-10    	    1627	    151516 ns/op	 336.68 MB/s	    6488 B/op	      76 allocs/op
+BenchmarkPACCompressionLevels/sparse1to2/level9/decode-10    	    1485	    145754 ns/op	 349.99 MB/s	    6488 B/op	      76 allocs/op
+PASS
+ok  	trie-trunk/go/server/cache	13.663s

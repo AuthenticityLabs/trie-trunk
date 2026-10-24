@@ -1,0 +1,9 @@
+PASS: cross-day insertion, same-millisecond UUID distinction, inclusive start/exclusive end
+PASS: restartable legacy migration, sparse index runs, orphan tails ignored, old cache retained intact
+PASS: 1,200 out-of-order UUIDs, exact PIL restore, overlapping dedupe, gap planning, recent-window refresh, trie equality, IDB rollback/file recovery, concurrent writers, schema/tap/credential isolation, and no browser log.idx
+PASS: native OPFS ranges + strict IDB commits, killed worker before completion, orphan-tail recovery, concurrent tabs, actual page reload, source-generation separation, exact lazy PIL population, zero per-event IDB entries
+PASS: hourly PAC gap fills, cross-page records, sparse allocation, reload, head retirement, stale-hour rejection and page reuse chromium
+PASS: paged invalidation snapshots, committed token lookup, killed worker before publication, two-hour snapshot reuse, and exact token restoration after page reload
+PASS: OPFS state compaction 71721 → 35861 B, exact tokens, stale in-flight offsets rejected, reload/retry; median 4.70 ms for 1,200 identities (5 local runs)
+PASS: ordered retention generations, atomic working-set retirement, stale response rejection, OPFS reclamation, and replacement-only restoration after reload
+PASS: explicit scoped cache rebuild, cross-worker stale response rejection, reload, server generation rollback, new local references and preserved unrelated cache

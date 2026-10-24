@@ -87,7 +87,7 @@ export default function Calendar(props: {
     <dialog
       ref={dialog}
       class="modal calendar-modal"
-      aria-label={`${props.scope} time window`}
+      aria-label={`${props.scope} Time Window`}
       onCancel={(event) => {
         event.preventDefault();
         props.onClose();
@@ -117,7 +117,7 @@ export default function Calendar(props: {
           <button
             class="icon-button"
             type="button"
-            aria-label="Close calendar"
+            aria-label="Close Calendar"
             onClick={props.onClose}
           >
             <Icon name="close" size={18} />

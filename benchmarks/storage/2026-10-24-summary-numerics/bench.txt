@@ -1,0 +1,126 @@
+goos: darwin
+goarch: arm64
+pkg: trie-trunk/go/server/cache
+cpu: Apple M1 Max
+BenchmarkSummaryNumericCodec/sparse-day/u64/encode-10         	    9904	     36016 ns/op	       175.0 bytes/day	  815340 B/op	      26 allocs/op
+BenchmarkSummaryNumericCodec/sparse-day/u64/encode-10         	    9237	     35874 ns/op	       175.0 bytes/day	  815340 B/op	      26 allocs/op
+BenchmarkSummaryNumericCodec/sparse-day/u64/encode-10         	    8848	     35826 ns/op	       175.0 bytes/day	  815342 B/op	      26 allocs/op
+BenchmarkSummaryNumericCodec/sparse-day/u64/decode-10         	   81669	      4218 ns/op	   42512 B/op	      27 allocs/op
+BenchmarkSummaryNumericCodec/sparse-day/u64/decode-10         	   83605	      4235 ns/op	   42512 B/op	      27 allocs/op
+BenchmarkSummaryNumericCodec/sparse-day/u64/decode-10         	   81330	      4248 ns/op	   42512 B/op	      27 allocs/op
+BenchmarkSummaryNumericCodec/sparse-day/narrow/encode-10      	    8820	     37239 ns/op	       199.0 bytes/day	  815787 B/op	      27 allocs/op
+BenchmarkSummaryNumericCodec/sparse-day/narrow/encode-10      	    8643	     38352 ns/op	       199.0 bytes/day	  815789 B/op	      27 allocs/op
+BenchmarkSummaryNumericCodec/sparse-day/narrow/encode-10      	    8469	     37777 ns/op	       199.0 bytes/day	  815788 B/op	      27 allocs/op
+BenchmarkSummaryNumericCodec/sparse-day/narrow/decode-10      	   78260	      4573 ns/op	   42576 B/op	      27 allocs/op
+BenchmarkSummaryNumericCodec/sparse-day/narrow/decode-10      	   77571	      4603 ns/op	   42576 B/op	      27 allocs/op
+BenchmarkSummaryNumericCodec/sparse-day/narrow/decode-10      	   79039	      4603 ns/op	   42576 B/op	      27 allocs/op
+BenchmarkSummaryNumericCodec/sparse-day/based/encode-10       	    8443	     37772 ns/op	       195.0 bytes/day	  815773 B/op	      27 allocs/op
+BenchmarkSummaryNumericCodec/sparse-day/based/encode-10       	    8726	     36846 ns/op	       195.0 bytes/day	  815771 B/op	      27 allocs/op
+BenchmarkSummaryNumericCodec/sparse-day/based/encode-10       	    8721	     37479 ns/op	       195.0 bytes/day	  815772 B/op	      27 allocs/op
+BenchmarkSummaryNumericCodec/sparse-day/based/decode-10       	   77439	      4512 ns/op	   42576 B/op	      27 allocs/op
+BenchmarkSummaryNumericCodec/sparse-day/based/decode-10       	   77709	      4511 ns/op	   42576 B/op	      27 allocs/op
+BenchmarkSummaryNumericCodec/sparse-day/based/decode-10       	   79296	      4583 ns/op	   42576 B/op	      27 allocs/op
+BenchmarkSummaryNumericCodec/sparse-day/based-shuffle/encode-10         	    8773	     37200 ns/op	       195.0 bytes/day	  815771 B/op	      27 allocs/op
+BenchmarkSummaryNumericCodec/sparse-day/based-shuffle/encode-10         	    8817	     37375 ns/op	       195.0 bytes/day	  815772 B/op	      27 allocs/op
+BenchmarkSummaryNumericCodec/sparse-day/based-shuffle/encode-10         	    8416	     37691 ns/op	       195.0 bytes/day	  815771 B/op	      27 allocs/op
+BenchmarkSummaryNumericCodec/sparse-day/based-shuffle/decode-10         	   77270	      4580 ns/op	   42576 B/op	      27 allocs/op
+BenchmarkSummaryNumericCodec/sparse-day/based-shuffle/decode-10         	   77952	      4569 ns/op	   42576 B/op	      27 allocs/op
+BenchmarkSummaryNumericCodec/sparse-day/based-shuffle/decode-10         	   78954	      4544 ns/op	   42576 B/op	      27 allocs/op
+BenchmarkSummaryNumericCodec/dense-240k/u64/encode-10                   	       4	  78181146 ns/op	    265190 bytes/day	 7537564 B/op	     203 allocs/op
+BenchmarkSummaryNumericCodec/dense-240k/u64/encode-10                   	       4	  77696281 ns/op	    265190 bytes/day	 7537536 B/op	     202 allocs/op
+BenchmarkSummaryNumericCodec/dense-240k/u64/encode-10                   	       4	  77262656 ns/op	    265190 bytes/day	 7537580 B/op	     203 allocs/op
+BenchmarkSummaryNumericCodec/dense-240k/u64/decode-10                   	      58	   5814588 ns/op	11467014 B/op	    3926 allocs/op
+BenchmarkSummaryNumericCodec/dense-240k/u64/decode-10                   	      63	   5895036 ns/op	11467026 B/op	    3926 allocs/op
+BenchmarkSummaryNumericCodec/dense-240k/u64/decode-10                   	      63	   5799025 ns/op	11467011 B/op	    3926 allocs/op
+BenchmarkSummaryNumericCodec/dense-240k/narrow/encode-10                	      31	  11307112 ns/op	    357556 bytes/day	 3656165 B/op	     274 allocs/op
+BenchmarkSummaryNumericCodec/dense-240k/narrow/encode-10                	      31	  11287888 ns/op	    357556 bytes/day	 3656174 B/op	     274 allocs/op
+BenchmarkSummaryNumericCodec/dense-240k/narrow/encode-10                	      31	  11277146 ns/op	    357556 bytes/day	 3656168 B/op	     274 allocs/op
+BenchmarkSummaryNumericCodec/dense-240k/narrow/decode-10                	      54	   6635783 ns/op	 9918762 B/op	    6594 allocs/op
+BenchmarkSummaryNumericCodec/dense-240k/narrow/decode-10                	      56	   6664702 ns/op	 9918758 B/op	    6594 allocs/op
+BenchmarkSummaryNumericCodec/dense-240k/narrow/decode-10                	      56	   6624935 ns/op	 9918758 B/op	    6594 allocs/op
+BenchmarkSummaryNumericCodec/dense-240k/based/encode-10                 	      31	  11343987 ns/op	    357566 bytes/day	 3656170 B/op	     274 allocs/op
+BenchmarkSummaryNumericCodec/dense-240k/based/encode-10                 	      31	  11267749 ns/op	    357566 bytes/day	 3656170 B/op	     274 allocs/op
+BenchmarkSummaryNumericCodec/dense-240k/based/encode-10                 	      31	  11345468 ns/op	    357566 bytes/day	 3656153 B/op	     274 allocs/op
+BenchmarkSummaryNumericCodec/dense-240k/based/decode-10                 	      54	   6583522 ns/op	 9904742 B/op	    6587 allocs/op
+BenchmarkSummaryNumericCodec/dense-240k/based/decode-10                 	      56	   6588890 ns/op	 9904742 B/op	    6587 allocs/op
+BenchmarkSummaryNumericCodec/dense-240k/based/decode-10                 	      56	   6616420 ns/op	 9904740 B/op	    6587 allocs/op
+BenchmarkSummaryNumericCodec/dense-240k/based-shuffle/encode-10         	      67	   5299170 ns/op	     10370 bytes/day	 2791060 B/op	     340 allocs/op
+BenchmarkSummaryNumericCodec/dense-240k/based-shuffle/encode-10         	      67	   5292401 ns/op	     10370 bytes/day	 2791066 B/op	     341 allocs/op
+BenchmarkSummaryNumericCodec/dense-240k/based-shuffle/encode-10         	      68	   5285358 ns/op	     10370 bytes/day	 2791061 B/op	     340 allocs/op
+BenchmarkSummaryNumericCodec/dense-240k/based-shuffle/decode-10         	     100	   3222339 ns/op	 9972168 B/op	    3766 allocs/op
+BenchmarkSummaryNumericCodec/dense-240k/based-shuffle/decode-10         	     100	   3203494 ns/op	 9972164 B/op	    3766 allocs/op
+BenchmarkSummaryNumericCodec/dense-240k/based-shuffle/decode-10         	     100	   3225578 ns/op	 9972165 B/op	    3766 allocs/op
+BenchmarkSummaryNumericCodec/large-base-240k/u64/encode-10              	       4	  76432698 ns/op	    265426 bytes/day	 7537536 B/op	     202 allocs/op
+BenchmarkSummaryNumericCodec/large-base-240k/u64/encode-10              	       4	  76372875 ns/op	    265426 bytes/day	 7537624 B/op	     204 allocs/op
+BenchmarkSummaryNumericCodec/large-base-240k/u64/encode-10              	       4	  77077427 ns/op	    265426 bytes/day	 7537536 B/op	     202 allocs/op
+BenchmarkSummaryNumericCodec/large-base-240k/u64/decode-10              	      58	   5834375 ns/op	11467340 B/op	    3927 allocs/op
+BenchmarkSummaryNumericCodec/large-base-240k/u64/decode-10              	      60	   5846815 ns/op	11467333 B/op	    3927 allocs/op
+BenchmarkSummaryNumericCodec/large-base-240k/u64/decode-10              	      63	   5840145 ns/op	11467336 B/op	    3927 allocs/op
+BenchmarkSummaryNumericCodec/large-base-240k/narrow/encode-10           	      28	  12494262 ns/op	    420887 bytes/day	 4180523 B/op	     274 allocs/op
+BenchmarkSummaryNumericCodec/large-base-240k/narrow/encode-10           	      27	  12454769 ns/op	    420887 bytes/day	 4180549 B/op	     274 allocs/op
+BenchmarkSummaryNumericCodec/large-base-240k/narrow/encode-10           	      28	  12500972 ns/op	    420887 bytes/day	 4180513 B/op	     274 allocs/op
+BenchmarkSummaryNumericCodec/large-base-240k/narrow/decode-10           	      49	   7187469 ns/op	10528194 B/op	    8342 allocs/op
+BenchmarkSummaryNumericCodec/large-base-240k/narrow/decode-10           	      50	   7170859 ns/op	10528201 B/op	    8342 allocs/op
+BenchmarkSummaryNumericCodec/large-base-240k/narrow/decode-10           	      50	   7225639 ns/op	10528200 B/op	    8342 allocs/op
+BenchmarkSummaryNumericCodec/large-base-240k/based/encode-10            	      36	  10061381 ns/op	    357801 bytes/day	 3656157 B/op	     274 allocs/op
+BenchmarkSummaryNumericCodec/large-base-240k/based/encode-10            	      36	  10084539 ns/op	    357801 bytes/day	 3656158 B/op	     274 allocs/op
+BenchmarkSummaryNumericCodec/large-base-240k/based/encode-10            	      34	  10042254 ns/op	    357801 bytes/day	 3656182 B/op	     274 allocs/op
+BenchmarkSummaryNumericCodec/large-base-240k/based/decode-10            	      57	   6088605 ns/op	 9882376 B/op	    6587 allocs/op
+BenchmarkSummaryNumericCodec/large-base-240k/based/decode-10            	      60	   6163505 ns/op	 9882377 B/op	    6587 allocs/op
+BenchmarkSummaryNumericCodec/large-base-240k/based/decode-10            	      62	   6069061 ns/op	 9882371 B/op	    6587 allocs/op
+BenchmarkSummaryNumericCodec/large-base-240k/based-shuffle/encode-10    	      84	   4239229 ns/op	     10526 bytes/day	 2791055 B/op	     340 allocs/op
+BenchmarkSummaryNumericCodec/large-base-240k/based-shuffle/encode-10    	      84	   4225619 ns/op	     10526 bytes/day	 2791049 B/op	     340 allocs/op
+BenchmarkSummaryNumericCodec/large-base-240k/based-shuffle/encode-10    	      84	   4232577 ns/op	     10526 bytes/day	 2791056 B/op	     340 allocs/op
+BenchmarkSummaryNumericCodec/large-base-240k/based-shuffle/decode-10    	     132	   2711468 ns/op	 9970526 B/op	    3747 allocs/op
+BenchmarkSummaryNumericCodec/large-base-240k/based-shuffle/decode-10    	     139	   2703883 ns/op	 9970528 B/op	    3747 allocs/op
+BenchmarkSummaryNumericCodec/large-base-240k/based-shuffle/decode-10    	     130	   2712026 ns/op	 9970524 B/op	    3747 allocs/op
+BenchmarkSummaryNumericCodec/varied-240k/u64/encode-10                  	       5	  67558308 ns/op	    494314 bytes/day	 7827745 B/op	     277 allocs/op
+BenchmarkSummaryNumericCodec/varied-240k/u64/encode-10                  	       5	  67648708 ns/op	    494314 bytes/day	 7827681 B/op	     276 allocs/op
+BenchmarkSummaryNumericCodec/varied-240k/u64/encode-10                  	       5	  67634258 ns/op	    494314 bytes/day	 7827681 B/op	     276 allocs/op
+BenchmarkSummaryNumericCodec/varied-240k/u64/decode-10                  	      45	   7604544 ns/op	 9181969 B/op	    4674 allocs/op
+BenchmarkSummaryNumericCodec/varied-240k/u64/decode-10                  	      48	   7556095 ns/op	 9181970 B/op	    4674 allocs/op
+BenchmarkSummaryNumericCodec/varied-240k/u64/decode-10                  	      48	   7612175 ns/op	 9181970 B/op	    4674 allocs/op
+BenchmarkSummaryNumericCodec/varied-240k/narrow/encode-10               	      24	  14140326 ns/op	    495192 bytes/day	 4380079 B/op	     394 allocs/op
+BenchmarkSummaryNumericCodec/varied-240k/narrow/encode-10               	      25	  14139988 ns/op	    495192 bytes/day	 4380121 B/op	     394 allocs/op
+BenchmarkSummaryNumericCodec/varied-240k/narrow/encode-10               	      25	  14168972 ns/op	    495192 bytes/day	 4380129 B/op	     394 allocs/op
+BenchmarkSummaryNumericCodec/varied-240k/narrow/decode-10               	      49	   7086535 ns/op	 7402252 B/op	    4626 allocs/op
+BenchmarkSummaryNumericCodec/varied-240k/narrow/decode-10               	      50	   7123031 ns/op	 7402248 B/op	    4626 allocs/op
+BenchmarkSummaryNumericCodec/varied-240k/narrow/decode-10               	      51	   7171797 ns/op	 7402250 B/op	    4626 allocs/op
+BenchmarkSummaryNumericCodec/varied-240k/based/encode-10                	      25	  14185133 ns/op	    494787 bytes/day	 4380147 B/op	     395 allocs/op
+BenchmarkSummaryNumericCodec/varied-240k/based/encode-10                	      25	  14218560 ns/op	    494787 bytes/day	 4380142 B/op	     395 allocs/op
+BenchmarkSummaryNumericCodec/varied-240k/based/encode-10                	      25	  14281243 ns/op	    494787 bytes/day	 4380121 B/op	     394 allocs/op
+BenchmarkSummaryNumericCodec/varied-240k/based/decode-10                	      50	   7136586 ns/op	 7402936 B/op	    4624 allocs/op
+BenchmarkSummaryNumericCodec/varied-240k/based/decode-10                	      51	   7139016 ns/op	 7402928 B/op	    4624 allocs/op
+BenchmarkSummaryNumericCodec/varied-240k/based/decode-10                	      51	   7134104 ns/op	 7402937 B/op	    4624 allocs/op
+BenchmarkSummaryNumericCodec/varied-240k/based-shuffle/encode-10        	      30	  11676811 ns/op	    341727 bytes/day	 4884634 B/op	     467 allocs/op
+BenchmarkSummaryNumericCodec/varied-240k/based-shuffle/encode-10        	      30	  11721906 ns/op	    341727 bytes/day	 4884634 B/op	     467 allocs/op
+BenchmarkSummaryNumericCodec/varied-240k/based-shuffle/encode-10        	      30	  11706358 ns/op	    341727 bytes/day	 4884619 B/op	     467 allocs/op
+BenchmarkSummaryNumericCodec/varied-240k/based-shuffle/decode-10        	      64	   5540021 ns/op	 8063797 B/op	    4660 allocs/op
+BenchmarkSummaryNumericCodec/varied-240k/based-shuffle/decode-10        	      67	   5540221 ns/op	 8063799 B/op	    4660 allocs/op
+BenchmarkSummaryNumericCodec/varied-240k/based-shuffle/decode-10        	      63	   5498257 ns/op	 8063800 B/op	    4660 allocs/op
+BenchmarkSummaryNumericCodec/full-u32-240k/u64/encode-10                	       5	  61806908 ns/op	    726042 bytes/day	 9113825 B/op	     277 allocs/op
+BenchmarkSummaryNumericCodec/full-u32-240k/u64/encode-10                	       5	  61903817 ns/op	    726042 bytes/day	 9113889 B/op	     278 allocs/op
+BenchmarkSummaryNumericCodec/full-u32-240k/u64/encode-10                	       5	  61919992 ns/op	    726042 bytes/day	 9113889 B/op	     278 allocs/op
+BenchmarkSummaryNumericCodec/full-u32-240k/u64/decode-10                	      37	   9183193 ns/op	 9182139 B/op	    4681 allocs/op
+BenchmarkSummaryNumericCodec/full-u32-240k/u64/decode-10                	      38	   9220516 ns/op	 9182146 B/op	    4681 allocs/op
+BenchmarkSummaryNumericCodec/full-u32-240k/u64/decode-10                	      39	   9325985 ns/op	 9182145 B/op	    4681 allocs/op
+BenchmarkSummaryNumericCodec/full-u32-240k/narrow/encode-10             	      27	  12666005 ns/op	    654956 bytes/day	 5584478 B/op	     396 allocs/op
+BenchmarkSummaryNumericCodec/full-u32-240k/narrow/encode-10             	      27	  12736997 ns/op	    654956 bytes/day	 5584431 B/op	     396 allocs/op
+BenchmarkSummaryNumericCodec/full-u32-240k/narrow/encode-10             	      27	  12714219 ns/op	    654956 bytes/day	 5584432 B/op	     395 allocs/op
+BenchmarkSummaryNumericCodec/full-u32-240k/narrow/decode-10             	      66	   5348182 ns/op	 7391154 B/op	    4528 allocs/op
+BenchmarkSummaryNumericCodec/full-u32-240k/narrow/decode-10             	      68	   5346782 ns/op	 7391150 B/op	    4528 allocs/op
+BenchmarkSummaryNumericCodec/full-u32-240k/narrow/decode-10             	      68	   5327663 ns/op	 7391155 B/op	    4528 allocs/op
+BenchmarkSummaryNumericCodec/full-u32-240k/based/encode-10              	      27	  12771437 ns/op	    654964 bytes/day	 5584443 B/op	     396 allocs/op
+BenchmarkSummaryNumericCodec/full-u32-240k/based/encode-10              	      27	  12667611 ns/op	    654964 bytes/day	 5584443 B/op	     396 allocs/op
+BenchmarkSummaryNumericCodec/full-u32-240k/based/encode-10              	      27	  12716147 ns/op	    654964 bytes/day	 5584443 B/op	     396 allocs/op
+BenchmarkSummaryNumericCodec/full-u32-240k/based/decode-10              	      63	   5294731 ns/op	 7391188 B/op	    4528 allocs/op
+BenchmarkSummaryNumericCodec/full-u32-240k/based/decode-10              	      68	   5305661 ns/op	 7391181 B/op	    4528 allocs/op
+BenchmarkSummaryNumericCodec/full-u32-240k/based/decode-10              	      68	   5320559 ns/op	 7391184 B/op	    4528 allocs/op
+BenchmarkSummaryNumericCodec/full-u32-240k/based-shuffle/encode-10      	      24	  14933814 ns/op	    585905 bytes/day	 6179076 B/op	     468 allocs/op
+BenchmarkSummaryNumericCodec/full-u32-240k/based-shuffle/encode-10      	      24	  14964915 ns/op	    585905 bytes/day	 6179085 B/op	     468 allocs/op
+BenchmarkSummaryNumericCodec/full-u32-240k/based-shuffle/encode-10      	      24	  14910224 ns/op	    585905 bytes/day	 6179094 B/op	     468 allocs/op
+BenchmarkSummaryNumericCodec/full-u32-240k/based-shuffle/decode-10      	      51	   6858953 ns/op	 8054668 B/op	    4680 allocs/op
+BenchmarkSummaryNumericCodec/full-u32-240k/based-shuffle/decode-10      	      54	   6860348 ns/op	 8054662 B/op	    4680 allocs/op
+BenchmarkSummaryNumericCodec/full-u32-240k/based-shuffle/decode-10      	      54	   6841425 ns/op	 8054666 B/op	    4680 allocs/op
+PASS
+ok  	trie-trunk/go/server/cache	49.138s

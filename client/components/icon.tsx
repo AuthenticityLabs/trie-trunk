@@ -1,33 +1,6 @@
-import snoot from "../assets/snoot.png";
+import snoot from "../assets/snoot-portrait.png";
 
-const paths = {
-  search: "m21 21-4.4-4.4M19 10.5a8.5 8.5 0 1 1-17 0 8.5 8.5 0 0 1 17 0Z",
-  dashboard: "M3 3h7v7H3zM14 3h7v11h-7zM3 14h7v7H3zM14 18h7v3h-7z",
-  bell: "M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9ZM10 21h4",
-  menu: "M3 5h18M3 12h18M3 19h18",
-  panel: "M3 4h18v16H3zM9 4v16",
-  chevron: "m9 5 7 7-7 7",
-  down: "m6 9 6 6 6-6",
-  clock: "M22 12a10 10 0 1 1-20 0 10 10 0 0 1 20 0ZM12 6v6l4 2",
-  play: "m8 5 11 7-11 7Z",
-  stop: "M6 6h12v12H6z",
-  download: "M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5",
-  plus: "M12 5v14M5 12h14",
-  close: "m6 6 12 12M6 18 18 6",
-  settings: "M4 7h16M4 17h16M8 4v6M16 14v6",
-  help: "M22 12a10 10 0 1 1-20 0 10 10 0 0 1 20 0ZM9 8a3 3 0 0 1 6 0c0 2-3 2-3 5M12 17h.01",
-  code: "m8 6-6 6 6 6m8-12 6 6-6 6m-3-14-2 16",
-  check: "m5 12 4 4L19 6",
-  link: "M10 13a5 5 0 0 0 7 0l4-4a5 5 0 0 0-7-7l-2 2M14 11a5 5 0 0 0-7 0l-4 4a5 5 0 0 0 7 7l2-2",
-  restart:
-    "M20 7v5h-5M4 17v-5h5M6.1 6.1A8 8 0 0 1 20 12M4 12a8 8 0 0 0 13.9 5.9",
-  rollback: "M9 4 3 10l6 6M3 10h11a7 7 0 0 1 0 14",
-  activity: "M2 12h4l3-8 6 16 3-8h4",
-  arrow: "M5 19 19 5M5 5h14v14",
-  copy: "M8 8h13v13H8zM16 8V3H3v13h5",
-  notebook: "M5 3h14v18H5zM8 3v18M3 7h4M3 12h4M3 17h4M11 7h5M11 11h5",
-  leaf: "M20 3C8 2 2 7 5 15s15 7 15-12ZM5 21l9-12",
-};
+import paths from "../assets/icons.json";
 
 export type IconName = keyof typeof paths;
 
@@ -50,15 +23,15 @@ export function Icon(props: { name: IconName; size?: number; class?: string }) {
   );
 }
 
-export function Mark(props: { size?: number }) {
+export function ProfileMark(props: { size?: number }) {
   return (
-    <svg
+    <img
+      class="snoot-mark"
+      src={snoot}
+      alt=""
       width={props.size || 30}
       height={props.size || 30}
-      viewBox="108 90 1016 970"
       aria-hidden="true"
-    >
-      <image href={snoot} width="1199" height="1312" />
-    </svg>
+    />
   );
 }

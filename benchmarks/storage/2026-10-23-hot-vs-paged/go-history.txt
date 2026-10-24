@@ -1,0 +1,33 @@
+goos: darwin
+goarch: arm64
+pkg: trie-trunk/go/server/cache
+cpu: Apple M1 Max
+BenchmarkResidentObjectHistory/1/pending-10         	  410808	       502.6 ns/op	        78.00 PIL-B/op	    1008 B/op	       8 allocs/op
+BenchmarkResidentObjectHistory/1/pending-10         	  466627	       506.3 ns/op	        78.00 PIL-B/op	    1008 B/op	       8 allocs/op
+BenchmarkResidentObjectHistory/1/pending-10         	  464365	       502.8 ns/op	        78.00 PIL-B/op	    1008 B/op	       8 allocs/op
+BenchmarkResidentObjectHistory/1/sealed-resident-10 	  317678	       647.6 ns/op	        78.00 PIL-B/op	    1136 B/op	      12 allocs/op
+BenchmarkResidentObjectHistory/1/sealed-resident-10 	  374608	       646.4 ns/op	        78.00 PIL-B/op	    1136 B/op	      12 allocs/op
+BenchmarkResidentObjectHistory/1/sealed-resident-10 	  370117	       647.5 ns/op	        78.00 PIL-B/op	    1136 B/op	      12 allocs/op
+BenchmarkResidentObjectHistory/1/expired-resident-warm-disk-10         	    9116	     22100 ns/op	        78.00 PIL-B/op	    2648 B/op	      32 allocs/op
+BenchmarkResidentObjectHistory/1/expired-resident-warm-disk-10         	   10000	     22108 ns/op	        78.00 PIL-B/op	    2648 B/op	      32 allocs/op
+BenchmarkResidentObjectHistory/1/expired-resident-warm-disk-10         	   10000	     21659 ns/op	        78.00 PIL-B/op	    2648 B/op	      32 allocs/op
+BenchmarkResidentObjectHistory/9/pending-10                            	  194538	      1206 ns/op	       534.0 PIL-B/op	    3488 B/op	      14 allocs/op
+BenchmarkResidentObjectHistory/9/pending-10                            	  197299	      1205 ns/op	       534.0 PIL-B/op	    3488 B/op	      14 allocs/op
+BenchmarkResidentObjectHistory/9/pending-10                            	  201628	      1210 ns/op	       534.0 PIL-B/op	    3488 B/op	      14 allocs/op
+BenchmarkResidentObjectHistory/9/sealed-resident-10                    	  112582	      1973 ns/op	       534.0 PIL-B/op	    4016 B/op	      31 allocs/op
+BenchmarkResidentObjectHistory/9/sealed-resident-10                    	  122654	      1959 ns/op	       534.0 PIL-B/op	    4016 B/op	      31 allocs/op
+BenchmarkResidentObjectHistory/9/sealed-resident-10                    	  117649	      1950 ns/op	       534.0 PIL-B/op	    4016 B/op	      31 allocs/op
+BenchmarkResidentObjectHistory/9/expired-resident-warm-disk-10         	    7566	     30808 ns/op	       534.0 PIL-B/op	   13520 B/op	     135 allocs/op
+BenchmarkResidentObjectHistory/9/expired-resident-warm-disk-10         	    7562	     30413 ns/op	       534.0 PIL-B/op	   13520 B/op	     135 allocs/op
+BenchmarkResidentObjectHistory/9/expired-resident-warm-disk-10         	    8996	     31001 ns/op	       534.0 PIL-B/op	   13520 B/op	     135 allocs/op
+BenchmarkResidentObjectHistory/61/pending-10                           	   58977	      3458 ns/op	      3638 PIL-B/op	   11552 B/op	      16 allocs/op
+BenchmarkResidentObjectHistory/61/pending-10                           	   61582	      3601 ns/op	      3638 PIL-B/op	   11552 B/op	      16 allocs/op
+BenchmarkResidentObjectHistory/61/pending-10                           	   71776	      3360 ns/op	      3638 PIL-B/op	   11552 B/op	      16 allocs/op
+BenchmarkResidentObjectHistory/61/sealed-resident-10                   	   30691	      7603 ns/op	      3638 PIL-B/op	   13680 B/op	      87 allocs/op
+BenchmarkResidentObjectHistory/61/sealed-resident-10                   	   31600	      7599 ns/op	      3638 PIL-B/op	   13680 B/op	      87 allocs/op
+BenchmarkResidentObjectHistory/61/sealed-resident-10                   	   31912	      7501 ns/op	      3638 PIL-B/op	   13680 B/op	      87 allocs/op
+BenchmarkResidentObjectHistory/61/expired-resident-warm-disk-10        	    3426	     60115 ns/op	      3638 PIL-B/op	   68528 B/op	     677 allocs/op
+BenchmarkResidentObjectHistory/61/expired-resident-warm-disk-10        	    3974	     59027 ns/op	      3638 PIL-B/op	   68528 B/op	     677 allocs/op
+BenchmarkResidentObjectHistory/61/expired-resident-warm-disk-10        	    4054	     59228 ns/op	      3638 PIL-B/op	   68528 B/op	     677 allocs/op
+PASS
+ok  	trie-trunk/go/server/cache	8.914s

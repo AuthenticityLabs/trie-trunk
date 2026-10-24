@@ -1,0 +1,5 @@
+   Compiling trunk-uuid-index v0.0.0 (/Users/Shared/code/applications/trie-trunk/rust/uuid-index)
+    Finished `release` profile [optimized] target(s) in 0.71s
+     Running `rust/uuid-index/target/release/examples/history_layout_compare`
+page_insert layout=slotted ns_per_revision=41.23 repeated_bytes_moved_per_revision=0.00
+page_insert layout=repeated_uuid ns_per_revision=51.50 repeated_bytes_moved_per_revision=681.42

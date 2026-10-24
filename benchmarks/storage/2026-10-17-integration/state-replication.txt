@@ -1,0 +1,24 @@
+goos: darwin
+goarch: arm64
+pkg: trie-trunk/go/server/cache
+cpu: Apple M1 Max
+BenchmarkStateReplication/1000/legacy-full-10         	     561	    194436 ns/op	     21781 max-chunk-B	     21781 state-B/op	   66708 B/op	    1006 allocs/op
+BenchmarkStateReplication/1000/legacy-full-10         	     616	    193130 ns/op	     21781 max-chunk-B	     21781 state-B/op	   66612 B/op	    1006 allocs/op
+BenchmarkStateReplication/1000/legacy-full-10         	     615	    191236 ns/op	     21781 max-chunk-B	     21781 state-B/op	   66605 B/op	    1006 allocs/op
+BenchmarkStateReplication/1000/paged-full-10          	     608	    192576 ns/op	     21795 max-chunk-B	     21795 state-B/op	   66618 B/op	    1006 allocs/op
+BenchmarkStateReplication/1000/paged-full-10          	     616	    192473 ns/op	     21795 max-chunk-B	     21795 state-B/op	   66709 B/op	    1006 allocs/op
+BenchmarkStateReplication/1000/paged-full-10          	     621	    194788 ns/op	     21795 max-chunk-B	     21795 state-B/op	   66594 B/op	    1006 allocs/op
+BenchmarkStateReplication/1000/unchanged-10           	  332736	       358.7 ns/op	        82.00 max-chunk-B	        82.00 state-B/op	     160 B/op	       2 allocs/op
+BenchmarkStateReplication/1000/unchanged-10           	  325887	       366.6 ns/op	        82.00 max-chunk-B	        82.00 state-B/op	     160 B/op	       2 allocs/op
+BenchmarkStateReplication/1000/unchanged-10           	  330631	       364.1 ns/op	        82.00 max-chunk-B	        82.00 state-B/op	     160 B/op	       2 allocs/op
+BenchmarkStateReplication/50000/legacy-full-10        	       8	  12831224 ns/op	   1099781 max-chunk-B	   1099781 state-B/op	 5209932 B/op	   50016 allocs/op
+BenchmarkStateReplication/50000/legacy-full-10        	       8	  12765219 ns/op	   1099781 max-chunk-B	   1099781 state-B/op	 5734397 B/op	   50018 allocs/op
+BenchmarkStateReplication/50000/legacy-full-10        	       8	  12706031 ns/op	   1099781 max-chunk-B	   1099781 state-B/op	 6258679 B/op	   50020 allocs/op
+BenchmarkStateReplication/50000/paged-full-10         	       9	  12647005 ns/op	     22589 max-chunk-B	   1102963 state-B/op	 3245100 B/op	   50109 allocs/op
+BenchmarkStateReplication/50000/paged-full-10         	       9	  12774653 ns/op	     22589 max-chunk-B	   1102963 state-B/op	 3237822 B/op	   50108 allocs/op
+BenchmarkStateReplication/50000/paged-full-10         	       9	  12602435 ns/op	     22589 max-chunk-B	   1102963 state-B/op	 3237818 B/op	   50108 allocs/op
+BenchmarkStateReplication/50000/unchanged-10          	  324854	       367.4 ns/op	        82.00 max-chunk-B	        82.00 state-B/op	     160 B/op	       2 allocs/op
+BenchmarkStateReplication/50000/unchanged-10          	  329677	       365.1 ns/op	        82.00 max-chunk-B	        82.00 state-B/op	     160 B/op	       2 allocs/op
+BenchmarkStateReplication/50000/unchanged-10          	  318957	       364.8 ns/op	        82.00 max-chunk-B	        82.00 state-B/op	     160 B/op	       2 allocs/op
+PASS
+ok  	trie-trunk/go/server/cache	2.600s

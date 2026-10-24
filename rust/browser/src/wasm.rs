@@ -171,3 +171,12 @@ pub extern "C" fn error_ptr() -> *const u8 {
 pub extern "C" fn error_len() -> usize {
     STATE.with_borrow(|s| s.error.len())
 }
+
+#[unsafe(no_mangle)]
+pub extern "C" fn inflate(length: usize) -> u32 {
+    run(|s| {
+        pil_codec::compression::inflate(&s.input, length, &mut s.output)
+            .map_err(|e| e.to_string())?;
+        Ok(length as u32)
+    })
+}

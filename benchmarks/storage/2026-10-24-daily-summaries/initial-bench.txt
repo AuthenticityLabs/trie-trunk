@@ -1,0 +1,39 @@
+goos: darwin
+goarch: arm64
+pkg: trie-trunk/go/server/cache
+cpu: Apple M1 Max
+BenchmarkSummaryAccumulator-10    	  690824	       258.5 ns/op	      43 B/op	       3 allocs/op
+BenchmarkSummaryAccumulator-10    	  612608	       255.8 ns/op	      43 B/op	       3 allocs/op
+BenchmarkSummaryAccumulator-10    	  701090	       254.4 ns/op	      43 B/op	       3 allocs/op
+BenchmarkSummaryHourBuild/prior-two-pass-seal/1000-10         	     412	    428328 ns/op	  121277 B/op	    2319 allocs/op
+BenchmarkSummaryHourBuild/prior-two-pass-seal/1000-10         	     420	    434575 ns/op	  121282 B/op	    2319 allocs/op
+BenchmarkSummaryHourBuild/prior-two-pass-seal/1000-10         	     414	    437092 ns/op	  121285 B/op	    2319 allocs/op
+BenchmarkSummaryHourBuild/ingress-plus-seal/1000-10           	     432	    417533 ns/op	  195879 B/op	    3902 allocs/op
+BenchmarkSummaryHourBuild/ingress-plus-seal/1000-10           	     428	    422926 ns/op	  195878 B/op	    3902 allocs/op
+BenchmarkSummaryHourBuild/ingress-plus-seal/1000-10           	     420	    422491 ns/op	  195877 B/op	    3902 allocs/op
+BenchmarkSummaryHourBuild/seal-preaccumulated/1000-10         	    1318	    135786 ns/op	   92420 B/op	     322 allocs/op
+BenchmarkSummaryHourBuild/seal-preaccumulated/1000-10         	    1342	    136772 ns/op	   92421 B/op	     322 allocs/op
+BenchmarkSummaryHourBuild/seal-preaccumulated/1000-10         	    1336	    134330 ns/op	   92418 B/op	     322 allocs/op
+BenchmarkSummaryHourBuild/prior-two-pass-seal/10000-10        	      42	   4369696 ns/op	 1268153 B/op	   20464 allocs/op
+BenchmarkSummaryHourBuild/prior-two-pass-seal/10000-10        	      40	   4389268 ns/op	 1268183 B/op	   20464 allocs/op
+BenchmarkSummaryHourBuild/prior-two-pass-seal/10000-10        	      40	   4470849 ns/op	 1268192 B/op	   20464 allocs/op
+BenchmarkSummaryHourBuild/ingress-plus-seal/10000-10          	      42	   4136312 ns/op	 1869043 B/op	   34240 allocs/op
+BenchmarkSummaryHourBuild/ingress-plus-seal/10000-10          	      44	   4166341 ns/op	 1869056 B/op	   34240 allocs/op
+BenchmarkSummaryHourBuild/ingress-plus-seal/10000-10          	      43	   4148245 ns/op	 1869071 B/op	   34240 allocs/op
+BenchmarkSummaryHourBuild/seal-preaccumulated/10000-10        	     130	   1355910 ns/op	  950973 B/op	     466 allocs/op
+BenchmarkSummaryHourBuild/seal-preaccumulated/10000-10        	     132	   1351288 ns/op	  950972 B/op	     466 allocs/op
+BenchmarkSummaryHourBuild/seal-preaccumulated/10000-10        	     132	   1360746 ns/op	  950971 B/op	     466 allocs/op
+BenchmarkSummaryDayCodec/encode/compressed=false-10           	      93	   1872364 ns/op	   2608752 bytes/day	18352870 B/op	     198 allocs/op
+BenchmarkSummaryDayCodec/encode/compressed=false-10           	      96	   1890967 ns/op	   2608752 bytes/day	18352889 B/op	     198 allocs/op
+BenchmarkSummaryDayCodec/encode/compressed=false-10           	      92	   1899739 ns/op	   2608752 bytes/day	18352900 B/op	     198 allocs/op
+BenchmarkSummaryDayCodec/decode/compressed=false-10           	      90	   1824969 ns/op	 8754181 B/op	    3654 allocs/op
+BenchmarkSummaryDayCodec/decode/compressed=false-10           	     100	   1814636 ns/op	 8754183 B/op	    3654 allocs/op
+BenchmarkSummaryDayCodec/decode/compressed=false-10           	      98	   1786963 ns/op	 8754176 B/op	    3654 allocs/op
+BenchmarkSummaryDayCodec/encode/compressed=true-10            	       2	  82622208 ns/op	    265668 bytes/day	17875112 B/op	     236 allocs/op
+BenchmarkSummaryDayCodec/encode/compressed=true-10            	       2	  83032520 ns/op	    265668 bytes/day	17876680 B/op	     241 allocs/op
+BenchmarkSummaryDayCodec/encode/compressed=true-10            	       2	  84897354 ns/op	    265668 bytes/day	17876028 B/op	     241 allocs/op
+BenchmarkSummaryDayCodec/decode/compressed=true-10            	      26	   6640848 ns/op	15333512 B/op	    3972 allocs/op
+BenchmarkSummaryDayCodec/decode/compressed=true-10            	      26	   6633796 ns/op	15333502 B/op	    3972 allocs/op
+BenchmarkSummaryDayCodec/decode/compressed=true-10            	      26	   6645567 ns/op	15333516 B/op	    3972 allocs/op
+PASS
+ok  	trie-trunk/go/server/cache	8.026s

@@ -15,6 +15,7 @@ pub struct FrameEncoder {
     direct: Vec<u8>,
     offsets: Vec<u8>,
     variable: Vec<u8>,
+    widths: Vec<u8>,
 }
 impl FrameEncoder {
     pub fn encode<'a>(
@@ -38,11 +39,14 @@ impl FrameEncoder {
         self.direct.clear();
         self.offsets.clear();
         self.variable.clear();
+        self.widths.clear();
+        let mut width_bit = 0;
         let Self {
             frame: mask,
             direct,
             offsets,
             variable,
+            widths,
         } = self;
         for (index, field) in definition.fields().iter().enumerate() {
             let value = value_at(index)?;
@@ -80,7 +84,16 @@ impl FrameEncoder {
                         return Err(Error::Invalid("field value type mismatch"));
                     }
                     if kind.width().is_some() {
+                        let start = direct.len();
                         value::write(scalar, direct)?;
+                        let f = definition.integers[index];
+                        if f.bits != 0 {
+                            let code = f.code(&direct[start..]);
+                            widths.resize((width_bit + f.bits).div_ceil(8), 0);
+                            crate::adaptive::put(widths, width_bit, f.bits, code);
+                            width_bit += f.bits;
+                            direct.truncate(start + (1 << code));
+                        }
                         2
                     } else {
                         if field.name == "@fields" {
@@ -101,6 +114,7 @@ impl FrameEncoder {
             };
             mask[index / 4] |= state << (6 - 2 * (index % 4));
         }
+        mask.extend_from_slice(widths);
         mask.extend_from_slice(direct);
         mask.extend_from_slice(offsets);
         mask.extend_from_slice(variable);
@@ -169,6 +183,8 @@ pub fn decode<'a>(definition: &'a Definition, input: &'a [u8]) -> Result<Frame<'
             return Err(Error::Invalid("nonzero unused mask bits"));
         }
     }
+    let plane = definition.plane(input, mask, &mut cursor)?;
+    let mut width_bit = 0;
     let mut values = vec![Value::Absent; count];
     for (index, field) in definition.fields().iter().enumerate() {
         match state(mask, index) {
@@ -196,8 +212,9 @@ pub fn decode<'a>(definition: &'a Definition, input: &'a [u8]) -> Result<Frame<'
                     let width = kind
                         .width()
                         .ok_or(Error::Invalid("DIRECT variable field without dictionary"))?;
+                    let width = definition.wire_width(index, width, plane, &mut width_bit)?;
                     values[index] =
-                        value::read(kind, uint::take(input, &mut cursor, width)?, false)?;
+                        definition.integer_value(index, uint::take(input, &mut cursor, width)?)?;
                 }
             }
             3 => {

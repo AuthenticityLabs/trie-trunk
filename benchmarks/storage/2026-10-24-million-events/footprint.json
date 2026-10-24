@@ -1,0 +1,5650 @@
+{
+  "by_component": {
+    ".cfg": 400,
+    ".idx": 16290136,
+    ".journal": 4770264,
+    ".lock": 0,
+    ".map": 4977,
+    ".pods": 44779478,
+    ".seed": 2200,
+    ".stats": 3635,
+    ".sum": 4875617,
+    ".tri": 3572325,
+    "collection.idx": 12238848,
+    "collection.state": 1710029,
+    "tantivy": 80163220
+  },
+  "events": 1000000,
+  "expanded_jsonl_bytes": 428597753,
+  "expanded_jsonl_sha256": "9ca9311cc7a62c962aa6488b90c5575b0cbd5766df1af87a578c3a3f553a8ad9",
+  "file_count": 935,
+  "files": [
+    {
+      "name": "demo/.writer.lock",
+      "bytes": 0,
+      "allocated_bytes": 0,
+      "component": ".lock"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/debug.idx",
+      "bytes": 75368,
+      "allocated_bytes": 135168,
+      "component": ".idx"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/debug.journal",
+      "bytes": 188659,
+      "allocated_bytes": 200704,
+      "component": ".journal"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/debug.pods",
+      "bytes": 270101,
+      "allocated_bytes": 331776,
+      "component": ".pods"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/debug.search/.managed.json",
+      "bytes": 502,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/debug.search/.tantivy-meta.lock",
+      "bytes": 0,
+      "allocated_bytes": 0,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/debug.search/.tantivy-writer.lock",
+      "bytes": 0,
+      "allocated_bytes": 0,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/debug.search/7ec4879170a64f3a80873a07d9b86f61.fast",
+      "bytes": 12587,
+      "allocated_bytes": 16384,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/debug.search/7ec4879170a64f3a80873a07d9b86f61.fieldnorm",
+      "bytes": 202363,
+      "allocated_bytes": 204800,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/debug.search/7ec4879170a64f3a80873a07d9b86f61.idx",
+      "bytes": 54953,
+      "allocated_bytes": 57344,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/debug.search/7ec4879170a64f3a80873a07d9b86f61.pos",
+      "bytes": 5819,
+      "allocated_bytes": 8192,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/debug.search/7ec4879170a64f3a80873a07d9b86f61.store",
+      "bytes": 16067,
+      "allocated_bytes": 16384,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/debug.search/7ec4879170a64f3a80873a07d9b86f61.term",
+      "bytes": 33019,
+      "allocated_bytes": 36864,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/debug.search/f099f3a3ab7b4305b21b0d5cdea0f5a5.fast",
+      "bytes": 325,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/debug.search/f099f3a3ab7b4305b21b0d5cdea0f5a5.fieldnorm",
+      "bytes": 1729,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/debug.search/f099f3a3ab7b4305b21b0d5cdea0f5a5.idx",
+      "bytes": 2129,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/debug.search/f099f3a3ab7b4305b21b0d5cdea0f5a5.pos",
+      "bytes": 672,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/debug.search/f099f3a3ab7b4305b21b0d5cdea0f5a5.store",
+      "bytes": 248,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/debug.search/f099f3a3ab7b4305b21b0d5cdea0f5a5.term",
+      "bytes": 5799,
+      "allocated_bytes": 8192,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/debug.search/meta.json",
+      "bytes": 11936,
+      "allocated_bytes": 12288,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/debug.seed",
+      "bytes": 88,
+      "allocated_bytes": 4096,
+      "component": ".seed"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/debug.tri",
+      "bytes": 142804,
+      "allocated_bytes": 143360,
+      "component": ".tri"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/error.idx",
+      "bytes": 104456,
+      "allocated_bytes": 135168,
+      "component": ".idx"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/error.journal",
+      "bytes": 187571,
+      "allocated_bytes": 200704,
+      "component": ".journal"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/error.pods",
+      "bytes": 281519,
+      "allocated_bytes": 331776,
+      "component": ".pods"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/error.search/.managed.json",
+      "bytes": 1478,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/error.search/.tantivy-meta.lock",
+      "bytes": 0,
+      "allocated_bytes": 0,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/error.search/.tantivy-writer.lock",
+      "bytes": 0,
+      "allocated_bytes": 0,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/error.search/1bc85e6e623d42d6be8bbaa88647afac.fast",
+      "bytes": 269,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/error.search/1bc85e6e623d42d6be8bbaa88647afac.fieldnorm",
+      "bytes": 607,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/error.search/1bc85e6e623d42d6be8bbaa88647afac.idx",
+      "bytes": 888,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/error.search/1bc85e6e623d42d6be8bbaa88647afac.pos",
+      "bytes": 402,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/error.search/1bc85e6e623d42d6be8bbaa88647afac.store",
+      "bytes": 159,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/error.search/1bc85e6e623d42d6be8bbaa88647afac.term",
+      "bytes": 5388,
+      "allocated_bytes": 8192,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/error.search/32c69a193d1c41b49ddbaaa99e23c6c3.fast",
+      "bytes": 355,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/error.search/32c69a193d1c41b49ddbaaa99e23c6c3.fieldnorm",
+      "bytes": 1985,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/error.search/32c69a193d1c41b49ddbaaa99e23c6c3.idx",
+      "bytes": 2349,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/error.search/32c69a193d1c41b49ddbaaa99e23c6c3.pos",
+      "bytes": 699,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/error.search/32c69a193d1c41b49ddbaaa99e23c6c3.store",
+      "bytes": 269,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/error.search/32c69a193d1c41b49ddbaaa99e23c6c3.term",
+      "bytes": 5869,
+      "allocated_bytes": 8192,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/error.search/3f33883b969b453685b3acc32c1058ba.fast",
+      "bytes": 390,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/error.search/3f33883b969b453685b3acc32c1058ba.fieldnorm",
+      "bytes": 2547,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/error.search/3f33883b969b453685b3acc32c1058ba.idx",
+      "bytes": 2944,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/error.search/3f33883b969b453685b3acc32c1058ba.pos",
+      "bytes": 822,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/error.search/3f33883b969b453685b3acc32c1058ba.store",
+      "bytes": 313,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/error.search/3f33883b969b453685b3acc32c1058ba.term",
+      "bytes": 6029,
+      "allocated_bytes": 8192,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/error.search/5c24d7117f5549d29251187db467c3b2.fast",
+      "bytes": 21073,
+      "allocated_bytes": 24576,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/error.search/5c24d7117f5549d29251187db467c3b2.fieldnorm",
+      "bytes": 268205,
+      "allocated_bytes": 270336,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/error.search/5c24d7117f5549d29251187db467c3b2.idx",
+      "bytes": 64469,
+      "allocated_bytes": 65536,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/error.search/5c24d7117f5549d29251187db467c3b2.pos",
+      "bytes": 5247,
+      "allocated_bytes": 8192,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/error.search/5c24d7117f5549d29251187db467c3b2.store",
+      "bytes": 21253,
+      "allocated_bytes": 24576,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/error.search/5c24d7117f5549d29251187db467c3b2.term",
+      "bytes": 65528,
+      "allocated_bytes": 65536,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/error.search/bf7b81f497d34038846901afef694bcd.fast",
+      "bytes": 356,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/error.search/bf7b81f497d34038846901afef694bcd.fieldnorm",
+      "bytes": 1985,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/error.search/bf7b81f497d34038846901afef694bcd.idx",
+      "bytes": 2350,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/error.search/bf7b81f497d34038846901afef694bcd.pos",
+      "bytes": 700,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/error.search/bf7b81f497d34038846901afef694bcd.store",
+      "bytes": 269,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/error.search/bf7b81f497d34038846901afef694bcd.term",
+      "bytes": 5854,
+      "allocated_bytes": 8192,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/error.search/f4d41b7483a54f10bf4c8253a0657757.fast",
+      "bytes": 1936,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/error.search/f4d41b7483a54f10bf4c8253a0657757.fieldnorm",
+      "bytes": 23150,
+      "allocated_bytes": 24576,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/error.search/f4d41b7483a54f10bf4c8253a0657757.idx",
+      "bytes": 8080,
+      "allocated_bytes": 8192,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/error.search/f4d41b7483a54f10bf4c8253a0657757.pos",
+      "bytes": 1353,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/error.search/f4d41b7483a54f10bf4c8253a0657757.store",
+      "bytes": 1929,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/error.search/f4d41b7483a54f10bf4c8253a0657757.term",
+      "bytes": 12240,
+      "allocated_bytes": 12288,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/error.search/meta.json",
+      "bytes": 12400,
+      "allocated_bytes": 16384,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/error.seed",
+      "bytes": 88,
+      "allocated_bytes": 4096,
+      "component": ".seed"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/error.sum",
+      "bytes": 73527,
+      "allocated_bytes": 73728,
+      "component": ".sum"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/error.tri",
+      "bytes": 142804,
+      "allocated_bytes": 143360,
+      "component": ".tri"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/read.idx",
+      "bytes": 1018808,
+      "allocated_bytes": 1052672,
+      "component": ".idx"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/read.journal",
+      "bytes": 191009,
+      "allocated_bytes": 200704,
+      "component": ".journal"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/read.pods",
+      "bytes": 653567,
+      "allocated_bytes": 659456,
+      "component": ".pods"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/read.search/.managed.json",
+      "bytes": 1234,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/read.search/.tantivy-meta.lock",
+      "bytes": 0,
+      "allocated_bytes": 0,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/read.search/.tantivy-writer.lock",
+      "bytes": 0,
+      "allocated_bytes": 0,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/read.search/2ff40d035f7d4f94bab7ecd18930b114.fast",
+      "bytes": 48611,
+      "allocated_bytes": 49152,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/read.search/2ff40d035f7d4f94bab7ecd18930b114.fieldnorm",
+      "bytes": 637903,
+      "allocated_bytes": 638976,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/read.search/2ff40d035f7d4f94bab7ecd18930b114.idx",
+      "bytes": 134744,
+      "allocated_bytes": 135168,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/read.search/2ff40d035f7d4f94bab7ecd18930b114.pos",
+      "bytes": 12113,
+      "allocated_bytes": 12288,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/read.search/2ff40d035f7d4f94bab7ecd18930b114.store",
+      "bytes": 50416,
+      "allocated_bytes": 53248,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/read.search/2ff40d035f7d4f94bab7ecd18930b114.term",
+      "bytes": 51715,
+      "allocated_bytes": 53248,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/read.search/41b422d82ec04d17b7499472cac7f722.fast",
+      "bytes": 71783,
+      "allocated_bytes": 73728,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/read.search/41b422d82ec04d17b7499472cac7f722.fieldnorm",
+      "bytes": 939160,
+      "allocated_bytes": 942080,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/read.search/41b422d82ec04d17b7499472cac7f722.idx",
+      "bytes": 200928,
+      "allocated_bytes": 204800,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/read.search/41b422d82ec04d17b7499472cac7f722.pos",
+      "bytes": 17099,
+      "allocated_bytes": 20480,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/read.search/41b422d82ec04d17b7499472cac7f722.store",
+      "bytes": 74221,
+      "allocated_bytes": 77824,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/read.search/41b422d82ec04d17b7499472cac7f722.term",
+      "bytes": 63410,
+      "allocated_bytes": 65536,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/read.search/6250c35678fa4770829f8112b7c252c4.fast",
+      "bytes": 52176,
+      "allocated_bytes": 53248,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/read.search/6250c35678fa4770829f8112b7c252c4.fieldnorm",
+      "bytes": 685334,
+      "allocated_bytes": 688128,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/read.search/6250c35678fa4770829f8112b7c252c4.idx",
+      "bytes": 147675,
+      "allocated_bytes": 151552,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/read.search/6250c35678fa4770829f8112b7c252c4.pos",
+      "bytes": 13267,
+      "allocated_bytes": 16384,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/read.search/6250c35678fa4770829f8112b7c252c4.store",
+      "bytes": 54193,
+      "allocated_bytes": 57344,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/read.search/6250c35678fa4770829f8112b7c252c4.term",
+      "bytes": 52618,
+      "allocated_bytes": 53248,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/read.search/783ad7ab6f1c4c35b14689261d13fa2a.fast",
+      "bytes": 57127,
+      "allocated_bytes": 57344,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/read.search/783ad7ab6f1c4c35b14689261d13fa2a.fieldnorm",
+      "bytes": 750716,
+      "allocated_bytes": 753664,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/read.search/783ad7ab6f1c4c35b14689261d13fa2a.idx",
+      "bytes": 159880,
+      "allocated_bytes": 163840,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/read.search/783ad7ab6f1c4c35b14689261d13fa2a.pos",
+      "bytes": 13021,
+      "allocated_bytes": 16384,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/read.search/783ad7ab6f1c4c35b14689261d13fa2a.store",
+      "bytes": 59343,
+      "allocated_bytes": 61440,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/read.search/783ad7ab6f1c4c35b14689261d13fa2a.term",
+      "bytes": 55268,
+      "allocated_bytes": 57344,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/read.search/c0c48016b3e44bada8bd6bf5c55cc901.fast",
+      "bytes": 15233,
+      "allocated_bytes": 16384,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/read.search/c0c48016b3e44bada8bd6bf5c55cc901.fieldnorm",
+      "bytes": 199661,
+      "allocated_bytes": 200704,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/read.search/c0c48016b3e44bada8bd6bf5c55cc901.idx",
+      "bytes": 44140,
+      "allocated_bytes": 45056,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/read.search/c0c48016b3e44bada8bd6bf5c55cc901.pos",
+      "bytes": 4292,
+      "allocated_bytes": 8192,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/read.search/c0c48016b3e44bada8bd6bf5c55cc901.store",
+      "bytes": 15854,
+      "allocated_bytes": 16384,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/read.search/c0c48016b3e44bada8bd6bf5c55cc901.term",
+      "bytes": 38459,
+      "allocated_bytes": 40960,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/read.search/meta.json",
+      "bytes": 12298,
+      "allocated_bytes": 16384,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/read.seed",
+      "bytes": 88,
+      "allocated_bytes": 4096,
+      "component": ".seed"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/read.sum",
+      "bytes": 308406,
+      "allocated_bytes": 311296,
+      "component": ".sum"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/read.tri",
+      "bytes": 142804,
+      "allocated_bytes": 143360,
+      "component": ".tri"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/resource.map",
+      "bytes": 875,
+      "allocated_bytes": 4096,
+      "component": ".map"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/resource.stats",
+      "bytes": 727,
+      "allocated_bytes": 4096,
+      "component": ".stats"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/resource.tri",
+      "bytes": 423,
+      "allocated_bytes": 4096,
+      "component": ".tri"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/trace.idx",
+      "bytes": 52888,
+      "allocated_bytes": 53248,
+      "component": ".idx"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/trace.journal",
+      "bytes": 187867,
+      "allocated_bytes": 200704,
+      "component": ".journal"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/trace.pods",
+      "bytes": 258631,
+      "allocated_bytes": 266240,
+      "component": ".pods"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/trace.search/.managed.json",
+      "bytes": 1478,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/trace.search/.tantivy-meta.lock",
+      "bytes": 0,
+      "allocated_bytes": 0,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/trace.search/.tantivy-writer.lock",
+      "bytes": 0,
+      "allocated_bytes": 0,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/trace.search/0190145335b84b789528167ec04afd22.fast",
+      "bytes": 350,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/trace.search/0190145335b84b789528167ec04afd22.fieldnorm",
+      "bytes": 2190,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/trace.search/0190145335b84b789528167ec04afd22.idx",
+      "bytes": 2635,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/trace.search/0190145335b84b789528167ec04afd22.pos",
+      "bytes": 780,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/trace.search/0190145335b84b789528167ec04afd22.store",
+      "bytes": 285,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/trace.search/0190145335b84b789528167ec04afd22.term",
+      "bytes": 5955,
+      "allocated_bytes": 8192,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/trace.search/2ce14e423cfc42f7aa5fb49d0ec3dbf6.fast",
+      "bytes": 7541,
+      "allocated_bytes": 8192,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/trace.search/2ce14e423cfc42f7aa5fb49d0ec3dbf6.fieldnorm",
+      "bytes": 123263,
+      "allocated_bytes": 126976,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/trace.search/2ce14e423cfc42f7aa5fb49d0ec3dbf6.idx",
+      "bytes": 35214,
+      "allocated_bytes": 36864,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/trace.search/2ce14e423cfc42f7aa5fb49d0ec3dbf6.pos",
+      "bytes": 4097,
+      "allocated_bytes": 8192,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/trace.search/2ce14e423cfc42f7aa5fb49d0ec3dbf6.store",
+      "bytes": 9826,
+      "allocated_bytes": 12288,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/trace.search/2ce14e423cfc42f7aa5fb49d0ec3dbf6.term",
+      "bytes": 27637,
+      "allocated_bytes": 28672,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/trace.search/4421a6ed4947424bb4a80f795b05a04a.fast",
+      "bytes": 340,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/trace.search/4421a6ed4947424bb4a80f795b05a04a.fieldnorm",
+      "bytes": 1986,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/trace.search/4421a6ed4947424bb4a80f795b05a04a.idx",
+      "bytes": 2412,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/trace.search/4421a6ed4947424bb4a80f795b05a04a.pos",
+      "bytes": 733,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/trace.search/4421a6ed4947424bb4a80f795b05a04a.store",
+      "bytes": 269,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/trace.search/4421a6ed4947424bb4a80f795b05a04a.term",
+      "bytes": 5869,
+      "allocated_bytes": 8192,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/trace.search/97f8507bd94d40a9a88bb8d5b0dda0c3.fast",
+      "bytes": 340,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/trace.search/97f8507bd94d40a9a88bb8d5b0dda0c3.fieldnorm",
+      "bytes": 2037,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/trace.search/97f8507bd94d40a9a88bb8d5b0dda0c3.idx",
+      "bytes": 2468,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/trace.search/97f8507bd94d40a9a88bb8d5b0dda0c3.pos",
+      "bytes": 743,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/trace.search/97f8507bd94d40a9a88bb8d5b0dda0c3.store",
+      "bytes": 273,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/trace.search/97f8507bd94d40a9a88bb8d5b0dda0c3.term",
+      "bytes": 5892,
+      "allocated_bytes": 8192,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/trace.search/d0b904d0252749dcb0fd780d705e2266.fast",
+      "bytes": 365,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/trace.search/d0b904d0252749dcb0fd780d705e2266.fieldnorm",
+      "bytes": 2598,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/trace.search/d0b904d0252749dcb0fd780d705e2266.idx",
+      "bytes": 3084,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/trace.search/d0b904d0252749dcb0fd780d705e2266.pos",
+      "bytes": 878,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/trace.search/d0b904d0252749dcb0fd780d705e2266.store",
+      "bytes": 317,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/trace.search/d0b904d0252749dcb0fd780d705e2266.term",
+      "bytes": 6027,
+      "allocated_bytes": 8192,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/trace.search/fe8afc431f8b4ecfb7c8a00f9a146ad5.fast",
+      "bytes": 341,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/trace.search/fe8afc431f8b4ecfb7c8a00f9a146ad5.fieldnorm",
+      "bytes": 2037,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/trace.search/fe8afc431f8b4ecfb7c8a00f9a146ad5.idx",
+      "bytes": 2468,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/trace.search/fe8afc431f8b4ecfb7c8a00f9a146ad5.pos",
+      "bytes": 744,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/trace.search/fe8afc431f8b4ecfb7c8a00f9a146ad5.store",
+      "bytes": 273,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/trace.search/fe8afc431f8b4ecfb7c8a00f9a146ad5.term",
+      "bytes": 5883,
+      "allocated_bytes": 8192,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/trace.search/meta.json",
+      "bytes": 12400,
+      "allocated_bytes": 16384,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/trace.seed",
+      "bytes": 88,
+      "allocated_bytes": 4096,
+      "component": ".seed"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/trace.tri",
+      "bytes": 142804,
+      "allocated_bytes": 143360,
+      "component": ".tri"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/write.idx",
+      "bytes": 2006504,
+      "allocated_bytes": 2101248,
+      "component": ".idx"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/write.journal",
+      "bytes": 198959,
+      "allocated_bytes": 200704,
+      "component": ".journal"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/write.pods",
+      "bytes": 7569971,
+      "allocated_bytes": 8392704,
+      "component": ".pods"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/write.search/.managed.json",
+      "bytes": 1722,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/write.search/.tantivy-meta.lock",
+      "bytes": 0,
+      "allocated_bytes": 0,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/write.search/.tantivy-writer.lock",
+      "bytes": 0,
+      "allocated_bytes": 0,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/write.search/291b709df79b42008365cc2a7538ffd1.fast",
+      "bytes": 95588,
+      "allocated_bytes": 98304,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/write.search/291b709df79b42008365cc2a7538ffd1.fieldnorm",
+      "bytes": 946401,
+      "allocated_bytes": 950272,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/write.search/291b709df79b42008365cc2a7538ffd1.idx",
+      "bytes": 277287,
+      "allocated_bytes": 278528,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/write.search/291b709df79b42008365cc2a7538ffd1.pos",
+      "bytes": 17498,
+      "allocated_bytes": 20480,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/write.search/291b709df79b42008365cc2a7538ffd1.store",
+      "bytes": 74794,
+      "allocated_bytes": 77824,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/write.search/291b709df79b42008365cc2a7538ffd1.term",
+      "bytes": 144949,
+      "allocated_bytes": 147456,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/write.search/a391cbe604b745cc9c66b0c362983c4d.fast",
+      "bytes": 87792,
+      "allocated_bytes": 90112,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/write.search/a391cbe604b745cc9c66b0c362983c4d.fieldnorm",
+      "bytes": 870718,
+      "allocated_bytes": 872448,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/write.search/a391cbe604b745cc9c66b0c362983c4d.idx",
+      "bytes": 249432,
+      "allocated_bytes": 249856,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/write.search/a391cbe604b745cc9c66b0c362983c4d.pos",
+      "bytes": 15938,
+      "allocated_bytes": 16384,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/write.search/a391cbe604b745cc9c66b0c362983c4d.store",
+      "bytes": 68803,
+      "allocated_bytes": 69632,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/write.search/a391cbe604b745cc9c66b0c362983c4d.term",
+      "bytes": 137076,
+      "allocated_bytes": 139264,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/write.search/acb7fab96a4245eba1bd46bc4ef9a6e3.fast",
+      "bytes": 120502,
+      "allocated_bytes": 122880,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/write.search/acb7fab96a4245eba1bd46bc4ef9a6e3.fieldnorm",
+      "bytes": 1221445,
+      "allocated_bytes": 1224704,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/write.search/acb7fab96a4245eba1bd46bc4ef9a6e3.idx",
+      "bytes": 361940,
+      "allocated_bytes": 364544,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/write.search/acb7fab96a4245eba1bd46bc4ef9a6e3.pos",
+      "bytes": 21386,
+      "allocated_bytes": 24576,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/write.search/acb7fab96a4245eba1bd46bc4ef9a6e3.store",
+      "bytes": 96472,
+      "allocated_bytes": 98304,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/write.search/acb7fab96a4245eba1bd46bc4ef9a6e3.term",
+      "bytes": 139982,
+      "allocated_bytes": 143360,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/write.search/c32cd9fceaa94e0baa4907d700cf12c1.fast",
+      "bytes": 72899,
+      "allocated_bytes": 73728,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/write.search/c32cd9fceaa94e0baa4907d700cf12c1.fieldnorm",
+      "bytes": 732254,
+      "allocated_bytes": 733184,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/write.search/c32cd9fceaa94e0baa4907d700cf12c1.idx",
+      "bytes": 209005,
+      "allocated_bytes": 212992,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/write.search/c32cd9fceaa94e0baa4907d700cf12c1.pos",
+      "bytes": 11448,
+      "allocated_bytes": 12288,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/write.search/c32cd9fceaa94e0baa4907d700cf12c1.store",
+      "bytes": 57866,
+      "allocated_bytes": 61440,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/write.search/c32cd9fceaa94e0baa4907d700cf12c1.term",
+      "bytes": 126520,
+      "allocated_bytes": 126976,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/write.search/c68c712e5f80496d90c6832d84f90bd3.fast",
+      "bytes": 101922,
+      "allocated_bytes": 102400,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/write.search/c68c712e5f80496d90c6832d84f90bd3.fieldnorm",
+      "bytes": 1013416,
+      "allocated_bytes": 1015808,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/write.search/c68c712e5f80496d90c6832d84f90bd3.idx",
+      "bytes": 295374,
+      "allocated_bytes": 299008,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/write.search/c68c712e5f80496d90c6832d84f90bd3.pos",
+      "bytes": 17452,
+      "allocated_bytes": 20480,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/write.search/c68c712e5f80496d90c6832d84f90bd3.store",
+      "bytes": 80068,
+      "allocated_bytes": 81920,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/write.search/c68c712e5f80496d90c6832d84f90bd3.term",
+      "bytes": 154663,
+      "allocated_bytes": 155648,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/write.search/c7e667effb99472b993890ac623d57d3.fast",
+      "bytes": 76732,
+      "allocated_bytes": 77824,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/write.search/c7e667effb99472b993890ac623d57d3.fieldnorm",
+      "bytes": 763517,
+      "allocated_bytes": 765952,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/write.search/c7e667effb99472b993890ac623d57d3.idx",
+      "bytes": 225022,
+      "allocated_bytes": 225280,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/write.search/c7e667effb99472b993890ac623d57d3.pos",
+      "bytes": 13469,
+      "allocated_bytes": 16384,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/write.search/c7e667effb99472b993890ac623d57d3.store",
+      "bytes": 60349,
+      "allocated_bytes": 61440,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/write.search/c7e667effb99472b993890ac623d57d3.term",
+      "bytes": 131846,
+      "allocated_bytes": 135168,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/write.search/e5f9aa93b93143059a0bc21c43f95b9f.fast",
+      "bytes": 82726,
+      "allocated_bytes": 86016,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/write.search/e5f9aa93b93143059a0bc21c43f95b9f.fieldnorm",
+      "bytes": 814364,
+      "allocated_bytes": 815104,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/write.search/e5f9aa93b93143059a0bc21c43f95b9f.idx",
+      "bytes": 238532,
+      "allocated_bytes": 241664,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/write.search/e5f9aa93b93143059a0bc21c43f95b9f.pos",
+      "bytes": 15035,
+      "allocated_bytes": 16384,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/write.search/e5f9aa93b93143059a0bc21c43f95b9f.store",
+      "bytes": 64369,
+      "allocated_bytes": 65536,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/write.search/e5f9aa93b93143059a0bc21c43f95b9f.term",
+      "bytes": 134826,
+      "allocated_bytes": 135168,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/write.search/meta.json",
+      "bytes": 12539,
+      "allocated_bytes": 16384,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/write.seed",
+      "bytes": 88,
+      "allocated_bytes": 4096,
+      "component": ".seed"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/write.sum",
+      "bytes": 594329,
+      "allocated_bytes": 598016,
+      "component": ".sum"
+    },
+    {
+      "name": "demo/billing/invoices.v1/0/write.tri",
+      "bytes": 142804,
+      "allocated_bytes": 143360,
+      "component": ".tri"
+    },
+    {
+      "name": "demo/billing/invoices.v1/collection.idx",
+      "bytes": 2449408,
+      "allocated_bytes": 3211264,
+      "component": "collection.idx"
+    },
+    {
+      "name": "demo/billing/invoices.v1/collection.state",
+      "bytes": 342171,
+      "allocated_bytes": 397312,
+      "component": "collection.state"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/debug.idx",
+      "bytes": 75400,
+      "allocated_bytes": 135168,
+      "component": ".idx"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/debug.journal",
+      "bytes": 188654,
+      "allocated_bytes": 200704,
+      "component": ".journal"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/debug.pods",
+      "bytes": 271570,
+      "allocated_bytes": 331776,
+      "component": ".pods"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/debug.search/.managed.json",
+      "bytes": 502,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/debug.search/.tantivy-meta.lock",
+      "bytes": 0,
+      "allocated_bytes": 0,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/debug.search/.tantivy-writer.lock",
+      "bytes": 0,
+      "allocated_bytes": 0,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/debug.search/02d78d0d03af4f7a8021105959e915ea.fast",
+      "bytes": 398,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/debug.search/02d78d0d03af4f7a8021105959e915ea.fieldnorm",
+      "bytes": 3158,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/debug.search/02d78d0d03af4f7a8021105959e915ea.idx",
+      "bytes": 3807,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/debug.search/02d78d0d03af4f7a8021105959e915ea.pos",
+      "bytes": 1011,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/debug.search/02d78d0d03af4f7a8021105959e915ea.store",
+      "bytes": 361,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/debug.search/02d78d0d03af4f7a8021105959e915ea.term",
+      "bytes": 6138,
+      "allocated_bytes": 8192,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/debug.search/57f2e945729f451fb53a238419581149.fast",
+      "bytes": 12588,
+      "allocated_bytes": 16384,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/debug.search/57f2e945729f451fb53a238419581149.fieldnorm",
+      "bytes": 201038,
+      "allocated_bytes": 204800,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/debug.search/57f2e945729f451fb53a238419581149.idx",
+      "bytes": 52879,
+      "allocated_bytes": 53248,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/debug.search/57f2e945729f451fb53a238419581149.pos",
+      "bytes": 5327,
+      "allocated_bytes": 8192,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/debug.search/57f2e945729f451fb53a238419581149.store",
+      "bytes": 15962,
+      "allocated_bytes": 16384,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/debug.search/57f2e945729f451fb53a238419581149.term",
+      "bytes": 32971,
+      "allocated_bytes": 36864,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/debug.search/meta.json",
+      "bytes": 11936,
+      "allocated_bytes": 12288,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/debug.seed",
+      "bytes": 88,
+      "allocated_bytes": 4096,
+      "component": ".seed"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/debug.tri",
+      "bytes": 142804,
+      "allocated_bytes": 143360,
+      "component": ".tri"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/error.idx",
+      "bytes": 104376,
+      "allocated_bytes": 135168,
+      "component": ".idx"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/error.journal",
+      "bytes": 187577,
+      "allocated_bytes": 200704,
+      "component": ".journal"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/error.pods",
+      "bytes": 281654,
+      "allocated_bytes": 331776,
+      "component": ".pods"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/error.search/.managed.json",
+      "bytes": 258,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/error.search/.tantivy-meta.lock",
+      "bytes": 0,
+      "allocated_bytes": 0,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/error.search/.tantivy-writer.lock",
+      "bytes": 0,
+      "allocated_bytes": 0,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/error.search/2623646e7ae34a8d8429603e21799e33.fast",
+      "bytes": 23713,
+      "allocated_bytes": 24576,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/error.search/2623646e7ae34a8d8429603e21799e33.fieldnorm",
+      "bytes": 296153,
+      "allocated_bytes": 299008,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/error.search/2623646e7ae34a8d8429603e21799e33.idx",
+      "bytes": 69990,
+      "allocated_bytes": 73728,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/error.search/2623646e7ae34a8d8429603e21799e33.pos",
+      "bytes": 5128,
+      "allocated_bytes": 8192,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/error.search/2623646e7ae34a8d8429603e21799e33.store",
+      "bytes": 23466,
+      "allocated_bytes": 24576,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/error.search/2623646e7ae34a8d8429603e21799e33.term",
+      "bytes": 69195,
+      "allocated_bytes": 69632,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/error.search/meta.json",
+      "bytes": 11820,
+      "allocated_bytes": 12288,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/error.seed",
+      "bytes": 88,
+      "allocated_bytes": 4096,
+      "component": ".seed"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/error.sum",
+      "bytes": 72419,
+      "allocated_bytes": 73728,
+      "component": ".sum"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/error.tri",
+      "bytes": 142804,
+      "allocated_bytes": 143360,
+      "component": ".tri"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/read.idx",
+      "bytes": 1018760,
+      "allocated_bytes": 1052672,
+      "component": ".idx"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/read.journal",
+      "bytes": 191012,
+      "allocated_bytes": 200704,
+      "component": ".journal"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/read.pods",
+      "bytes": 652868,
+      "allocated_bytes": 659456,
+      "component": ".pods"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/read.search/.managed.json",
+      "bytes": 1478,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/read.search/.tantivy-meta.lock",
+      "bytes": 0,
+      "allocated_bytes": 0,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/read.search/.tantivy-writer.lock",
+      "bytes": 0,
+      "allocated_bytes": 0,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/read.search/150e15d87dbb4abfaaba807be6941cd6.fast",
+      "bytes": 66427,
+      "allocated_bytes": 69632,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/read.search/150e15d87dbb4abfaaba807be6941cd6.fieldnorm",
+      "bytes": 939058,
+      "allocated_bytes": 942080,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/read.search/150e15d87dbb4abfaaba807be6941cd6.idx",
+      "bytes": 199892,
+      "allocated_bytes": 200704,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/read.search/150e15d87dbb4abfaaba807be6941cd6.pos",
+      "bytes": 14391,
+      "allocated_bytes": 16384,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/read.search/150e15d87dbb4abfaaba807be6941cd6.store",
+      "bytes": 74213,
+      "allocated_bytes": 77824,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/read.search/150e15d87dbb4abfaaba807be6941cd6.term",
+      "bytes": 63848,
+      "allocated_bytes": 65536,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/read.search/23b12011fb3d4036b3a30b28b969b578.fast",
+      "bytes": 2403,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/read.search/23b12011fb3d4036b3a30b28b969b578.fieldnorm",
+      "bytes": 35084,
+      "allocated_bytes": 36864,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/read.search/23b12011fb3d4036b3a30b28b969b578.idx",
+      "bytes": 9143,
+      "allocated_bytes": 12288,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/read.search/23b12011fb3d4036b3a30b28b969b578.pos",
+      "bytes": 1280,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/read.search/23b12011fb3d4036b3a30b28b969b578.store",
+      "bytes": 2870,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/read.search/23b12011fb3d4036b3a30b28b969b578.term",
+      "bytes": 15560,
+      "allocated_bytes": 16384,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/read.search/3812e86c1a3e4ee78958b7e9e1b2db7e.fast",
+      "bytes": 45583,
+      "allocated_bytes": 49152,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/read.search/3812e86c1a3e4ee78958b7e9e1b2db7e.fieldnorm",
+      "bytes": 633518,
+      "allocated_bytes": 634880,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/read.search/3812e86c1a3e4ee78958b7e9e1b2db7e.idx",
+      "bytes": 134016,
+      "allocated_bytes": 135168,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/read.search/3812e86c1a3e4ee78958b7e9e1b2db7e.pos",
+      "bytes": 10785,
+      "allocated_bytes": 12288,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/read.search/3812e86c1a3e4ee78958b7e9e1b2db7e.store",
+      "bytes": 50069,
+      "allocated_bytes": 53248,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/read.search/3812e86c1a3e4ee78958b7e9e1b2db7e.term",
+      "bytes": 51608,
+      "allocated_bytes": 53248,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/read.search/6d2041791ed44b659852e72eb2f74da8.fast",
+      "bytes": 49385,
+      "allocated_bytes": 53248,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/read.search/6d2041791ed44b659852e72eb2f74da8.fieldnorm",
+      "bytes": 692372,
+      "allocated_bytes": 696320,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/read.search/6d2041791ed44b659852e72eb2f74da8.idx",
+      "bytes": 149005,
+      "allocated_bytes": 151552,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/read.search/6d2041791ed44b659852e72eb2f74da8.pos",
+      "bytes": 14638,
+      "allocated_bytes": 16384,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/read.search/6d2041791ed44b659852e72eb2f74da8.store",
+      "bytes": 54752,
+      "allocated_bytes": 57344,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/read.search/6d2041791ed44b659852e72eb2f74da8.term",
+      "bytes": 53926,
+      "allocated_bytes": 57344,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/read.search/be35bc65cbbf49a2b43ffdda55053405.fast",
+      "bytes": 48753,
+      "allocated_bytes": 49152,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/read.search/be35bc65cbbf49a2b43ffdda55053405.fieldnorm",
+      "bytes": 685079,
+      "allocated_bytes": 688128,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/read.search/be35bc65cbbf49a2b43ffdda55053405.idx",
+      "bytes": 146596,
+      "allocated_bytes": 147456,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/read.search/be35bc65cbbf49a2b43ffdda55053405.pos",
+      "bytes": 11658,
+      "allocated_bytes": 12288,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/read.search/be35bc65cbbf49a2b43ffdda55053405.store",
+      "bytes": 54151,
+      "allocated_bytes": 57344,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/read.search/be35bc65cbbf49a2b43ffdda55053405.term",
+      "bytes": 52699,
+      "allocated_bytes": 53248,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/read.search/ff9c7767e1a94140938140cab01e8afd.fast",
+      "bytes": 16176,
+      "allocated_bytes": 16384,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/read.search/ff9c7767e1a94140938140cab01e8afd.fieldnorm",
+      "bytes": 227966,
+      "allocated_bytes": 229376,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/read.search/ff9c7767e1a94140938140cab01e8afd.idx",
+      "bytes": 52292,
+      "allocated_bytes": 53248,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/read.search/ff9c7767e1a94140938140cab01e8afd.pos",
+      "bytes": 4782,
+      "allocated_bytes": 8192,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/read.search/ff9c7767e1a94140938140cab01e8afd.store",
+      "bytes": 18085,
+      "allocated_bytes": 20480,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/read.search/ff9c7767e1a94140938140cab01e8afd.term",
+      "bytes": 41579,
+      "allocated_bytes": 45056,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/read.search/meta.json",
+      "bytes": 12415,
+      "allocated_bytes": 16384,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/read.seed",
+      "bytes": 88,
+      "allocated_bytes": 4096,
+      "component": ".seed"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/read.sum",
+      "bytes": 307975,
+      "allocated_bytes": 311296,
+      "component": ".sum"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/read.tri",
+      "bytes": 142804,
+      "allocated_bytes": 143360,
+      "component": ".tri"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/resource.map",
+      "bytes": 870,
+      "allocated_bytes": 4096,
+      "component": ".map"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/resource.stats",
+      "bytes": 727,
+      "allocated_bytes": 4096,
+      "component": ".stats"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/resource.tri",
+      "bytes": 423,
+      "allocated_bytes": 4096,
+      "component": ".tri"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/trace.idx",
+      "bytes": 52888,
+      "allocated_bytes": 53248,
+      "component": ".idx"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/trace.journal",
+      "bytes": 187863,
+      "allocated_bytes": 200704,
+      "component": ".journal"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/trace.pods",
+      "bytes": 258934,
+      "allocated_bytes": 266240,
+      "component": ".pods"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/trace.search/.managed.json",
+      "bytes": 502,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/trace.search/.tantivy-meta.lock",
+      "bytes": 0,
+      "allocated_bytes": 0,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/trace.search/.tantivy-writer.lock",
+      "bytes": 0,
+      "allocated_bytes": 0,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/trace.search/49e7013a17784181a1cbd043605bd57c.fast",
+      "bytes": 7912,
+      "allocated_bytes": 8192,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/trace.search/49e7013a17784181a1cbd043605bd57c.fieldnorm",
+      "bytes": 130658,
+      "allocated_bytes": 131072,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/trace.search/49e7013a17784181a1cbd043605bd57c.idx",
+      "bytes": 39044,
+      "allocated_bytes": 40960,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/trace.search/49e7013a17784181a1cbd043605bd57c.pos",
+      "bytes": 4493,
+      "allocated_bytes": 8192,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/trace.search/49e7013a17784181a1cbd043605bd57c.store",
+      "bytes": 10409,
+      "allocated_bytes": 12288,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/trace.search/49e7013a17784181a1cbd043605bd57c.term",
+      "bytes": 28626,
+      "allocated_bytes": 28672,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/trace.search/93dcf003407d4067b7d586898a741a14.fast",
+      "bytes": 328,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/trace.search/93dcf003407d4067b7d586898a741a14.fieldnorm",
+      "bytes": 1833,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/trace.search/93dcf003407d4067b7d586898a741a14.idx",
+      "bytes": 2299,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/trace.search/93dcf003407d4067b7d586898a741a14.pos",
+      "bytes": 697,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/trace.search/93dcf003407d4067b7d586898a741a14.store",
+      "bytes": 256,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/trace.search/93dcf003407d4067b7d586898a741a14.term",
+      "bytes": 5813,
+      "allocated_bytes": 8192,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/trace.search/meta.json",
+      "bytes": 11936,
+      "allocated_bytes": 12288,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/trace.seed",
+      "bytes": 88,
+      "allocated_bytes": 4096,
+      "component": ".seed"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/trace.tri",
+      "bytes": 142804,
+      "allocated_bytes": 143360,
+      "component": ".tri"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/write.idx",
+      "bytes": 2006600,
+      "allocated_bytes": 2101248,
+      "component": ".idx"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/write.journal",
+      "bytes": 198926,
+      "allocated_bytes": 200704,
+      "component": ".journal"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/write.pods",
+      "bytes": 7568972,
+      "allocated_bytes": 8392704,
+      "component": ".pods"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/write.search/.managed.json",
+      "bytes": 746,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/write.search/.tantivy-meta.lock",
+      "bytes": 0,
+      "allocated_bytes": 0,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/write.search/.tantivy-writer.lock",
+      "bytes": 0,
+      "allocated_bytes": 0,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/write.search/1d2b7875054b490999937ae77be686af.fast",
+      "bytes": 2347,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/write.search/1d2b7875054b490999937ae77be686af.fieldnorm",
+      "bytes": 24475,
+      "allocated_bytes": 24576,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/write.search/1d2b7875054b490999937ae77be686af.idx",
+      "bytes": 12124,
+      "allocated_bytes": 12288,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/write.search/1d2b7875054b490999937ae77be686af.pos",
+      "bytes": 1867,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/write.search/1d2b7875054b490999937ae77be686af.store",
+      "bytes": 2034,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/write.search/1d2b7875054b490999937ae77be686af.term",
+      "bytes": 15423,
+      "allocated_bytes": 16384,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/write.search/c8ae5b35e1e44ebb92a31016f012e4cc.fast",
+      "bytes": 529637,
+      "allocated_bytes": 532480,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/write.search/c8ae5b35e1e44ebb92a31016f012e4cc.fieldnorm",
+      "bytes": 5545531,
+      "allocated_bytes": 5545984,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/write.search/c8ae5b35e1e44ebb92a31016f012e4cc.idx",
+      "bytes": 1666537,
+      "allocated_bytes": 1667072,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/write.search/c8ae5b35e1e44ebb92a31016f012e4cc.pos",
+      "bytes": 84252,
+      "allocated_bytes": 86016,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/write.search/c8ae5b35e1e44ebb92a31016f012e4cc.store",
+      "bytes": 437703,
+      "allocated_bytes": 438272,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/write.search/c8ae5b35e1e44ebb92a31016f012e4cc.term",
+      "bytes": 284390,
+      "allocated_bytes": 286720,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/write.search/ca8cbfca62774b2883d6e141199dbee9.fast",
+      "bytes": 79802,
+      "allocated_bytes": 81920,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/write.search/ca8cbfca62774b2883d6e141199dbee9.fieldnorm",
+      "bytes": 790445,
+      "allocated_bytes": 790528,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/write.search/ca8cbfca62774b2883d6e141199dbee9.idx",
+      "bytes": 226842,
+      "allocated_bytes": 229376,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/write.search/ca8cbfca62774b2883d6e141199dbee9.pos",
+      "bytes": 12292,
+      "allocated_bytes": 16384,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/write.search/ca8cbfca62774b2883d6e141199dbee9.store",
+      "bytes": 62471,
+      "allocated_bytes": 65536,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/write.search/ca8cbfca62774b2883d6e141199dbee9.term",
+      "bytes": 133339,
+      "allocated_bytes": 135168,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/write.search/meta.json",
+      "bytes": 12062,
+      "allocated_bytes": 12288,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/write.seed",
+      "bytes": 88,
+      "allocated_bytes": 4096,
+      "component": ".seed"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/write.sum",
+      "bytes": 593676,
+      "allocated_bytes": 593920,
+      "component": ".sum"
+    },
+    {
+      "name": "demo/gateway/routes.v1/0/write.tri",
+      "bytes": 142804,
+      "allocated_bytes": 143360,
+      "component": ".tri"
+    },
+    {
+      "name": "demo/gateway/routes.v1/collection.idx",
+      "bytes": 2445312,
+      "allocated_bytes": 3211264,
+      "component": "collection.idx"
+    },
+    {
+      "name": "demo/gateway/routes.v1/collection.state",
+      "bytes": 341876,
+      "allocated_bytes": 397312,
+      "component": "collection.state"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/debug.idx",
+      "bytes": 75336,
+      "allocated_bytes": 135168,
+      "component": ".idx"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/debug.journal",
+      "bytes": 188671,
+      "allocated_bytes": 200704,
+      "component": ".journal"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/debug.pods",
+      "bytes": 275983,
+      "allocated_bytes": 331776,
+      "component": ".pods"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/debug.search/.managed.json",
+      "bytes": 502,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/debug.search/.tantivy-meta.lock",
+      "bytes": 0,
+      "allocated_bytes": 0,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/debug.search/.tantivy-writer.lock",
+      "bytes": 0,
+      "allocated_bytes": 0,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/debug.search/662049945f2a45bd87c0944965f626ad.fast",
+      "bytes": 12564,
+      "allocated_bytes": 16384,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/debug.search/662049945f2a45bd87c0944965f626ad.fieldnorm",
+      "bytes": 201700,
+      "allocated_bytes": 204800,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/debug.search/662049945f2a45bd87c0944965f626ad.idx",
+      "bytes": 53491,
+      "allocated_bytes": 57344,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/debug.search/662049945f2a45bd87c0944965f626ad.pos",
+      "bytes": 5583,
+      "allocated_bytes": 8192,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/debug.search/662049945f2a45bd87c0944965f626ad.store",
+      "bytes": 16015,
+      "allocated_bytes": 16384,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/debug.search/662049945f2a45bd87c0944965f626ad.term",
+      "bytes": 32948,
+      "allocated_bytes": 36864,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/debug.search/b30f25f8eaff44f18fd285abaef89ddd.fast",
+      "bytes": 355,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/debug.search/b30f25f8eaff44f18fd285abaef89ddd.fieldnorm",
+      "bytes": 2292,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/debug.search/b30f25f8eaff44f18fd285abaef89ddd.idx",
+      "bytes": 2748,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/debug.search/b30f25f8eaff44f18fd285abaef89ddd.pos",
+      "bytes": 804,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/debug.search/b30f25f8eaff44f18fd285abaef89ddd.store",
+      "bytes": 293,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/debug.search/b30f25f8eaff44f18fd285abaef89ddd.term",
+      "bytes": 5962,
+      "allocated_bytes": 8192,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/debug.search/meta.json",
+      "bytes": 11936,
+      "allocated_bytes": 12288,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/debug.seed",
+      "bytes": 88,
+      "allocated_bytes": 4096,
+      "component": ".seed"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/debug.tri",
+      "bytes": 142804,
+      "allocated_bytes": 143360,
+      "component": ".tri"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/error.idx",
+      "bytes": 104408,
+      "allocated_bytes": 135168,
+      "component": ".idx"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/error.journal",
+      "bytes": 187548,
+      "allocated_bytes": 200704,
+      "component": ".journal"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/error.pods",
+      "bytes": 284189,
+      "allocated_bytes": 331776,
+      "component": ".pods"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/error.search/.managed.json",
+      "bytes": 1722,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/error.search/.tantivy-meta.lock",
+      "bytes": 0,
+      "allocated_bytes": 0,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/error.search/.tantivy-writer.lock",
+      "bytes": 0,
+      "allocated_bytes": 0,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/error.search/315ff279cccd4a628e77190ead9c5e27.fast",
+      "bytes": 1312,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/error.search/315ff279cccd4a628e77190ead9c5e27.fieldnorm",
+      "bytes": 15245,
+      "allocated_bytes": 16384,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/error.search/315ff279cccd4a628e77190ead9c5e27.idx",
+      "bytes": 6732,
+      "allocated_bytes": 8192,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/error.search/315ff279cccd4a628e77190ead9c5e27.pos",
+      "bytes": 1363,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/error.search/315ff279cccd4a628e77190ead9c5e27.store",
+      "bytes": 1307,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/error.search/315ff279cccd4a628e77190ead9c5e27.term",
+      "bytes": 10535,
+      "allocated_bytes": 12288,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/error.search/6bca554b89f84fa1aa9fdfea3e992a65.fast",
+      "bytes": 21088,
+      "allocated_bytes": 24576,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/error.search/6bca554b89f84fa1aa9fdfea3e992a65.fieldnorm",
+      "bytes": 264533,
+      "allocated_bytes": 266240,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/error.search/6bca554b89f84fa1aa9fdfea3e992a65.idx",
+      "bytes": 65276,
+      "allocated_bytes": 65536,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/error.search/6bca554b89f84fa1aa9fdfea3e992a65.pos",
+      "bytes": 5422,
+      "allocated_bytes": 8192,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/error.search/6bca554b89f84fa1aa9fdfea3e992a65.store",
+      "bytes": 20962,
+      "allocated_bytes": 24576,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/error.search/6bca554b89f84fa1aa9fdfea3e992a65.term",
+      "bytes": 64199,
+      "allocated_bytes": 65536,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/error.search/6c06ce1dae3c429ca1c3238181e77152.fast",
+      "bytes": 935,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/error.search/6c06ce1dae3c429ca1c3238181e77152.fieldnorm",
+      "bytes": 9533,
+      "allocated_bytes": 12288,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/error.search/6c06ce1dae3c429ca1c3238181e77152.idx",
+      "bytes": 5946,
+      "allocated_bytes": 8192,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/error.search/6c06ce1dae3c429ca1c3238181e77152.pos",
+      "bytes": 1353,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/error.search/6c06ce1dae3c429ca1c3238181e77152.store",
+      "bytes": 860,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/error.search/6c06ce1dae3c429ca1c3238181e77152.term",
+      "bytes": 8858,
+      "allocated_bytes": 12288,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/error.search/9b589ecade7f4709a6c40daa858a4dc6.fast",
+      "bytes": 436,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/error.search/9b589ecade7f4709a6c40daa858a4dc6.fieldnorm",
+      "bytes": 3312,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/error.search/9b589ecade7f4709a6c40daa858a4dc6.idx",
+      "bytes": 3753,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/error.search/9b589ecade7f4709a6c40daa858a4dc6.pos",
+      "bytes": 987,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/error.search/9b589ecade7f4709a6c40daa858a4dc6.store",
+      "bytes": 373,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/error.search/9b589ecade7f4709a6c40daa858a4dc6.term",
+      "bytes": 6270,
+      "allocated_bytes": 8192,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/error.search/9bb4a930e7634a2ea87bd65220dd5d4d.fast",
+      "bytes": 354,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/error.search/9bb4a930e7634a2ea87bd65220dd5d4d.fieldnorm",
+      "bytes": 1935,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/error.search/9bb4a930e7634a2ea87bd65220dd5d4d.idx",
+      "bytes": 2296,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/error.search/9bb4a930e7634a2ea87bd65220dd5d4d.pos",
+      "bytes": 689,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/error.search/9bb4a930e7634a2ea87bd65220dd5d4d.store",
+      "bytes": 265,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/error.search/9bb4a930e7634a2ea87bd65220dd5d4d.term",
+      "bytes": 5888,
+      "allocated_bytes": 8192,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/error.search/cb63f8a2e3a54f37ae875ed216959c1e.fast",
+      "bytes": 371,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/error.search/cb63f8a2e3a54f37ae875ed216959c1e.fieldnorm",
+      "bytes": 2241,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/error.search/cb63f8a2e3a54f37ae875ed216959c1e.idx",
+      "bytes": 2619,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/error.search/cb63f8a2e3a54f37ae875ed216959c1e.pos",
+      "bytes": 755,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/error.search/cb63f8a2e3a54f37ae875ed216959c1e.store",
+      "bytes": 288,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/error.search/cb63f8a2e3a54f37ae875ed216959c1e.term",
+      "bytes": 5959,
+      "allocated_bytes": 8192,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/error.search/ec9dffc2a30c4d5ba70d3adc3a3485b8.fast",
+      "bytes": 356,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/error.search/ec9dffc2a30c4d5ba70d3adc3a3485b8.fieldnorm",
+      "bytes": 1985,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/error.search/ec9dffc2a30c4d5ba70d3adc3a3485b8.idx",
+      "bytes": 2350,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/error.search/ec9dffc2a30c4d5ba70d3adc3a3485b8.pos",
+      "bytes": 699,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/error.search/ec9dffc2a30c4d5ba70d3adc3a3485b8.store",
+      "bytes": 269,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/error.search/ec9dffc2a30c4d5ba70d3adc3a3485b8.term",
+      "bytes": 5864,
+      "allocated_bytes": 8192,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/error.search/meta.json",
+      "bytes": 12518,
+      "allocated_bytes": 16384,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/error.seed",
+      "bytes": 88,
+      "allocated_bytes": 4096,
+      "component": ".seed"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/error.sum",
+      "bytes": 74106,
+      "allocated_bytes": 77824,
+      "component": ".sum"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/error.tri",
+      "bytes": 142804,
+      "allocated_bytes": 143360,
+      "component": ".tri"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/read.idx",
+      "bytes": 1018776,
+      "allocated_bytes": 1052672,
+      "component": ".idx"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/read.journal",
+      "bytes": 191016,
+      "allocated_bytes": 200704,
+      "component": ".journal"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/read.pods",
+      "bytes": 656645,
+      "allocated_bytes": 659456,
+      "component": ".pods"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/read.search/.managed.json",
+      "bytes": 1478,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/read.search/.tantivy-meta.lock",
+      "bytes": 0,
+      "allocated_bytes": 0,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/read.search/.tantivy-writer.lock",
+      "bytes": 0,
+      "allocated_bytes": 0,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/read.search/21490f5b5428416a99b6c8e646a11ae8.fast",
+      "bytes": 58061,
+      "allocated_bytes": 61440,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/read.search/21490f5b5428416a99b6c8e646a11ae8.fieldnorm",
+      "bytes": 768617,
+      "allocated_bytes": 770048,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/read.search/21490f5b5428416a99b6c8e646a11ae8.idx",
+      "bytes": 164239,
+      "allocated_bytes": 167936,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/read.search/21490f5b5428416a99b6c8e646a11ae8.pos",
+      "bytes": 15199,
+      "allocated_bytes": 16384,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/read.search/21490f5b5428416a99b6c8e646a11ae8.store",
+      "bytes": 60754,
+      "allocated_bytes": 61440,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/read.search/21490f5b5428416a99b6c8e646a11ae8.term",
+      "bytes": 56060,
+      "allocated_bytes": 57344,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/read.search/368efba23e0449e097cb8917779a1012.fast",
+      "bytes": 46611,
+      "allocated_bytes": 49152,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/read.search/368efba23e0449e097cb8917779a1012.fieldnorm",
+      "bytes": 628978,
+      "allocated_bytes": 630784,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/read.search/368efba23e0449e097cb8917779a1012.idx",
+      "bytes": 131222,
+      "allocated_bytes": 135168,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/read.search/368efba23e0449e097cb8917779a1012.pos",
+      "bytes": 9734,
+      "allocated_bytes": 12288,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/read.search/368efba23e0449e097cb8917779a1012.store",
+      "bytes": 49712,
+      "allocated_bytes": 53248,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/read.search/368efba23e0449e097cb8917779a1012.term",
+      "bytes": 50696,
+      "allocated_bytes": 53248,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/read.search/69ba45bd1a9e4707abf365c22ec087c2.fast",
+      "bytes": 2130,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/read.search/69ba45bd1a9e4707abf365c22ec087c2.fieldnorm",
+      "bytes": 27485,
+      "allocated_bytes": 28672,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/read.search/69ba45bd1a9e4707abf365c22ec087c2.idx",
+      "bytes": 7093,
+      "allocated_bytes": 8192,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/read.search/69ba45bd1a9e4707abf365c22ec087c2.pos",
+      "bytes": 998,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/read.search/69ba45bd1a9e4707abf365c22ec087c2.store",
+      "bytes": 2271,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/read.search/69ba45bd1a9e4707abf365c22ec087c2.term",
+      "bytes": 13670,
+      "allocated_bytes": 16384,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/read.search/b60a9092313a4b33820032bacdf473f3.fast",
+      "bytes": 78061,
+      "allocated_bytes": 81920,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/read.search/b60a9092313a4b33820032bacdf473f3.fieldnorm",
+      "bytes": 1033663,
+      "allocated_bytes": 1036288,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/read.search/b60a9092313a4b33820032bacdf473f3.idx",
+      "bytes": 218528,
+      "allocated_bytes": 221184,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/read.search/b60a9092313a4b33820032bacdf473f3.pos",
+      "bytes": 17802,
+      "allocated_bytes": 20480,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/read.search/b60a9092313a4b33820032bacdf473f3.store",
+      "bytes": 81659,
+      "allocated_bytes": 81920,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/read.search/b60a9092313a4b33820032bacdf473f3.term",
+      "bytes": 67395,
+      "allocated_bytes": 69632,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/read.search/cf2b910443714050b97deb9b2268f7d8.fast",
+      "bytes": 732,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/read.search/cf2b910443714050b97deb9b2268f7d8.fieldnorm",
+      "bytes": 8054,
+      "allocated_bytes": 8192,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/read.search/cf2b910443714050b97deb9b2268f7d8.idx",
+      "bytes": 2713,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/read.search/cf2b910443714050b97deb9b2268f7d8.pos",
+      "bytes": 669,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/read.search/cf2b910443714050b97deb9b2268f7d8.store",
+      "bytes": 743,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/read.search/cf2b910443714050b97deb9b2268f7d8.term",
+      "bytes": 8741,
+      "allocated_bytes": 12288,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/read.search/d53f1565d8374c2ebf071b99c377c966.fast",
+      "bytes": 57036,
+      "allocated_bytes": 57344,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/read.search/d53f1565d8374c2ebf071b99c377c966.fieldnorm",
+      "bytes": 746330,
+      "allocated_bytes": 749568,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/read.search/d53f1565d8374c2ebf071b99c377c966.idx",
+      "bytes": 156872,
+      "allocated_bytes": 159744,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/read.search/d53f1565d8374c2ebf071b99c377c966.pos",
+      "bytes": 12183,
+      "allocated_bytes": 12288,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/read.search/d53f1565d8374c2ebf071b99c377c966.store",
+      "bytes": 58997,
+      "allocated_bytes": 61440,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/read.search/d53f1565d8374c2ebf071b99c377c966.term",
+      "bytes": 55586,
+      "allocated_bytes": 57344,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/read.search/meta.json",
+      "bytes": 12414,
+      "allocated_bytes": 16384,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/read.seed",
+      "bytes": 88,
+      "allocated_bytes": 4096,
+      "component": ".seed"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/read.sum",
+      "bytes": 308430,
+      "allocated_bytes": 311296,
+      "component": ".sum"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/read.tri",
+      "bytes": 142804,
+      "allocated_bytes": 143360,
+      "component": ".tri"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/resource.map",
+      "bytes": 886,
+      "allocated_bytes": 4096,
+      "component": ".map"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/resource.stats",
+      "bytes": 727,
+      "allocated_bytes": 4096,
+      "component": ".stats"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/resource.tri",
+      "bytes": 423,
+      "allocated_bytes": 4096,
+      "component": ".tri"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/trace.idx",
+      "bytes": 52904,
+      "allocated_bytes": 53248,
+      "component": ".idx"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/trace.journal",
+      "bytes": 187869,
+      "allocated_bytes": 200704,
+      "component": ".journal"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/trace.pods",
+      "bytes": 260417,
+      "allocated_bytes": 266240,
+      "component": ".pods"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/trace.search/.managed.json",
+      "bytes": 746,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/trace.search/.tantivy-meta.lock",
+      "bytes": 0,
+      "allocated_bytes": 0,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/trace.search/.tantivy-writer.lock",
+      "bytes": 0,
+      "allocated_bytes": 0,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/trace.search/27cae4f298dc4dcaae9e2da12ae8fdd3.fast",
+      "bytes": 7863,
+      "allocated_bytes": 8192,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/trace.search/27cae4f298dc4dcaae9e2da12ae8fdd3.fieldnorm",
+      "bytes": 128719,
+      "allocated_bytes": 131072,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/trace.search/27cae4f298dc4dcaae9e2da12ae8fdd3.idx",
+      "bytes": 36833,
+      "allocated_bytes": 36864,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/trace.search/27cae4f298dc4dcaae9e2da12ae8fdd3.pos",
+      "bytes": 4192,
+      "allocated_bytes": 8192,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/trace.search/27cae4f298dc4dcaae9e2da12ae8fdd3.store",
+      "bytes": 10255,
+      "allocated_bytes": 12288,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/trace.search/27cae4f298dc4dcaae9e2da12ae8fdd3.term",
+      "bytes": 28421,
+      "allocated_bytes": 28672,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/trace.search/793d474007d949be9513a675ed363b05.fast",
+      "bytes": 416,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/trace.search/793d474007d949be9513a675ed363b05.fieldnorm",
+      "bytes": 3363,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/trace.search/793d474007d949be9513a675ed363b05.idx",
+      "bytes": 3924,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/trace.search/793d474007d949be9513a675ed363b05.pos",
+      "bytes": 1058,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/trace.search/793d474007d949be9513a675ed363b05.store",
+      "bytes": 377,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/trace.search/793d474007d949be9513a675ed363b05.term",
+      "bytes": 6512,
+      "allocated_bytes": 8192,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/trace.search/d95c7995631340559875b09423b34427.fast",
+      "bytes": 278,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/trace.search/d95c7995631340559875b09423b34427.fieldnorm",
+      "bytes": 864,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/trace.search/d95c7995631340559875b09423b34427.idx",
+      "bytes": 1176,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/trace.search/d95c7995631340559875b09423b34427.pos",
+      "bytes": 468,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/trace.search/d95c7995631340559875b09423b34427.store",
+      "bytes": 179,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/trace.search/d95c7995631340559875b09423b34427.term",
+      "bytes": 5553,
+      "allocated_bytes": 8192,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/trace.search/meta.json",
+      "bytes": 12051,
+      "allocated_bytes": 12288,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/trace.seed",
+      "bytes": 88,
+      "allocated_bytes": 4096,
+      "component": ".seed"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/trace.tri",
+      "bytes": 142804,
+      "allocated_bytes": 143360,
+      "component": ".tri"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/write.idx",
+      "bytes": 2006600,
+      "allocated_bytes": 2101248,
+      "component": ".idx"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/write.journal",
+      "bytes": 198916,
+      "allocated_bytes": 200704,
+      "component": ".journal"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/write.pods",
+      "bytes": 7573186,
+      "allocated_bytes": 8392704,
+      "component": ".pods"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/write.search/.managed.json",
+      "bytes": 1722,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/write.search/.tantivy-meta.lock",
+      "bytes": 0,
+      "allocated_bytes": 0,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/write.search/.tantivy-writer.lock",
+      "bytes": 0,
+      "allocated_bytes": 0,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/write.search/3e5a596e07c742cb9529347ef5add4fb.fast",
+      "bytes": 541031,
+      "allocated_bytes": 544768,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/write.search/3e5a596e07c742cb9529347ef5add4fb.fieldnorm",
+      "bytes": 5661607,
+      "allocated_bytes": 5664768,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/write.search/3e5a596e07c742cb9529347ef5add4fb.idx",
+      "bytes": 1701581,
+      "allocated_bytes": 1703936,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/write.search/3e5a596e07c742cb9529347ef5add4fb.pos",
+      "bytes": 89760,
+      "allocated_bytes": 90112,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/write.search/3e5a596e07c742cb9529347ef5add4fb.store",
+      "bytes": 446895,
+      "allocated_bytes": 450560,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/write.search/3e5a596e07c742cb9529347ef5add4fb.term",
+      "bytes": 287787,
+      "allocated_bytes": 290816,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/write.search/5d3c638482174d1aa090ec984358f33b.fast",
+      "bytes": 2651,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/write.search/5d3c638482174d1aa090ec984358f33b.fieldnorm",
+      "bytes": 25139,
+      "allocated_bytes": 28672,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/write.search/5d3c638482174d1aa090ec984358f33b.idx",
+      "bytes": 12777,
+      "allocated_bytes": 16384,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/write.search/5d3c638482174d1aa090ec984358f33b.pos",
+      "bytes": 1863,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/write.search/5d3c638482174d1aa090ec984358f33b.store",
+      "bytes": 2086,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/write.search/5d3c638482174d1aa090ec984358f33b.term",
+      "bytes": 15623,
+      "allocated_bytes": 16384,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/write.search/5f01f87f3d0e47a78cd10431fcde60ce.fast",
+      "bytes": 3576,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/write.search/5f01f87f3d0e47a78cd10431fcde60ce.fieldnorm",
+      "bytes": 36206,
+      "allocated_bytes": 36864,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/write.search/5f01f87f3d0e47a78cd10431fcde60ce.idx",
+      "bytes": 14546,
+      "allocated_bytes": 16384,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/write.search/5f01f87f3d0e47a78cd10431fcde60ce.pos",
+      "bytes": 1920,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/write.search/5f01f87f3d0e47a78cd10431fcde60ce.store",
+      "bytes": 2958,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/write.search/5f01f87f3d0e47a78cd10431fcde60ce.term",
+      "bytes": 17922,
+      "allocated_bytes": 20480,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/write.search/a9259a64e2154a9dbb7b7117e1a4ee95.fast",
+      "bytes": 3503,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/write.search/a9259a64e2154a9dbb7b7117e1a4ee95.fieldnorm",
+      "bytes": 33808,
+      "allocated_bytes": 36864,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/write.search/a9259a64e2154a9dbb7b7117e1a4ee95.idx",
+      "bytes": 12473,
+      "allocated_bytes": 16384,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/write.search/a9259a64e2154a9dbb7b7117e1a4ee95.pos",
+      "bytes": 1593,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/write.search/a9259a64e2154a9dbb7b7117e1a4ee95.store",
+      "bytes": 2770,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/write.search/a9259a64e2154a9dbb7b7117e1a4ee95.term",
+      "bytes": 18830,
+      "allocated_bytes": 20480,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/write.search/aa21ba513ee84d0a8ee6a30c6248e175.fast",
+      "bytes": 57354,
+      "allocated_bytes": 61440,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/write.search/aa21ba513ee84d0a8ee6a30c6248e175.fieldnorm",
+      "bytes": 562730,
+      "allocated_bytes": 565248,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/write.search/aa21ba513ee84d0a8ee6a30c6248e175.idx",
+      "bytes": 162657,
+      "allocated_bytes": 163840,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/write.search/aa21ba513ee84d0a8ee6a30c6248e175.pos",
+      "bytes": 8639,
+      "allocated_bytes": 12288,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/write.search/aa21ba513ee84d0a8ee6a30c6248e175.store",
+      "bytes": 44498,
+      "allocated_bytes": 45056,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/write.search/aa21ba513ee84d0a8ee6a30c6248e175.term",
+      "bytes": 108019,
+      "allocated_bytes": 110592,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/write.search/d2d68136f3c142daae6305f90cd0bbb7.fast",
+      "bytes": 673,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/write.search/d2d68136f3c142daae6305f90cd0bbb7.fieldnorm",
+      "bytes": 6576,
+      "allocated_bytes": 8192,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/write.search/d2d68136f3c142daae6305f90cd0bbb7.idx",
+      "bytes": 8413,
+      "allocated_bytes": 12288,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/write.search/d2d68136f3c142daae6305f90cd0bbb7.pos",
+      "bytes": 1764,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/write.search/d2d68136f3c142daae6305f90cd0bbb7.store",
+      "bytes": 630,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/write.search/d2d68136f3c142daae6305f90cd0bbb7.term",
+      "bytes": 9332,
+      "allocated_bytes": 12288,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/write.search/de4acbf74ec64a439ec132abb820a24d.fast",
+      "bytes": 3662,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/write.search/de4acbf74ec64a439ec132abb820a24d.fieldnorm",
+      "bytes": 36154,
+      "allocated_bytes": 36864,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/write.search/de4acbf74ec64a439ec132abb820a24d.idx",
+      "bytes": 14484,
+      "allocated_bytes": 16384,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/write.search/de4acbf74ec64a439ec132abb820a24d.pos",
+      "bytes": 1909,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/write.search/de4acbf74ec64a439ec132abb820a24d.store",
+      "bytes": 2953,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/write.search/de4acbf74ec64a439ec132abb820a24d.term",
+      "bytes": 18685,
+      "allocated_bytes": 20480,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/write.search/meta.json",
+      "bytes": 12530,
+      "allocated_bytes": 16384,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/write.seed",
+      "bytes": 88,
+      "allocated_bytes": 4096,
+      "component": ".seed"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/write.sum",
+      "bytes": 594123,
+      "allocated_bytes": 598016,
+      "component": ".sum"
+    },
+    {
+      "name": "demo/payment/transactions.v1/0/write.tri",
+      "bytes": 142804,
+      "allocated_bytes": 143360,
+      "component": ".tri"
+    },
+    {
+      "name": "demo/payment/transactions.v1/collection.idx",
+      "bytes": 2449408,
+      "allocated_bytes": 3149824,
+      "component": "collection.idx"
+    },
+    {
+      "name": "demo/payment/transactions.v1/collection.state",
+      "bytes": 341994,
+      "allocated_bytes": 397312,
+      "component": "collection.state"
+    },
+    {
+      "name": "demo/registry.cfg",
+      "bytes": 400,
+      "allocated_bytes": 4096,
+      "component": ".cfg"
+    },
+    {
+      "name": "demo/registry.map",
+      "bytes": 609,
+      "allocated_bytes": 4096,
+      "component": ".map"
+    },
+    {
+      "name": "demo/registry.tri",
+      "bytes": 110,
+      "allocated_bytes": 4096,
+      "component": ".tri"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/debug.idx",
+      "bytes": 75448,
+      "allocated_bytes": 135168,
+      "component": ".idx"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/debug.journal",
+      "bytes": 188613,
+      "allocated_bytes": 200704,
+      "component": ".journal"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/debug.pods",
+      "bytes": 266921,
+      "allocated_bytes": 331776,
+      "component": ".pods"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/debug.search/.managed.json",
+      "bytes": 746,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/debug.search/.tantivy-meta.lock",
+      "bytes": 0,
+      "allocated_bytes": 0,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/debug.search/.tantivy-writer.lock",
+      "bytes": 0,
+      "allocated_bytes": 0,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/debug.search/3f5d7d7518214db7a5425606f56c8825.fast",
+      "bytes": 389,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/debug.search/3f5d7d7518214db7a5425606f56c8825.fieldnorm",
+      "bytes": 2852,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/debug.search/3f5d7d7518214db7a5425606f56c8825.idx",
+      "bytes": 3460,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/debug.search/3f5d7d7518214db7a5425606f56c8825.pos",
+      "bytes": 938,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/debug.search/3f5d7d7518214db7a5425606f56c8825.store",
+      "bytes": 336,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/debug.search/3f5d7d7518214db7a5425606f56c8825.term",
+      "bytes": 6106,
+      "allocated_bytes": 8192,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/debug.search/6fad5ca0635a4cda8c2e918d947edddf.fast",
+      "bytes": 12467,
+      "allocated_bytes": 16384,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/debug.search/6fad5ca0635a4cda8c2e918d947edddf.fieldnorm",
+      "bytes": 198998,
+      "allocated_bytes": 200704,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/debug.search/6fad5ca0635a4cda8c2e918d947edddf.idx",
+      "bytes": 50223,
+      "allocated_bytes": 53248,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/debug.search/6fad5ca0635a4cda8c2e918d947edddf.pos",
+      "bytes": 5085,
+      "allocated_bytes": 8192,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/debug.search/6fad5ca0635a4cda8c2e918d947edddf.store",
+      "bytes": 15805,
+      "allocated_bytes": 16384,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/debug.search/6fad5ca0635a4cda8c2e918d947edddf.term",
+      "bytes": 32795,
+      "allocated_bytes": 36864,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/debug.search/7d22a40249d54229897d751e1aceb288.fast",
+      "bytes": 386,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/debug.search/7d22a40249d54229897d751e1aceb288.fieldnorm",
+      "bytes": 2904,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/debug.search/7d22a40249d54229897d751e1aceb288.idx",
+      "bytes": 3518,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/debug.search/7d22a40249d54229897d751e1aceb288.pos",
+      "bytes": 951,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/debug.search/7d22a40249d54229897d751e1aceb288.store",
+      "bytes": 341,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/debug.search/7d22a40249d54229897d751e1aceb288.term",
+      "bytes": 6116,
+      "allocated_bytes": 8192,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/debug.search/meta.json",
+      "bytes": 12052,
+      "allocated_bytes": 12288,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/debug.seed",
+      "bytes": 88,
+      "allocated_bytes": 4096,
+      "component": ".seed"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/debug.tri",
+      "bytes": 142804,
+      "allocated_bytes": 143360,
+      "component": ".tri"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/error.idx",
+      "bytes": 104424,
+      "allocated_bytes": 135168,
+      "component": ".idx"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/error.journal",
+      "bytes": 187547,
+      "allocated_bytes": 200704,
+      "component": ".journal"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/error.pods",
+      "bytes": 277947,
+      "allocated_bytes": 331776,
+      "component": ".pods"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/error.search/.managed.json",
+      "bytes": 990,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/error.search/.tantivy-meta.lock",
+      "bytes": 0,
+      "allocated_bytes": 0,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/error.search/.tantivy-writer.lock",
+      "bytes": 0,
+      "allocated_bytes": 0,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/error.search/2a348d992d124e84ae479e756d74926b.fast",
+      "bytes": 1956,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/error.search/2a348d992d124e84ae479e756d74926b.fieldnorm",
+      "bytes": 23404,
+      "allocated_bytes": 24576,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/error.search/2a348d992d124e84ae479e756d74926b.idx",
+      "bytes": 8482,
+      "allocated_bytes": 12288,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/error.search/2a348d992d124e84ae479e756d74926b.pos",
+      "bytes": 1362,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/error.search/2a348d992d124e84ae479e756d74926b.store",
+      "bytes": 1949,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/error.search/2a348d992d124e84ae479e756d74926b.term",
+      "bytes": 12336,
+      "allocated_bytes": 16384,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/error.search/5a4229e1ddfd4517899eb1d76af386bc.fast",
+      "bytes": 337,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/error.search/5a4229e1ddfd4517899eb1d76af386bc.fieldnorm",
+      "bytes": 1680,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/error.search/5a4229e1ddfd4517899eb1d76af386bc.idx",
+      "bytes": 2074,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/error.search/5a4229e1ddfd4517899eb1d76af386bc.pos",
+      "bytes": 635,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/error.search/5a4229e1ddfd4517899eb1d76af386bc.store",
+      "bytes": 244,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/error.search/5a4229e1ddfd4517899eb1d76af386bc.term",
+      "bytes": 5818,
+      "allocated_bytes": 8192,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/error.search/77527e9ac82c4ae99e8cab493f652e70.fast",
+      "bytes": 372,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/error.search/77527e9ac82c4ae99e8cab493f652e70.fieldnorm",
+      "bytes": 2241,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/error.search/77527e9ac82c4ae99e8cab493f652e70.idx",
+      "bytes": 2692,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/error.search/77527e9ac82c4ae99e8cab493f652e70.pos",
+      "bytes": 756,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/error.search/77527e9ac82c4ae99e8cab493f652e70.store",
+      "bytes": 288,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/error.search/77527e9ac82c4ae99e8cab493f652e70.term",
+      "bytes": 5967,
+      "allocated_bytes": 8192,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/error.search/adf6ee4766b94c92b0d3a4ce3f34ecbf.fast",
+      "bytes": 21403,
+      "allocated_bytes": 24576,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/error.search/adf6ee4766b94c92b0d3a4ce3f34ecbf.fieldnorm",
+      "bytes": 270245,
+      "allocated_bytes": 270336,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/error.search/adf6ee4766b94c92b0d3a4ce3f34ecbf.idx",
+      "bytes": 66013,
+      "allocated_bytes": 69632,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/error.search/adf6ee4766b94c92b0d3a4ce3f34ecbf.pos",
+      "bytes": 5320,
+      "allocated_bytes": 8192,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/error.search/adf6ee4766b94c92b0d3a4ce3f34ecbf.store",
+      "bytes": 21413,
+      "allocated_bytes": 24576,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/error.search/adf6ee4766b94c92b0d3a4ce3f34ecbf.term",
+      "bytes": 64408,
+      "allocated_bytes": 65536,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/error.search/meta.json",
+      "bytes": 12169,
+      "allocated_bytes": 12288,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/error.seed",
+      "bytes": 88,
+      "allocated_bytes": 4096,
+      "component": ".seed"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/error.sum",
+      "bytes": 73495,
+      "allocated_bytes": 73728,
+      "component": ".sum"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/error.tri",
+      "bytes": 142804,
+      "allocated_bytes": 143360,
+      "component": ".tri"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/read.idx",
+      "bytes": 1018728,
+      "allocated_bytes": 1052672,
+      "component": ".idx"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/read.journal",
+      "bytes": 191009,
+      "allocated_bytes": 200704,
+      "component": ".journal"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/read.pods",
+      "bytes": 651339,
+      "allocated_bytes": 659456,
+      "component": ".pods"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/read.search/.managed.json",
+      "bytes": 2210,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/read.search/.tantivy-meta.lock",
+      "bytes": 0,
+      "allocated_bytes": 0,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/read.search/.tantivy-writer.lock",
+      "bytes": 0,
+      "allocated_bytes": 0,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/read.search/0cedab6c1b5b441e91d157e0e84a863d.fast",
+      "bytes": 2029,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/read.search/0cedab6c1b5b441e91d157e0e84a863d.fieldnorm",
+      "bytes": 26006,
+      "allocated_bytes": 28672,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/read.search/0cedab6c1b5b441e91d157e0e84a863d.idx",
+      "bytes": 11091,
+      "allocated_bytes": 12288,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/read.search/0cedab6c1b5b441e91d157e0e84a863d.pos",
+      "bytes": 1950,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/read.search/0cedab6c1b5b441e91d157e0e84a863d.store",
+      "bytes": 2154,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/read.search/0cedab6c1b5b441e91d157e0e84a863d.term",
+      "bytes": 13775,
+      "allocated_bytes": 16384,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/read.search/108cf1eecfa64d9a9a997af5d5c30092.fast",
+      "bytes": 78951,
+      "allocated_bytes": 81920,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/read.search/108cf1eecfa64d9a9a997af5d5c30092.fieldnorm",
+      "bytes": 1056103,
+      "allocated_bytes": 1056768,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/read.search/108cf1eecfa64d9a9a997af5d5c30092.idx",
+      "bytes": 226169,
+      "allocated_bytes": 229376,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/read.search/108cf1eecfa64d9a9a997af5d5c30092.pos",
+      "bytes": 18452,
+      "allocated_bytes": 20480,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/read.search/108cf1eecfa64d9a9a997af5d5c30092.store",
+      "bytes": 83444,
+      "allocated_bytes": 86016,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/read.search/108cf1eecfa64d9a9a997af5d5c30092.term",
+      "bytes": 67861,
+      "allocated_bytes": 69632,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/read.search/1e7646d389f34914bd38cada46ec06bf.fast",
+      "bytes": 53198,
+      "allocated_bytes": 53248,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/read.search/1e7646d389f34914bd38cada46ec06bf.fieldnorm",
+      "bytes": 700991,
+      "allocated_bytes": 704512,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/read.search/1e7646d389f34914bd38cada46ec06bf.idx",
+      "bytes": 147961,
+      "allocated_bytes": 151552,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/read.search/1e7646d389f34914bd38cada46ec06bf.pos",
+      "bytes": 13145,
+      "allocated_bytes": 16384,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/read.search/1e7646d389f34914bd38cada46ec06bf.store",
+      "bytes": 55428,
+      "allocated_bytes": 57344,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/read.search/1e7646d389f34914bd38cada46ec06bf.term",
+      "bytes": 53669,
+      "allocated_bytes": 57344,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/read.search/46a352ad7412491a840b7f6a35847ce6.fast",
+      "bytes": 2133,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/read.search/46a352ad7412491a840b7f6a35847ce6.fieldnorm",
+      "bytes": 27536,
+      "allocated_bytes": 28672,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/read.search/46a352ad7412491a840b7f6a35847ce6.idx",
+      "bytes": 6936,
+      "allocated_bytes": 8192,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/read.search/46a352ad7412491a840b7f6a35847ce6.pos",
+      "bytes": 1073,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/read.search/46a352ad7412491a840b7f6a35847ce6.store",
+      "bytes": 2276,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/read.search/46a352ad7412491a840b7f6a35847ce6.term",
+      "bytes": 13054,
+      "allocated_bytes": 16384,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/read.search/68e5a8b475844643ba2e3aed41ab612b.fast",
+      "bytes": 2448,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/read.search/68e5a8b475844643ba2e3aed41ab612b.fieldnorm",
+      "bytes": 32024,
+      "allocated_bytes": 32768,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/read.search/68e5a8b475844643ba2e3aed41ab612b.idx",
+      "bytes": 11748,
+      "allocated_bytes": 12288,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/read.search/68e5a8b475844643ba2e3aed41ab612b.pos",
+      "bytes": 1934,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/read.search/68e5a8b475844643ba2e3aed41ab612b.store",
+      "bytes": 2629,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/read.search/68e5a8b475844643ba2e3aed41ab612b.term",
+      "bytes": 14180,
+      "allocated_bytes": 16384,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/read.search/b6ba3c95c334458cbf8c80ef70cf493d.fast",
+      "bytes": 2443,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/read.search/b6ba3c95c334458cbf8c80ef70cf493d.fieldnorm",
+      "bytes": 31973,
+      "allocated_bytes": 32768,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/read.search/b6ba3c95c334458cbf8c80ef70cf493d.idx",
+      "bytes": 11921,
+      "allocated_bytes": 12288,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/read.search/b6ba3c95c334458cbf8c80ef70cf493d.pos",
+      "bytes": 1923,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/read.search/b6ba3c95c334458cbf8c80ef70cf493d.store",
+      "bytes": 2625,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/read.search/b6ba3c95c334458cbf8c80ef70cf493d.term",
+      "bytes": 13663,
+      "allocated_bytes": 16384,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/read.search/c839e3624ae2491e92a3c957bf7980e8.fast",
+      "bytes": 49599,
+      "allocated_bytes": 53248,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/read.search/c839e3624ae2491e92a3c957bf7980e8.fieldnorm",
+      "bytes": 653714,
+      "allocated_bytes": 655360,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/read.search/c839e3624ae2491e92a3c957bf7980e8.idx",
+      "bytes": 137102,
+      "allocated_bytes": 139264,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/read.search/c839e3624ae2491e92a3c957bf7980e8.pos",
+      "bytes": 10582,
+      "allocated_bytes": 12288,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/read.search/c839e3624ae2491e92a3c957bf7980e8.store",
+      "bytes": 51682,
+      "allocated_bytes": 53248,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/read.search/c839e3624ae2491e92a3c957bf7980e8.term",
+      "bytes": 51673,
+      "allocated_bytes": 53248,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/read.search/e3886c73908e40b3b73a14bc973419cc.fast",
+      "bytes": 50822,
+      "allocated_bytes": 53248,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/read.search/e3886c73908e40b3b73a14bc973419cc.fieldnorm",
+      "bytes": 656162,
+      "allocated_bytes": 659456,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/read.search/e3886c73908e40b3b73a14bc973419cc.idx",
+      "bytes": 138651,
+      "allocated_bytes": 139264,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/read.search/e3886c73908e40b3b73a14bc973419cc.pos",
+      "bytes": 9565,
+      "allocated_bytes": 12288,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/read.search/e3886c73908e40b3b73a14bc973419cc.store",
+      "bytes": 51874,
+      "allocated_bytes": 53248,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/read.search/e3886c73908e40b3b73a14bc973419cc.term",
+      "bytes": 52608,
+      "allocated_bytes": 53248,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/read.search/fb0e4eedabd94ae7971c4f5ddb0927c8.fast",
+      "bytes": 2329,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/read.search/fb0e4eedabd94ae7971c4f5ddb0927c8.fieldnorm",
+      "bytes": 29831,
+      "allocated_bytes": 32768,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/read.search/fb0e4eedabd94ae7971c4f5ddb0927c8.idx",
+      "bytes": 9422,
+      "allocated_bytes": 12288,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/read.search/fb0e4eedabd94ae7971c4f5ddb0927c8.pos",
+      "bytes": 1460,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/read.search/fb0e4eedabd94ae7971c4f5ddb0927c8.store",
+      "bytes": 2456,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/read.search/fb0e4eedabd94ae7971c4f5ddb0927c8.term",
+      "bytes": 14314,
+      "allocated_bytes": 16384,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/read.search/meta.json",
+      "bytes": 12765,
+      "allocated_bytes": 16384,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/read.seed",
+      "bytes": 88,
+      "allocated_bytes": 4096,
+      "component": ".seed"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/read.sum",
+      "bytes": 307582,
+      "allocated_bytes": 311296,
+      "component": ".sum"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/read.tri",
+      "bytes": 142804,
+      "allocated_bytes": 143360,
+      "component": ".tri"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/resource.map",
+      "bytes": 870,
+      "allocated_bytes": 4096,
+      "component": ".map"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/resource.stats",
+      "bytes": 727,
+      "allocated_bytes": 4096,
+      "component": ".stats"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/resource.tri",
+      "bytes": 423,
+      "allocated_bytes": 4096,
+      "component": ".tri"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/trace.idx",
+      "bytes": 52888,
+      "allocated_bytes": 53248,
+      "component": ".idx"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/trace.journal",
+      "bytes": 188052,
+      "allocated_bytes": 200704,
+      "component": ".journal"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/trace.pods",
+      "bytes": 253621,
+      "allocated_bytes": 266240,
+      "component": ".pods"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/trace.search/.managed.json",
+      "bytes": 746,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/trace.search/.tantivy-meta.lock",
+      "bytes": 0,
+      "allocated_bytes": 0,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/trace.search/.tantivy-writer.lock",
+      "bytes": 0,
+      "allocated_bytes": 0,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/trace.search/1b5325ce9a224193ba116855dcd05caa.fast",
+      "bytes": 7902,
+      "allocated_bytes": 8192,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/trace.search/1b5325ce9a224193ba116855dcd05caa.fieldnorm",
+      "bytes": 128312,
+      "allocated_bytes": 131072,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/trace.search/1b5325ce9a224193ba116855dcd05caa.idx",
+      "bytes": 36271,
+      "allocated_bytes": 36864,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/trace.search/1b5325ce9a224193ba116855dcd05caa.pos",
+      "bytes": 4031,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/trace.search/1b5325ce9a224193ba116855dcd05caa.store",
+      "bytes": 10224,
+      "allocated_bytes": 12288,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/trace.search/1b5325ce9a224193ba116855dcd05caa.term",
+      "bytes": 28416,
+      "allocated_bytes": 28672,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/trace.search/bd70a449889d40ed99e617e3c7ce22ed.fast",
+      "bytes": 364,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/trace.search/bd70a449889d40ed99e617e3c7ce22ed.fieldnorm",
+      "bytes": 2547,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/trace.search/bd70a449889d40ed99e617e3c7ce22ed.idx",
+      "bytes": 3111,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/trace.search/bd70a449889d40ed99e617e3c7ce22ed.pos",
+      "bytes": 867,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/trace.search/bd70a449889d40ed99e617e3c7ce22ed.store",
+      "bytes": 313,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/trace.search/bd70a449889d40ed99e617e3c7ce22ed.term",
+      "bytes": 6020,
+      "allocated_bytes": 8192,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/trace.search/f1a63578cbf74200903ca8073f6d44bb.fast",
+      "bytes": 339,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/trace.search/f1a63578cbf74200903ca8073f6d44bb.fieldnorm",
+      "bytes": 1986,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/trace.search/f1a63578cbf74200903ca8073f6d44bb.idx",
+      "bytes": 2474,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/trace.search/f1a63578cbf74200903ca8073f6d44bb.pos",
+      "bytes": 733,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/trace.search/f1a63578cbf74200903ca8073f6d44bb.store",
+      "bytes": 269,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/trace.search/f1a63578cbf74200903ca8073f6d44bb.term",
+      "bytes": 5884,
+      "allocated_bytes": 8192,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/trace.search/meta.json",
+      "bytes": 12052,
+      "allocated_bytes": 12288,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/trace.seed",
+      "bytes": 88,
+      "allocated_bytes": 4096,
+      "component": ".seed"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/trace.tri",
+      "bytes": 142804,
+      "allocated_bytes": 143360,
+      "component": ".tri"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/write.idx",
+      "bytes": 2006552,
+      "allocated_bytes": 2101248,
+      "component": ".idx"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/write.journal",
+      "bytes": 198955,
+      "allocated_bytes": 200704,
+      "component": ".journal"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/write.pods",
+      "bytes": 7318566,
+      "allocated_bytes": 7352320,
+      "component": ".pods"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/write.search/.managed.json",
+      "bytes": 1722,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/write.search/.tantivy-meta.lock",
+      "bytes": 0,
+      "allocated_bytes": 0,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/write.search/.tantivy-writer.lock",
+      "bytes": 0,
+      "allocated_bytes": 0,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/write.search/17c7cb37bf9a4b53bee8120002b03675.fast",
+      "bytes": 96529,
+      "allocated_bytes": 98304,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/write.search/17c7cb37bf9a4b53bee8120002b03675.fieldnorm",
+      "bytes": 955480,
+      "allocated_bytes": 958464,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/write.search/17c7cb37bf9a4b53bee8120002b03675.idx",
+      "bytes": 278351,
+      "allocated_bytes": 278528,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/write.search/17c7cb37bf9a4b53bee8120002b03675.pos",
+      "bytes": 13324,
+      "allocated_bytes": 16384,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/write.search/17c7cb37bf9a4b53bee8120002b03675.store",
+      "bytes": 75490,
+      "allocated_bytes": 77824,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/write.search/17c7cb37bf9a4b53bee8120002b03675.term",
+      "bytes": 145950,
+      "allocated_bytes": 147456,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/write.search/4da3da537f60496e879352d37419bb18.fast",
+      "bytes": 76538,
+      "allocated_bytes": 77824,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/write.search/4da3da537f60496e879352d37419bb18.fieldnorm",
+      "bytes": 763364,
+      "allocated_bytes": 765952,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/write.search/4da3da537f60496e879352d37419bb18.idx",
+      "bytes": 225033,
+      "allocated_bytes": 225280,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/write.search/4da3da537f60496e879352d37419bb18.pos",
+      "bytes": 15513,
+      "allocated_bytes": 16384,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/write.search/4da3da537f60496e879352d37419bb18.store",
+      "bytes": 60337,
+      "allocated_bytes": 61440,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/write.search/4da3da537f60496e879352d37419bb18.term",
+      "bytes": 129633,
+      "allocated_bytes": 131072,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/write.search/8ffcd786ded149fba45b34c927ccce24.fast",
+      "bytes": 88267,
+      "allocated_bytes": 90112,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/write.search/8ffcd786ded149fba45b34c927ccce24.fieldnorm",
+      "bytes": 870616,
+      "allocated_bytes": 872448,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/write.search/8ffcd786ded149fba45b34c927ccce24.idx",
+      "bytes": 249297,
+      "allocated_bytes": 249856,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/write.search/8ffcd786ded149fba45b34c927ccce24.pos",
+      "bytes": 13786,
+      "allocated_bytes": 16384,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/write.search/8ffcd786ded149fba45b34c927ccce24.store",
+      "bytes": 68811,
+      "allocated_bytes": 69632,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/write.search/8ffcd786ded149fba45b34c927ccce24.term",
+      "bytes": 138570,
+      "allocated_bytes": 139264,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/write.search/98b60e5d9c0841dc819e299682ed22dc.fast",
+      "bytes": 121500,
+      "allocated_bytes": 122880,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/write.search/98b60e5d9c0841dc819e299682ed22dc.fieldnorm",
+      "bytes": 1230421,
+      "allocated_bytes": 1232896,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/write.search/98b60e5d9c0841dc819e299682ed22dc.idx",
+      "bytes": 364726,
+      "allocated_bytes": 368640,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/write.search/98b60e5d9c0841dc819e299682ed22dc.pos",
+      "bytes": 18721,
+      "allocated_bytes": 20480,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/write.search/98b60e5d9c0841dc819e299682ed22dc.store",
+      "bytes": 97192,
+      "allocated_bytes": 98304,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/write.search/98b60e5d9c0841dc819e299682ed22dc.term",
+      "bytes": 142240,
+      "allocated_bytes": 143360,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/write.search/b74ecd810be94c7794c05d15d803ee43.fast",
+      "bytes": 82593,
+      "allocated_bytes": 86016,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/write.search/b74ecd810be94c7794c05d15d803ee43.fieldnorm",
+      "bytes": 823340,
+      "allocated_bytes": 827392,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/write.search/b74ecd810be94c7794c05d15d803ee43.idx",
+      "bytes": 236809,
+      "allocated_bytes": 237568,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/write.search/b74ecd810be94c7794c05d15d803ee43.pos",
+      "bytes": 12727,
+      "allocated_bytes": 16384,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/write.search/b74ecd810be94c7794c05d15d803ee43.store",
+      "bytes": 65077,
+      "allocated_bytes": 65536,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/write.search/b74ecd810be94c7794c05d15d803ee43.term",
+      "bytes": 138174,
+      "allocated_bytes": 139264,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/write.search/c2ddb6ce955144a296262c62922987a6.fast",
+      "bytes": 97528,
+      "allocated_bytes": 98304,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/write.search/c2ddb6ce955144a296262c62922987a6.fieldnorm",
+      "bytes": 977818,
+      "allocated_bytes": 978944,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/write.search/c2ddb6ce955144a296262c62922987a6.idx",
+      "bytes": 287237,
+      "allocated_bytes": 290816,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/write.search/c2ddb6ce955144a296262c62922987a6.pos",
+      "bytes": 15051,
+      "allocated_bytes": 16384,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/write.search/c2ddb6ce955144a296262c62922987a6.store",
+      "bytes": 77261,
+      "allocated_bytes": 77824,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/write.search/c2ddb6ce955144a296262c62922987a6.term",
+      "bytes": 156602,
+      "allocated_bytes": 159744,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/write.search/d698deb27013436694132223050a370a.fast",
+      "bytes": 73100,
+      "allocated_bytes": 73728,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/write.search/d698deb27013436694132223050a370a.fieldnorm",
+      "bytes": 741229,
+      "allocated_bytes": 741376,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/write.search/d698deb27013436694132223050a370a.idx",
+      "bytes": 214408,
+      "allocated_bytes": 217088,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/write.search/d698deb27013436694132223050a370a.pos",
+      "bytes": 15979,
+      "allocated_bytes": 16384,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/write.search/d698deb27013436694132223050a370a.store",
+      "bytes": 58572,
+      "allocated_bytes": 61440,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/write.search/d698deb27013436694132223050a370a.term",
+      "bytes": 122715,
+      "allocated_bytes": 122880,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/write.search/meta.json",
+      "bytes": 12539,
+      "allocated_bytes": 16384,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/write.seed",
+      "bytes": 88,
+      "allocated_bytes": 4096,
+      "component": ".seed"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/write.sum",
+      "bytes": 593027,
+      "allocated_bytes": 593920,
+      "component": ".sum"
+    },
+    {
+      "name": "demo/vault/secrets.v1/0/write.tri",
+      "bytes": 142804,
+      "allocated_bytes": 143360,
+      "component": ".tri"
+    },
+    {
+      "name": "demo/vault/secrets.v1/collection.idx",
+      "bytes": 2449408,
+      "allocated_bytes": 3211264,
+      "component": "collection.idx"
+    },
+    {
+      "name": "demo/vault/secrets.v1/collection.state",
+      "bytes": 342053,
+      "allocated_bytes": 397312,
+      "component": "collection.state"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/debug.idx",
+      "bytes": 75368,
+      "allocated_bytes": 135168,
+      "component": ".idx"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/debug.journal",
+      "bytes": 188639,
+      "allocated_bytes": 200704,
+      "component": ".journal"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/debug.pods",
+      "bytes": 269067,
+      "allocated_bytes": 331776,
+      "component": ".pods"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/debug.search/.managed.json",
+      "bytes": 990,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/debug.search/.tantivy-meta.lock",
+      "bytes": 0,
+      "allocated_bytes": 0,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/debug.search/.tantivy-writer.lock",
+      "bytes": 0,
+      "allocated_bytes": 0,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/debug.search/0f02c4213d734279a7194b13ce2594da.fast",
+      "bytes": 391,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/debug.search/0f02c4213d734279a7194b13ce2594da.fieldnorm",
+      "bytes": 3006,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/debug.search/0f02c4213d734279a7194b13ce2594da.idx",
+      "bytes": 3633,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/debug.search/0f02c4213d734279a7194b13ce2594da.pos",
+      "bytes": 975,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/debug.search/0f02c4213d734279a7194b13ce2594da.store",
+      "bytes": 348,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/debug.search/0f02c4213d734279a7194b13ce2594da.term",
+      "bytes": 6095,
+      "allocated_bytes": 8192,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/debug.search/496261f8c7ad4b4d9e56c8da5fb90ea6.fast",
+      "bytes": 278,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/debug.search/496261f8c7ad4b4d9e56c8da5fb90ea6.fieldnorm",
+      "bytes": 864,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/debug.search/496261f8c7ad4b4d9e56c8da5fb90ea6.idx",
+      "bytes": 1195,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/debug.search/496261f8c7ad4b4d9e56c8da5fb90ea6.pos",
+      "bytes": 469,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/debug.search/496261f8c7ad4b4d9e56c8da5fb90ea6.store",
+      "bytes": 179,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/debug.search/496261f8c7ad4b4d9e56c8da5fb90ea6.term",
+      "bytes": 5532,
+      "allocated_bytes": 8192,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/debug.search/50e437d89cb845b3a04db2437747b836.fast",
+      "bytes": 12431,
+      "allocated_bytes": 16384,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/debug.search/50e437d89cb845b3a04db2437747b836.fieldnorm",
+      "bytes": 198794,
+      "allocated_bytes": 200704,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/debug.search/50e437d89cb845b3a04db2437747b836.idx",
+      "bytes": 51222,
+      "allocated_bytes": 53248,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/debug.search/50e437d89cb845b3a04db2437747b836.pos",
+      "bytes": 5037,
+      "allocated_bytes": 8192,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/debug.search/50e437d89cb845b3a04db2437747b836.store",
+      "bytes": 15788,
+      "allocated_bytes": 16384,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/debug.search/50e437d89cb845b3a04db2437747b836.term",
+      "bytes": 32842,
+      "allocated_bytes": 36864,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/debug.search/5fed9e9dd6e84eb4b87793f2830e080d.fast",
+      "bytes": 347,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/debug.search/5fed9e9dd6e84eb4b87793f2830e080d.fieldnorm",
+      "bytes": 2240,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/debug.search/5fed9e9dd6e84eb4b87793f2830e080d.idx",
+      "bytes": 2763,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/debug.search/5fed9e9dd6e84eb4b87793f2830e080d.pos",
+      "bytes": 792,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/debug.search/5fed9e9dd6e84eb4b87793f2830e080d.store",
+      "bytes": 288,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/debug.search/5fed9e9dd6e84eb4b87793f2830e080d.term",
+      "bytes": 5983,
+      "allocated_bytes": 8192,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/debug.search/meta.json",
+      "bytes": 12167,
+      "allocated_bytes": 12288,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/debug.seed",
+      "bytes": 88,
+      "allocated_bytes": 4096,
+      "component": ".seed"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/debug.tri",
+      "bytes": 142804,
+      "allocated_bytes": 143360,
+      "component": ".tri"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/error.idx",
+      "bytes": 104392,
+      "allocated_bytes": 135168,
+      "component": ".idx"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/error.journal",
+      "bytes": 187534,
+      "allocated_bytes": 200704,
+      "component": ".journal"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/error.pods",
+      "bytes": 275843,
+      "allocated_bytes": 331776,
+      "component": ".pods"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/error.search/.managed.json",
+      "bytes": 502,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/error.search/.tantivy-meta.lock",
+      "bytes": 0,
+      "allocated_bytes": 0,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/error.search/.tantivy-writer.lock",
+      "bytes": 0,
+      "allocated_bytes": 0,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/error.search/04de570c30c54be99a37bb83b6b06f7d.fast",
+      "bytes": 23580,
+      "allocated_bytes": 24576,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/error.search/04de570c30c54be99a37bb83b6b06f7d.fieldnorm",
+      "bytes": 294419,
+      "allocated_bytes": 294912,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/error.search/04de570c30c54be99a37bb83b6b06f7d.idx",
+      "bytes": 68677,
+      "allocated_bytes": 69632,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/error.search/04de570c30c54be99a37bb83b6b06f7d.pos",
+      "bytes": 4883,
+      "allocated_bytes": 8192,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/error.search/04de570c30c54be99a37bb83b6b06f7d.store",
+      "bytes": 23329,
+      "allocated_bytes": 24576,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/error.search/04de570c30c54be99a37bb83b6b06f7d.term",
+      "bytes": 68558,
+      "allocated_bytes": 69632,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/error.search/b92b9be5c173490487fa09d0ee94fb6c.fast",
+      "bytes": 370,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/error.search/b92b9be5c173490487fa09d0ee94fb6c.fieldnorm",
+      "bytes": 2190,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/error.search/b92b9be5c173490487fa09d0ee94fb6c.idx",
+      "bytes": 2636,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/error.search/b92b9be5c173490487fa09d0ee94fb6c.pos",
+      "bytes": 744,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/error.search/b92b9be5c173490487fa09d0ee94fb6c.store",
+      "bytes": 285,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/error.search/b92b9be5c173490487fa09d0ee94fb6c.term",
+      "bytes": 5978,
+      "allocated_bytes": 8192,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/error.search/meta.json",
+      "bytes": 11936,
+      "allocated_bytes": 12288,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/error.seed",
+      "bytes": 88,
+      "allocated_bytes": 4096,
+      "component": ".seed"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/error.sum",
+      "bytes": 73659,
+      "allocated_bytes": 73728,
+      "component": ".sum"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/error.tri",
+      "bytes": 142804,
+      "allocated_bytes": 143360,
+      "component": ".tri"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/read.idx",
+      "bytes": 1018728,
+      "allocated_bytes": 1052672,
+      "component": ".idx"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/read.journal",
+      "bytes": 191010,
+      "allocated_bytes": 200704,
+      "component": ".journal"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/read.pods",
+      "bytes": 651038,
+      "allocated_bytes": 659456,
+      "component": ".pods"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/read.search/.managed.json",
+      "bytes": 1234,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/read.search/.tantivy-meta.lock",
+      "bytes": 0,
+      "allocated_bytes": 0,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/read.search/.tantivy-writer.lock",
+      "bytes": 0,
+      "allocated_bytes": 0,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/read.search/0efc896472734ad1ae6326f4c3bfd857.fast",
+      "bytes": 53530,
+      "allocated_bytes": 57344,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/read.search/0efc896472734ad1ae6326f4c3bfd857.fieldnorm",
+      "bytes": 718994,
+      "allocated_bytes": 720896,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/read.search/0efc896472734ad1ae6326f4c3bfd857.idx",
+      "bytes": 150395,
+      "allocated_bytes": 151552,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/read.search/0efc896472734ad1ae6326f4c3bfd857.pos",
+      "bytes": 10287,
+      "allocated_bytes": 12288,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/read.search/0efc896472734ad1ae6326f4c3bfd857.store",
+      "bytes": 56847,
+      "allocated_bytes": 57344,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/read.search/0efc896472734ad1ae6326f4c3bfd857.term",
+      "bytes": 54500,
+      "allocated_bytes": 57344,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/read.search/2b72d68486d34f6e81f0c7fef93de53b.fast",
+      "bytes": 53433,
+      "allocated_bytes": 57344,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/read.search/2b72d68486d34f6e81f0c7fef93de53b.fieldnorm",
+      "bytes": 705581,
+      "allocated_bytes": 708608,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/read.search/2b72d68486d34f6e81f0c7fef93de53b.idx",
+      "bytes": 147911,
+      "allocated_bytes": 151552,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/read.search/2b72d68486d34f6e81f0c7fef93de53b.pos",
+      "bytes": 13890,
+      "allocated_bytes": 16384,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/read.search/2b72d68486d34f6e81f0c7fef93de53b.store",
+      "bytes": 55789,
+      "allocated_bytes": 57344,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/read.search/2b72d68486d34f6e81f0c7fef93de53b.term",
+      "bytes": 54311,
+      "allocated_bytes": 57344,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/read.search/452a183c3d674d13bd2dd10f02d724ca.fast",
+      "bytes": 401,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/read.search/452a183c3d674d13bd2dd10f02d724ca.fieldnorm",
+      "bytes": 3567,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/read.search/452a183c3d674d13bd2dd10f02d724ca.idx",
+      "bytes": 4156,
+      "allocated_bytes": 8192,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/read.search/452a183c3d674d13bd2dd10f02d724ca.pos",
+      "bytes": 1045,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/read.search/452a183c3d674d13bd2dd10f02d724ca.store",
+      "bytes": 393,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/read.search/452a183c3d674d13bd2dd10f02d724ca.term",
+      "bytes": 6757,
+      "allocated_bytes": 8192,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/read.search/cdcd46ff07704eb596105823752dfd63.fast",
+      "bytes": 56412,
+      "allocated_bytes": 57344,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/read.search/cdcd46ff07704eb596105823752dfd63.fieldnorm",
+      "bytes": 750614,
+      "allocated_bytes": 753664,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/read.search/cdcd46ff07704eb596105823752dfd63.idx",
+      "bytes": 158735,
+      "allocated_bytes": 159744,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/read.search/cdcd46ff07704eb596105823752dfd63.pos",
+      "bytes": 11978,
+      "allocated_bytes": 12288,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/read.search/cdcd46ff07704eb596105823752dfd63.store",
+      "bytes": 59339,
+      "allocated_bytes": 61440,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/read.search/cdcd46ff07704eb596105823752dfd63.term",
+      "bytes": 55859,
+      "allocated_bytes": 57344,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/read.search/cdf1fa2139274356a6c29343911507c6.fast",
+      "bytes": 77468,
+      "allocated_bytes": 77824,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/read.search/cdf1fa2139274356a6c29343911507c6.fieldnorm",
+      "bytes": 1033714,
+      "allocated_bytes": 1036288,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/read.search/cdf1fa2139274356a6c29343911507c6.idx",
+      "bytes": 219526,
+      "allocated_bytes": 221184,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/read.search/cdf1fa2139274356a6c29343911507c6.pos",
+      "bytes": 17781,
+      "allocated_bytes": 20480,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/read.search/cdf1fa2139274356a6c29343911507c6.store",
+      "bytes": 81681,
+      "allocated_bytes": 81920,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/read.search/cdf1fa2139274356a6c29343911507c6.term",
+      "bytes": 67169,
+      "allocated_bytes": 69632,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/read.search/meta.json",
+      "bytes": 12296,
+      "allocated_bytes": 16384,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/read.seed",
+      "bytes": 88,
+      "allocated_bytes": 4096,
+      "component": ".seed"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/read.sum",
+      "bytes": 307520,
+      "allocated_bytes": 311296,
+      "component": ".sum"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/read.tri",
+      "bytes": 142804,
+      "allocated_bytes": 143360,
+      "component": ".tri"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/resource.map",
+      "bytes": 867,
+      "allocated_bytes": 4096,
+      "component": ".map"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/resource.stats",
+      "bytes": 727,
+      "allocated_bytes": 4096,
+      "component": ".stats"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/resource.tri",
+      "bytes": 423,
+      "allocated_bytes": 4096,
+      "component": ".tri"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/trace.idx",
+      "bytes": 52888,
+      "allocated_bytes": 53248,
+      "component": ".idx"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/trace.journal",
+      "bytes": 187827,
+      "allocated_bytes": 200704,
+      "component": ".journal"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/trace.pods",
+      "bytes": 254796,
+      "allocated_bytes": 266240,
+      "component": ".pods"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/trace.search/.managed.json",
+      "bytes": 1234,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/trace.search/.tantivy-meta.lock",
+      "bytes": 0,
+      "allocated_bytes": 0,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/trace.search/.tantivy-writer.lock",
+      "bytes": 0,
+      "allocated_bytes": 0,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/trace.search/20abb767249d43a5921d7fd1cadff4da.fast",
+      "bytes": 280,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/trace.search/20abb767249d43a5921d7fd1cadff4da.fieldnorm",
+      "bytes": 864,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/trace.search/20abb767249d43a5921d7fd1cadff4da.idx",
+      "bytes": 1195,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/trace.search/20abb767249d43a5921d7fd1cadff4da.pos",
+      "bytes": 469,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/trace.search/20abb767249d43a5921d7fd1cadff4da.store",
+      "bytes": 179,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/trace.search/20abb767249d43a5921d7fd1cadff4da.term",
+      "bytes": 5548,
+      "allocated_bytes": 8192,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/trace.search/2e9981bd2e75433184e7b75776afd105.fast",
+      "bytes": 328,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/trace.search/2e9981bd2e75433184e7b75776afd105.fieldnorm",
+      "bytes": 1833,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/trace.search/2e9981bd2e75433184e7b75776afd105.idx",
+      "bytes": 2299,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/trace.search/2e9981bd2e75433184e7b75776afd105.pos",
+      "bytes": 697,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/trace.search/2e9981bd2e75433184e7b75776afd105.store",
+      "bytes": 256,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/trace.search/2e9981bd2e75433184e7b75776afd105.term",
+      "bytes": 5812,
+      "allocated_bytes": 8192,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/trace.search/3d010ba19e784074a3d979e17221fc78.fast",
+      "bytes": 353,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/trace.search/3d010ba19e784074a3d979e17221fc78.fieldnorm",
+      "bytes": 2292,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/trace.search/3d010ba19e784074a3d979e17221fc78.idx",
+      "bytes": 2822,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/trace.search/3d010ba19e784074a3d979e17221fc78.pos",
+      "bytes": 803,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/trace.search/3d010ba19e784074a3d979e17221fc78.store",
+      "bytes": 293,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/trace.search/3d010ba19e784074a3d979e17221fc78.term",
+      "bytes": 5926,
+      "allocated_bytes": 8192,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/trace.search/5e44ac61b46546a1aa2f77a062bc7762.fast",
+      "bytes": 7807,
+      "allocated_bytes": 8192,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/trace.search/5e44ac61b46546a1aa2f77a062bc7762.fieldnorm",
+      "bytes": 126679,
+      "allocated_bytes": 126976,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/trace.search/5e44ac61b46546a1aa2f77a062bc7762.idx",
+      "bytes": 34833,
+      "allocated_bytes": 36864,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/trace.search/5e44ac61b46546a1aa2f77a062bc7762.pos",
+      "bytes": 3872,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/trace.search/5e44ac61b46546a1aa2f77a062bc7762.store",
+      "bytes": 10096,
+      "allocated_bytes": 12288,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/trace.search/5e44ac61b46546a1aa2f77a062bc7762.term",
+      "bytes": 28311,
+      "allocated_bytes": 28672,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/trace.search/edc202f757534970b838b464d920ae47.fast",
+      "bytes": 341,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/trace.search/edc202f757534970b838b464d920ae47.fieldnorm",
+      "bytes": 2037,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/trace.search/edc202f757534970b838b464d920ae47.idx",
+      "bytes": 2532,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/trace.search/edc202f757534970b838b464d920ae47.pos",
+      "bytes": 745,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/trace.search/edc202f757534970b838b464d920ae47.store",
+      "bytes": 273,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/trace.search/edc202f757534970b838b464d920ae47.term",
+      "bytes": 5899,
+      "allocated_bytes": 8192,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/trace.search/meta.json",
+      "bytes": 12283,
+      "allocated_bytes": 12288,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/trace.seed",
+      "bytes": 88,
+      "allocated_bytes": 4096,
+      "component": ".seed"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/trace.tri",
+      "bytes": 142804,
+      "allocated_bytes": 143360,
+      "component": ".tri"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/write.idx",
+      "bytes": 2006648,
+      "allocated_bytes": 2101248,
+      "component": ".idx"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/write.journal",
+      "bytes": 198961,
+      "allocated_bytes": 200704,
+      "component": ".journal"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/write.pods",
+      "bytes": 7442133,
+      "allocated_bytes": 8392704,
+      "component": ".pods"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/write.search/.managed.json",
+      "bytes": 990,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/write.search/.tantivy-meta.lock",
+      "bytes": 0,
+      "allocated_bytes": 0,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/write.search/.tantivy-writer.lock",
+      "bytes": 0,
+      "allocated_bytes": 0,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/write.search/3bd1ca401f3146a7804684d756097ebc.fast",
+      "bytes": 3659,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/write.search/3bd1ca401f3146a7804684d756097ebc.fieldnorm",
+      "bytes": 36155,
+      "allocated_bytes": 36864,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/write.search/3bd1ca401f3146a7804684d756097ebc.idx",
+      "bytes": 14576,
+      "allocated_bytes": 16384,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/write.search/3bd1ca401f3146a7804684d756097ebc.pos",
+      "bytes": 1989,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/write.search/3bd1ca401f3146a7804684d756097ebc.store",
+      "bytes": 2953,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/write.search/3bd1ca401f3146a7804684d756097ebc.term",
+      "bytes": 16385,
+      "allocated_bytes": 20480,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/write.search/56d452f9d127428d981f90aaf22fb017.fast",
+      "bytes": 58613,
+      "allocated_bytes": 61440,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/write.search/56d452f9d127428d981f90aaf22fb017.fieldnorm",
+      "bytes": 576245,
+      "allocated_bytes": 577536,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/write.search/56d452f9d127428d981f90aaf22fb017.idx",
+      "bytes": 168619,
+      "allocated_bytes": 172032,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/write.search/56d452f9d127428d981f90aaf22fb017.pos",
+      "bytes": 8969,
+      "allocated_bytes": 12288,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/write.search/56d452f9d127428d981f90aaf22fb017.store",
+      "bytes": 45559,
+      "allocated_bytes": 49152,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/write.search/56d452f9d127428d981f90aaf22fb017.term",
+      "bytes": 112333,
+      "allocated_bytes": 114688,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/write.search/dfb9e6bf7a014181b08071a6de002c30.fast",
+      "bytes": 1576,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/write.search/dfb9e6bf7a014181b08071a6de002c30.fieldnorm",
+      "bytes": 15602,
+      "allocated_bytes": 16384,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/write.search/dfb9e6bf7a014181b08071a6de002c30.idx",
+      "bytes": 7513,
+      "allocated_bytes": 8192,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/write.search/dfb9e6bf7a014181b08071a6de002c30.pos",
+      "bytes": 1360,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/write.search/dfb9e6bf7a014181b08071a6de002c30.store",
+      "bytes": 1335,
+      "allocated_bytes": 4096,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/write.search/dfb9e6bf7a014181b08071a6de002c30.term",
+      "bytes": 12818,
+      "allocated_bytes": 16384,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/write.search/e70522cd8199467fab767ec0f74a34b9.fast",
+      "bytes": 547273,
+      "allocated_bytes": 548864,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/write.search/e70522cd8199467fab767ec0f74a34b9.fieldnorm",
+      "bytes": 5733058,
+      "allocated_bytes": 5734400,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/write.search/e70522cd8199467fab767ec0f74a34b9.idx",
+      "bytes": 1726525,
+      "allocated_bytes": 1728512,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/write.search/e70522cd8199467fab767ec0f74a34b9.pos",
+      "bytes": 87375,
+      "allocated_bytes": 90112,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/write.search/e70522cd8199467fab767ec0f74a34b9.store",
+      "bytes": 452539,
+      "allocated_bytes": 454656,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/write.search/e70522cd8199467fab767ec0f74a34b9.term",
+      "bytes": 289199,
+      "allocated_bytes": 290816,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/write.search/meta.json",
+      "bytes": 12179,
+      "allocated_bytes": 12288,
+      "component": "tantivy"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/write.seed",
+      "bytes": 88,
+      "allocated_bytes": 4096,
+      "component": ".seed"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/write.sum",
+      "bytes": 593343,
+      "allocated_bytes": 593920,
+      "component": ".sum"
+    },
+    {
+      "name": "demo/worker/jobs.v1/0/write.tri",
+      "bytes": 142804,
+      "allocated_bytes": 143360,
+      "component": ".tri"
+    },
+    {
+      "name": "demo/worker/jobs.v1/collection.idx",
+      "bytes": 2445312,
+      "allocated_bytes": 3211264,
+      "component": "collection.idx"
+    },
+    {
+      "name": "demo/worker/jobs.v1/collection.state",
+      "bytes": 341935,
+      "allocated_bytes": 397312,
+      "component": "collection.state"
+    }
+  ],
+  "fixture": "seed-demo; five resources; 15 fields; adaptive integers=16; all five branches",
+  "from": "2026-09-20T18:41:34Z",
+  "native_memory_budget_override": 8589934592,
+  "notes": [
+    "Every event read back from current-format storage; expanded field names, dictionaries, UUIDs, booleans and numeric values; count and unique UUIDs verified.",
+    "Payload JSONL excludes derived time and cache/service/resource/branch context. Expanded JSONL includes them.",
+    "All regular files under demo are counted after closing stores and synchronously catching up Tantivy. Manifest outside demo excluded. Logical and allocated bytes reported separately.",
+    "All hours finalized at a fixed clock. Write PACs remain uncompressed; non-write PACs use the configured default gzip. Optional object indexing enabled.",
+    "Seed timing includes generation, ingress, sealing, Tantivy background work and read-back verification; it is not pure ingestion throughput.",
+    "JSONL is ordered by resource, branch, then time, matching sequential per-source traversal."
+  ],
+  "payload_jsonl_sha256": "7a0aed2abc129f69f590053a801be0e97e5edbe0455053345cc8b6877df852c1",
+  "payload_only_jsonl_bytes": 319112488,
+  "seed_and_verification_ns": 688339206875,
+  "to": "2026-10-20T18:41:34Z",
+  "trie_trunk_allocated_bytes": 179720192,
+  "trie_trunk_bytes": 168411129
+}

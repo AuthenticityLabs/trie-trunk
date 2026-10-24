@@ -1,0 +1,167 @@
+{
+  "browser": "155.0.8059.85",
+  "results": [
+    {
+      "workload": "sparse-day",
+      "mode": "narrow",
+      "bytes": 199,
+      "decodedBytes": 630,
+      "medianMs": 0.2999999523162842,
+      "p90Ms": 0.40000009536743164,
+      "totals": "1,1,1349886,1349886,1349886,1"
+    },
+    {
+      "workload": "sparse-day",
+      "mode": "based",
+      "bytes": 195,
+      "decodedBytes": 624,
+      "medianMs": 0.20000004768371582,
+      "p90Ms": 0.40000009536743164,
+      "totals": "1,1,1349886,1349886,1349886,1"
+    },
+    {
+      "workload": "sparse-day",
+      "mode": "based-shuffle",
+      "bytes": 195,
+      "decodedBytes": 624,
+      "medianMs": 0.2999999523162842,
+      "p90Ms": 0.40000009536743164,
+      "totals": "1,1,1349886,1349886,1349886,1"
+    },
+    {
+      "workload": "demo-20",
+      "mode": "narrow",
+      "bytes": 695,
+      "decodedBytes": 2531,
+      "medianMs": 0.2999999523162842,
+      "p90Ms": 0.40000009536743164,
+      "totals": "20,20,41949290,642516,2535146,20"
+    },
+    {
+      "workload": "demo-20",
+      "mode": "based",
+      "bytes": 691,
+      "decodedBytes": 2531,
+      "medianMs": 0.2999999523162842,
+      "p90Ms": 0.2999999523162842,
+      "totals": "20,20,41949290,642516,2535146,20"
+    },
+    {
+      "workload": "demo-20",
+      "mode": "based-shuffle",
+      "bytes": 681,
+      "decodedBytes": 2531,
+      "medianMs": 0.40000009536743164,
+      "p90Ms": 0.6000001430511475,
+      "totals": "20,20,41949290,642516,2535146,20"
+    },
+    {
+      "workload": "dense-240k",
+      "mode": "narrow",
+      "bytes": 357556,
+      "decodedBytes": 666289,
+      "medianMs": 11.049999952316284,
+      "p90Ms": 12.599999904632568,
+      "totals": "240000,159984,19199759832,12,240009,0"
+    },
+    {
+      "workload": "dense-240k",
+      "mode": "based",
+      "bytes": 357566,
+      "decodedBytes": 666289,
+      "medianMs": 9.950000047683716,
+      "p90Ms": 10.200000047683716,
+      "totals": "240000,159984,19199759832,12,240009,0"
+    },
+    {
+      "workload": "dense-240k",
+      "mode": "based-shuffle",
+      "bytes": 10370,
+      "decodedBytes": 666289,
+      "medianMs": 9.299999952316284,
+      "p90Ms": 9.299999952316284,
+      "totals": "240000,159984,19199759832,12,240009,0"
+    },
+    {
+      "workload": "large-base-240k",
+      "mode": "narrow",
+      "bytes": 420887,
+      "decodedBytes": 828001,
+      "medianMs": 10.950000047683716,
+      "p90Ms": 12.700000047683716,
+      "totals": "240000,159984,160003199759832,1000000012,1000240009,0"
+    },
+    {
+      "workload": "large-base-240k",
+      "mode": "based",
+      "bytes": 357801,
+      "decodedBytes": 666289,
+      "medianMs": 9.400000095367432,
+      "p90Ms": 9.600000143051147,
+      "totals": "240000,159984,160003199759832,1000000012,1000240009,0"
+    },
+    {
+      "workload": "large-base-240k",
+      "mode": "based-shuffle",
+      "bytes": 10526,
+      "decodedBytes": 666289,
+      "medianMs": 8.75,
+      "p90Ms": 8.900000095367432,
+      "totals": "240000,159984,160003199759832,1000000012,1000240009,0"
+    },
+    {
+      "workload": "varied-240k",
+      "mode": "narrow",
+      "bytes": 495192,
+      "decodedBytes": 825249,
+      "medianMs": 10.399999976158142,
+      "p90Ms": 10.599999904632568,
+      "totals": "240000,159984,119382458293,1000,50500890,0"
+    },
+    {
+      "workload": "varied-240k",
+      "mode": "based",
+      "bytes": 494787,
+      "decodedBytes": 825249,
+      "medianMs": 10.450000047683716,
+      "p90Ms": 11.299999952316284,
+      "totals": "240000,159984,119382458293,1000,50500890,0"
+    },
+    {
+      "workload": "varied-240k",
+      "mode": "based-shuffle",
+      "bytes": 341727,
+      "decodedBytes": 825249,
+      "medianMs": 10.599999904632568,
+      "p90Ms": 11.600000143051147,
+      "totals": "240000,159984,119382458293,1000,50500890,0"
+    },
+    {
+      "workload": "full-u32-240k",
+      "mode": "narrow",
+      "bytes": 654956,
+      "decodedBytes": 826681,
+      "medianMs": 9.75,
+      "p90Ms": 10.399999856948853,
+      "totals": "240000,159984,343567745974293,31152,4294929702,0"
+    },
+    {
+      "workload": "full-u32-240k",
+      "mode": "based",
+      "bytes": 654964,
+      "decodedBytes": 826681,
+      "medianMs": 9.850000023841858,
+      "p90Ms": 10.599999904632568,
+      "totals": "240000,159984,343567745974293,31152,4294929702,0"
+    },
+    {
+      "workload": "full-u32-240k",
+      "mode": "based-shuffle",
+      "bytes": 585905,
+      "decodedBytes": 826681,
+      "medianMs": 11.199999928474426,
+      "p90Ms": 12.200000047683716,
+      "totals": "240000,159984,343567745974293,31152,4294929702,0"
+    }
+  ]
+}

@@ -11,13 +11,15 @@ export class PILEvent {
   readonly fields;
   private bytes: Uint8Array;
   private mapping: Mapping;
-  constructor(bytes: Uint8Array, mapping: Mapping) {
+  private common?: Uint8Array;
+  constructor(bytes: Uint8Array, mapping: Mapping, common?: Uint8Array) {
     this.bytes = bytes;
+    this.common = common;
     this.mapping = mapping;
     this.dictionary = mapping.dictionary;
     this.fields = this.dictionary.fields;
     const idIndex = mapping.keys.indexOf(this.dictionary.id.key);
-    const id = read(bytes, mapping.definition, idIndex);
+    const id = read(this.fieldBytes(idIndex), mapping.definition, idIndex);
     if (
       !(id instanceof Uint8Array) ||
       id.length !== 16 ||
@@ -29,9 +31,14 @@ export class PILEvent {
     this.millis = 0;
     for (let i = 0; i < 6; i++) this.millis = this.millis * 256 + id[i];
   }
+  private fieldBytes(index:number):Uint8Array {
+    return index>=0&&this.common&&((this.common[index>>2]>>(6-2*(index%4)))&3)!==0?this.common:this.bytes;
+  }
+  prefix():Uint8Array|undefined { return this.common; }
   private fallback(): Record<string, unknown> | undefined {
+    if (this.mapping.native) return undefined;
     return read(
-      this.bytes,
+      this.fieldBytes(this.mapping.keys.length + 1),
       this.mapping.definition,
       this.mapping.keys.length + 1,
     ) as Record<string, unknown> | undefined;
@@ -40,13 +47,13 @@ export class PILEvent {
     const { keys, definition, codes } = this.mapping;
     const index = keys.indexOf(key);
     let value: unknown;
-    if (index < 0 || span(this.bytes, definition, index).state === 0)
+    if (index < 0 || span(this.fieldBytes(index), definition, index).state === 0)
       value = this.fallback()?.[key];
     else {
-      value = read(this.bytes, definition, index);
+      value = read(this.fieldBytes(index), definition, index);
       if (
         codes[index].length &&
-        span(this.bytes, definition, index).state === 2
+        span(this.fieldBytes(index), definition, index).state === 2
       )
         value = codes[index][value as number];
     }
@@ -56,10 +63,11 @@ export class PILEvent {
   }
   orderedKeys(): number[] {
     const { keys, definition } = this.mapping;
-    const lineage = read(this.bytes, definition, keys.length);
+    if (this.mapping.native) return keys.filter((_,i)=>span(this.fieldBytes(i),definition,i).state!==0);
+    const lineage = read(this.fieldBytes(keys.length), definition, keys.length);
     if (!Array.isArray(lineage)) throw Error("Missing PIL lineage");
     const present = keys.filter(
-      (_, i) => span(this.bytes, definition, i).state !== 0,
+      (_, i) => span(this.fieldBytes(i), definition, i).state !== 0,
     );
     const extra = Object.keys(this.fallback() ?? {}).map(Number);
     const all = new Set([...present, ...extra]);

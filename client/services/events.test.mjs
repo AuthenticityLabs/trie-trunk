@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { duration, dictionaryJSONL } from "./events.ts";
-import { Dictionaries, expandEvent, valueAt } from "./dictionary.ts";
+import { Dictionaries, expandEvent, valueAt, pack, decodeValue, eventId } from "./dictionary.ts";
 import { compileIndicator } from "./indicators.ts";
 
 import { Results } from "./results.ts";
@@ -321,38 +321,64 @@ test("timeline groups view indicators without modifying events or classifying ev
   assert.deepEqual(summarize([]).signals, []);
 });
 
-test("tap listing uses GET and does not negotiate dictionaries", async (t) => {
-  const { listTaps } = await import("./events.ts");
+test("cache listing uses GET and does not negotiate dictionaries", async (t) => {
+  const { listCaches } = await import("./events.ts");
   const abort = new AbortController();
   t.mock.method(globalThis, "fetch", async (url, options) => {
-    assert.equal(url, "/taps");
+    assert.equal(url, "/caches");
     assert.equal(options.method ?? "GET", "GET");
     assert.equal(options.headers.Authorization, "Bearer secret");
     assert.equal(options.signal, abort.signal);
-    return Response.json({ taps: ["billing", "demo-week"] });
+    return Response.json({ caches: ["billing", "demo-week"] });
   });
-  assert.deepEqual(await listTaps(" secret ", abort.signal), [
+  assert.deepEqual(await listCaches(" secret ", abort.signal), [
     "billing",
     "demo-week",
   ]);
 });
 
-test("tap listing reports auth, malformed data and unavailable endpoints", async (t) => {
-  const { listTaps } = await import("./events.ts");
+test("cache listing reports auth, malformed data and unavailable endpoints", async (t) => {
+  const { listCaches } = await import("./events.ts");
   let result;
   t.mock.method(globalThis, "fetch", async () => result);
   for (const [response, pattern] of [
     [new Response("unauthorized", { status: 401 }), /Authentication required/],
     [
       new Response("<html>", { headers: { "Content-Type": "text/html" } }),
-      /No tap listing/,
+      /No cache listing/,
     ],
-    [Response.json({ taps: ["../private"] }), /Invalid tap listing/],
-    [Response.json({ taps: null }), /Invalid tap listing/],
+    [Response.json({ caches: ["../private"] }), /Invalid cache listing/],
+    [Response.json({ caches: null }), /Invalid cache listing/],
   ]) {
     result = response;
-    await assert.rejects(listTaps("", new AbortController().signal), pattern);
+    await assert.rejects(listCaches("", new AbortController().signal), pattern);
   }
-  result = Response.json({ taps: [] });
-  assert.deepEqual(await listTaps("", new AbortController().signal), []);
+  result = Response.json({ caches: [] });
+  assert.deepEqual(await listCaches("", new AbortController().signal), []);
+});
+
+test('service/resource labels can come from the source without synthesizing object fields',async()=>{
+ const {field}=await import('./events.ts');
+ const event=eventOf({message:'hello'});
+ event.dictionary.tap='demo/payment/transactions.v1/write';
+ assert.equal(field(event,'service'),'payment');assert.equal(field(event,'resource'),'transactions.v1');
+ assert.equal(valueAt(event,'service'),undefined);
+ const explicit=eventOf({service:'explicit',resource:null});explicit.dictionary.tap=event.dictionary.tap;
+ assert.equal(field(explicit,'service'),'explicit');assert.equal(field(explicit,'resource'),'');
+});
+
+// Native PIL records use pack() lazily when object fields first render.
+test("object UUIDs retain arbitrary versions while event identities require UUIDv7",()=>{
+ const field={name:"id",key:1,uuid:true,enums:new Map()};
+ for(const version of [1,4,7,8]){
+  const bytes=new Uint8Array(16);bytes[6]=version<<4;bytes[8]=0x80;bytes[15]=42;
+  assert.equal(pack(bytes,field),bytes);
+  const text=`00000000-0000-${version}000-8000-00000000002a`;
+  assert.equal(decodeValue(bytes,field),text);
+  const encoded=Buffer.from(bytes).toString('base64');
+  assert.equal(decodeValue(pack(encoded,field),field),text);
+  if(version===7)assert.equal(eventId({uuid:encoded}),text);
+  else assert.throws(()=>eventId({uuid:encoded}),/UUIDv7/);
+ }
+ assert.throws(()=>pack(new Uint8Array(15),field),/UUID bytes/);
 });

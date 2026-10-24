@@ -1,3 +1,14 @@
+import { SearchPerformance } from './components/search-performance';
+import { QueryEditor } from './components/query-editor';
+import { parseQuery, type QueryField } from './services/query';
+import { capturePosition, resolvePosition, validPosition, type ScrollPosition } from './services/ui-position';
+import { readTab, writeTab } from "./services/search-session";
+import { ViewInsights } from "./components/view-insights";
+import { AlertCenter } from "./components/alerts";
+import { PagedResults, type PagedViewState } from "./components/paged-results";
+import { Histogram } from "./components/charts";
+import type { ViewQuery } from "./services/pil/view";
+import type { ObjectHistoryTarget } from './services/replay';
 import {
   For,
   Show,
@@ -9,12 +20,12 @@ import {
   lazy,
   untrack,
 } from "solid-js";
-import { beginCollection, restoreCollection } from "./services/pil/client";
+import { beginCollection, restoreCollection, rebaseCollection } from "./services/pil/client";
 import wordmark from "./assets/snoot-wordmark.png";
 import { Coverage, type Interval } from "./services/coverage";
 import { ExpansionDialog } from "./components/expansion";
 import { Events } from "./components/events";
-import { Icon, Mark } from "./components/icon";
+import { Icon, ProfileMark } from "./components/icon";
 import { Navigation, type Page } from "./components/navigation";
 import { Settings, type Panel } from "./components/settings";
 import {
@@ -28,8 +39,10 @@ import {
   defaultPageSize,
   loadPageSize,
   loadTheme,
-  savePageSize,
   saveTheme,
+  defaultTheme,
+  nextTheme,
+  themeColors,
   type Theme,
 } from "./services/preferences";
 import {
@@ -43,19 +56,19 @@ import {
 import {
   loadDictionaries,
   streamEvents,
-  listTaps,
+  listCaches,
   type LogEvent,
   type Selection,
 } from "./services/events";
 import { windowLabel } from "./services/calendar";
 import { WorkingSet } from "./services/working-set";
-import { Criteria } from "./components/criteria";
+
+import { Sources } from "./components/sources";
+import { resourceScope } from "./services/source";
 import {
   collectionWindow,
   compileSearch,
   describeSearch,
-  parameterNames,
-  where,
   type Choices,
   type Parameters,
   type LocalSelection,
@@ -65,6 +78,9 @@ import {
 import { expandEvent, jsonText } from "./services/dictionary";
 
 const Calendar = lazy(() => import("./components/calendar"));
+const DashboardMetrics = lazy(() => import("./components/dashboard"));
+const Research = lazy(() => import("./components/research"));
+const HistoryDialog = lazy(() => import("./components/research").then(module=>({default:module.HistoryDialog})));
 
 type Status =
   | "restoring"
@@ -76,8 +92,26 @@ type Status =
   | "ended"
   | "stopped"
   | "error";
+type TabState = {
+ queryText?:string; version:1; page:Page; collapsed:boolean; tap:string; range:string; from:string; to:string;
+ localParameters:Parameters; localTap:string; localFrom:string; localTo:string;
+ query?:ViewQuery; pageSize:number; scroll:number; positions?:Partial<Record<Page,ScrollPosition>>;
+};
+function savedTab():TabState|undefined {
+ const state=readTab<TabState>('snoot-tab-v1');
+ if(!state||state.version!==1||!['Search','Dashboard','Alerts','Object History'].includes(state.page)||
+  (state.queryText!==undefined&&typeof state.queryText!=='string')||
+  !Number.isFinite(state.scroll)||state.scroll<0||typeof state.collapsed!=='boolean'||
+  (state.positions&&Object.values(state.positions).some(p=>!validPosition(p)))||
+  !Number.isInteger(state.pageSize)||state.pageSize<1||state.pageSize>1000||
+  !['tap','range','from','to','localTap','localFrom','localTo'].every(k=>typeof state[k as keyof TabState]==='string')||
+  !state.localParameters||Object.values(state.localParameters).some(v=>typeof v!=='string')||
+  (state.query&&(!Number.isFinite(Date.parse(state.query.from))||!Number.isFinite(Date.parse(state.query.to))||typeof state.query.tap!=='string')))return;
+ return state;
+}
 export default function App() {
-  const [theme, setTheme] = createSignal<Theme>("light");
+  const saved=savedTab();
+  const [theme, setTheme] = createSignal<Theme>(defaultTheme);
   const [themeBusy, setThemeBusy] = createSignal(false);
   const [themeError, setThemeError] = createSignal("");
   let themeChanged = false;
@@ -85,14 +119,14 @@ export default function App() {
     document.documentElement.dataset.theme = theme();
     document.querySelector('meta[name="theme-color"]')?.setAttribute(
       "content",
-      theme() === "dark" ? "#1b211e" : "#f8f7f5",
+      themeColors[theme()],
     );
   });
 
   async function toggleTheme() {
     if (themeBusy()) return;
     themeChanged = true;
-    const next = theme() === "light" ? "dark" : "light";
+    const next = nextTheme(theme());
     setTheme(next);
     setThemeBusy(true);
     setThemeError("");
@@ -110,6 +144,8 @@ export default function App() {
   let collectionToken = "";
   let collectionId: string | undefined;
   const [calendar, setCalendar] = createSignal<"Collect" | "Search">();
+  const [calendarPaged,setCalendarPaged]=createSignal(false);
+  const [calendarBounds,setCalendarBounds]=createSignal<TimeWindow>({from:'',to:''});
   const [covered, setCovered] = createSignal<readonly Interval[]>([]);
   const [collectionScope, setCollectionScope] = createSignal("");
   const [expansion, setExpansion] = createSignal<{
@@ -118,28 +154,32 @@ export default function App() {
     apply: boolean;
   }>();
   let activePredicate: Predicate | undefined;
-  const [page, setPage] = createSignal<Page>("Search");
+  const [page, setPage] = createSignal<Page>(saved?.page ?? "Search");
   const [drawer, setDrawer] = createSignal(false);
-  const [collapsed, setCollapsed] = createSignal(false);
+  const [collapsed, setCollapsed] = createSignal(saved?.collapsed ?? false);
   const [modal, setModal] = createSignal<Panel>();
   const [token, setToken] = createSignal("");
-  const [tap, setTap] = createSignal("");
+  const [tap, setTap] = createSignal(resourceScope(saved?.tap ?? ""));
   const [taps, setTaps] = createSignal<string[]>([]);
+  const [collections,setCollections]=createSignal<string[]>([]);
+  const [historyObject,setHistoryObject]=createSignal<ObjectHistoryTarget>();
+  function openObjectHistory(target:ObjectHistoryTarget){setHistoryObject(target);}
   const [tapError, setTapError] = createSignal("");
   const [tapsLoading, setTapsLoading] = createSignal(false);
   const [tapRefresh, setTapRefresh] = createSignal(0);
-  const [range, setRange] = createSignal("today");
-  const [from, setFrom] = createSignal("");
-  const [to, setTo] = createSignal("");
-  const [parameters, setParameters] = createSignal<Parameters>({});
+  const [range, setRange] = createSignal(saved?.range ?? "today");
+  const [from, setFrom] = createSignal(saved?.from ?? "");
+  const [to, setTo] = createSignal(saved?.to ?? "");
+  const [queryText,setQueryText]=createSignal(saved?.queryText??'');
+  const [queryFields,setQueryFields]=createSignal<QueryField[]>([]);
   const [choices, setChoices] = createSignal<Choices>({});
   const [schemaError, setSchemaError] = createSignal("");
   const [schemaLoading, setSchemaLoading] = createSignal(false);
-  const [localParameters, setLocalParameters] = createSignal<Parameters>({});
+  const [localParameters, setLocalParameters] = createSignal<Parameters>(saved?.localParameters ?? {});
   const [localChoices, setLocalChoices] = createSignal<Choices>({});
-  const [localTap, setLocalTap] = createSignal("");
-  const [localFrom, setLocalFrom] = createSignal("");
-  const [localTo, setLocalTo] = createSignal("");
+  const [localTap, setLocalTap] = createSignal(saved?.localTap ?? "");
+  const [localFrom, setLocalFrom] = createSignal(saved?.localFrom ?? "");
+  const [localTo, setLocalTo] = createSignal(saved?.localTo ?? "");
   const [activeSearch, setActiveSearch] = createSignal<LocalSelection>();
   const [searchError, setSearchError] = createSignal("");
   const [searching, setSearching] = createSignal(false);
@@ -148,11 +188,10 @@ export default function App() {
   const [viewRevision, setViewRevision] = createSignal(0);
   const [collectionDraft, setCollectionDraft] = createSignal("");
   const collectionParameters = () =>
-    JSON.stringify([tap(), range(), from(), to(), parameters()]);
+    JSON.stringify([tap(), range(), from(), to()]);
   const localDraft = (): LocalSelection => ({
     parameters: Object.fromEntries(
-      parameterNames
-        .map((name) => [name, localParameters()[name]])
+      Object.entries(localParameters())
         .filter(([, value]) => value),
     ),
     tap: localTap(),
@@ -177,7 +216,9 @@ export default function App() {
   );
   const [selected, setSelected] = createSignal<LogEvent>();
   const [revealed, setRevealed] = createSignal<{ event: LogEvent }>();
-  const [pageSize, setPageSize] = createSignal(defaultPageSize);
+  const [pagedQuery,setPagedQuery]=createSignal<ViewQuery | undefined>(saved?.query);
+  const [pagedView,setPagedView]=createSignal<PagedViewState>({loaded:0,busy:false,error:""});
+  const [pageSize, setPageSize] = createSignal(saved?.pageSize ?? defaultPageSize);
   const [preferencesBusy, setPreferencesBusy] = createSignal(true);
   const [preferencesError, setPreferencesError] = createSignal("");
   const [status, setStatus] = createSignal<Status>("idle");
@@ -221,7 +262,6 @@ export default function App() {
   let frame = 0;
   let queued: LogEvent[] = [];
   let copyTimer: ReturnType<typeof setTimeout> | undefined;
-  let localCard: HTMLFormElement | undefined;
   let collectionCard: HTMLFormElement | undefined;
   let searchRevision = 0;
   let disposed = false;
@@ -247,7 +287,7 @@ export default function App() {
     setPreferencesError("");
     try {
       const size = await loadPageSize();
-      if (!disposed) setPageSize(size);
+      if (!disposed && !saved) setPageSize(size);
     } catch (cause) {
       if (!disposed)
         setPreferencesError(
@@ -255,22 +295,6 @@ export default function App() {
         );
     } finally {
       if (!disposed) setPreferencesBusy(false);
-    }
-  }
-
-  async function changePageSize(size: number) {
-    setPreferencesBusy(true);
-    setPreferencesError("");
-    try {
-      await savePageSize(size);
-      setPageSize(size);
-    } catch (cause) {
-      setPreferencesError(
-        `Could not save preferences: ${cause instanceof Error ? cause.message : String(cause)}`,
-      );
-      throw cause;
-    } finally {
-      setPreferencesBusy(false);
     }
   }
 
@@ -307,9 +331,10 @@ export default function App() {
     tapRefresh();
     const abort = new AbortController();
     setTaps([]);
+    setCollections([]);setHistoryObject(undefined);
     setTapError("");
     setTapsLoading(true);
-    void listTaps(token(), abort.signal)
+    void listCaches(token(), abort.signal, sources=>{if(!abort.signal.aborted)setCollections(sources)})
       .then((names) => {
         if (!abort.signal.aborted) setTaps(names);
       })
@@ -328,11 +353,11 @@ export default function App() {
     const abort = new AbortController();
     setChoices({});
     setSchemaError("");
-    setSchemaLoading(true);
+    setSchemaLoading(true);setQueryFields([]);
     void loadDictionaries(tap(), token(), abort.signal)
       .then((dictionaries) => {
-        if (!abort.signal.aborted)
-          setChoices(dictionaries.choices(parameterNames));
+        if (!abort.signal.aborted){
+          setChoices(dictionaries.choices());setQueryFields(dictionaries.fields());}
       })
       .catch((cause) => {
         if (!abort.signal.aborted)
@@ -347,6 +372,7 @@ export default function App() {
   });
 
   async function restore(tokenValue: string) {
+    setPagedQuery(undefined);
     stop();
     const current = ++generation,
       abort = new AbortController();
@@ -390,18 +416,16 @@ export default function App() {
           collectionId = saved.id;
           setHasCollected(true);
           setActiveSelection(saved.selection);
-          setTap(saved.selection.tap);
-          setParameters(saved.parameters);
+          setTap(resourceScope(saved.selection.tap));
           setRange(saved.range);
           setFrom(saved.from);
           setTo(saved.to);
           setCollectionDraft(
-            JSON.stringify([
+            saved.selection.where.length ? "" : JSON.stringify([
               saved.selection.tap,
               saved.range,
               saved.from,
               saved.to,
-              saved.parameters,
             ]),
           );
           setCollectionScope(
@@ -440,12 +464,63 @@ export default function App() {
     }
   }
 
+  let initialRestore=true;
   createEffect(() => {
     const credential = token();
+    if(initialRestore&&saved?.query){initialRestore=false;return;}
+    initialRestore=false;
     untrack(() => void restore(credential));
   });
 
+  let tabState:TabState;
+  const positions:Partial<Record<Page,ScrollPosition>>={...saved?.positions};
+  if(saved&&!positions[saved.page])positions[saved.page]={top:saved.scroll,left:0};
+  let scrollPending=false;
+  let stopScrollRestore=()=>{};
+  const saveTab=()=>{if(tabState)writeTab('snoot-tab-v1',{...tabState,positions,scroll:positions[page()]?.top??0})};
+  const captureScroll=()=>{
+    const el=document.scrollingElement;
+    if(el&&!scrollPending)positions[page()]=capturePosition(el);
+    saveTab();
+  };
+  createEffect(()=>{
+    tabState={queryText:queryText(),version:1,page:page(),collapsed:collapsed(),tap:tap(),range:range(),from:from(),to:to(),
+      localParameters:localParameters(),localTap:localTap(),localFrom:localFrom(),localTo:localTo(),
+      query:pagedQuery(),pageSize:pageSize(),scroll:positions[page()]?.top??0};
+    saveTab();
+  });
+  onMount(()=>{
+    history.scrollRestoration='manual';
+    let timer:ReturnType<typeof setTimeout>|undefined;
+    const scroll=()=>{clearTimeout(timer);timer=setTimeout(captureScroll,150)};
+    const flush=()=>{clearTimeout(timer);captureScroll()};
+    addEventListener('scroll',scroll,{passive:true});addEventListener('pagehide',flush);
+    onCleanup(()=>{clearTimeout(timer);removeEventListener('scroll',scroll);removeEventListener('pagehide',flush)});
+  });
+  createEffect(()=>{
+    const current=page();
+    const target=positions[current]??{top:0,left:0};
+    stopScrollRestore();scrollPending=true;
+    let frame=0;
+    const stop=()=>{cancelAnimationFrame(frame);observer.disconnect();clearTimeout(timeout);scrollPending=false;
+      removeEventListener('wheel',stop);removeEventListener('touchstart',stop);removeEventListener('keydown',stop)};
+    const restore=()=>{cancelAnimationFrame(frame);frame=requestAnimationFrame(()=>{
+      const el=document.scrollingElement;if(!el)return;
+      if((current==='Search'||current==='Dashboard')&&pagedQuery()&&!pagedView().result)return;
+      // Lazy pages and restored search rows must render before clamping the position.
+      const position=resolvePosition(target,el);
+      window.scrollTo(position.left,position.top);
+      if(el.scrollHeight-el.clientHeight>=position.top&&Math.abs(el.scrollTop-position.top)<2)stop();
+    })};
+    const observer=new ResizeObserver(restore);
+    observer.observe(document.body);
+    const timeout=setTimeout(stop,5000);
+    addEventListener('wheel',stop,{passive:true});addEventListener('touchstart',stop,{passive:true});addEventListener('keydown',stop);
+    stopScrollRestore=stop;restore();onCleanup(stop);
+  });
+
   function refresh() {
+    setViewRevision((value) => value + 1);
     setCollected(working.collected.events.length);
     setAvailableWindow(collectionWindow(working.collected.events));
     setLocalChoices(working.choices());
@@ -507,6 +582,20 @@ export default function App() {
     flush();
     if (running()) setStatus("stopped");
   }
+  async function rebuildLocalCollection(source:string){
+    stop();
+    const current=generation,credential=token();
+    const abort=new AbortController();
+    await rebaseCollection(source,credential,abort.signal);
+    if(current!==generation||credential!==token())return;
+    working.cancel();searchRevision++;setSearching(false);
+    working=new WorkingSet();working.setMatchers(matchers());
+    activePredicate=undefined;setActiveSearch(undefined);setSearchError("");
+    coverage=new Coverage();setCovered([]);collectionId=undefined;
+    setSelected(undefined);setRevealed(undefined);setHasCollected(false);setActiveSelection(undefined);setCollectionDraft("");
+    setError("");setStatus("idle");refresh();
+    try{sessionStorage.removeItem("snoot-collection");}catch{}
+  }
 
   function selection(follow: boolean): Selection {
     const now = new Date();
@@ -536,7 +625,7 @@ export default function App() {
       tap: tap().trim(),
       from: start.toISOString(),
       ...(end ? { to: end.toISOString() } : {}),
-      where: where(parameters()),
+      where: [],
       limit: null,
       tail: false,
       follow,
@@ -544,7 +633,24 @@ export default function App() {
     };
   }
 
+  function searchWindow():TimeWindow {
+    if(!pagedQuery()&&hasCollected())return {from:localFrom()||activeSelection()?.from.replace(/Z$/,'')||availableWindow()?.from||'',to:localTo()||activeSelection()?.to?.replace(/Z$/,'')||availableWindow()?.to||''};
+    try{const q=selection(false);return {from:q.from.replace(/Z$/,''),to:q.to?.replace(/Z$/,'')||''}}catch{return {from:from(),to:to()}}
+  }
+  function openSearchWindow(){setCalendarBounds(searchWindow());setCalendarPaged(!!pagedQuery()||!hasCollected());setCalendar('Search')}
+
+  async function submitSearch() {
+    try {
+      const ast=parseQuery(queryText(),queryFields());
+      for(const [field,value] of Object.entries(localParameters()))if(value)ast.plan.filters.push({field,op:'==',value:{kind:'string',value}});
+      const q=selection(false);stop();setError("");setSearchError("");
+      setPagedQuery({tap:q.tap,from:q.from,to:q.to!,size:ast.page?.size??pageSize(),after:ast.page?.after,
+        ...(ast.plan.filters.length||ast.plan.search||ast.plan.order!=='asc'?{query:ast.plan}:{})});
+    }catch(e){setSearchError(e instanceof Error?e.message:String(e))}
+  }
+
   async function collect(follow = false) {
+    setPagedQuery(undefined);
     let request: Selection;
     try {
       request = selection(follow);
@@ -562,17 +668,15 @@ export default function App() {
     setLocalFrom("");
     setLocalTo("");
     setSearchError("");
-    const previousSearch = activeSearch();
-    if (previousSearch) {
-      const retained = { ...previousSearch, from: "", to: "" };
-      activePredicate = compileSearch(retained);
-      setActiveSearch(activePredicate ? retained : undefined);
-    }
+    const retained = { ...localDraft(), from: "", to: "", tap: "" };
+    setLocalTap("");
+    activePredicate = compileSearch(retained);
+    setActiveSearch(activePredicate ? retained : undefined);
     coverage = new Coverage();
     setCovered([]);
     setCollectionScope(
       describeSearch({
-        parameters: parameters(),
+        parameters: {},
         tap: request.tap,
         from: "",
         to: "",
@@ -597,7 +701,7 @@ export default function App() {
           id: collectionId,
           created: Date.now(),
           selection: request,
-          parameters: parameters(),
+          parameters: {},
           range: range(),
           from: from(),
           to: to(),
@@ -648,7 +752,7 @@ export default function App() {
       },
       (dictionaries) => {
         if (current === generation && tap() === request.tap)
-          setChoices(dictionaries.choices(parameterNames));
+          setChoices(dictionaries.choices());
       },
       collectionId,
     );
@@ -692,7 +796,7 @@ export default function App() {
     };
     if (requested.from < 0 || requested.to > Date.now()) {
       setSearchError(
-        "Choose a time from the past. Follow live collects future events.",
+        "Choose a time from the past. Follow Live collects future events.",
       );
       return true;
     }
@@ -775,6 +879,7 @@ export default function App() {
   }
 
   function navigate(next: Page) {
+    captureScroll();
     setPage(next);
     setDrawer(false);
   }
@@ -785,22 +890,27 @@ export default function App() {
     navigate("Search");
   }
 
+  function searchChart(from?: number, to?: number) {
+    // Drill-down retains the applied parameters, not unsubmitted form edits.
+    const selection = activeSearch();
+    setLocalParameters(selection?.parameters ?? {});
+    setLocalTap(selection?.tap ?? "");
+    setLocalFrom(from === undefined ? "" : new Date(from).toISOString().slice(0, -1));
+    setLocalTo(to === undefined ? "" : new Date(to).toISOString().slice(0, -1));
+    void search(false, true);
+  }
+
   function narrow(
     scope: "Collect" | "Search",
     name: "service" | "level",
     value: string,
   ) {
     navigate("Search");
-    if (scope === "Collect")
-      setParameters((current) => ({ ...current, [name]: value }));
-    else setLocalParameters((current) => ({ ...current, [name]: value }));
+    setLocalParameters((current) => ({ ...current, [name]: value }));
+    void search(false, true);
     queueMicrotask(() => {
-      const card = scope === "Collect" ? collectionCard : localCard;
-      card?.scrollIntoView({ block: "center", behavior: "smooth" });
-      card
-        ?.querySelector<HTMLSelectElement>(
-          `select[aria-label="${scope} ${name}"]`,
-        )
+      collectionCard?.scrollIntoView({ block: "center", behavior: "smooth" });
+      collectionCard?.querySelector<HTMLTextAreaElement>('#snoot-query')
         ?.focus({ preventScroll: true });
     });
   }
@@ -858,7 +968,7 @@ export default function App() {
       <Show when={drawer()}>
         <button
           class="drawer-scrim"
-          aria-label="Close navigation"
+          aria-label="Close Navigation"
           onClick={() => setDrawer(false)}
         />
       </Show>
@@ -868,23 +978,23 @@ export default function App() {
         themeError={themeError()}
         onToggleTheme={() => void toggleTheme()}
         page={page()}
-        count={collected()}
+        count={pagedQuery()?pagedView().result?.summary?.count??0:collected()}
         hasToken={Boolean(token())}
         onNavigate={navigate}
         onHelp={() => openModal("help")}
         onConnection={() => openModal("connection")}
       >
-        <Show when={records().length}>
-          <div class="rankings-column" aria-label="Operation rankings">
+        <Show when={pagedQuery() ? (pagedView().result?.summary?.count??0)>0 && !!pagedView().result?.summary?.statistics : records().length>0}>
+          <div class="rankings-column" aria-label="Operation Rankings">
             <OperationRanking
-              rows={summary().operations.errors}
+              rows={pagedQuery()?pagedView().result!.summary!.statistics!.operations.errors:summary().operations.errors}
               kind="errors"
-              count={records().length}
+              count={pagedQuery()?pagedView().result?.summary?.count??0:records().length}
             />
             <OperationRanking
-              rows={summary().operations.latency}
+              rows={pagedQuery()?pagedView().result!.summary!.statistics!.operations.latency:summary().operations.latency}
               kind="latency"
-              count={records().length}
+              count={pagedQuery()?pagedView().result?.summary?.count??0:records().length}
             />
           </div>
         </Show>
@@ -904,7 +1014,7 @@ export default function App() {
           </button>
           <button
             class="icon-button mobile-menu"
-            aria-label="Open navigation"
+            aria-label="Open Navigation"
             aria-expanded={drawer()}
             onClick={() => setDrawer(true)}
           >
@@ -924,93 +1034,70 @@ export default function App() {
             <span class="topbar-caption">Your events, in focus.</span>
             <button class="guide-button" onClick={() => openModal("help")}>
               <Icon name="help" size={16} />
-              <span>Quick guide</span>
+              <span>Quick Guide</span>
             </button>
             <button
               class="profile-button"
               onClick={() => openModal("connection")}
-              aria-label="Connection settings"
+              aria-label="Connection Settings"
             >
-              <Mark size={24} />
+              <ProfileMark size={24} />
             </button>
           </div>
         </header>
 
         <div class="page-content">
-          <Show when={page() === "Search"}>
+          {/* Preserve the current page and snapshot across navigation. */}
+          <div style={{display:page() === "Search"?"contents":"none"}}>
             <form
               ref={collectionCard}
               class="card query-card"
-              aria-label="Collect events"
+              aria-label="Search Events"
               onSubmit={(event) => {
                 event.preventDefault();
-                void collect();
+                void submitSearch();
               }}
             >
               <div class="query-heading">
                 <div>
                   <span class="query-symbol">
-                    <Icon name="download" size={17} />
+                    <Icon name="search" size={17} />
                   </span>
-                  <strong>Collect</strong>
+                  <strong>Search</strong>
                 </div>
-                <span
-                  class="scope-count"
-                  aria-live="polite"
-                  data-collected-count
-                >
-                  <strong>{collected().toLocaleString()}</strong> events
-                  collected
+                <span class="scope-count" aria-live="polite">
+                  <span data-matched-count><strong>{pagedQuery()?(pagedView().result?.summary?.count.toLocaleString()??"—"):records().length.toLocaleString()}</strong> matched</span>
+                  {" · "}
+                  <span data-collected-count><strong>{(pagedQuery()?pagedView().loaded:collected()).toLocaleString()}</strong> {pagedQuery()?"loaded":"collected"}</span>
+                  <Show when={pagedQuery() && pagedView().timing}>{" · "}<SearchPerformance timing={pagedView().timing} /></Show>
                 </span>
               </div>
-              <Criteria
-                scope="Collect"
-                parameters={parameters()}
-                onParameters={setParameters}
-                choices={choices()}
-              />
+              <Sources value={tap()} catalog={taps()} loading={tapsLoading()} onChange={setTap} />
+              <Show when={Object.values(localParameters()).some(Boolean)}><div class="query-filter-chips"><For each={Object.entries(localParameters()).filter(([,value])=>!!value)}>{([field,value])=><button type="button" class="text-button" aria-label={`Remove ${field} filter`} onClick={()=>setLocalParameters(current=>{const next={...current};delete next[field];return next})}>{field} == {JSON.stringify(value)} ×</button>}</For></div></Show>
+              <QueryEditor value={queryText()} onInput={setQueryText} fields={queryFields()} loading={schemaLoading()} />
               <div class="query-controls">
-                <label class="control tap-control">
-                  <Icon name="leaf" size={15} />
-                  <span class="sr-only">Tap</span>
-                  <select
-                    aria-label="Tap"
-                    value={tap()}
-                    onChange={(event) => setTap(event.currentTarget.value)}
-                    aria-busy={tapsLoading()}
-                  >
-                    <option value="">All taps</option>
-                    <Show when={tap() && !taps().includes(tap())}>
-                      <option value={tap()}>{tap()}</option>
-                    </Show>
-                    <For each={taps()}>
-                      {(name) => <option value={name}>{name}</option>}
-                    </For>
-                    <Show when={tapsLoading()}>
-                      <option disabled>Loading taps…</option>
-                    </Show>
-                  </select>
-                </label>
                 <label class="control">
                   <Icon name="clock" size={15} />
-                  <span class="sr-only">Time window</span>
-                  <select
-                    aria-label="Time window"
-                    value={range()}
-                    onChange={(event) => setRange(event.currentTarget.value)}
-                  >
+                  <span class="sr-only">Time Window</span>
+                  <select aria-label="Time Window" value={range()} onChange={event=>setRange(event.currentTarget.value)}>
                     <option value="today">Today (UTC)</option>
-                    <option value="15">Last 15 minutes</option>
-                    <option value="60">Last hour</option>
-                    <option value="1440">Last 24 hours</option>
-                    <option value="10080">Last 7 days</option>
-                    <option value="43200">Last 30 days</option>
-                    <option value="custom">Custom window</option>
+                    <option value="15">Last 15 Minutes</option>
+                    <option value="60">Last Hour</option>
+                    <option value="1440">Last 24 Hours</option>
+                    <option value="10080">Last 7 Days</option>
+                    <option value="43200">Last 30 Days</option>
+                    <option value="86400">Last 60 Days</option>
+                    <option value="custom">Custom Window</option>
                   </select>
                 </label>
+                <button class="control time-window-trigger" type="button" aria-label="Search Time Window" onClick={openSearchWindow}>
+                  <Icon name="clock" />{windowLabel(searchWindow().from,searchWindow().to)}
+                </button>
                 <span class="query-controls-spacer" />
                 <button
                   type="button"
+                  disabled={!!queryText().trim()}
+                  title={queryText().trim()?"Text queries currently use snapshot search":""}
                   class={`follow-button ${activeSelection()?.follow && running() ? "is-following" : ""}`}
                   onClick={() =>
                     activeSelection()?.follow && running()
@@ -1027,8 +1114,8 @@ export default function App() {
                     size={16}
                   />
                   {activeSelection()?.follow && running()
-                    ? "Stop following"
-                    : "Follow live"}
+                    ? "Stop Following"
+                    : "Follow Live"}
                 </button>
                 <Show when={running()}>
                   <button type="button" class="button secondary" onClick={stop}>
@@ -1036,25 +1123,22 @@ export default function App() {
                     Stop
                   </button>
                 </Show>
-                <button class="button primary" type="submit">
-                  <Icon name="download" size={16} />
-                  Collect
+                <Show when={queryText() || activeSearch() || searchChanged() || searchError() || searching()}>
+                  <button class="button secondary" type="button" onClick={() => {setQueryText("");setLocalParameters({});void submitSearch()}}>
+                    <Icon name="close" size={14} /> Clear
+                  </button>
+                </Show>
+                <Show when={hasCollected() && !running() && !pagedQuery()}>
+                  <button class="text-button" type="button" onClick={() => void collect()}
+                    title="Check the server for new events and missing ranges">Refresh</button>
+                </Show>
+                <button class="button primary" type="submit" disabled={searching()}>
+                  <Icon name="search" size={16} />
+                  {searching() ? "Searching…" : "Search"}
                 </button>
               </div>
-              <Show
-                when={
-                  schemaLoading() ||
-                  (activeSelection() &&
-                    collectionDraft() !== collectionParameters())
-                }
-              >
-                <p class="scope-hint">
-                  {activeSelection() &&
-                  collectionDraft() !== collectionParameters()
-                    ? "Parameters changed. Collect to replace the working set."
-                    : ""}
-                  {schemaLoading() ? " Loading field choices…" : ""}
-                </p>
+              <Show when={searchError()}>
+                <div class="tap-error" role="alert">{searchError()} The current view is unchanged.</div>
               </Show>
               <Show when={schemaError()}>
                 <div class="tap-error" role="alert">
@@ -1076,31 +1160,8 @@ export default function App() {
                     class="text-button"
                     onClick={() => setTapRefresh((count) => count + 1)}
                   >
-                    Retry taps
+                    Retry sources
                   </button>
-                </div>
-              </Show>
-              <Show when={range() === "custom"}>
-                <div class="custom-window">
-                  <button
-                    class="control time-window-trigger"
-                    type="button"
-                    aria-label="Collect time window"
-                    onClick={() => setCalendar("Collect")}
-                  >
-                    <Icon name="clock" />
-                    {windowLabel(from(), to())}
-                  </button>
-                  <Show when={to()}>
-                    <button
-                      class="text-button"
-                      type="button"
-                      onClick={() => setTo("")}
-                    >
-                      Open end
-                    </button>
-                  </Show>
-                  <small>An open end means now, or live follow.</small>
                 </div>
               </Show>
             </form>
@@ -1118,95 +1179,20 @@ export default function App() {
                 </button>
               </div>
             </Show>
-            <form
-              ref={localCard}
-              class="card query-card local-search"
-              aria-label="Search working set"
-              aria-busy={searching()}
-              onSubmit={(event) => {
-                event.preventDefault();
-                void search();
-              }}
-            >
-              <div class="query-heading">
-                <div>
-                  <span class="query-symbol">
-                    <Icon name="search" size={17} />
-                  </span>
-                  <strong>Search</strong>
-                </div>
-                <span class="scope-count" aria-live="polite" data-matched-count>
-                  <strong>{records().length.toLocaleString()}</strong> of{" "}
-                  {collected().toLocaleString()} events matched
-                </span>
-              </div>
-              <Criteria
-                scope="Search"
-                parameters={localParameters()}
-                onParameters={setLocalParameters}
-                choices={localChoices()}
-              />
-              <div class="query-controls local-controls">
-                <label class="control">
-                  <span>Tap</span>
-                  <select
-                    aria-label="Search tap"
-                    value={localTap()}
-                    onChange={(event) => setLocalTap(event.currentTarget.value)}
-                  >
-                    <option value="">All collected taps</option>
-                    <For each={taps()}>
-                      {(name) => <option value={name}>{name}</option>}
-                    </For>
-                  </select>
-                </label>
-                <button
-                  class="control time-window-trigger"
-                  type="button"
-                  aria-label="Search time window"
-                  disabled={!hasCollected()}
-                  onClick={() => setCalendar("Search")}
-                >
-                  <Icon name="clock" />
-                  {windowLabel(
-                    localFrom() || availableWindow()?.from,
-                    localTo() || availableWindow()?.to,
-                  )}
-                </button>
-                <span class="query-controls-spacer" />
-                <Show
-                  when={
-                    activeSearch() ||
-                    searchChanged() ||
-                    searchError() ||
-                    searching()
-                  }
-                >
-                  <button
-                    class="button secondary"
-                    type="button"
-                    onClick={() => void search(true)}
-                  >
-                    <Icon name="close" size={14} /> Clear search
-                  </button>
-                </Show>
-                <button class="button primary" type="submit">
-                  {searching() ? "Searching…" : "Search"}
-                </button>
-              </div>
-              <Show when={searchError()}>
-                <div class="tap-error" role="alert">
-                  {searchError()} The current view is unchanged.
-                </div>
-              </Show>
-            </form>
 
-            <div class="search-layout">
+            <Show when={pagedQuery()} keyed>{query=><PagedResults query={query} token={token()} pageSize={query.size} active={page()==="Search"}
+              matchers={matchers()} onIndicator={setIndicatorField} indicatorsLoading={indicatorsLoading()}
+              collections={collections()} onObjectHistory={openObjectHistory}
+              onState={setPagedView} />}</Show>
+            <Show when={!pagedQuery()}><div class="search-layout">
               <div class="results-column">
                 <Show when={records().length}>
                   <Activity
                     summary={summary()}
                     count={records().length}
+                    onWindow={searchChart}
+                    onResetWindow={() => searchChart()}
+                    hasWindow={!!(activeSearch()?.from || activeSearch()?.to)}
                     onRemoveIndicator={removeIndicator}
                     onRevealEvent={revealEvent}
                   />
@@ -1291,16 +1277,16 @@ export default function App() {
                               ? "Waiting for matching events. Results will appear as they arrive."
                               : hasCollected()
                                 ? error()
-                                  ? "Check the connection details above, then collect again."
-                                  : "Try collecting a wider time window or different fields."
-                                : "Choose a tap and time window, then collect events to explore."}
+                                  ? "Check the connection details above, then search again."
+                                  : "Try a wider time window or different resource."
+                                : "Choose a Resource and time window to search."}
                         </p>
                         <Show when={activeSearch()}>
                           <button
                             class="button secondary"
-                            onClick={() => void search(true)}
+                            onClick={() => {setQueryText("");setLocalParameters({});void submitSearch()}}
                           >
-                            Clear search
+                            Clear
                           </button>
                         </Show>
                         <Show when={!hasCollected()}>
@@ -1310,21 +1296,10 @@ export default function App() {
                               void collect();
                             }}
                           >
-                            Collect today
+                            Search today
                             <Icon name="chevron" size={14} />
                           </button>
-                          <button
-                            class="text-button sample-action"
-                            onClick={() => {
-                              setTap("demo-week");
-                              setRange("10080");
-                              setParameters({});
-                              void collect();
-                            }}
-                          >
-                            Explore sample week
-                            <Icon name="activity" size={14} />
-                          </button>
+
                         </Show>
                       </div>
                     }
@@ -1340,9 +1315,9 @@ export default function App() {
                       onIndicator={setIndicatorField}
                       indicatorsLoading={indicatorsLoading()}
                       reveal={revealed()}
+                      collections={collections()} onObjectHistory={openObjectHistory}
                       pageSize={pageSize()}
-                      onPageSize={changePageSize}
-                      preferencesBusy={preferencesBusy()}
+
                     />
                   </Show>
                   <div class="results-footer">
@@ -1365,15 +1340,84 @@ export default function App() {
                     <button
                       class="icon-button"
                       onClick={() => void copySelection()}
-                      aria-label="Copy collection selection"
-                      title="Copy selection"
+                      aria-label="Copy Collection Selection"
+                      title="Copy Selection"
                     >
                       <Icon name={copied() ? "check" : "copy"} size={14} />
                     </button>
                   </Show>
                 </div>
               </div>
-              <aside class="insights-column" aria-label="Search insights">
+              <aside class="insights-column" aria-label="Search Insights">
+                <Overview summary={summary()} count={records().length} />
+                <Breakdown
+                  title="Services"
+                  values={summary().services}
+                  total={records().length}
+                  onSelect={(scope, value) => narrow(scope, "service", value)}
+                />
+                <Breakdown
+                  title="Levels"
+                  values={summary().levels}
+                  total={records().length}
+                  levels
+                  onSelect={(scope, value) => narrow(scope, "level", value)}
+                />
+              </aside>
+            </div></Show>
+          </div>
+
+          <Show when={page() === "Object History" ? "Object History" as const : undefined} keyed>
+            {mode=><Research mode={mode} token={token()} sources={collections()} initialSource={tap()} pageSize={pageSize()} onIndicator={setIndicatorField} indicatorsLoading={indicatorsLoading()}/>}
+          </Show>
+          <Show when={page() === "Dashboard"}>
+            <div class="page-intro">
+              <div>
+                <span class="eyebrow">THE BIGGER PICTURE</span>
+                <h2>Signal Overview</h2>
+                <p>{pagedQuery()?"Summaries across the complete search window.":"A quick look at the matched subset of your working set."}</p>
+              </div>
+              <button
+                class="button secondary"
+                onClick={() => navigate("Search")}
+              >
+                <Icon name="search" size={16} />
+                Back to Search
+              </button>
+            </div>
+            <Show when={pagedQuery()} fallback={<>
+            <div class="notice search-notice">
+              <span class="notice-icon">
+                <Icon name="activity" size={17} />
+              </span>
+              <div>
+                <strong>Your current result set, at a glance.</strong>
+                <p>
+                  These summaries cover {records().length.toLocaleString()}{" "}
+                  matched events out of {collected().toLocaleString()}{" "}
+                  collected. Search to explore this working set or Collect to
+                  replace it.
+                </p>
+              </div>
+            </div>
+            <div class="dashboard-layout">
+              <div class="dashboard-main">
+                <Activity
+                  summary={summary()}
+                  count={records().length}
+                  onWindow={searchChart}
+                  onResetWindow={() => searchChart()}
+                  hasWindow={!!(activeSearch()?.from || activeSearch()?.to)}
+                  onRemoveIndicator={removeIndicator}
+                  onRevealEvent={revealEvent}
+                />
+                <DashboardMetrics
+                  records={records()}
+                  revision={viewRevision()}
+                  onWindow={searchChart}
+                />
+              </div>
+              <aside class="dashboard-sidebar">
                 <Overview summary={summary()} count={records().length} />
                 <Breakdown
                   title="Services"
@@ -1390,66 +1434,28 @@ export default function App() {
                 />
               </aside>
             </div>
-          </Show>
-
-          <Show when={page() === "Dashboard"}>
-            <div class="page-intro">
-              <div>
-                <span class="eyebrow">THE BIGGER PICTURE</span>
-                <h2>A view of your signals.</h2>
-                <p>A quick look at the matched subset of your working set.</p>
-              </div>
-              <button
-                class="button secondary"
-                onClick={() => navigate("Search")}
-              >
-                <Icon name="search" size={16} />
-                Back to search
-              </button>
-            </div>
-            <div class="notice search-notice">
-              <span class="notice-icon">
-                <Icon name="activity" size={17} />
-              </span>
-              <div>
-                <strong>Your current result set, at a glance.</strong>
-                <p>
-                  These summaries cover {records().length.toLocaleString()}{" "}
-                  matched events out of {collected().toLocaleString()}{" "}
-                  collected. Search to explore this working set or Collect to
-                  replace it.
-                </p>
-              </div>
-            </div>
-            <div class="dashboard-layout">
-              <Activity
-                summary={summary()}
-                count={records().length}
-                onRemoveIndicator={removeIndicator}
-                onRevealEvent={revealEvent}
-              />
-              <Overview summary={summary()} count={records().length} />
-              <Breakdown
-                title="Services"
-                values={summary().services}
-                total={records().length}
-                onSelect={(scope, value) => narrow(scope, "service", value)}
-              />
-              <Breakdown
-                title="Levels"
-                values={summary().levels}
-                total={records().length}
-                levels
-                onSelect={(scope, value) => narrow(scope, "level", value)}
-              />
-            </div>
+            </>}>
+              <Show when={pagedView().error}><div class="notice error-notice" role="alert">{pagedView().error}</div></Show>
+              <Show when={pagedView().result?.summary} fallback={<p role="status">{pagedView().busy?"Loading search summary…":"No search summary available."}</p>}>
+                {s=><div class="dashboard-layout" data-paged-dashboard>
+                  <section class="card activity-card">
+                    <div class="results-toolbar"><strong>Event Activity</strong><span>{s().count.toLocaleString()} matched</span><SearchPerformance timing={pagedView().timing} /></div>
+                    <Histogram counts={s().counts} errors={s().errors} first={s().from} last={s().from+s().step*s().counts.length} count={s().count}
+                      onWindow={(from,to)=>{const q=pagedQuery()!;setPagedQuery({...q,from:new Date(Math.max(from,s().from)).toISOString(),to:new Date(Math.min(to,s().to)).toISOString()});navigate("Search")}} />
+                    <Show when={pagedView().result?.provisional}><div class="results-footer">Committed events only · the recent arrival window is still open</div></Show>
+                  </section>
+                  <ViewInsights summary={s()} loaded={pagedView().loaded} dashboard />
+                </div>}
+              </Show>
+            </Show>
           </Show>
 
           <Show when={page() === "Alerts"}>
+            <AlertCenter token={token()} lostEvents={()=><Research mode="Lost Events" token={token()} sources={taps()} initialSource={tap()} pageSize={pageSize()} onIndicator={setIndicatorField} indicatorsLoading={indicatorsLoading()}/>}>
             <div class="page-intro">
               <div>
                 <span class="eyebrow">STAY IN THE KNOW</span>
-                <h2>Make the important things visible.</h2>
+                <h2>Alerts</h2>
                 <p>A home for the signals that deserve your attention.</p>
               </div>
               <span class="outline-badge">Not configured</span>
@@ -1460,16 +1466,17 @@ export default function App() {
                 <Icon name="bell" size={30} />
                 <span />
               </div>
-              <h3>Good signals deserve a heads-up.</h3>
+              <h3>Alert Rules</h3>
               <p>
                 Alert rules and background evaluation aren’t connected yet. For
-                now, follow a collection to watch events as they arrive.
+                now, follow a resource to watch events as they arrive.
               </p>
               <button class="button primary" onClick={() => navigate("Search")}>
                 <Icon name="search" size={16} />
-                Open search
+                Open Search
               </button>
             </section>
+            </AlertCenter>
           </Show>
           <footer class="page-footer">
             <span>
@@ -1484,26 +1491,12 @@ export default function App() {
         {(scope) => (
           <Calendar
             scope={scope}
-            from={
-              scope === "Collect"
-                ? from()
-                : localFrom() ||
-                  availableWindow()?.from ||
-                  activeSelection()?.from.replace(/Z$/, "") ||
-                  ""
-            }
-            to={
-              scope === "Collect"
-                ? to()
-                : localTo() ||
-                  availableWindow()?.to ||
-                  activeSelection()?.to?.replace(/Z$/, "") ||
-                  ""
-            }
-            coverage={scope === "Search" ? covered() : undefined}
+            from={calendarPaged()?calendarBounds().from:scope === 'Collect'?from():localFrom()||activeSelection()?.from.replace(/Z$/,'')||availableWindow()?.from||''}
+            to={calendarPaged()?calendarBounds().to:scope === 'Collect'?to():localTo()||activeSelection()?.to?.replace(/Z$/,'')||availableWindow()?.to||''}
+            coverage={scope === 'Search'?(calendarPaged()?[]:covered()):undefined}
             onClose={() => setCalendar(undefined)}
             onExpand={
-              scope === "Search"
+              scope === "Search" && !calendarPaged()
                 ? (window, cancel) => {
                     requestExpansion(window, cancel);
                   }
@@ -1511,9 +1504,11 @@ export default function App() {
             }
             onChange={(window, close, cancel) => {
               if (close) setCalendar(undefined);
-              if (scope === "Collect") {
+              if (calendarPaged() || scope === "Collect") {
+                setRange("custom");
                 setFrom(window.from);
                 setTo(window.to);
+                void submitSearch();
               } else changeWindow(window, cancel);
             }}
           />
@@ -1530,10 +1525,15 @@ export default function App() {
           />
         )}
       </Show>
+      <Show when={historyObject()} keyed>{object=><HistoryDialog token={token()} sources={collections()} initialSource={object.source}
+        initialObject={object} pageSize={pageSize()} onIndicator={setIndicatorField} indicatorsLoading={indicatorsLoading()}
+        onClose={()=>setHistoryObject(undefined)}/>}</Show>
       <Settings
         panel={modal()}
         token={token()}
         onToken={setToken}
+        sources={taps()}
+        onRebase={rebuildLocalCollection}
         onClose={() => setModal(undefined)}
       />
       <Show when={indicatorField()} keyed>

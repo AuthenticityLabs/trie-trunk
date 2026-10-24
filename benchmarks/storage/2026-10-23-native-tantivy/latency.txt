@@ -1,0 +1,42 @@
+goos: darwin
+goarch: arm64
+pkg: trie-trunk/go/server/cache
+cpu: Apple M1 Max
+BenchmarkObjectLookupComparison/dense50k/history/collection-10         	  246361	      2426 ns/op	       0 B/op	       0 allocs/op
+BenchmarkObjectLookupComparison/dense50k/history/collection-10         	  247306	      2430 ns/op	       0 B/op	       0 allocs/op
+BenchmarkObjectLookupComparison/dense50k/history/collection-10         	  248092	      2419 ns/op	       0 B/op	       0 allocs/op
+BenchmarkObjectLookupComparison/dense50k/history/tantivy_native-10     	   46184	     12812 ns/op	      79 B/op	       1 allocs/op
+BenchmarkObjectLookupComparison/dense50k/history/tantivy_native-10     	   45537	     12816 ns/op	      79 B/op	       1 allocs/op
+BenchmarkObjectLookupComparison/dense50k/history/tantivy_native-10     	   46408	     12874 ns/op	      79 B/op	       1 allocs/op
+BenchmarkObjectLookupComparison/dense50k/revision7/collection-10       	  251340	      2381 ns/op	       0 B/op	       0 allocs/op
+BenchmarkObjectLookupComparison/dense50k/revision7/collection-10       	  251065	      2386 ns/op	       0 B/op	       0 allocs/op
+BenchmarkObjectLookupComparison/dense50k/revision7/collection-10       	  250477	      2379 ns/op	       0 B/op	       0 allocs/op
+BenchmarkObjectLookupComparison/dense50k/revision7/tantivy_native-10   	   61275	      9927 ns/op	       8 B/op	       1 allocs/op
+BenchmarkObjectLookupComparison/dense50k/revision7/tantivy_native-10   	   59584	     10062 ns/op	       8 B/op	       1 allocs/op
+BenchmarkObjectLookupComparison/dense50k/revision7/tantivy_native-10   	   59427	      9804 ns/op	       8 B/op	       1 allocs/op
+BenchmarkObjectLookupComparison/dense50k/missing/collection-10         	  249884	      2399 ns/op	       0 B/op	       0 allocs/op
+BenchmarkObjectLookupComparison/dense50k/missing/collection-10         	  249704	      2385 ns/op	       0 B/op	       0 allocs/op
+BenchmarkObjectLookupComparison/dense50k/missing/collection-10         	  250862	      2392 ns/op	       0 B/op	       0 allocs/op
+BenchmarkObjectLookupComparison/dense50k/missing/tantivy_native-10     	   82299	      7152 ns/op	       0 B/op	       0 allocs/op
+BenchmarkObjectLookupComparison/dense50k/missing/tantivy_native-10     	   80422	      7097 ns/op	       0 B/op	       0 allocs/op
+BenchmarkObjectLookupComparison/dense50k/missing/tantivy_native-10     	   81723	      7122 ns/op	       0 B/op	       0 allocs/op
+BenchmarkObjectLookupComparison/dense250k/history/collection-10        	  243948	      2400 ns/op	       0 B/op	       0 allocs/op
+BenchmarkObjectLookupComparison/dense250k/history/collection-10        	  244346	      2382 ns/op	       0 B/op	       0 allocs/op
+BenchmarkObjectLookupComparison/dense250k/history/collection-10        	  246524	      2520 ns/op	       0 B/op	       0 allocs/op
+BenchmarkObjectLookupComparison/dense250k/history/tantivy_native-10    	   26872	     21921 ns/op	      79 B/op	       1 allocs/op
+BenchmarkObjectLookupComparison/dense250k/history/tantivy_native-10    	   28116	     21214 ns/op	      79 B/op	       1 allocs/op
+BenchmarkObjectLookupComparison/dense250k/history/tantivy_native-10    	   27924	     20965 ns/op	      79 B/op	       1 allocs/op
+BenchmarkObjectLookupComparison/dense250k/revision7/collection-10      	  248796	      2348 ns/op	       0 B/op	       0 allocs/op
+BenchmarkObjectLookupComparison/dense250k/revision7/collection-10      	  250026	      2361 ns/op	       0 B/op	       0 allocs/op
+BenchmarkObjectLookupComparison/dense250k/revision7/collection-10      	  249474	      2346 ns/op	       0 B/op	       0 allocs/op
+BenchmarkObjectLookupComparison/dense250k/revision7/tantivy_native-10  	   32877	     18412 ns/op	       8 B/op	       1 allocs/op
+BenchmarkObjectLookupComparison/dense250k/revision7/tantivy_native-10  	   32592	     18114 ns/op	       8 B/op	       1 allocs/op
+BenchmarkObjectLookupComparison/dense250k/revision7/tantivy_native-10  	   32764	     18351 ns/op	       8 B/op	       1 allocs/op
+BenchmarkObjectLookupComparison/dense250k/missing/collection-10        	  249826	      2353 ns/op	       0 B/op	       0 allocs/op
+BenchmarkObjectLookupComparison/dense250k/missing/collection-10        	  249466	      2346 ns/op	       0 B/op	       0 allocs/op
+BenchmarkObjectLookupComparison/dense250k/missing/collection-10        	  247357	      2372 ns/op	       0 B/op	       0 allocs/op
+BenchmarkObjectLookupComparison/dense250k/missing/tantivy_native-10    	   39585	     15409 ns/op	       0 B/op	       0 allocs/op
+BenchmarkObjectLookupComparison/dense250k/missing/tantivy_native-10    	   38590	     15843 ns/op	       0 B/op	       0 allocs/op
+BenchmarkObjectLookupComparison/dense250k/missing/tantivy_native-10    	   37077	     15092 ns/op	       0 B/op	       0 allocs/op
+PASS
+ok  	trie-trunk/go/server/cache	30.244s

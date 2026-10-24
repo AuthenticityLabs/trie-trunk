@@ -1,0 +1,419 @@
+{
+  "acknowledged_ingest_ns": 5400964000,
+  "aggregates": false,
+  "batch_records": 1024,
+  "definition": {
+    "pil": 1,
+    "adaptive_integers": "16",
+    "definition": "payment/transactions",
+    "version": 1048576,
+    "fields": [
+      {
+        "name": "event_id",
+        "type": "UUID"
+      },
+      {
+        "name": "id",
+        "type": "U16"
+      },
+      {
+        "name": "revision_id",
+        "type": "U8"
+      },
+      {
+        "name": "duration",
+        "type": "U32"
+      },
+      {
+        "name": "level",
+        "type": "STRING",
+        "values": [
+          "INFO",
+          "ERROR"
+        ]
+      },
+      {
+        "name": "operation",
+        "type": "STRING",
+        "values": [
+          "create",
+          "update",
+          "cancel"
+        ]
+      },
+      {
+        "name": "state",
+        "type": "STRING",
+        "values": [
+          "pending",
+          "authorized",
+          "canceled"
+        ]
+      },
+      {
+        "name": "message",
+        "type": "STRING"
+      },
+      {
+        "name": "amount",
+        "type": "U32"
+      },
+      {
+        "name": "customer_id",
+        "type": "U16"
+      },
+      {
+        "name": "instance",
+        "type": "STRING"
+      },
+      {
+        "name": "attempt",
+        "type": "U8"
+      }
+    ],
+    "nuts": {
+      "format": 6,
+      "domain": "payment",
+      "collection": "transactions",
+      "major": 1,
+      "minor": 0,
+      "timezone": "UTC",
+      "roles": {
+        "event_id": "event_id",
+        "id": "id",
+        "revision_id": "revision_id"
+      },
+      "path": [
+        "level",
+        "operation",
+        "state"
+      ]
+    }
+  },
+  "dense_events": 125000,
+  "events": 500000,
+  "file_bytes": {
+    ".writer.lock": 0,
+    "collections.cfg": 179,
+    "collections.map": 123,
+    "collections.tri": 28,
+    "nuts.idx": 8899263,
+    "nuts.map": 620,
+    "nuts.state": 64,
+    "nuts.stats": 185,
+    "nuts.tri": 129,
+    "writes.idx": 13000064,
+    "writes.pop": 10460786,
+    "writes.swap": 80,
+    "writes.tri": 35001
+  },
+  "file_count": 13,
+  "finalization_ns": 11083016000,
+  "fixture_sha256": "a618e115dd897d37510fdc4d9d789b0d2ff002162c80f9935189c3c76e3ca2d1",
+  "go": "go1.26.4",
+  "object_index": true,
+  "platform": "darwin/arm64",
+  "queries": {
+    "all/native-cold": {
+      "allocated_bytes": 13483672,
+      "allocations": 46199,
+      "events": 500000,
+      "latency": {
+        "samples_ns": [
+          42136583,
+          43288042,
+          42078333,
+          41345417,
+          42769875,
+          42927875,
+          42451625,
+          43498250,
+          42813666
+        ],
+        "p50_ns": 42769875,
+        "p95_ns": 43498250
+      },
+      "payload_bytes": {
+        "index": 13000000,
+        "population": 10460722,
+        "state": 57589,
+        "trie": 57
+      },
+      "wire_bytes": 23895182
+    },
+    "all/native-index-only": {
+      "allocated_bytes": 1633632,
+      "allocations": 26739,
+      "events": 500000,
+      "latency": {
+        "samples_ns": [
+          19568542,
+          19325917,
+          19189041,
+          19372500,
+          18979750,
+          19900500,
+          20497875,
+          19519833,
+          19297208
+        ],
+        "p50_ns": 19372500,
+        "p95_ns": 20497875
+      },
+      "payload_bytes": {
+        "index": 13000000,
+        "state": 57589,
+        "trie": 57
+      },
+      "wire_bytes": 13381919
+    },
+    "all/native-warm": {
+      "allocated_bytes": 1814904,
+      "allocations": 33972,
+      "events": 500000,
+      "latency": {
+        "samples_ns": [
+          4179625,
+          4172375,
+          4153666,
+          4145625,
+          4144375,
+          4197000,
+          4183000,
+          4192542,
+          4203167
+        ],
+        "p50_ns": 4179625,
+        "p95_ns": 4203167
+      },
+      "payload_bytes": {
+        "state": 57600
+      },
+      "wire_bytes": 337365
+    },
+    "all/standalone": {
+      "allocated_bytes": 1253096,
+      "allocations": 618,
+      "events": 500000,
+      "latency": {
+        "samples_ns": [
+          62182958,
+          61941083,
+          61332208,
+          61310500,
+          61226792,
+          61396375,
+          61120875,
+          61598125,
+          61559500
+        ],
+        "p50_ns": 61396375,
+        "p95_ns": 62182958
+      },
+      "payload_bytes": {},
+      "wire_bytes": 21335806
+    },
+    "day/native-cold": {
+      "allocated_bytes": 580136,
+      "allocations": 1626,
+      "events": 16667,
+      "latency": {
+        "samples_ns": [
+          1420917,
+          1418834,
+          1339000,
+          1399542,
+          1400167,
+          1285333,
+          1277209,
+          1284084,
+          1486250
+        ],
+        "p50_ns": 1399542,
+        "p95_ns": 1486250
+      },
+      "payload_bytes": {
+        "index": 433342,
+        "population": 344917,
+        "state": 1909,
+        "trie": 57
+      },
+      "wire_bytes": 792937
+    },
+    "day/native-index-only": {
+      "allocated_bytes": 188688,
+      "allocations": 982,
+      "events": 16667,
+      "latency": {
+        "samples_ns": [
+          629292,
+          616042,
+          621083,
+          642833,
+          627958,
+          649875,
+          641750,
+          644375,
+          640916
+        ],
+        "p50_ns": 640916,
+        "p95_ns": 649875
+      },
+      "payload_bytes": {
+        "index": 433342,
+        "state": 1909,
+        "trie": 57
+      },
+      "wire_bytes": 446268
+    },
+    "day/native-warm": {
+      "allocated_bytes": 195624,
+      "allocations": 1231,
+      "events": 16667,
+      "latency": {
+        "samples_ns": [
+          165708,
+          157417,
+          163625,
+          167542,
+          158750,
+          174167,
+          173166,
+          167000,
+          175292
+        ],
+        "p50_ns": 167000,
+        "p95_ns": 175292
+      },
+      "payload_bytes": {
+        "state": 1920
+      },
+      "wire_bytes": 11340
+    },
+    "day/standalone": {
+      "allocated_bytes": 1189352,
+      "allocations": 137,
+      "events": 16667,
+      "latency": {
+        "samples_ns": [
+          2090167,
+          2176250,
+          2093333,
+          2090625,
+          2105417,
+          2094334,
+          2093334,
+          2085959,
+          2117750
+        ],
+        "p50_ns": 2093334,
+        "p95_ns": 2176250
+      },
+      "payload_bytes": {},
+      "wire_bytes": 707509
+    },
+    "three_hours/native-cold": {
+      "allocated_bytes": 193528,
+      "allocations": 272,
+      "events": 2084,
+      "latency": {
+        "samples_ns": [
+          197917,
+          187750,
+          185416,
+          180875,
+          191417,
+          178583,
+          184959,
+          188125,
+          197958
+        ],
+        "p50_ns": 187750,
+        "p95_ns": 197958
+      },
+      "payload_bytes": {
+        "index": 54184,
+        "population": 43083,
+        "state": 229,
+        "trie": 57
+      },
+      "wire_bytes": 99261
+    },
+    "three_hours/native-index-only": {
+      "allocated_bytes": 145152,
+      "allocations": 202,
+      "events": 2084,
+      "latency": {
+        "samples_ns": [
+          85500,
+          84541,
+          85000,
+          87166,
+          86541,
+          84375,
+          86708,
+          82875,
+          91791
+        ],
+        "p50_ns": 85500,
+        "p95_ns": 91791
+      },
+      "payload_bytes": {
+        "index": 54184,
+        "state": 229,
+        "trie": 57
+      },
+      "wire_bytes": 55959
+    },
+    "three_hours/native-warm": {
+      "allocated_bytes": 146768,
+      "allocations": 241,
+      "events": 2084,
+      "latency": {
+        "samples_ns": [
+          37792,
+          31333,
+          32500,
+          35416,
+          30916,
+          33959,
+          34250,
+          32125,
+          30292
+        ],
+        "p50_ns": 32500,
+        "p95_ns": 37792
+      },
+      "payload_bytes": {
+        "state": 240
+      },
+      "wire_bytes": 1491
+    },
+    "three_hours/standalone": {
+      "allocated_bytes": 1186664,
+      "allocations": 112,
+      "events": 2084,
+      "latency": {
+        "samples_ns": [
+          378750,
+          372209,
+          368708,
+          375625,
+          370708,
+          375000,
+          388792,
+          371000,
+          373375
+        ],
+        "p50_ns": 373375,
+        "p95_ns": 388792
+      },
+      "payload_bytes": {},
+      "wire_bytes": 88494
+    }
+  },
+  "reopen_ns": 209243042,
+  "row_width": 26,
+  "scope": "temporary filesystem, durable batched ingestion then finalization, warm OS page-cache handler requests; no socket/TLS/WAN, compression or browser rendering; maps cached in both delivery modes",
+  "sparse_events": 375000
+}

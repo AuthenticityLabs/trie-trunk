@@ -1,0 +1,105 @@
+import assert from 'node:assert/strict';
+const {chromium}=await import(process.env.PLAYWRIGHT_MODULE??'playwright-core');
+const browser=await chromium.launch({executablePath:process.env.CHROME_PATH,headless:true});let page;
+try{
+ page=await browser.newPage({viewport:{width:1440,height:1000}});page.setDefaultTimeout(15000);
+ const errors=[],requests=[];page.on('pageerror',e=>errors.push(e.message));page.on('request',r=>{if(new URL(r.url()).pathname==='/collect')requests.push(r.url())});
+ await page.goto(process.env.SNOOT_ORIGIN??'http://127.0.0.1:3020');
+ const form=page.getByRole('form',{name:'Search Events'}),input=page.getByRole('combobox',{name:'Search Query'});
+ await form.getByRole('button',{name:'Cache: All Caches',exact:true}).click();
+ for(const [label,value,key] of [['Cache','demo','Tab'],['Service','payment','ArrowRight'],['Resource','transactions.v1','Tab']]){
+  const scope=page.getByRole('combobox',{name:`Find ${label}`,exact:true});await scope.fill(value);await scope.press(key);
+ }
+ assert.equal(await form.getByRole('button',{name:/^Branch:/}).count(),0);
+ await input.fill('events.query().where(access, ==, ');
+ await form.getByRole('option',{name:'read Mapped value',exact:true}).waitFor();
+ await form.getByRole('option',{name:'write Mapped value',exact:true}).waitFor();
+ await input.fill('events.query().where(access, ==, write).where(level, ==, ERROR)');
+ await form.getByLabel('Time Window',{exact:true}).selectOption('43200');
+ await form.getByRole('button',{name:'Search',exact:true}).click();
+ await page.waitForFunction(()=>document.querySelectorAll('.paged-results .event-summary').length>0);
+ const writeErrors=await form.locator('[data-matched-count]').textContent();assert.ok(Number(writeErrors.replaceAll(',','').split(' ')[0])>0);
+ await input.fill('events query | where access == read | where level == ERROR');
+ await form.getByRole('button',{name:'Search',exact:true}).click();
+ await page.waitForFunction(()=>document.querySelector('.paged-results')?.getAttribute('aria-busy')==='false');
+ const readErrors=await form.locator('[data-matched-count]').textContent();assert.ok(Number(readErrors.replaceAll(',','').split(' ')[0])>0);
+ assert.notEqual(writeErrors,readErrors,'read and write errors are distinct sets');
+ await input.fill('');
+
+ assert.equal(await form.locator('select').count(),1,'only the original time selector remains');
+ await form.getByRole('button',{name:'+ Filter',exact:true}).click();
+ assert.equal(await input.inputValue(),'events.query()\n  .where(');
+ await form.getByRole('option',{name:'state STRING',exact:true}).click();
+ await form.getByRole('option',{name:'== Comparison',exact:true}).click();
+ await form.getByRole('option',{name:'authorized Mapped value',exact:true}).click();
+ assert.equal(await input.inputValue(),'events.query()\n  .where(state, ==, authorized)');
+ await form.getByRole('button',{name:'Pipeline',exact:true}).click();
+ assert.equal(await input.inputValue(),'events query\n  | where state == "authorized"');
+ await form.getByRole('button',{name:'Builder',exact:true}).click();
+ assert.equal(await input.inputValue(),'events.query()\n  .where(state, ==, "authorized")');
+ await form.getByRole('button',{name:'+ Sort',exact:true}).click();
+ await form.getByRole('option',{name:'desc Newest first',exact:true}).click();
+ assert.match(await input.inputValue(),/\.order\(timestamp, desc\)$/);
+ await page.screenshot({path:'/tmp/snoot-builder-preview.png',fullPage:true});
+ // Build a complete predicate, navigate footer actions, and finish a numeric clause without a mouse.
+ await input.fill('events.query()');await input.press('ArrowRight');assert.equal(await input.inputValue(),'events.query()','Right opens without inserting');await page.getByRole('listbox',{name:'Query Suggestions'}).waitFor();await input.press('Enter');
+ assert.equal(await input.inputValue(),'events.query()\n  .where(');
+ await input.pressSequentially('sta');await input.press('Tab');
+ assert.equal(await input.inputValue(),'events.query()\n  .where(state, ');
+ await input.press('ArrowDown');await input.press('Tab');await input.pressSequentially('auth');await input.press('ArrowRight');
+ assert.equal(await input.inputValue(),'events.query()\n  .where(state, ==, authorized)');
+ await input.press('ArrowUp');assert.match(await page.locator('[role=option][aria-selected=true]').textContent(),/Page Size/);
+ await input.press('ArrowDown');assert.match(await page.locator('[role=option][aria-selected=true]').textContent(),/Filter/);
+ await input.press('Tab');await input.pressSequentially('dur');await input.press('Tab');
+ await input.pressSequentially('>, 500');await input.press('ArrowDown');await input.press('ArrowRight');assert.match(await input.inputValue(),/\.where\(duration, >, 500\)$/);
+ // Right in the middle of text and selection movement must remain ordinary editing.
+ const before=await input.inputValue();await input.evaluate(el=>el.setSelectionRange(2,2));await input.press('ArrowRight');
+ assert.equal(await input.inputValue(),before);assert.equal(await input.evaluate(el=>el.selectionStart),3);
+ await input.press('End');await input.press('Escape');await input.press('Tab');assert.equal(await input.evaluate(el=>document.activeElement===el),false);
+ // Shift+Tab always exits; an ordinary Tab accepts the first completion.
+ await input.fill('events.query().where(st');await input.press('Shift+Tab');assert.equal(await input.evaluate(el=>document.activeElement===el),false);
+ await input.focus();await input.press('ArrowDown');await input.press('Tab');assert.equal(await input.inputValue(),'events.query().where(state, ');
+ await input.fill('events.query().search("connecti")');
+ await input.evaluate(el=>el.setSelectionRange(el.value.indexOf('connecti')+8,el.value.indexOf('connecti')+8));
+ await input.press('ArrowLeft');await input.press('ArrowRight');await input.press('ArrowDown');
+ await page.getByRole('option',{name:'connection English word',exact:true}).waitFor();
+ await page.screenshot({path:'/tmp/snoot-completion-menu.png',fullPage:true});
+ await page.getByRole('option',{name:'connection English word',exact:true}).click();
+ assert.equal(await input.inputValue(),'events.query().search("connection")');
+ await input.fill('events.query().where(state, ==, "auth")');
+ await input.evaluate(el=>el.setSelectionRange(el.value.indexOf('auth')+4,el.value.indexOf('auth')+4));
+ await input.press('ArrowLeft');await input.press('ArrowRight');await input.press('ArrowDown');await input.press('ArrowRight');
+ assert.equal(await input.inputValue(),'events.query().where(state, ==, "authorized")');
+ await input.fill('events query | where dur');
+ await page.getByRole('option',{name:'duration U64',exact:true}).waitFor();
+ await input.press('ArrowDown');await input.press('Enter');assert.equal(await input.inputValue(),'events query | where duration ');
+ const query='events query | where id == 14 | order timestamp desc | page 5';
+ await input.fill(query);assert.equal(await form.evaluate(f=>f.checkValidity()),true,'valid text controls permit submission');await form.getByRole('button',{name:'Search',exact:true}).click();
+ await page.waitForFunction(()=>document.querySelectorAll('.paged-results .event-summary').length>0);
+ const count=await form.locator('[data-matched-count]').textContent();assert.ok(Number(count.split(' ')[0])>5);
+ const labels=await page.locator('.paged-results .object-history-link').allTextContents();assert.ok(labels.every(v=>v==='14'));
+ const stamps=await page.locator('.paged-results .event-summary').evaluateAll(rows=>rows.map(r=>r.id));
+ assert.deepEqual(stamps,[...stamps].sort().reverse());
+ await input.fill('events.query().where(id, ==, 14).order(timestamp, desc).page(5)');
+ await form.getByRole('button',{name:'Search',exact:true}).click();
+ await page.waitForFunction(()=>document.querySelector('.paged-results')?.getAttribute('aria-busy')==='false');
+ assert.equal(await form.locator('[data-matched-count]').textContent(),count);
+ await input.fill('events query | where duration >');await form.getByRole('button',{name:'Search',exact:true}).click();
+ assert.match(await page.getByRole('alert').textContent(),/Incomplete query/);assert.equal(await form.locator('[data-matched-count]').textContent(),count);
+ await input.fill(query);await page.reload();await page.waitForFunction(()=>document.querySelectorAll('.paged-results .event-summary').length>0);
+ assert.equal(await input.inputValue(),query);assert.equal(await form.locator('[data-matched-count]').textContent(),count);
+ // The original calendar remains directly available with paged results, not hidden behind Custom.
+ await form.getByRole('button',{name:'Search Time Window',exact:true}).click();
+ const calendar=page.getByRole('dialog',{name:'Search Time Window',exact:true});await calendar.waitFor();
+ assert.equal(await calendar.locator('.calendar-month').count(),2);
+ assert.match(await calendar.locator('.calendar-legend').textContent(),/Collection.*Partially Collected.*Search Window/);
+ assert.equal(await calendar.getByRole('button',{name:/Apply/}).count(),0);
+ const endDate=await calendar.getByRole('textbox',{name:'Calendar through date',exact:true}).inputValue();
+ const expectedMonth=new Date(endDate+'T12:00:00Z').toLocaleString('en-US',{month:'long',year:'numeric',timeZone:'UTC'});
+ assert.equal((await calendar.locator('.calendar-month').last().locator('h3').textContent()).trim(),expectedMonth);
+ await calendar.getByRole('button',{name:'Close Calendar',exact:true}).click();
+ assert.deepEqual(errors,[]);assert.deepEqual(requests,[]);
+ await form.getByRole('button',{name:'Builder',exact:true}).click();
+ await page.screenshot({path:'/tmp/snoot-query-preview.png',fullPage:true});
+ console.log('Query UI passed: keyboard completion, boundary arrows, footer navigation, both syntaxes, exact object candidates, summaries, descending results, parse-error preservation and refresh.');
+}catch(e){console.error(await page?.locator('body').innerText());throw e}finally{await browser.close()}

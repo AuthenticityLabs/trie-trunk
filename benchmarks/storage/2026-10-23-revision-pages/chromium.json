@@ -1,0 +1,1721 @@
+{
+  "engine": "chromium",
+  "version": "155.0.8059.85",
+  "platform": "darwin",
+  "arch": "arm64",
+  "results": [
+    {
+      "case": {
+        "name": "positional-headers",
+        "count": 0,
+        "id": 1,
+        "objects": 4096
+      },
+      "stages": [
+        {
+          "action": "prepare",
+          "measurement": {
+            "result": {
+              "action": "prepare",
+              "logical": 8388608,
+              "writtenBytes": 196608,
+              "writeCalls": 4096,
+              "milliseconds": 31.200000047683716
+            },
+            "usage": {
+              "quota": 10745807196,
+              "usage": 8388956,
+              "usageDetails": {
+                "fileSystem": 8388956
+              }
+            }
+          },
+          "checked": {
+            "result": {
+              "verified": true,
+              "stage": "prepare",
+              "bytes": 8388608
+            },
+            "usage": {
+              "quota": 10737418588,
+              "usage": 348,
+              "usageDetails": {
+                "fileSystem": 348
+              }
+            }
+          },
+          "physical": {
+            "logical": 8388608,
+            "allocated": 8388608
+          }
+        },
+        {
+          "action": "fill",
+          "measurement": {
+            "result": {
+              "action": "fill",
+              "logical": 8388608,
+              "writtenBytes": 8192000,
+              "writeCalls": 4096,
+              "milliseconds": 32.299999952316284
+            },
+            "usage": {
+              "quota": 10737418588,
+              "usage": 348,
+              "usageDetails": {
+                "fileSystem": 348
+              }
+            }
+          },
+          "checked": {
+            "result": {
+              "verified": true,
+              "stage": "fill",
+              "bytes": 8388608
+            },
+            "usage": {
+              "quota": 10737418588,
+              "usage": 348,
+              "usageDetails": {
+                "fileSystem": 348
+              }
+            }
+          },
+          "physical": {
+            "logical": 8388608,
+            "allocated": 8388608
+          }
+        },
+        {
+          "action": "clear-records",
+          "measurement": {
+            "result": {
+              "action": "clear-records",
+              "logical": 8388608,
+              "writtenBytes": 8192000,
+              "writeCalls": 4096,
+              "milliseconds": 33.90000009536743
+            },
+            "usage": {
+              "quota": 10737418588,
+              "usage": 348,
+              "usageDetails": {
+                "fileSystem": 348
+              }
+            }
+          },
+          "checked": {
+            "result": {
+              "verified": true,
+              "stage": "clear-records",
+              "bytes": 8388608
+            },
+            "usage": {
+              "quota": 10737418588,
+              "usage": 348,
+              "usageDetails": {
+                "fileSystem": 348
+              }
+            }
+          },
+          "physical": {
+            "logical": 8388608,
+            "allocated": 8388608
+          }
+        },
+        {
+          "action": "zero-pages",
+          "measurement": {
+            "result": {
+              "action": "zero-pages",
+              "logical": 8388608,
+              "writtenBytes": 8388608,
+              "writeCalls": 2048,
+              "milliseconds": 16.200000047683716
+            },
+            "usage": {
+              "quota": 10737418588,
+              "usage": 348,
+              "usageDetails": {
+                "fileSystem": 348
+              }
+            }
+          },
+          "checked": {
+            "result": {
+              "verified": true,
+              "stage": "zero-pages",
+              "bytes": 8388608
+            },
+            "usage": {
+              "quota": 10737418588,
+              "usage": 348,
+              "usageDetails": {
+                "fileSystem": 348
+              }
+            }
+          },
+          "physical": {
+            "logical": 8388608,
+            "allocated": 8388608
+          }
+        },
+        {
+          "action": "truncate-half",
+          "measurement": {
+            "result": {
+              "action": "truncate-half",
+              "logical": 4194304,
+              "writtenBytes": 0,
+              "writeCalls": 0,
+              "milliseconds": 2.5
+            },
+            "usage": {
+              "quota": 10737418240,
+              "usage": 0,
+              "usageDetails": {}
+            }
+          },
+          "physical": {
+            "logical": 4194304,
+            "allocated": 4194304
+          }
+        }
+      ]
+    },
+    {
+      "case": {
+        "name": "positional-one",
+        "count": 1,
+        "id": 2,
+        "objects": 4096
+      },
+      "stages": [
+        {
+          "action": "prepare",
+          "measurement": {
+            "result": {
+              "action": "prepare",
+              "logical": 8388608,
+              "writtenBytes": 229376,
+              "writeCalls": 8192,
+              "milliseconds": 50.700000047683716
+            },
+            "usage": {
+              "quota": 10745807196,
+              "usage": 8388956,
+              "usageDetails": {
+                "fileSystem": 8388956
+              }
+            }
+          },
+          "checked": {
+            "result": {
+              "verified": true,
+              "stage": "prepare",
+              "bytes": 8388608
+            },
+            "usage": {
+              "quota": 10737418588,
+              "usage": 348,
+              "usageDetails": {
+                "fileSystem": 348
+              }
+            }
+          },
+          "physical": {
+            "logical": 8388608,
+            "allocated": 8388608
+          }
+        },
+        {
+          "action": "fill",
+          "measurement": {
+            "result": {
+              "action": "fill",
+              "logical": 8388608,
+              "writtenBytes": 8192000,
+              "writeCalls": 4096,
+              "milliseconds": 29
+            },
+            "usage": {
+              "quota": 10737418588,
+              "usage": 348,
+              "usageDetails": {
+                "fileSystem": 348
+              }
+            }
+          },
+          "checked": {
+            "result": {
+              "verified": true,
+              "stage": "fill",
+              "bytes": 8388608
+            },
+            "usage": {
+              "quota": 10737418588,
+              "usage": 348,
+              "usageDetails": {
+                "fileSystem": 348
+              }
+            }
+          },
+          "physical": {
+            "logical": 8388608,
+            "allocated": 8388608
+          }
+        },
+        {
+          "action": "clear-records",
+          "measurement": {
+            "result": {
+              "action": "clear-records",
+              "logical": 8388608,
+              "writtenBytes": 8192000,
+              "writeCalls": 4096,
+              "milliseconds": 31.399999856948853
+            },
+            "usage": {
+              "quota": 10737418588,
+              "usage": 348,
+              "usageDetails": {
+                "fileSystem": 348
+              }
+            }
+          },
+          "checked": {
+            "result": {
+              "verified": true,
+              "stage": "clear-records",
+              "bytes": 8388608
+            },
+            "usage": {
+              "quota": 10737418588,
+              "usage": 348,
+              "usageDetails": {
+                "fileSystem": 348
+              }
+            }
+          },
+          "physical": {
+            "logical": 8388608,
+            "allocated": 8388608
+          }
+        },
+        {
+          "action": "zero-pages",
+          "measurement": {
+            "result": {
+              "action": "zero-pages",
+              "logical": 8388608,
+              "writtenBytes": 8388608,
+              "writeCalls": 2048,
+              "milliseconds": 15.900000095367432
+            },
+            "usage": {
+              "quota": 10737418588,
+              "usage": 348,
+              "usageDetails": {
+                "fileSystem": 348
+              }
+            }
+          },
+          "checked": {
+            "result": {
+              "verified": true,
+              "stage": "zero-pages",
+              "bytes": 8388608
+            },
+            "usage": {
+              "quota": 10737418588,
+              "usage": 348,
+              "usageDetails": {
+                "fileSystem": 348
+              }
+            }
+          },
+          "physical": {
+            "logical": 8388608,
+            "allocated": 8388608
+          }
+        },
+        {
+          "action": "truncate-half",
+          "measurement": {
+            "result": {
+              "action": "truncate-half",
+              "logical": 4194304,
+              "writtenBytes": 0,
+              "writeCalls": 0,
+              "milliseconds": 2.5
+            },
+            "usage": {
+              "quota": 10737418240,
+              "usage": 0,
+              "usageDetails": {}
+            }
+          },
+          "physical": {
+            "logical": 4194304,
+            "allocated": 4194304
+          }
+        }
+      ]
+    },
+    {
+      "case": {
+        "name": "positional-two-distant",
+        "count": 2,
+        "distant": true,
+        "id": 3,
+        "objects": 4096
+      },
+      "stages": [
+        {
+          "action": "prepare",
+          "measurement": {
+            "result": {
+              "action": "prepare",
+              "logical": 8388608,
+              "writtenBytes": 262144,
+              "writeCalls": 12288,
+              "milliseconds": 70.60000014305115
+            },
+            "usage": {
+              "quota": 10745807196,
+              "usage": 8388956,
+              "usageDetails": {
+                "fileSystem": 8388956
+              }
+            }
+          },
+          "checked": {
+            "result": {
+              "verified": true,
+              "stage": "prepare",
+              "bytes": 8388608
+            },
+            "usage": {
+              "quota": 10737418588,
+              "usage": 348,
+              "usageDetails": {
+                "fileSystem": 348
+              }
+            }
+          },
+          "physical": {
+            "logical": 8388608,
+            "allocated": 8388608
+          }
+        },
+        {
+          "action": "fill",
+          "measurement": {
+            "result": {
+              "action": "fill",
+              "logical": 8388608,
+              "writtenBytes": 8192000,
+              "writeCalls": 4096,
+              "milliseconds": 32.5
+            },
+            "usage": {
+              "quota": 10737418588,
+              "usage": 348,
+              "usageDetails": {
+                "fileSystem": 348
+              }
+            }
+          },
+          "checked": {
+            "result": {
+              "verified": true,
+              "stage": "fill",
+              "bytes": 8388608
+            },
+            "usage": {
+              "quota": 10737418588,
+              "usage": 348,
+              "usageDetails": {
+                "fileSystem": 348
+              }
+            }
+          },
+          "physical": {
+            "logical": 8388608,
+            "allocated": 8388608
+          }
+        },
+        {
+          "action": "clear-records",
+          "measurement": {
+            "result": {
+              "action": "clear-records",
+              "logical": 8388608,
+              "writtenBytes": 8192000,
+              "writeCalls": 4096,
+              "milliseconds": 33.39999985694885
+            },
+            "usage": {
+              "quota": 10737418588,
+              "usage": 348,
+              "usageDetails": {
+                "fileSystem": 348
+              }
+            }
+          },
+          "checked": {
+            "result": {
+              "verified": true,
+              "stage": "clear-records",
+              "bytes": 8388608
+            },
+            "usage": {
+              "quota": 10737418588,
+              "usage": 348,
+              "usageDetails": {
+                "fileSystem": 348
+              }
+            }
+          },
+          "physical": {
+            "logical": 8388608,
+            "allocated": 8388608
+          }
+        },
+        {
+          "action": "zero-pages",
+          "measurement": {
+            "result": {
+              "action": "zero-pages",
+              "logical": 8388608,
+              "writtenBytes": 8388608,
+              "writeCalls": 2048,
+              "milliseconds": 16.09999990463257
+            },
+            "usage": {
+              "quota": 10737418588,
+              "usage": 348,
+              "usageDetails": {
+                "fileSystem": 348
+              }
+            }
+          },
+          "checked": {
+            "result": {
+              "verified": true,
+              "stage": "zero-pages",
+              "bytes": 8388608
+            },
+            "usage": {
+              "quota": 10737418588,
+              "usage": 348,
+              "usageDetails": {
+                "fileSystem": 348
+              }
+            }
+          },
+          "physical": {
+            "logical": 8388608,
+            "allocated": 8388608
+          }
+        },
+        {
+          "action": "truncate-half",
+          "measurement": {
+            "result": {
+              "action": "truncate-half",
+              "logical": 4194304,
+              "writtenBytes": 0,
+              "writeCalls": 0,
+              "milliseconds": 2
+            },
+            "usage": {
+              "quota": 10737418240,
+              "usage": 0,
+              "usageDetails": {}
+            }
+          },
+          "physical": {
+            "logical": 4194304,
+            "allocated": 4194304
+          }
+        }
+      ]
+    },
+    {
+      "case": {
+        "name": "positional-ten",
+        "count": 10,
+        "id": 4,
+        "objects": 4096
+      },
+      "stages": [
+        {
+          "action": "prepare",
+          "measurement": {
+            "result": {
+              "action": "prepare",
+              "logical": 8388608,
+              "writtenBytes": 524288,
+              "writeCalls": 8192,
+              "milliseconds": 50.40000009536743
+            },
+            "usage": {
+              "quota": 10745807196,
+              "usage": 8388956,
+              "usageDetails": {
+                "fileSystem": 8388956
+              }
+            }
+          },
+          "checked": {
+            "result": {
+              "verified": true,
+              "stage": "prepare",
+              "bytes": 8388608
+            },
+            "usage": {
+              "quota": 10737418588,
+              "usage": 348,
+              "usageDetails": {
+                "fileSystem": 348
+              }
+            }
+          },
+          "physical": {
+            "logical": 8388608,
+            "allocated": 8388608
+          }
+        },
+        {
+          "action": "fill",
+          "measurement": {
+            "result": {
+              "action": "fill",
+              "logical": 8388608,
+              "writtenBytes": 8192000,
+              "writeCalls": 4096,
+              "milliseconds": 32.299999952316284
+            },
+            "usage": {
+              "quota": 10737418588,
+              "usage": 348,
+              "usageDetails": {
+                "fileSystem": 348
+              }
+            }
+          },
+          "checked": {
+            "result": {
+              "verified": true,
+              "stage": "fill",
+              "bytes": 8388608
+            },
+            "usage": {
+              "quota": 10737418588,
+              "usage": 348,
+              "usageDetails": {
+                "fileSystem": 348
+              }
+            }
+          },
+          "physical": {
+            "logical": 8388608,
+            "allocated": 8388608
+          }
+        },
+        {
+          "action": "clear-records",
+          "measurement": {
+            "result": {
+              "action": "clear-records",
+              "logical": 8388608,
+              "writtenBytes": 8192000,
+              "writeCalls": 4096,
+              "milliseconds": 33.59999990463257
+            },
+            "usage": {
+              "quota": 10737418588,
+              "usage": 348,
+              "usageDetails": {
+                "fileSystem": 348
+              }
+            }
+          },
+          "checked": {
+            "result": {
+              "verified": true,
+              "stage": "clear-records",
+              "bytes": 8388608
+            },
+            "usage": {
+              "quota": 10737418588,
+              "usage": 348,
+              "usageDetails": {
+                "fileSystem": 348
+              }
+            }
+          },
+          "physical": {
+            "logical": 8388608,
+            "allocated": 8388608
+          }
+        },
+        {
+          "action": "zero-pages",
+          "measurement": {
+            "result": {
+              "action": "zero-pages",
+              "logical": 8388608,
+              "writtenBytes": 8388608,
+              "writeCalls": 2048,
+              "milliseconds": 15.900000095367432
+            },
+            "usage": {
+              "quota": 10737418588,
+              "usage": 348,
+              "usageDetails": {
+                "fileSystem": 348
+              }
+            }
+          },
+          "checked": {
+            "result": {
+              "verified": true,
+              "stage": "zero-pages",
+              "bytes": 8388608
+            },
+            "usage": {
+              "quota": 10737418588,
+              "usage": 348,
+              "usageDetails": {
+                "fileSystem": 348
+              }
+            }
+          },
+          "physical": {
+            "logical": 8388608,
+            "allocated": 8388608
+          }
+        },
+        {
+          "action": "truncate-half",
+          "measurement": {
+            "result": {
+              "action": "truncate-half",
+              "logical": 4194304,
+              "writtenBytes": 0,
+              "writeCalls": 0,
+              "milliseconds": 2.8999998569488525
+            },
+            "usage": {
+              "quota": 10737418240,
+              "usage": 0,
+              "usageDetails": {}
+            }
+          },
+          "physical": {
+            "logical": 4194304,
+            "allocated": 4194304
+          }
+        }
+      ]
+    },
+    {
+      "case": {
+        "name": "positional-hundred",
+        "count": 100,
+        "id": 5,
+        "objects": 4096
+      },
+      "stages": [
+        {
+          "action": "prepare",
+          "measurement": {
+            "result": {
+              "action": "prepare",
+              "logical": 8388608,
+              "writtenBytes": 3473408,
+              "writeCalls": 8192,
+              "milliseconds": 52.700000047683716
+            },
+            "usage": {
+              "quota": 10745807196,
+              "usage": 8388956,
+              "usageDetails": {
+                "fileSystem": 8388956
+              }
+            }
+          },
+          "checked": {
+            "result": {
+              "verified": true,
+              "stage": "prepare",
+              "bytes": 8388608
+            },
+            "usage": {
+              "quota": 10737418588,
+              "usage": 348,
+              "usageDetails": {
+                "fileSystem": 348
+              }
+            }
+          },
+          "physical": {
+            "logical": 8388608,
+            "allocated": 8388608
+          }
+        },
+        {
+          "action": "fill",
+          "measurement": {
+            "result": {
+              "action": "fill",
+              "logical": 8388608,
+              "writtenBytes": 8192000,
+              "writeCalls": 4096,
+              "milliseconds": 33.299999952316284
+            },
+            "usage": {
+              "quota": 10737418588,
+              "usage": 348,
+              "usageDetails": {
+                "fileSystem": 348
+              }
+            }
+          },
+          "checked": {
+            "result": {
+              "verified": true,
+              "stage": "fill",
+              "bytes": 8388608
+            },
+            "usage": {
+              "quota": 10737418588,
+              "usage": 348,
+              "usageDetails": {
+                "fileSystem": 348
+              }
+            }
+          },
+          "physical": {
+            "logical": 8388608,
+            "allocated": 8388608
+          }
+        },
+        {
+          "action": "clear-records",
+          "measurement": {
+            "result": {
+              "action": "clear-records",
+              "logical": 8388608,
+              "writtenBytes": 8192000,
+              "writeCalls": 4096,
+              "milliseconds": 31.699999809265137
+            },
+            "usage": {
+              "quota": 10737418588,
+              "usage": 348,
+              "usageDetails": {
+                "fileSystem": 348
+              }
+            }
+          },
+          "checked": {
+            "result": {
+              "verified": true,
+              "stage": "clear-records",
+              "bytes": 8388608
+            },
+            "usage": {
+              "quota": 10737418588,
+              "usage": 348,
+              "usageDetails": {
+                "fileSystem": 348
+              }
+            }
+          },
+          "physical": {
+            "logical": 8388608,
+            "allocated": 8388608
+          }
+        },
+        {
+          "action": "zero-pages",
+          "measurement": {
+            "result": {
+              "action": "zero-pages",
+              "logical": 8388608,
+              "writtenBytes": 8388608,
+              "writeCalls": 2048,
+              "milliseconds": 16.59999990463257
+            },
+            "usage": {
+              "quota": 10737418588,
+              "usage": 348,
+              "usageDetails": {
+                "fileSystem": 348
+              }
+            }
+          },
+          "checked": {
+            "result": {
+              "verified": true,
+              "stage": "zero-pages",
+              "bytes": 8388608
+            },
+            "usage": {
+              "quota": 10737418588,
+              "usage": 348,
+              "usageDetails": {
+                "fileSystem": 348
+              }
+            }
+          },
+          "physical": {
+            "logical": 8388608,
+            "allocated": 8388608
+          }
+        },
+        {
+          "action": "truncate-half",
+          "measurement": {
+            "result": {
+              "action": "truncate-half",
+              "logical": 4194304,
+              "writtenBytes": 0,
+              "writeCalls": 0,
+              "milliseconds": 2.4000000953674316
+            },
+            "usage": {
+              "quota": 10737418240,
+              "usage": 0,
+              "usageDetails": {}
+            }
+          },
+          "physical": {
+            "logical": 4194304,
+            "allocated": 4194304
+          }
+        }
+      ]
+    },
+    {
+      "case": {
+        "name": "positional-full",
+        "count": 250,
+        "id": 6,
+        "objects": 4096
+      },
+      "stages": [
+        {
+          "action": "prepare",
+          "measurement": {
+            "result": {
+              "action": "prepare",
+              "logical": 8388608,
+              "writtenBytes": 8388608,
+              "writeCalls": 8192,
+              "milliseconds": 52
+            },
+            "usage": {
+              "quota": 10745807196,
+              "usage": 8388956,
+              "usageDetails": {
+                "fileSystem": 8388956
+              }
+            }
+          },
+          "checked": {
+            "result": {
+              "verified": true,
+              "stage": "prepare",
+              "bytes": 8388608
+            },
+            "usage": {
+              "quota": 10737418588,
+              "usage": 348,
+              "usageDetails": {
+                "fileSystem": 348
+              }
+            }
+          },
+          "physical": {
+            "logical": 8388608,
+            "allocated": 8388608
+          }
+        },
+        {
+          "action": "fill",
+          "measurement": {
+            "result": {
+              "action": "fill",
+              "logical": 8388608,
+              "writtenBytes": 8192000,
+              "writeCalls": 4096,
+              "milliseconds": 34.09999990463257
+            },
+            "usage": {
+              "quota": 10737418588,
+              "usage": 348,
+              "usageDetails": {
+                "fileSystem": 348
+              }
+            }
+          },
+          "checked": {
+            "result": {
+              "verified": true,
+              "stage": "fill",
+              "bytes": 8388608
+            },
+            "usage": {
+              "quota": 10737418588,
+              "usage": 348,
+              "usageDetails": {
+                "fileSystem": 348
+              }
+            }
+          },
+          "physical": {
+            "logical": 8388608,
+            "allocated": 8388608
+          }
+        },
+        {
+          "action": "clear-records",
+          "measurement": {
+            "result": {
+              "action": "clear-records",
+              "logical": 8388608,
+              "writtenBytes": 8192000,
+              "writeCalls": 4096,
+              "milliseconds": 33.10000014305115
+            },
+            "usage": {
+              "quota": 10737418588,
+              "usage": 348,
+              "usageDetails": {
+                "fileSystem": 348
+              }
+            }
+          },
+          "checked": {
+            "result": {
+              "verified": true,
+              "stage": "clear-records",
+              "bytes": 8388608
+            },
+            "usage": {
+              "quota": 10737418588,
+              "usage": 348,
+              "usageDetails": {
+                "fileSystem": 348
+              }
+            }
+          },
+          "physical": {
+            "logical": 8388608,
+            "allocated": 8388608
+          }
+        },
+        {
+          "action": "zero-pages",
+          "measurement": {
+            "result": {
+              "action": "zero-pages",
+              "logical": 8388608,
+              "writtenBytes": 8388608,
+              "writeCalls": 2048,
+              "milliseconds": 15.299999952316284
+            },
+            "usage": {
+              "quota": 10737418588,
+              "usage": 348,
+              "usageDetails": {
+                "fileSystem": 348
+              }
+            }
+          },
+          "checked": {
+            "result": {
+              "verified": true,
+              "stage": "zero-pages",
+              "bytes": 8388608
+            },
+            "usage": {
+              "quota": 10737418588,
+              "usage": 348,
+              "usageDetails": {
+                "fileSystem": 348
+              }
+            }
+          },
+          "physical": {
+            "logical": 8388608,
+            "allocated": 8388608
+          }
+        },
+        {
+          "action": "truncate-half",
+          "measurement": {
+            "result": {
+              "action": "truncate-half",
+              "logical": 4194304,
+              "writtenBytes": 0,
+              "writeCalls": 0,
+              "milliseconds": 1.7999999523162842
+            },
+            "usage": {
+              "quota": 10737418240,
+              "usage": 0,
+              "usageDetails": {}
+            }
+          },
+          "physical": {
+            "logical": 4194304,
+            "allocated": 4194304
+          }
+        }
+      ]
+    },
+    {
+      "case": {
+        "name": "positional-one-full-write",
+        "count": 1,
+        "fullWrite": true,
+        "id": 7,
+        "objects": 4096
+      },
+      "stages": [
+        {
+          "action": "prepare",
+          "measurement": {
+            "result": {
+              "action": "prepare",
+              "logical": 8388608,
+              "writtenBytes": 8388608,
+              "writeCalls": 4096,
+              "milliseconds": 38.5
+            },
+            "usage": {
+              "quota": 10745807196,
+              "usage": 8388956,
+              "usageDetails": {
+                "fileSystem": 8388956
+              }
+            }
+          },
+          "checked": {
+            "result": {
+              "verified": true,
+              "stage": "prepare",
+              "bytes": 8388608
+            },
+            "usage": {
+              "quota": 10737418588,
+              "usage": 348,
+              "usageDetails": {
+                "fileSystem": 348
+              }
+            }
+          },
+          "physical": {
+            "logical": 8388608,
+            "allocated": 8388608
+          }
+        },
+        {
+          "action": "fill",
+          "measurement": {
+            "result": {
+              "action": "fill",
+              "logical": 8388608,
+              "writtenBytes": 8192000,
+              "writeCalls": 4096,
+              "milliseconds": 32.59999990463257
+            },
+            "usage": {
+              "quota": 10737418588,
+              "usage": 348,
+              "usageDetails": {
+                "fileSystem": 348
+              }
+            }
+          },
+          "checked": {
+            "result": {
+              "verified": true,
+              "stage": "fill",
+              "bytes": 8388608
+            },
+            "usage": {
+              "quota": 10737418588,
+              "usage": 348,
+              "usageDetails": {
+                "fileSystem": 348
+              }
+            }
+          },
+          "physical": {
+            "logical": 8388608,
+            "allocated": 8388608
+          }
+        },
+        {
+          "action": "clear-records",
+          "measurement": {
+            "result": {
+              "action": "clear-records",
+              "logical": 8388608,
+              "writtenBytes": 8192000,
+              "writeCalls": 4096,
+              "milliseconds": 31.59999990463257
+            },
+            "usage": {
+              "quota": 10737418588,
+              "usage": 348,
+              "usageDetails": {
+                "fileSystem": 348
+              }
+            }
+          },
+          "checked": {
+            "result": {
+              "verified": true,
+              "stage": "clear-records",
+              "bytes": 8388608
+            },
+            "usage": {
+              "quota": 10737418588,
+              "usage": 348,
+              "usageDetails": {
+                "fileSystem": 348
+              }
+            }
+          },
+          "physical": {
+            "logical": 8388608,
+            "allocated": 8388608
+          }
+        },
+        {
+          "action": "zero-pages",
+          "measurement": {
+            "result": {
+              "action": "zero-pages",
+              "logical": 8388608,
+              "writtenBytes": 8388608,
+              "writeCalls": 2048,
+              "milliseconds": 16.40000009536743
+            },
+            "usage": {
+              "quota": 10737418588,
+              "usage": 348,
+              "usageDetails": {
+                "fileSystem": 348
+              }
+            }
+          },
+          "checked": {
+            "result": {
+              "verified": true,
+              "stage": "zero-pages",
+              "bytes": 8388608
+            },
+            "usage": {
+              "quota": 10737418588,
+              "usage": 348,
+              "usageDetails": {
+                "fileSystem": 348
+              }
+            }
+          },
+          "physical": {
+            "logical": 8388608,
+            "allocated": 8388608
+          }
+        },
+        {
+          "action": "truncate-half",
+          "measurement": {
+            "result": {
+              "action": "truncate-half",
+              "logical": 4194304,
+              "writtenBytes": 0,
+              "writeCalls": 0,
+              "milliseconds": 2.6999998092651367
+            },
+            "usage": {
+              "quota": 10737418240,
+              "usage": 0,
+              "usageDetails": {}
+            }
+          },
+          "physical": {
+            "logical": 4194304,
+            "allocated": 4194304
+          }
+        }
+      ]
+    },
+    {
+      "case": {
+        "name": "slotted-fixed-one",
+        "count": 1,
+        "slotted": true,
+        "id": 8,
+        "objects": 4096
+      },
+      "stages": [
+        {
+          "action": "prepare",
+          "measurement": {
+            "result": {
+              "action": "prepare",
+              "logical": 8388608,
+              "writtenBytes": 245760,
+              "writeCalls": 8192,
+              "milliseconds": 54.10000014305115
+            },
+            "usage": {
+              "quota": 10745807196,
+              "usage": 8388956,
+              "usageDetails": {
+                "fileSystem": 8388956
+              }
+            }
+          },
+          "checked": {
+            "result": {
+              "verified": true,
+              "stage": "prepare",
+              "bytes": 8388608
+            },
+            "usage": {
+              "quota": 10737418588,
+              "usage": 348,
+              "usageDetails": {
+                "fileSystem": 348
+              }
+            }
+          },
+          "physical": {
+            "logical": 8388608,
+            "allocated": 8388608
+          }
+        },
+        {
+          "action": "fill",
+          "measurement": {
+            "result": {
+              "action": "fill",
+              "logical": 8388608,
+              "writtenBytes": 8192000,
+              "writeCalls": 4096,
+              "milliseconds": 35
+            },
+            "usage": {
+              "quota": 10737418588,
+              "usage": 348,
+              "usageDetails": {
+                "fileSystem": 348
+              }
+            }
+          },
+          "checked": {
+            "result": {
+              "verified": true,
+              "stage": "fill",
+              "bytes": 8388608
+            },
+            "usage": {
+              "quota": 10737418588,
+              "usage": 348,
+              "usageDetails": {
+                "fileSystem": 348
+              }
+            }
+          },
+          "physical": {
+            "logical": 8388608,
+            "allocated": 8388608
+          }
+        },
+        {
+          "action": "clear-records",
+          "measurement": {
+            "result": {
+              "action": "clear-records",
+              "logical": 8388608,
+              "writtenBytes": 8192000,
+              "writeCalls": 4096,
+              "milliseconds": 32.299999952316284
+            },
+            "usage": {
+              "quota": 10737418588,
+              "usage": 348,
+              "usageDetails": {
+                "fileSystem": 348
+              }
+            }
+          },
+          "checked": {
+            "result": {
+              "verified": true,
+              "stage": "clear-records",
+              "bytes": 8388608
+            },
+            "usage": {
+              "quota": 10737418588,
+              "usage": 348,
+              "usageDetails": {
+                "fileSystem": 348
+              }
+            }
+          },
+          "physical": {
+            "logical": 8388608,
+            "allocated": 8388608
+          }
+        },
+        {
+          "action": "zero-pages",
+          "measurement": {
+            "result": {
+              "action": "zero-pages",
+              "logical": 8388608,
+              "writtenBytes": 8388608,
+              "writeCalls": 2048,
+              "milliseconds": 15.299999952316284
+            },
+            "usage": {
+              "quota": 10737418588,
+              "usage": 348,
+              "usageDetails": {
+                "fileSystem": 348
+              }
+            }
+          },
+          "checked": {
+            "result": {
+              "verified": true,
+              "stage": "zero-pages",
+              "bytes": 8388608
+            },
+            "usage": {
+              "quota": 10737418588,
+              "usage": 348,
+              "usageDetails": {
+                "fileSystem": 348
+              }
+            }
+          },
+          "physical": {
+            "logical": 8388608,
+            "allocated": 8388608
+          }
+        },
+        {
+          "action": "truncate-half",
+          "measurement": {
+            "result": {
+              "action": "truncate-half",
+              "logical": 4194304,
+              "writtenBytes": 0,
+              "writeCalls": 0,
+              "milliseconds": 1.7000000476837158
+            },
+            "usage": {
+              "quota": 10737418240,
+              "usage": 0,
+              "usageDetails": {}
+            }
+          },
+          "physical": {
+            "logical": 4194304,
+            "allocated": 4194304
+          }
+        }
+      ]
+    },
+    {
+      "case": {
+        "name": "packed-variable-one",
+        "count": 1,
+        "packed": true,
+        "slotted": true,
+        "id": 9,
+        "objects": 4096
+      },
+      "stages": [
+        {
+          "action": "prepare",
+          "measurement": {
+            "result": {
+              "action": "prepare",
+              "logical": 249856,
+              "writtenBytes": 245760,
+              "writeCalls": 4096,
+              "milliseconds": 25
+            },
+            "usage": {
+              "quota": 10737668444,
+              "usage": 250204,
+              "usageDetails": {
+                "fileSystem": 250204
+              }
+            }
+          },
+          "checked": {
+            "result": {
+              "verified": true,
+              "stage": "prepare",
+              "bytes": 249856
+            },
+            "usage": {
+              "quota": 10737418588,
+              "usage": 348,
+              "usageDetails": {
+                "fileSystem": 348
+              }
+            }
+          },
+          "physical": {
+            "logical": 249856,
+            "allocated": 249856
+          }
+        }
+      ]
+    },
+    {
+      "case": {
+        "name": "packed-variable-ten",
+        "count": 10,
+        "packed": true,
+        "slotted": true,
+        "id": 10,
+        "objects": 4096
+      },
+      "stages": [
+        {
+          "action": "prepare",
+          "measurement": {
+            "result": {
+              "action": "prepare",
+              "logical": 700416,
+              "writtenBytes": 688128,
+              "writeCalls": 4096,
+              "milliseconds": 23.700000047683716
+            },
+            "usage": {
+              "quota": 10738119004,
+              "usage": 700764,
+              "usageDetails": {
+                "fileSystem": 700764
+              }
+            }
+          },
+          "checked": {
+            "result": {
+              "verified": true,
+              "stage": "prepare",
+              "bytes": 700416
+            },
+            "usage": {
+              "quota": 10737418588,
+              "usage": 348,
+              "usageDetails": {
+                "fileSystem": 348
+              }
+            }
+          },
+          "physical": {
+            "logical": 700416,
+            "allocated": 700416
+          }
+        }
+      ]
+    },
+    {
+      "case": {
+        "name": "whole-page-holes",
+        "count": 1,
+        "stride": 16,
+        "id": 11,
+        "objects": 4096
+      },
+      "stages": [
+        {
+          "action": "prepare",
+          "measurement": {
+            "result": {
+              "action": "prepare",
+              "logical": 8388608,
+              "writtenBytes": 14336,
+              "writeCalls": 512,
+              "milliseconds": 13.799999952316284
+            },
+            "usage": {
+              "quota": 10745807196,
+              "usage": 8388956,
+              "usageDetails": {
+                "fileSystem": 8388956
+              }
+            }
+          },
+          "checked": {
+            "result": {
+              "verified": true,
+              "stage": "prepare",
+              "bytes": 8388608
+            },
+            "usage": {
+              "quota": 10737418588,
+              "usage": 348,
+              "usageDetails": {
+                "fileSystem": 348
+              }
+            }
+          },
+          "physical": {
+            "logical": 8388608,
+            "allocated": 8388608
+          }
+        },
+        {
+          "action": "fill",
+          "measurement": {
+            "result": {
+              "action": "fill",
+              "logical": 8388608,
+              "writtenBytes": 512000,
+              "writeCalls": 256,
+              "milliseconds": 8.599999904632568
+            },
+            "usage": {
+              "quota": 10737418588,
+              "usage": 348,
+              "usageDetails": {
+                "fileSystem": 348
+              }
+            }
+          },
+          "checked": {
+            "result": {
+              "verified": true,
+              "stage": "fill",
+              "bytes": 8388608
+            },
+            "usage": {
+              "quota": 10737418588,
+              "usage": 348,
+              "usageDetails": {
+                "fileSystem": 348
+              }
+            }
+          },
+          "physical": {
+            "logical": 8388608,
+            "allocated": 8388608
+          }
+        },
+        {
+          "action": "clear-records",
+          "measurement": {
+            "result": {
+              "action": "clear-records",
+              "logical": 8388608,
+              "writtenBytes": 512000,
+              "writeCalls": 256,
+              "milliseconds": 7.5
+            },
+            "usage": {
+              "quota": 10737418588,
+              "usage": 348,
+              "usageDetails": {
+                "fileSystem": 348
+              }
+            }
+          },
+          "checked": {
+            "result": {
+              "verified": true,
+              "stage": "clear-records",
+              "bytes": 8388608
+            },
+            "usage": {
+              "quota": 10737418588,
+              "usage": 348,
+              "usageDetails": {
+                "fileSystem": 348
+              }
+            }
+          },
+          "physical": {
+            "logical": 8388608,
+            "allocated": 8388608
+          }
+        },
+        {
+          "action": "zero-pages",
+          "measurement": {
+            "result": {
+              "action": "zero-pages",
+              "logical": 8388608,
+              "writtenBytes": 8388608,
+              "writeCalls": 2048,
+              "milliseconds": 15.400000095367432
+            },
+            "usage": {
+              "quota": 10737418588,
+              "usage": 348,
+              "usageDetails": {
+                "fileSystem": 348
+              }
+            }
+          },
+          "checked": {
+            "result": {
+              "verified": true,
+              "stage": "zero-pages",
+              "bytes": 8388608
+            },
+            "usage": {
+              "quota": 10737418588,
+              "usage": 348,
+              "usageDetails": {
+                "fileSystem": 348
+              }
+            }
+          },
+          "physical": {
+            "logical": 8388608,
+            "allocated": 8388608
+          }
+        },
+        {
+          "action": "truncate-half",
+          "measurement": {
+            "result": {
+              "action": "truncate-half",
+              "logical": 4194304,
+              "writtenBytes": 0,
+              "writeCalls": 0,
+              "milliseconds": 2.8000001907348633
+            },
+            "usage": {
+              "quota": 10737418240,
+              "usage": 0,
+              "usageDetails": {}
+            }
+          },
+          "physical": {
+            "logical": 4194304,
+            "allocated": 4194304
+          }
+        }
+      ]
+    }
+  ]
+}

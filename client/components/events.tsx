@@ -1,4 +1,5 @@
-import { For, Show, createEffect, createSignal, on } from "solid-js";
+import { capturePosition, resolvePosition, type ScrollPosition } from '../services/ui-position';
+import { For, Show, createEffect, createSignal, on, onCleanup, onMount } from "solid-js";
 import { Dynamic } from "solid-js/web";
 import { duration, field, level, type LogEvent } from "../services/events";
 import { Icon } from "./icon";
@@ -9,7 +10,8 @@ import {
   valueAt,
   jsonText,
 } from "../services/dictionary";
-import { pageSizes } from "../services/preferences";
+import { ScrollEnd } from "./scroll-end";
+import { objectHistoryTarget, type ObjectHistoryTarget } from '../services/replay';
 import {
   eventFields,
   type Annotations,
@@ -28,12 +30,14 @@ export function eventTime(event: LogEvent): string {
   return clock.format(event.millis);
 }
 
-function FieldTag(props: {
+export function FieldTag(props: {
   field: EventField;
   disabled: boolean;
   onIndicator: (field: EventField) => void;
+  onHistory?: ()=>void;
 }) {
   return (
+    <Show when={props.onHistory} fallback={
     <Dynamic
       component={props.field.fixed ? "span" : "button"}
       class="field-tag"
@@ -43,9 +47,9 @@ function FieldTag(props: {
       aria-label={
         props.field.fixed
           ? undefined
-          : `Add indicator for ${props.field.path.join(".")}`
+          : `Add Indicator for ${props.field.path.join(".")}`
       }
-      title={`${props.field.path.join(".")}: ${props.field.text}${props.field.fixed ? "" : "\nAdd indicator"}`}
+      title={`${props.field.path.join(".")}: ${props.field.text}${props.field.fixed ? "" : "\nAdd Indicator"}`}
       onClick={
         props.field.fixed ? undefined : () => props.onIndicator(props.field)
       }
@@ -56,6 +60,15 @@ function FieldTag(props: {
         <Icon name="plus" size={11} />
       </Show>
     </Dynamic>
+    }>
+      <span class="field-tag">
+        <span class="field-name">{props.field.path.join('.')}</span>
+        <button type="button" class="field-value object-history-link" aria-haspopup="dialog" onClick={()=>props.onHistory?.()}
+          aria-label={`Open Object History for ${props.field.path.join('.')} ${props.field.text}`} title="Open Object History">{props.field.text||'""'}</button>
+        <Show when={!props.field.fixed}><button type="button" class="field-indicator-button" disabled={props.disabled}
+          aria-label={`Add Indicator for ${props.field.path.join('.')}`} aria-haspopup="dialog" onClick={()=>props.onIndicator(props.field)}><Icon name="plus" size={11}/></button></Show>
+      </span>
+    </Show>
   );
 }
 
@@ -69,24 +82,37 @@ export function Events(props: {
   indicatorsLoading: boolean;
   reveal: { event: LogEvent } | undefined;
   pageSize: number;
-  onPageSize: (value: number) => Promise<void>;
-  preferencesBusy: boolean;
+  onNearEnd?: () => void;
+  hasMore?: boolean;
+  loading?: boolean;
+  active?: boolean;
+  position?: ScrollPosition;
+  onPosition?: (position:ScrollPosition) => void;
+  collections?: readonly string[];
+  onObjectHistory?: (target:ObjectHistoryTarget)=>void;
 }) {
-  const [page, setPage] = createSignal(0);
+  const [visibleCount, setVisibleCount] = createSignal(props.pageSize);
   const [notebook, setNotebook] = createSignal<{
     event: LogEvent;
     anchor: HTMLElement;
   }>();
   const [saved, setSaved] = createSignal<{ event: LogEvent; name: string }>();
   let table: HTMLDivElement | undefined;
-  const pages = () =>
-    Math.max(1, Math.ceil(props.events.length / props.pageSize));
-  const current = () => Math.min(page(), pages() - 1);
-  const visible = () =>
-    props.events.slice(
-      current() * props.pageSize,
-      (current() + 1) * props.pageSize,
-    );
+  let scrollTimer: ReturnType<typeof setTimeout> | undefined;
+  const savePosition = () => {clearTimeout(scrollTimer);if(table?.getClientRects().length)props.onPosition?.(capturePosition(table))};
+  onMount(()=>{
+    queueMicrotask(()=>{if(table&&props.position)table.scrollTo(resolvePosition(props.position,table))});
+    addEventListener('pagehide',savePosition);
+    onCleanup(()=>{clearTimeout(scrollTimer);removeEventListener('pagehide',savePosition)});
+  });
+  createEffect(on(()=>props.active,active=>{
+    if(active)queueMicrotask(()=>{if(table&&props.position)table.scrollTo(resolvePosition(props.position,table))});
+  }));
+  const visible = () => props.onNearEnd
+    ? props.events
+    : props.events.slice(0, visibleCount());
+  const more = () => props.onNearEnd ? props.hasMore : visibleCount() < props.events.length;
+  const loadMore = () => props.onNearEnd ? props.onNearEnd() : setVisibleCount(n => n + props.pageSize);
 
   createEffect(
     on(
@@ -95,7 +121,7 @@ export function Events(props: {
         if (!request) return;
         const index = props.events.indexOf(request.event);
         if (index < 0) return;
-        setPage(Math.floor(index / props.pageSize));
+        setVisibleCount(n => Math.max(n, index + props.pageSize));
         queueMicrotask(() => {
           if (props.reveal !== request) return;
           const row = table?.querySelector<HTMLTableRowElement>(
@@ -112,28 +138,16 @@ export function Events(props: {
     on(
       () => props.revision,
       () => {
-        setPage(0);
+        setVisibleCount(props.pageSize);
+        queueMicrotask(()=>table?.scrollTo(resolvePosition(props.position ?? {top:0,left:0},table)));
         setNotebook(undefined);
       },
     ),
   );
 
-  async function changeSize(
-    event: Event & { currentTarget: HTMLSelectElement },
-  ) {
-    const value = Number(event.currentTarget.value);
-    const first = current() * props.pageSize;
-    event.currentTarget.value = String(props.pageSize);
-    try {
-      await props.onPageSize(value);
-      setPage(Math.floor(first / value));
-    } catch {
-      return;
-    }
-  }
   return (
     <>
-      <div class="table-scroll" ref={table}>
+      <div class="table-scroll" ref={table} onScroll={()=>{clearTimeout(scrollTimer);scrollTimer=setTimeout(savePosition,100)}}>
         <table class="event-table">
           <thead>
             <tr>
@@ -158,9 +172,10 @@ export function Events(props: {
                 const id = eventId(event);
                 const message = field(event, "message");
                 const fields = eventFields(event);
+                const history=()=>objectHistoryTarget(event,props.collections??[]);
                 const otherFields = fields.filter(
                   (item) =>
-                    !["id", "resource", "operation"].includes(item.path[0]),
+                    ![event.dictionary.id.name, "resource", "operation"].includes(item.path[0]),
                 );
                 const severity = level(event);
                 return (
@@ -168,7 +183,7 @@ export function Events(props: {
                     <tr
                       class="event-summary"
                       id={`event-${id}`}
-                      data-event-row={current() * props.pageSize + index()}
+                      data-event-row={index()}
                       tabIndex={-1}
                       classList={{
                         selected: props.selected === event,
@@ -248,7 +263,7 @@ export function Events(props: {
                             title={
                               saved()?.event === event
                                 ? `Saved to ${saved()!.name}`
-                                : "Save to notebook"
+                                : "Save to Notebook"
                             }
                             classList={{ saved: saved()?.event === event }}
                             onClick={(click) =>
@@ -284,13 +299,14 @@ export function Events(props: {
                       }}
                     >
                       <td colSpan={9}>
-                        <div class="event-fields" aria-label="Event fields">
+                        <div class="event-fields" aria-label="Event Fields">
                           <For each={otherFields}>
                             {(item) => (
                               <FieldTag
                                 field={item}
                                 disabled={props.indicatorsLoading}
                                 onIndicator={props.onIndicator}
+                                onHistory={props.onObjectHistory&&history()?.field===item.path.join('.')?()=>props.onObjectHistory!(history()!):undefined}
                               />
                             )}
                           </For>
@@ -303,7 +319,7 @@ export function Events(props: {
                           <div class="event-detail">
                             <div class="event-detail-heading">
                               <Icon name="code" size={15} />
-                              <span>Event details</span>
+                              <span>Event Details</span>
                               <small>{id}</small>
                             </div>
                             <pre>{jsonText(expandEvent(event), 2)}</pre>
@@ -317,43 +333,8 @@ export function Events(props: {
             </For>
           </tbody>
         </table>
-      </div>
-      <div class="pagination">
-        <span>
-          {current() * props.pageSize + 1}–
-          {Math.min((current() + 1) * props.pageSize, props.events.length)} of{" "}
-          {props.events.length.toLocaleString()}
-        </span>
-        <label class="page-size">
-          Events per page
-          <select
-            aria-label="Events per page"
-            value={props.pageSize}
-            disabled={props.preferencesBusy}
-            onChange={(event) => void changeSize(event)}
-          >
-            <For each={pageSizes}>
-              {(size) => <option value={size}>{size}</option>}
-            </For>
-          </select>
-        </label>
-        <div class="page-buttons">
-          <button
-            class="text-button"
-            disabled={current() === 0}
-            onClick={() => setPage(current() - 1)}
-          >
-            Previous
-          </button>
-          <button
-            class="text-button"
-            disabled={current() === pages() - 1}
-            onClick={() => setPage(current() + 1)}
-          >
-            Next
-            <Icon name="chevron" size={12} />
-          </button>
-        </div>
+        <ScrollEnd root={() => table} enabled={!!more() && !props.loading && props.active !== false}
+          version={visible().length} onNearEnd={loadMore} />
       </div>
       <Show when={notebook()} keyed>
         {(selection) => (

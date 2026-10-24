@@ -1,0 +1,37 @@
+{
+  "engine": "chromium",
+  "version": "155.0.8059.85",
+  "platform": "darwin",
+  "arch": "arm64",
+  "results": [
+    {
+      "case": {
+        "name": "pac-64MiB-seek",
+        "stride": 67108864,
+        "payload": 16384,
+        "slots": 32,
+        "groups": [
+          [
+            31,
+            1
+          ],
+          [
+            0,
+            1
+          ],
+          [
+            7,
+            1
+          ],
+          [
+            15,
+            1
+          ]
+        ],
+        "seek": true
+      },
+      "quota": 67108864,
+      "error": "Error: page.evaluate: Error: QuotaExceededError: Failed to execute 'write' on 'FileSystemSyncAccessHandle': No space available for this operation\n    at write (http://localhost:9481/probe.mjs:18:60)\n    at onmessage (http://localhost:9481/probe.mjs:34:71)\n    at write (http://localhost:9481/probe.mjs:18:60)\n    at onmessage (http://localhost:9481/probe.mjs:34:71)\n    at probe.onmessage (eval at evaluate (:311:30), <anonymous>:1:90)"
+    }
+  ]
+}

@@ -2,7 +2,11 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { workerService } from "./pil/worker-runtime.ts";
-import { fixture, response, bytes, magic } from "./pil-fixtures.mjs";
+import { fixture, response, bytes, magic, frame, le, cb } from "./pil-fixtures.mjs";
+import { NativeStore } from "./store/native.ts";
+import { Backend } from "./native-backend-fixture.mjs";
+import { Codec } from "./pil/wasm.ts";
+import { PILStream } from "./pil/stream.ts";
 const module = WebAssembly.compile(
   readFileSync(new URL("../assets/pil.wasm", import.meta.url)),
 );
@@ -26,14 +30,14 @@ function tab(connect, t) {
     const job = jobs.get(m.id);
     if (!job) return;
     job.messages.push(m);
-    if (m.kind === "batch") port.postMessage({ kind: "ack", id: m.id });
+    if (m.kind === "batch" || m.kind === "native-batch") port.postMessage({ kind: "ack", id: m.id });
     if (m.kind === "done") {
       jobs.delete(m.id);
       job.resolve(job.messages);
     }
     if (m.kind === "error") {
       jobs.delete(m.id);
-      job.reject(Error(m.message));
+      job.reject(Object.assign(Error(m.message), { messages: job.messages }));
     }
   };
   t.after(() => {
@@ -55,6 +59,68 @@ function tab(connect, t) {
     },
   };
 }
+test("explicit cache rebase goes only to the credential-scoped archive", async t => {
+ const commands=[];
+ const connect=workerService(module,async()=>{throw Error("unexpected network request");},async(token,command)=>{commands.push({token,command});return {};});
+ const client=tab(connect,t);
+ await client.run({kind:"rebase",source:"demo/payment/transactions.v1/write",token:"auth"});
+ assert.deepEqual(commands,[{token:"auth",command:{kind:"native-rebase",source:"demo/payment/transactions.v1/write"}}]);
+});
+const historyBytes = readFileSync(new URL("./fixtures/replay/history.pil", import.meta.url));
+const historyWarmBytes = readFileSync(new URL("./fixtures/replay/warm.pil", import.meta.url));
+const historyMetadata = JSON.parse(readFileSync(new URL("./fixtures/replay/metadata.json", import.meta.url), "utf8"));
+const historyQuery = {
+  source: "demo/payment/transactions.v1/write", id: "42",
+  from: "2026-10-16T00:00:00Z", to: "2026-10-17T00:00:00Z",
+};
+function historyResponse(body = historyBytes) {
+  const reply = response(body, historyMetadata.definition, 37);
+  reply.headers.set("Trunk-State", historyMetadata.token);
+  reply.headers.set("Trunk-Replay", "retained-history");
+  return reply;
+}
+test("object history streams original cross-minor PIL and reuses maps without certifying time coverage", async t => {
+  const calls = [], storage = [];
+  const connect = workerService(module, async (url, options) => {
+    calls.push(options.headers);
+    const parsed = new URL(url, "https://localhost");
+    assert.equal(parsed.pathname, "/objects/history");
+    assert.equal(parsed.searchParams.get("id"), "42");
+    assert.equal(options.headers.Authorization, "Bearer auth");
+    return historyResponse(calls.length === 1 ? historyBytes : historyWarmBytes);
+  }, async (_, command) => {
+    storage.push(command);
+    return { definitions: [] };
+  });
+  const current = tab(connect, t);
+  for (let n = 0; n < 2; n++) {
+    const messages = await current.run({ kind: "history", query: historyQuery, token: "auth" });
+    assert.equal(messages.filter(m => m.kind === "definition").length, 2);
+    assert.equal(messages.filter(m => m.kind === "batch").reduce((count, m) => count + m.batch.rows.length / 3, 0), 2);
+    assert.deepEqual(messages.at(-2), { id: n + 1, kind: "history-state", state: {
+      source: historyQuery.source, id: "42", token: historyMetadata.token,
+    } });
+    assert.equal(messages.at(-1).kind, "done");
+  }
+  assert.equal(calls[0]["Definition-Known"], "");
+  assert.equal(calls[1]["Definition-Known"].split(",").length, 2);
+  assert.deepEqual(storage.map(c => c.kind), ["definitions", "remember", "remember"]);
+});
+test("truncated object history never publishes a state token or remembered replay", async t => {
+  const storage = [];
+  const connect = workerService(module, async () => historyResponse(historyBytes.subarray(0, -1)), async (_, c) => {
+    storage.push(c.kind); return { definitions: [] };
+  });
+  await assert.rejects(tab(connect, t).run({ kind: "history", query: historyQuery, token: "auth" }), error => {
+    assert.ok(!error.messages.some(m => m.kind === "history-state"));
+    return true;
+  });
+  assert.deepEqual(storage, ["definitions"]);
+});
+test("object history rejects a server binding outside the requested collection", async t => {
+  const connect = workerService(module, async () => historyResponse());
+  await assert.rejects(tab(connect, t).run({ kind: "history", query: { ...historyQuery, source: "demo/customer/accounts.v1/write" }, token: "auth" }), /escaped the selected collection/);
+});
 test("two tabs share negotiated definitions; collect sends both version headers and transfers PIL, scoped by credential", async (t) => {
   const f = fixture(),
     calls = [];
@@ -482,4 +548,132 @@ test("only missing ranges are fetched, and a failed later gap never certifies th
   );
   assert.equal(finished.length, 1);
   assert.equal(finished[0].to, new Date(gaps[0].to).toISOString());
+});
+
+test("native-capable worker collects missing ranges, delivers unassembled pages and restores offline",async t=>{
+ const wire=new Uint8Array(readFileSync(new URL("./fixtures/native-ranges/ranges.pil",import.meta.url)));
+ const definitions=new Map(),records=[];
+ const parser=new PILStream(new Codec(await WebAssembly.instantiate(await module)),new Map(),d=>definitions.set(d.digest,d),()=>{},async()=>{},async r=>records.push(r));
+ await parser.feed(wire);parser.finish();parser.close();
+ const first=records[0],binding=first.binding,definition=definitions.get(binding.digest),hash=Uint8Array.from(Buffer.from(binding.digest,"hex"));
+ const define=bytes([1],frame([3,3,3],[hash,definition.store,definition.pil]));
+ const bind=bytes([2],frame([2,3,3],[le(binding.stream,4),hash,new TextEncoder().encode(binding.tap)]));
+ const schemas=bytes(magic,define,bind,[255,254]);
+ const manifest={...first.manifest,IndexBases:[]};
+ const state=records.find(r=>r.kind==="chunk"&&r.file==="state");
+ const warm=bytes(magic,bind,[4],frame([2,3],[le(binding.stream,4),cb(manifest)]),[5],frame([2,2,2,3,3],[le(binding.stream,4),le(2,1),le(0,8),Uint8Array.from(Buffer.from(state.digest,"hex")),state.bytes]),[6],frame([2],[le(binding.stream,4)]),[255,254]);
+ const backend=new Backend(),store=new NativeStore(backend),sessions=new Map(),saved=new Map();
+ const archive=async(token,c)=>{
+  switch(c.kind){
+   case "definitions":return {definitions:await store.definitions()};
+   case "remember":return {};
+   case "begin":saved.set(c.collection.id,{collection:c.collection});return {};
+   case "native-begin":sessions.set(c.session,store.begin());return {};
+   case "native-coverage":return {nativeCoverage:await store.coverage(c.tap)};
+   case "native-record":await store.record(sessions.get(c.session),c.record,c.definition);return {};
+   case "native-finish":{
+    const session=sessions.get(c.session);await store.finish(session);sessions.delete(c.session);
+    const sources=[...new Set(session.packages.map(p=>p.key))];
+    saved.get(c.collection).nativeSelections=sources.map(source=>({source,from:Date.parse(c.selection.from),to:Date.parse(c.selection.to),where:[]}));
+    return {nativeSources:sources};
+   }
+   case "native-abort":sessions.delete(c.session);return {};
+   case "native-dependencies":return {nativeDependencies:await store.dependencies(c.source)};
+   case "native-page":return {nativePage:await store.page(c.source,c.from,c.to,c.after,c.limit)};
+   case "restore":return {...saved.get(c.collection),coverage:[],cursor:"empty-legacy",definitions:[],bindings:[]};
+   case "next":return {done:true};
+   case "release":return {};
+   default:throw Error(`unexpected legacy archive action ${c.kind}`);
+  }
+ };
+ let requests=0;
+ const fetcher=async(url,options)=>{
+  if(url==="/schemas")return new Response(schemas,{headers:{"Content-Type":"application/pil","PIL-Version":"2","Definition-Version":"a".repeat(64),"Trunk-Completion":"body","Trunk-Features":"native-ranges"}});
+  assert.match(url,/format=native/);assert.equal(options.method,"GET");requests++;
+  if(requests===2){
+   const have=JSON.parse(Buffer.from(options.headers["Trunk-Coverage"],"base64url"));
+   assert.deepEqual(have[0].Index,[{Start:1,End:7}]);
+  }
+  return new Response(requests===1?wire:warm,{headers:{"Content-Type":"application/pil","PIL-Version":"2","Definition-Version":binding.digest,"Trunk-Completion":"body","Trunk-Format":"native-pac/0"}});
+ };
+ const current=tab(workerService(module,fetcher,archive),t);
+ await current.run({kind:"schemas",tap:binding.tap,token:"native"});
+ const query={...selection,tap:binding.tap,from:"2026-10-16T12:12:00Z",to:"2026-10-16T12:28:00Z"};
+ const collection={id:"native-working-set",created:1,selection:query,parameters:{},range:"custom",from:query.from,to:query.to};
+ await current.run({kind:"begin",collection,token:"native"});
+ for(let n=0;n<2;n++){
+  const replies=await current.run({kind:"events",selection:query,collection:collection.id,token:"native"});
+  assert.equal(replies.filter(r=>r.kind==="batch").length,0);
+  const page=replies.find(r=>r.kind==="native-batch").page;
+  assert.equal(page.rows.length,16);assert.equal(page.population.length,19);
+  assert.ok(replies.some(r=>r.kind==="native-source"));
+ }
+ assert.equal(requests,2);
+ const second=tab(workerService(module,async()=>{throw Error("offline restore attempted network")},archive),t);
+ const restored=await second.run({kind:"restore",collection:collection.id,token:"native"});
+ assert.equal(restored.filter(r=>r.kind==="native-batch").length,1);
+ assert.equal(restored.find(r=>r.kind==="collection").collection.id,collection.id);
+});
+
+test("native worker delivers provisional hours in memory without claiming persistent event coverage",async t=>{
+ const native=readFileSync(new URL("./fixtures/pac-storage/native-open.pil",import.meta.url));
+ const live=readFileSync(new URL("./fixtures/pac-storage/live-open.pil",import.meta.url));
+ const definitions=new Map(),records=[];
+ const parser=new PILStream(new Codec(await WebAssembly.instantiate(await module)),new Map(),d=>definitions.set(d.digest,d),()=>{},async()=>{},async r=>records.push(r));
+ await parser.feed(native);parser.finish();parser.close();
+ const binding=records[0].binding,d=definitions.get(binding.digest),hash=Uint8Array.from(Buffer.from(binding.digest,"hex"));
+ const schemas=bytes(magic,[1],frame([3,3,3],[hash,d.store,d.pil]),[2],frame([2,3,3],[le(binding.stream,4),hash,new TextEncoder().encode(binding.tap)]),[255,254]);
+ const backend=new Backend(),store=new NativeStore(backend),sessions=new Map(),calls=[];
+ const archive=async(token,c)=>{
+  calls.push(c.kind);
+  switch(c.kind){
+   case "definitions":return {definitions:await store.definitions()};
+   case "remember":return {};
+   case "native-begin":sessions.set(c.session,store.begin());return {};
+   case "native-coverage":return {nativeCoverage:await store.coverage(c.tap)};
+   case "native-record":await store.record(sessions.get(c.session),c.record,c.definition);return {};
+   case "native-finish":{const session=sessions.get(c.session);await store.finish(session);return {nativeSources:[...new Set(session.packages.map(p=>p.key))]};}
+   case "native-abort":sessions.delete(c.session);return {};
+   case "native-dependencies":return {nativeDependencies:await store.dependencies(c.source)};
+   case "native-page":return {nativePage:await store.page(c.source,c.from,c.to,c.after,c.limit)};
+   default:throw Error(`unexpected persistence of provisional data: ${c.kind}`);
+  }
+ };
+ const requests=[];
+ const fetcher=async url=>{
+  requests.push(url);
+  const headers={"Content-Type":"application/pil","PIL-Version":"2","Definition-Version":binding.digest,"Trunk-Completion":"body","Trunk-Features":"native-ranges"};
+  if(url==="/schemas")return new Response(schemas,{headers});
+  if(url.includes("format=native"))return new Response(native,{headers:{...headers,"Trunk-Format":"native-pac/0"}});
+  assert.match(url,/from=2026-10-19T12/);return new Response(live,{headers});
+ };
+ const client=tab(workerService(module,fetcher,archive),t);
+ await client.run({kind:"schemas",tap:binding.tap,token:""});
+ const query={...selection,tap:binding.tap,from:"2026-10-19T12:00:00Z",to:"2026-10-19T13:00:00Z"};
+ const replies=await client.run({kind:"events",selection:query,collection:"live",token:""});
+ assert.equal(replies.filter(r=>r.kind==="batch").reduce((n,r)=>n+r.batch.rows.length/3,0),2);
+ assert.equal(requests.length,3);
+ assert.ok(!calls.includes("save")&&!calls.includes("finish")&&!calls.includes("lookup"));
+ for(const source of await backend.list()){assert.deepEqual(source.index,[]);assert.deepEqual(source.population,[]);}
+});
+
+test('view delivery completes independently of failed durable cache storage',async t=>{
+ const raw=readFileSync(new URL('./fixtures/pac-view/cold.pil',import.meta.url));
+ const storage=[];
+ const archive=async(token,command)=>{
+  storage.push(command.kind);
+  if(command.kind==='definitions')return {definitions:[]};
+  throw Error('disk quota exhausted');
+ };
+ const fetcher=async url=>{
+  assert.match(url,/^\/events\?/);
+  const r=response(raw,'a'.repeat(64));r.headers.set('Trunk-Format','pac-view/0');return r;
+ };
+ const client=tab(workerService(module,fetcher,archive),t);
+ const replies=await client.run({kind:'view',token:'auth',query:{tap:'demo/payment/transactions.v1/write',from:'2026-09-01T12:00:00Z',to:'2026-09-01T14:00:00Z',size:2}});
+ const view=replies.find(r=>r.kind==='view').view;
+ assert.equal(view.result.page.length,2);assert.equal(replies.at(-1).kind,'done');
+ assert.deepEqual(storage,['definitions']);
+ await assert.rejects(client.run({kind:'persist-view',token:'auth',definitions:view.definitions,bindings:view.bindings}),/disk quota/);
+ assert.equal(view.batch.rows.length,6,'persistence failure does not remove the delivered page');
 });

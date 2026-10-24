@@ -76,3 +76,22 @@ func TestTapsEmptyAndReadFailure(t *testing.T) {
 		t.Fatal(w.Code)
 	}
 }
+
+// New clients use /caches; older clients retain the original response key.
+func TestCachesCatalog(t *testing.T) {
+	h, err := New(t.TempDir(), "secret", nil, 1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer h.Close()
+	if err := os.Mkdir(filepath.Join(h.Root, "demo"), 0755); err != nil {
+		t.Fatal(err)
+	}
+	r := httptest.NewRequest("GET", "/caches", nil)
+	r.Header.Set("Authorization", "Bearer secret")
+	w := httptest.NewRecorder()
+	h.ServeHTTP(w, r)
+	if w.Code != 200 || w.Body.String() != "{\"caches\":[\"demo\"]}\n" {
+		t.Fatal(w.Code, w.Body.String())
+	}
+}

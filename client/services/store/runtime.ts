@@ -1,4 +1,5 @@
 import { StoreCodec, type FileIO } from "./wasm.ts";
+import { matchesSource } from "../source.ts";
 import { compile, type Metadata, type Binding } from "../pil/metadata.ts";
 import { read, span } from "../pil/layout.ts";
 import type { Command, ArchiveReply } from "./protocol.ts";
@@ -13,8 +14,12 @@ import {
   type Catalog,
   type SavedCollection,
 } from "./index.ts";
-import { directory, handle, bytes, immutable, recover } from "./files.ts";
-import { migrate } from "./legacy.ts";
+import { directory, handle, bytes, immutable, recover, entries } from "./files.ts";
+import { nativeFiles } from "./native-files.ts";
+import { Coverage } from "../coverage.ts";
+import type { NativeSession } from "./native.ts";
+import { conditions } from "./conditions.ts";
+export { conditions } from "./conditions.ts";
 
 const encoder = new TextEncoder(),
   decoder = new TextDecoder();
@@ -30,26 +35,6 @@ const hex = (b: ArrayBuffer | Uint8Array) =>
     .join("");
 const hash = async (b: Uint8Array) =>
   hex(await crypto.subtle.digest("SHA-256", b as Uint8Array<ArrayBuffer>));
-// Only the UI's explicit string equality controls are planned locally for now.
-// Unknown CLI-style expressions stay on the server, never get guessed.
-export function conditions(
-  selection: Selection,
-): [string, string][] | undefined {
-  if (!selection.where.length) return [];
-  if (selection.where.length !== 1) return undefined;
-  let rest = selection.where[0].trim();
-  const out: [string, string][] = [];
-  while (rest) {
-    const m =
-      /^(level|service|resource|operation)==("(?:[^"\\]|\\.)*")(?:\s+|$)/.exec(
-        rest,
-      );
-    if (!m) return undefined;
-    out.push([m[1], JSON.parse(m[2])]);
-    rest = rest.slice(m[0].length);
-  }
-  return out;
-}
 export function createArchive(modulePromise: Promise<WebAssembly.Module>) {
   const codecPromise = modulePromise.then((m) => StoreCodec.create(m));
   codecPromise.catch(() => {});
@@ -59,6 +44,7 @@ export function createArchive(modulePromise: Promise<WebAssembly.Module>) {
     { metadata: Metadata; mapping: ReturnType<typeof compile> }
   >();
   const databases = new Map<string, Promise<EventIndex>>();
+  const nativeSessions = new Map<string, NativeSession>();
   type Cursor = {
     namespace: string;
     collection: string;
@@ -211,7 +197,13 @@ export function createArchive(modulePromise: Promise<WebAssembly.Module>) {
     if (!db) {
       db = EventIndex.open(namespace).then(async (db) => {
         try {
-          await migrate(root, db, await codecPromise);
+          const reset = await db.get("state", "reset-resource-files");
+          if (reset) {
+            // Retry after interruption until every old file is removed, before
+            // publishing any new pointers under the upgraded index.
+            for await (const entry of entries(root)) await root.removeEntry(entry.name, {recursive:true});
+            await db.set("state", "reset-resource-files", false);
+          }
           return db;
         } catch (e) {
           db.close();
@@ -234,7 +226,7 @@ export function createArchive(modulePromise: Promise<WebAssembly.Module>) {
       bindings = new Map<string, Binding>(),
       taps = new Set<string>();
     for (const c of await db.all<Catalog>("catalogs")) {
-      if (selection?.tap && selection.tap !== c.tap) continue;
+      if (selection?.tap && !matchesSource(selection.tap, c.tap)) continue;
       const cat = await catalog(root, c.key);
       bindings.set(c.key, {
         stream: bindings.size,
@@ -362,7 +354,7 @@ export function createArchive(modulePromise: Promise<WebAssembly.Module>) {
                 const position = cat.mapping.keys.indexOf(field.key),
                   state = span(frame, cat.mapping.definition, position).state;
                 const value =
-                  state === 0
+                  state === 0 && !cat.mapping.native
                     ? (
                         read(
                           frame,
@@ -423,6 +415,66 @@ export function createArchive(modulePromise: Promise<WebAssembly.Module>) {
     command: Command,
   ): Promise<ArchiveReply> {
     const { root, db } = await prepared(namespace);
+    if(command.kind==="native-rebase"){
+      const pil=await codecPromise;
+      const store=nativeFiles(root,db);
+      await store.rebase(command.source);
+      await store.maintain().catch(error=>console.warn("Native storage cleanup:",error));
+      return {};
+    }
+    if (command.kind==="native-begin"||command.kind==="native-record"||command.kind==="native-finish"||command.kind==="native-abort"||command.kind==="native-coverage"||command.kind==="native-dependencies"||command.kind==="native-page"||command.kind==="native-object-state") {
+      const pil=await codecPromise;
+      const store=nativeFiles(root,db);
+      if(command.kind==="native-coverage")return {nativeCoverage:await store.coverage(command.tap)};
+      if(command.kind==="native-object-state")return {nativeObjectState:await store.objectState(command.query)};
+      if(command.kind==="native-dependencies")return {nativeDependencies:await store.dependencies(command.source)};
+      if(command.kind==="native-page")return {nativePage:await store.page(command.source,command.from,command.to,command.after,command.limit)};
+      if("session" in command){
+        const key=namespace+":"+command.session;
+        if(command.kind==="native-begin"){
+          // Retired metadata is already authoritative. A failed cleanup only
+          // retains unreachable bytes and can be retried on the next request.
+          await store.maintain().catch(error=>console.warn("Native storage cleanup:",error));
+          if(nativeSessions.has(key))throw Error("Native response already open");
+          if(nativeSessions.size>=128)throw Error("Too many native responses");
+          nativeSessions.set(key,store.begin(await store.serial()));return {};
+        }
+        if(command.kind==="native-abort"){nativeSessions.delete(key);return {};}
+        const session=nativeSessions.get(key);
+        if(!session)throw Error("Unknown native response");
+        if(command.kind==="native-record"){
+          await store.record(session,command.record,command.definition);return {};
+        }
+        if(command.kind==="native-finish"){
+          await store.finish(session);
+          await store.maintain().catch(error=>console.warn("Native storage cleanup:",error));
+          const sources=[...new Set(session.packages.map(p=>p.key))];
+          if(command.collection){
+            const saved=await db.get<SavedCollection>("collections",command.collection);
+            const selection=command.selection;
+            if(!saved||!selection||saved.scope!==scope(selection)||!selection.to)throw Error("Native collection scope changed");
+            const where=conditions(selection);
+            if(!where)throw Error("Unsupported native local predicate");
+            // Only finalized package intervals survive reload. Live tails are
+            // delivered separately in memory and must not certify disk coverage.
+            const next=session.packages.filter(p=>!p.manifest.Provisional&&!p.manifest.TimeRetired).map(p=>({source:p.key,
+              from:Math.max(Date.parse(selection.from),p.manifest.From*1000),
+              to:Math.min(Date.parse(selection.to!),p.manifest.To*1000),where})).filter(p=>p.from<p.to);
+            const unique=new Map((saved.native??[]).map(v=>[JSON.stringify(v),v]));
+            for(const item of next)unique.set(JSON.stringify(item),item);
+            saved.native=[...unique.values()];
+            // UI restoration describes the retained working set. Immutable range
+            // coverage and provisional status remain in native source metadata.
+            const coverage=new Coverage();
+            for(const item of saved.native)coverage.add({from:item.from,to:item.to});
+            saved.coverage=[...coverage.intervals()];
+            await db.set("collections",command.collection,saved);
+          }
+          nativeSessions.delete(key);return {nativeSources:sources};
+        }
+      }
+      throw Error("Unknown native command");
+    }
     if (command.kind === "definitions") {
       const definitions: Metadata[] = [];
       for (const c of await db.all<Catalog>("catalogs")) {
@@ -430,6 +482,8 @@ export function createArchive(modulePromise: Promise<WebAssembly.Module>) {
         if (!definitions.some((d) => d.digest === c.digest))
           definitions.push(cat.metadata);
       }
+      for(const metadata of await nativeFiles(root,db).definitions())
+        if(!definitions.some(d=>d.digest===metadata.digest))definitions.push(metadata);
       return { definitions };
     }
     if (command.kind === "remember") {
@@ -589,6 +643,7 @@ export function createArchive(modulePromise: Promise<WebAssembly.Module>) {
         ...(await openCursor(namespace, root, db, saved.collection.id)),
         collection: saved.collection,
         coverage: saved.coverage,
+        nativeSelections: saved.native ? await nativeFiles(root,db).activeSelections(saved.native) : undefined,
       };
     }
     const cursor = cursors.get(command.cursor);

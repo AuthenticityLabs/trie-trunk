@@ -1,0 +1,10 @@
+    Finished `release` profile [optimized] target(s) in 0.19s
+     Running unittests src/tantivy.rs (rust/target/release/deps/trunk_tantivy-e5977a037979f011)
+
+running 3 tests
+test address_tradeoff_test::compare_address_layouts ... ignored, controlled storage/latency experiment; TRUNK_ADDRESS_BENCH required
+test tests::prefix_does_not_silently_truncate_matching_terms ... ok
+test tests::text_modes_respect_values_and_do_not_store_payloads ... ok
+
+test result: ok. 2 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.03s
+

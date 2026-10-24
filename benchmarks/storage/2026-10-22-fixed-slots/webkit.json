@@ -1,0 +1,537 @@
+{
+  "engine": "webkit",
+  "version": "26.5",
+  "platform": "darwin",
+  "arch": "arm64",
+  "results": [
+    {
+      "case": {
+        "name": "pac-1MiB-seek",
+        "stride": 1048576,
+        "payload": 16384,
+        "slots": 32,
+        "groups": [
+          [
+            31,
+            1
+          ],
+          [
+            0,
+            1
+          ],
+          [
+            7,
+            1
+          ],
+          [
+            15,
+            1
+          ]
+        ],
+        "seek": true
+      },
+      "before": {
+        "usage": 0,
+        "quota": 20615843021
+      },
+      "reserved": {
+        "usage": 0,
+        "quota": 20615843021
+      },
+      "closed": {
+        "usage": 33554432,
+        "quota": 20615843021
+      },
+      "logical": 32522230,
+      "writeFlushMs": 10,
+      "records": 4,
+      "dataBytes": 65516,
+      "disk": [],
+      "restart": {
+        "verified": 4,
+        "reopened": {
+          "usage": 32522230,
+          "quota": 20615843021
+        },
+        "headerReadUs": 3
+      }
+    },
+    {
+      "case": {
+        "name": "pac-16MiB-seek",
+        "stride": 16777216,
+        "payload": 16384,
+        "slots": 32,
+        "groups": [
+          [
+            31,
+            1
+          ],
+          [
+            0,
+            1
+          ],
+          [
+            7,
+            1
+          ],
+          [
+            15,
+            1
+          ]
+        ],
+        "seek": true
+      },
+      "before": {
+        "usage": 0,
+        "quota": 20615843021
+      },
+      "reserved": {
+        "usage": 0,
+        "quota": 20615843021
+      },
+      "closed": {
+        "usage": 536870912,
+        "quota": 20615843021
+      },
+      "logical": 520110070,
+      "writeFlushMs": 2,
+      "records": 4,
+      "dataBytes": 65516,
+      "disk": [],
+      "restart": {
+        "verified": 4,
+        "reopened": {
+          "usage": 520110070,
+          "quota": 20615843021
+        },
+        "headerReadUs": 1.5
+      }
+    },
+    {
+      "case": {
+        "name": "pac-64MiB-seek",
+        "stride": 67108864,
+        "payload": 16384,
+        "slots": 32,
+        "groups": [
+          [
+            31,
+            1
+          ],
+          [
+            0,
+            1
+          ],
+          [
+            7,
+            1
+          ],
+          [
+            15,
+            1
+          ]
+        ],
+        "seek": true
+      },
+      "before": {
+        "usage": 0,
+        "quota": 20615843021
+      },
+      "reserved": {
+        "usage": 0,
+        "quota": 20615843021
+      },
+      "closed": {
+        "usage": 2147483648,
+        "quota": 20615843021
+      },
+      "logical": 2080391158,
+      "writeFlushMs": 2,
+      "records": 4,
+      "dataBytes": 65516,
+      "disk": [],
+      "restart": {
+        "verified": 4,
+        "reopened": {
+          "usage": 2080391158,
+          "quota": 20615843021
+        },
+        "headerReadUs": 1.5
+      }
+    },
+    {
+      "case": {
+        "name": "pac-1MiB",
+        "stride": 1048576,
+        "payload": 16384,
+        "slots": 32,
+        "groups": [
+          [
+            31,
+            1
+          ],
+          [
+            0,
+            1
+          ],
+          [
+            7,
+            1
+          ],
+          [
+            15,
+            1
+          ]
+        ]
+      },
+      "before": {
+        "usage": 0,
+        "quota": 20615843021
+      },
+      "reserved": {
+        "usage": 67108864,
+        "quota": 20615843021
+      },
+      "closed": {
+        "usage": 67108864,
+        "quota": 20615843021
+      },
+      "logical": 33554432,
+      "writeFlushMs": 9,
+      "records": 4,
+      "dataBytes": 65516,
+      "disk": [],
+      "restart": {
+        "verified": 4,
+        "reopened": {
+          "usage": 33554432,
+          "quota": 20615843021
+        },
+        "headerReadUs": 1.5
+      }
+    },
+    {
+      "case": {
+        "name": "pac-16MiB",
+        "stride": 16777216,
+        "payload": 16384,
+        "slots": 32,
+        "groups": [
+          [
+            31,
+            1
+          ],
+          [
+            0,
+            1
+          ],
+          [
+            7,
+            1
+          ],
+          [
+            15,
+            1
+          ]
+        ]
+      },
+      "before": {
+        "usage": 0,
+        "quota": 20615843021
+      },
+      "reserved": {
+        "usage": 671088640,
+        "quota": 20615843021
+      },
+      "closed": {
+        "usage": 671088640,
+        "quota": 20615843021
+      },
+      "logical": 536870912,
+      "writeFlushMs": 6,
+      "records": 4,
+      "dataBytes": 65516,
+      "disk": [],
+      "restart": {
+        "verified": 4,
+        "reopened": {
+          "usage": 536870912,
+          "quota": 20615843021
+        },
+        "headerReadUs": 2
+      }
+    },
+    {
+      "case": {
+        "name": "pac-64MiB",
+        "stride": 67108864,
+        "payload": 16384,
+        "slots": 32,
+        "groups": [
+          [
+            31,
+            1
+          ],
+          [
+            0,
+            1
+          ],
+          [
+            7,
+            1
+          ],
+          [
+            15,
+            1
+          ]
+        ]
+      },
+      "before": {
+        "usage": 0,
+        "quota": 20615843021
+      },
+      "reserved": {
+        "usage": 2281701376,
+        "quota": 20615843021
+      },
+      "closed": {
+        "usage": 2281701376,
+        "quota": 20615843021
+      },
+      "logical": 2147483648,
+      "writeFlushMs": 6,
+      "records": 4,
+      "dataBytes": 65516,
+      "disk": [],
+      "restart": {
+        "verified": 4,
+        "reopened": {
+          "usage": 2147483648,
+          "quota": 20615843021
+        },
+        "headerReadUs": 1.5
+      }
+    },
+    {
+      "case": {
+        "name": "records-128B-dense",
+        "stride": 128,
+        "payload": 80,
+        "slots": 4096,
+        "groups": [
+          [
+            0,
+            4096
+          ]
+        ]
+      },
+      "before": {
+        "usage": 0,
+        "quota": 20615843021
+      },
+      "reserved": {
+        "usage": 1048576,
+        "quota": 20615843021
+      },
+      "closed": {
+        "usage": 1048576,
+        "quota": 20615843021
+      },
+      "logical": 524288,
+      "writeFlushMs": 12,
+      "records": 4096,
+      "dataBytes": 311304,
+      "disk": [],
+      "restart": {
+        "verified": 4096,
+        "reopened": {
+          "usage": 524288,
+          "quota": 20615843021
+        },
+        "headerReadUs": 1
+      }
+    },
+    {
+      "case": {
+        "name": "records-512B-dense",
+        "stride": 512,
+        "payload": 80,
+        "slots": 4096,
+        "groups": [
+          [
+            0,
+            4096
+          ]
+        ]
+      },
+      "before": {
+        "usage": 0,
+        "quota": 20615843021
+      },
+      "reserved": {
+        "usage": 4194304,
+        "quota": 20615843021
+      },
+      "closed": {
+        "usage": 4194304,
+        "quota": 20615843021
+      },
+      "logical": 2097152,
+      "writeFlushMs": 13,
+      "records": 4096,
+      "dataBytes": 311304,
+      "disk": [],
+      "restart": {
+        "verified": 4096,
+        "reopened": {
+          "usage": 2097152,
+          "quota": 20615843021
+        },
+        "headerReadUs": 1
+      }
+    },
+    {
+      "case": {
+        "name": "records-4KiB-dense",
+        "stride": 4096,
+        "payload": 80,
+        "slots": 4096,
+        "groups": [
+          [
+            0,
+            4096
+          ]
+        ]
+      },
+      "before": {
+        "usage": 0,
+        "quota": 20615843021
+      },
+      "reserved": {
+        "usage": 33554432,
+        "quota": 20615843021
+      },
+      "closed": {
+        "usage": 33554432,
+        "quota": 20615843021
+      },
+      "logical": 16777216,
+      "writeFlushMs": 18,
+      "records": 4096,
+      "dataBytes": 311304,
+      "disk": [],
+      "restart": {
+        "verified": 4096,
+        "reopened": {
+          "usage": 16777216,
+          "quota": 20615843021
+        },
+        "headerReadUs": 1.5
+      }
+    },
+    {
+      "case": {
+        "name": "records-4KiB-fragmented",
+        "stride": 4096,
+        "payload": 80,
+        "slots": 65536,
+        "groups": [
+          [
+            65408,
+            128
+          ],
+          [
+            0,
+            128
+          ],
+          [
+            16384,
+            128
+          ],
+          [
+            32768,
+            128
+          ]
+        ]
+      },
+      "before": {
+        "usage": 0,
+        "quota": 20615843021
+      },
+      "reserved": {
+        "usage": 402653184,
+        "quota": 20615843021
+      },
+      "closed": {
+        "usage": 402653184,
+        "quota": 20615843021
+      },
+      "logical": 268435456,
+      "writeFlushMs": 5,
+      "records": 512,
+      "dataBytes": 38896,
+      "disk": [],
+      "restart": {
+        "verified": 512,
+        "reopened": {
+          "usage": 268435456,
+          "quota": 20615843021
+        },
+        "headerReadUs": 1.5
+      }
+    },
+    {
+      "case": {
+        "name": "pac-16MiB-zero-control",
+        "stride": 16777216,
+        "payload": 16384,
+        "slots": 32,
+        "groups": [
+          [
+            31,
+            1
+          ],
+          [
+            0,
+            1
+          ],
+          [
+            7,
+            1
+          ],
+          [
+            15,
+            1
+          ]
+        ],
+        "zero": true
+      },
+      "before": {
+        "usage": 0,
+        "quota": 20615843021
+      },
+      "reserved": {
+        "usage": 536870912,
+        "quota": 20615843021
+      },
+      "closed": {
+        "usage": 536870912,
+        "quota": 20615843021
+      },
+      "logical": 536870912,
+      "writeFlushMs": 74,
+      "records": 4,
+      "dataBytes": 65516,
+      "disk": [],
+      "restart": {
+        "verified": 4,
+        "reopened": {
+          "usage": 536870912,
+          "quota": 20615843021
+        },
+        "headerReadUs": 1.5
+      }
+    }
+  ]
+}

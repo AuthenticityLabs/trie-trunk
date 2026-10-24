@@ -12,8 +12,15 @@ import (
 	"trie-trunk/go/server/store"
 )
 
+type ReceiverStore interface {
+	FindRevision(codec.Revision) (codec.Revision, bool)
+	Install(codec.Revision, []byte) error
+	Append(codec.Revision, []byte) (bool, error)
+	Flush() error
+}
+
 type Handler struct {
-	Store   *store.Manager
+	Store   ReceiverStore
 	Timeout time.Duration
 	OnError func(error)
 }

@@ -1,0 +1,3 @@
+case,write_ms,sampled_reads,p50_ns,p95_ns,p99_ns,max_ns
+cow_readers_during_write,936.854,1023232,1625,2916,5458,376166
+baseline_readers_during_write,729.748,1478,2875,4959,95667,398628667

@@ -1,4 +1,4 @@
-import type { Collection } from "./protocol.ts";
+import type { Collection, NativeSelection } from "./protocol.ts";
 import type { Selection } from "../events.ts";
 import { Coverage, type Interval } from "../coverage.ts";
 
@@ -10,6 +10,7 @@ export type SavedCollection = {
   collection: Collection;
   scope: string;
   coverage: Interval[];
+  native?: NativeSelection[];
 };
 export const scope = (s: Selection) =>
   JSON.stringify([s.tap, [...s.where].sort()]);
@@ -29,10 +30,14 @@ export class EventIndex {
   private constructor(db: IDBDatabase) { this.db = db; }
   static open(namespace: string): Promise<EventIndex> {
     return new Promise((resolve, reject) => {
-      const request = indexedDB.open(`snoot-events-${namespace}`, 1);
+      const request = indexedDB.open(`snoot-events-${namespace}`, 2);
       let blocked = false;
-      request.onupgradeneeded = () => {
+      request.onupgradeneeded = event => {
+        // Disposable pre-resource test data: invalidate pointers and coverage
+        // together. The separate snoot preferences database is untouched.
+        for (const name of Array.from(request.result.objectStoreNames)) request.result.deleteObjectStore(name);
         for (const name of stores) request.result.createObjectStore(name);
+        if (event.oldVersion > 0) request.transaction!.objectStore("state").put(true, "reset-resource-files");
       };
       request.onerror = () => reject(request.error);
       request.onblocked = () => {
@@ -203,7 +208,7 @@ export class EventIndex {
   async missing(selection: Selection, now: number) {
     const coverage = new Coverage();
     for (const saved of await this.all<SavedCollection>("collections"))
-      if (saved.scope === scope(selection))
+      if (!saved.native && saved.scope === scope(selection))
         for (const r of saved.coverage)
           coverage.add({ from: r.from, to: Math.min(r.to, now - 900_000) });
     return coverage.missing({

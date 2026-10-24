@@ -1,0 +1,14 @@
+    Finished `release` profile [optimized] target(s) in 0.01s
+     Running `rust/uuid-index/target/release/examples/slotted_measure 1000000`
+v7 objects=1000000 reopen_ms=31.759 seed_bytes=49600000
+random objects=1000000 reopen_ms=35.729 seed_bytes=49600000
+pointer_scan revisions=1 method=mixed ns=6.18 probes=1.80
+pointer_scan revisions=1 method=derived_starts ns=6.51 probes=0.00
+pointer_scan revisions=5 method=mixed ns=6.71 probes=3.00
+pointer_scan revisions=5 method=derived_starts ns=6.46 probes=0.00
+pointer_scan revisions=61 method=mixed ns=13.06 probes=14.20
+pointer_scan revisions=61 method=derived_starts ns=6.44 probes=0.00
+pointer_scan revisions=241 method=mixed ns=38.97 probes=51.00
+pointer_scan revisions=241 method=derived_starts ns=6.69 probes=0.00
+pointer_scan revisions=481 method=mixed ns=77.80 probes=99.00
+pointer_scan revisions=481 method=derived_starts ns=6.70 probes=0.00

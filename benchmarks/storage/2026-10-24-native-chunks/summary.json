@@ -1,0 +1,218 @@
+{
+  "BenchmarkNativeIngressChunks/value=78/events=1/go-10": {
+    "ns/op": 124.9,
+    "Go B/op": 216.0,
+    "Go allocs/op": 3.0,
+    "samples": 5
+  },
+  "BenchmarkNativeIngressChunks/value=78/events=1/native-record-10": {
+    "ns/op": 376.5,
+    "Go B/op": 48.0,
+    "Go allocs/op": 1.0,
+    "samples": 5
+  },
+  "BenchmarkNativeIngressChunks/value=78/events=1/native-chunk-10": {
+    "ns/op": 93.67,
+    "Go B/op": 1.0,
+    "Go allocs/op": 0.0,
+    "samples": 5
+  },
+  "BenchmarkNativeIngressChunks/value=78/events=32/go-10": {
+    "ns/op": 4039.0,
+    "Go B/op": 6912.0,
+    "Go allocs/op": 96.0,
+    "samples": 5
+  },
+  "BenchmarkNativeIngressChunks/value=78/events=32/native-record-10": {
+    "ns/op": 12719.0,
+    "Go B/op": 1536.0,
+    "Go allocs/op": 32.0,
+    "samples": 5
+  },
+  "BenchmarkNativeIngressChunks/value=78/events=32/native-chunk-10": {
+    "ns/op": 2133.0,
+    "Go B/op": 32.0,
+    "Go allocs/op": 0.0,
+    "samples": 5
+  },
+  "BenchmarkNativeIngressChunks/value=78/events=1024/go-10": {
+    "ns/op": 125063.0,
+    "Go B/op": 221184.0,
+    "Go allocs/op": 3072.0,
+    "samples": 5
+  },
+  "BenchmarkNativeIngressChunks/value=78/events=1024/native-record-10": {
+    "ns/op": 389560.0,
+    "Go B/op": 49152.0,
+    "Go allocs/op": 1024.0,
+    "samples": 5
+  },
+  "BenchmarkNativeIngressChunks/value=78/events=1024/native-chunk-10": {
+    "ns/op": 64854.0,
+    "Go B/op": 988.0,
+    "Go allocs/op": 18.0,
+    "samples": 5
+  },
+  "BenchmarkNativeIngressChunks/value=4096/events=1/go-10": {
+    "ns/op": 673.7,
+    "Go B/op": 4936.0,
+    "Go allocs/op": 3.0,
+    "samples": 5
+  },
+  "BenchmarkNativeIngressChunks/value=4096/events=1/native-record-10": {
+    "ns/op": 567.1,
+    "Go B/op": 48.0,
+    "Go allocs/op": 1.0,
+    "samples": 5
+  },
+  "BenchmarkNativeIngressChunks/value=4096/events=1/native-chunk-10": {
+    "ns/op": 387.8,
+    "Go B/op": 39.0,
+    "Go allocs/op": 0.0,
+    "samples": 5
+  },
+  "BenchmarkNativeIngressChunks/value=4096/events=32/go-10": {
+    "ns/op": 21272.0,
+    "Go B/op": 157952.0,
+    "Go allocs/op": 96.0,
+    "samples": 5
+  },
+  "BenchmarkNativeIngressChunks/value=4096/events=32/native-record-10": {
+    "ns/op": 17780.0,
+    "Go B/op": 1536.0,
+    "Go allocs/op": 32.0,
+    "samples": 5
+  },
+  "BenchmarkNativeIngressChunks/value=4096/events=32/native-chunk-10": {
+    "ns/op": 11823.0,
+    "Go B/op": 1202.0,
+    "Go allocs/op": 22.0,
+    "samples": 5
+  },
+  "BenchmarkNativeIngressChunks/value=4096/events=1024/go-10": {
+    "ns/op": 646109.0,
+    "Go B/op": 5054499.0,
+    "Go allocs/op": 3072.0,
+    "samples": 5
+  },
+  "BenchmarkNativeIngressChunks/value=4096/events=1024/native-record-10": {
+    "ns/op": 575653.0,
+    "Go B/op": 49152.0,
+    "Go allocs/op": 1024.0,
+    "samples": 5
+  },
+  "BenchmarkNativeIngressChunks/value=4096/events=1024/native-chunk-10": {
+    "ns/op": 361088.0,
+    "Go B/op": 38237.0,
+    "Go allocs/op": 683.0,
+    "samples": 5
+  },
+  "BenchmarkNativeIngressChunks/value=65536/events=1/go-10": {
+    "ns/op": 7757.0,
+    "Go B/op": 73928.0,
+    "Go allocs/op": 4.0,
+    "samples": 5
+  },
+  "BenchmarkNativeIngressChunks/value=65536/events=1/native-record-10": {
+    "ns/op": 3871.0,
+    "Go B/op": 48.0,
+    "Go allocs/op": 1.0,
+    "samples": 5
+  },
+  "BenchmarkNativeIngressChunks/value=65536/events=1/native-chunk-10": {
+    "ns/op": 3673.0,
+    "Go B/op": 112.0,
+    "Go allocs/op": 2.0,
+    "samples": 5
+  },
+  "BenchmarkNativeIngressChunks/value=65536/events=32/go-10": {
+    "ns/op": 230889.0,
+    "Go B/op": 2365721.0,
+    "Go allocs/op": 128.0,
+    "samples": 5
+  },
+  "BenchmarkNativeIngressChunks/value=65536/events=32/native-record-10": {
+    "ns/op": 120353.0,
+    "Go B/op": 1536.0,
+    "Go allocs/op": 32.0,
+    "samples": 5
+  },
+  "BenchmarkNativeIngressChunks/value=65536/events=32/native-chunk-10": {
+    "ns/op": 103115.0,
+    "Go B/op": 3592.0,
+    "Go allocs/op": 65.0,
+    "samples": 5
+  },
+  "BenchmarkNativeIngressChunks/value=65536/events=1024/go-10": {
+    "ns/op": 7428060.0,
+    "Go B/op": 75702979.0,
+    "Go allocs/op": 4100.0,
+    "samples": 5
+  },
+  "BenchmarkNativeIngressChunks/value=65536/events=1024/native-record-10": {
+    "ns/op": 3830440.0,
+    "Go B/op": 49152.0,
+    "Go allocs/op": 1024.0,
+    "samples": 5
+  },
+  "BenchmarkNativeIngressChunks/value=65536/events=1024/native-chunk-10": {
+    "ns/op": 3281301.0,
+    "Go B/op": 114697.0,
+    "Go allocs/op": 2049.0,
+    "samples": 5
+  },
+  "BenchmarkNativeIngressParallel/go-10": {
+    "ns/op": 78.52,
+    "Go B/op": 216.0,
+    "Go allocs/op": 3.0,
+    "samples": 5
+  },
+  "BenchmarkNativeIngressParallel/native-record-10": {
+    "ns/op": 1530.0,
+    "Go B/op": 48.0,
+    "Go allocs/op": 1.0,
+    "samples": 5
+  },
+  "BenchmarkNativeIngressParallel/native-chunk-10": {
+    "ns/op": 88.33,
+    "Go B/op": 1.0,
+    "Go allocs/op": 0.0,
+    "samples": 5
+  },
+  "BenchmarkNativeIngressSparse/fields=12/changed=1/go-10": {
+    "ns/op": 83.68,
+    "Go B/op": 56.0,
+    "Go allocs/op": 2.0,
+    "samples": 5
+  },
+  "BenchmarkNativeIngressSparse/fields=12/changed=1/native-record-10": {
+    "ns/op": 306.2,
+    "Go B/op": 48.0,
+    "Go allocs/op": 1.0,
+    "samples": 5
+  },
+  "BenchmarkNativeIngressSparse/fields=12/changed=1/native-chunk-10": {
+    "ns/op": 78.48,
+    "Go B/op": 0.0,
+    "Go allocs/op": 0.0,
+    "samples": 5
+  },
+  "BenchmarkNativeIngressSparse/fields=12/changed=2/go-10": {
+    "ns/op": 86.2,
+    "Go B/op": 72.0,
+    "Go allocs/op": 2.0,
+    "samples": 5
+  },
+  "BenchmarkNativeIngressSparse/fields=12/changed=2/native-record-10": {
+    "ns/op": 308.1,
+    "Go B/op": 48.0,
+    "Go allocs/op": 1.0,
+    "samples": 5
+  },
+  "BenchmarkNativeIngressSparse/fields=12/changed=2/native-chunk-10": {
+    "ns/op": 80.06,
+    "Go B/op": 0.0,
+    "Go allocs/op": 0.0,
+    "samples": 5
+  }
+}

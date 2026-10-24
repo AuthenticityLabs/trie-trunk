@@ -1,0 +1,146 @@
+[
+  {
+    "case": "dense50k",
+    "kind": "history",
+    "engine": "collection",
+    "us": 2.426,
+    "bytes": 0,
+    "allocs": 0
+  },
+  {
+    "case": "dense50k",
+    "kind": "history",
+    "engine": "tantivy_native",
+    "us": 12.816,
+    "bytes": 79,
+    "allocs": 1
+  },
+  {
+    "case": "dense50k",
+    "kind": "revision7",
+    "engine": "collection",
+    "us": 2.381,
+    "bytes": 0,
+    "allocs": 0
+  },
+  {
+    "case": "dense50k",
+    "kind": "revision7",
+    "engine": "tantivy_native",
+    "us": 9.927,
+    "bytes": 8,
+    "allocs": 1
+  },
+  {
+    "case": "dense50k",
+    "kind": "missing",
+    "engine": "collection",
+    "us": 2.392,
+    "bytes": 0,
+    "allocs": 0
+  },
+  {
+    "case": "dense50k",
+    "kind": "missing",
+    "engine": "tantivy_native",
+    "us": 7.122,
+    "bytes": 0,
+    "allocs": 0
+  },
+  {
+    "case": "dense250k",
+    "kind": "history",
+    "engine": "collection",
+    "us": 2.4,
+    "bytes": 0,
+    "allocs": 0
+  },
+  {
+    "case": "dense250k",
+    "kind": "history",
+    "engine": "tantivy_native",
+    "us": 21.214,
+    "bytes": 79,
+    "allocs": 1
+  },
+  {
+    "case": "dense250k",
+    "kind": "revision7",
+    "engine": "collection",
+    "us": 2.348,
+    "bytes": 0,
+    "allocs": 0
+  },
+  {
+    "case": "dense250k",
+    "kind": "revision7",
+    "engine": "tantivy_native",
+    "us": 18.351,
+    "bytes": 8,
+    "allocs": 1
+  },
+  {
+    "case": "dense250k",
+    "kind": "missing",
+    "engine": "collection",
+    "us": 2.353,
+    "bytes": 0,
+    "allocs": 0
+  },
+  {
+    "case": "dense250k",
+    "kind": "missing",
+    "engine": "tantivy_native",
+    "us": 15.409,
+    "bytes": 0,
+    "allocs": 0
+  },
+  {
+    "case": "dense50k",
+    "kind": "history",
+    "engine": "tantivy_cancelable",
+    "us": 13.175,
+    "bytes": 343,
+    "allocs": 5
+  },
+  {
+    "case": "dense50k",
+    "kind": "revision7",
+    "engine": "tantivy_cancelable",
+    "us": 9.911,
+    "bytes": 272,
+    "allocs": 5
+  },
+  {
+    "case": "dense50k",
+    "kind": "missing",
+    "engine": "tantivy_cancelable",
+    "us": 7.575,
+    "bytes": 264,
+    "allocs": 4
+  },
+  {
+    "case": "dense250k",
+    "kind": "history",
+    "engine": "tantivy_cancelable",
+    "us": 21.966,
+    "bytes": 343,
+    "allocs": 5
+  },
+  {
+    "case": "dense250k",
+    "kind": "revision7",
+    "engine": "tantivy_cancelable",
+    "us": 18.498,
+    "bytes": 272,
+    "allocs": 5
+  },
+  {
+    "case": "dense250k",
+    "kind": "missing",
+    "engine": "tantivy_cancelable",
+    "us": 15.395,
+    "bytes": 264,
+    "allocs": 4
+  }
+]

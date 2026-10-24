@@ -1,0 +1,66 @@
+{
+  "events": 50000,
+  "results": {
+    "full-pil": {
+      "allocated_bytes": 1232232,
+      "allocations": 185,
+      "latency": {
+        "samples_ns": [
+          7755833,
+          7236625,
+          6705875,
+          6496250,
+          6508000,
+          5960417,
+          5873292,
+          5718250,
+          5940459
+        ],
+        "p50_ns": 6496250,
+        "p95_ns": 7755833
+      },
+      "response_bytes": 4288974
+    },
+    "page-100-and-summary": {
+      "allocated_bytes": 395912,
+      "allocations": 1260,
+      "latency": {
+        "samples_ns": [
+          355209,
+          349833,
+          364375,
+          364459,
+          354333,
+          345875,
+          352583,
+          359583,
+          359459
+        ],
+        "p50_ns": 355209,
+        "p95_ns": 364459
+      },
+      "response_bytes": 20725
+    },
+    "summary-only": {
+      "allocated_bytes": 241928,
+      "allocations": 168,
+      "latency": {
+        "samples_ns": [
+          224292,
+          195666,
+          211333,
+          193042,
+          197209,
+          195791,
+          185500,
+          186958,
+          186042
+        ],
+        "p50_ns": 195666,
+        "p95_ns": 224292
+      },
+      "response_bytes": 1363
+    }
+  },
+  "scope": "same Go handler, temporary store, warm OS cache, cached definitions, range-sized integers except U64 duration required by aggregate role; standard aggregates enabled, nuts.idx disabled; no network, compression, rendering or ingestion timing"
+}

@@ -1,8 +1,16 @@
+import type { ViewQuery, ViewResponse } from "./view.ts";
 import type { Collection } from "../store/protocol.ts";
 import type { Selection } from "../events.ts";
 import type { Metadata, Binding } from "./metadata.ts";
 import type { Batch } from "./stream.ts";
+import type { NativePage } from "../store/native.ts";
+import type { HistoryQuery, ObservedState } from "../replay.ts";
 export type Request =
+  | { id:number; kind:"persist-view"; definitions:Metadata[]; bindings:Binding[]; token:string }
+  | { id:number; kind:"remember-view"; view:ViewResponse; token:string }
+  | { id:number; kind:"view"; query:ViewQuery; token:string }
+  | { id:number; kind:"rebase"; source:string; token:string }
+  | { id: number; kind: "history"; query: HistoryQuery; token: string }
   | { id: number; kind: "schemas"; tap: string; token: string }
   | {
       id: number;
@@ -17,6 +25,10 @@ export type Request =
   | { id: number; kind: "ack" }
   | { kind: "close" };
 export type Reply =
+  | { id:number; kind:"view"; view:ViewResponse }
+  | { id: number; kind: "history-state"; state: ObservedState }
+  | { id:number; kind:"native-source"; source:string; definition:Metadata; binding:Binding; trie:{start:number;bytes:Uint8Array}[] }
+  | { id:number; kind:"native-batch"; source:string; page:NativePage; where:[string,string][] }
   | {
       id: number;
       kind: "collection";

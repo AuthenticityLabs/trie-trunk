@@ -1,0 +1,22 @@
+vite v8.3.1 building client environment for production...
+transforming...
+✓ 1795 modules transformed.
+rendering chunks...
+computing gzip size...
+../../../../../../tmp/trunk-summary-numeric-web/index.html                                        0.63 kB │ gzip:   0.37 kB
+../../../../../../tmp/trunk-summary-numeric-web/assets/worker-DcOMH1Za.js                        63.08 kB
+../../../../../../tmp/trunk-summary-numeric-web/assets/worker-DRMswEaE.js                        69.23 kB
+../../../../../../tmp/trunk-summary-numeric-web/assets/pil-CY-xp3vD.wasm                        169.31 kB │ gzip:  75.98 kB
+../../../../../../tmp/trunk-summary-numeric-web/assets/trunk-store-BTvAhPqf.wasm                362.82 kB │ gzip: 141.27 kB
+../../../../../../tmp/trunk-summary-numeric-web/assets/snoot-wordmark-DeRMuDdQ.png              431.05 kB
+../../../../../../tmp/trunk-summary-numeric-web/assets/snoot-8ly7wRof.png                       818.61 kB
+../../../../../../tmp/trunk-summary-numeric-web/assets/snoot-forward-ChEmVSeb.png               862.96 kB
+../../../../../../tmp/trunk-summary-numeric-web/assets/snoot-portrait-TmF0sb38.png            1,059.81 kB
+../../../../../../tmp/trunk-summary-numeric-web/assets/index-CVLKwp0C.css                        50.93 kB │ gzip:  11.33 kB
+../../../../../../tmp/trunk-summary-numeric-web/assets/research-DMGAA3YP.js                      16.26 kB │ gzip:   5.96 kB
+../../../../../../tmp/trunk-summary-numeric-web/assets/dashboard-DP-pkcZC.js                     61.85 kB │ gzip:  18.29 kB
+../../../../../../tmp/trunk-summary-numeric-web/assets/calendar-DMndwY04.js                     138.57 kB │ gzip:  43.75 kB
+../../../../../../tmp/trunk-summary-numeric-web/assets/index-CQyUvvOG.js                        366.43 kB │ gzip: 122.61 kB
+../../../../../../tmp/trunk-summary-numeric-web/assets/an-array-of-english-words-fJL19bjB.js  3,362.60 kB │ gzip: 756.22 kB
+
+✓ built in 800ms

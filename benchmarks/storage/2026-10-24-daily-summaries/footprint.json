@@ -1,0 +1,2804 @@
+{
+  "all_resources_day_min_median_max_bytes": [
+    7082,
+    21813,
+    22951
+  ],
+  "logical_bytes_by_extension": {
+    ".cfg": 400,
+    ".fast": 247858,
+    ".fieldnorm": 2585835,
+    ".idx": 2494848,
+    ".journal": 2534608,
+    ".json": 326508,
+    ".lock": 0,
+    ".map": 4977,
+    ".pods": 4405051,
+    ".pos": 119711,
+    ".seed": 2200,
+    ".state": 84402,
+    ".stats": 3380,
+    ".store": 213814,
+    ".sum": 795087,
+    ".term": 1026015,
+    ".tri": 3572460
+  },
+  "manifest": {
+    "Synthetic": true,
+    "Cache": "demo",
+    "Tenant": "local",
+    "From": "2026-09-20T18:41:34Z",
+    "To": "2026-10-20T18:41:34Z",
+    "Events": 50000,
+    "Resources": [
+      {
+        "Resource": "gateway/routes",
+        "Events": 10000,
+        "Branches": {
+          "debug": 200,
+          "error": 286,
+          "read": 3150,
+          "trace": 130,
+          "write": 6234
+        }
+      },
+      {
+        "Resource": "billing/invoices",
+        "Events": 10000,
+        "Branches": {
+          "debug": 200,
+          "error": 291,
+          "read": 3149,
+          "trace": 131,
+          "write": 6229
+        }
+      },
+      {
+        "Resource": "vault/secrets",
+        "Events": 10000,
+        "Branches": {
+          "debug": 199,
+          "error": 293,
+          "read": 3149,
+          "trace": 130,
+          "write": 6229
+        }
+      },
+      {
+        "Resource": "worker/jobs",
+        "Events": 10000,
+        "Branches": {
+          "debug": 200,
+          "error": 291,
+          "read": 3151,
+          "trace": 130,
+          "write": 6228
+        }
+      },
+      {
+        "Resource": "payment/transactions",
+        "Events": 10000,
+        "Branches": {
+          "debug": 201,
+          "error": 287,
+          "read": 3149,
+          "trace": 131,
+          "write": 6232
+        }
+      }
+    ]
+  },
+  "open_hour_chunks": 221,
+  "open_hour_framed_bytes": 146714,
+  "packet_min_median_max_bytes": [
+    164,
+    1519,
+    2560
+  ],
+  "packets": [
+    {
+      "source": "demo/billing/invoices.v1/0/error.sum",
+      "day_ms": 1789862400000,
+      "encoded_bytes": 174,
+      "decoded_bytes": 551
+    },
+    {
+      "source": "demo/billing/invoices.v1/0/error.sum",
+      "day_ms": 1789948800000,
+      "encoded_bytes": 583,
+      "decoded_bytes": 3402
+    },
+    {
+      "source": "demo/billing/invoices.v1/0/error.sum",
+      "day_ms": 1790035200000,
+      "encoded_bytes": 480,
+      "decoded_bytes": 2592
+    },
+    {
+      "source": "demo/billing/invoices.v1/0/error.sum",
+      "day_ms": 1790121600000,
+      "encoded_bytes": 401,
+      "decoded_bytes": 2029
+    },
+    {
+      "source": "demo/billing/invoices.v1/0/error.sum",
+      "day_ms": 1790208000000,
+      "encoded_bytes": 365,
+      "decoded_bytes": 1782
+    },
+    {
+      "source": "demo/billing/invoices.v1/0/error.sum",
+      "day_ms": 1790294400000,
+      "encoded_bytes": 368,
+      "decoded_bytes": 1782
+    },
+    {
+      "source": "demo/billing/invoices.v1/0/error.sum",
+      "day_ms": 1790380800000,
+      "encoded_bytes": 393,
+      "decoded_bytes": 2027
+    },
+    {
+      "source": "demo/billing/invoices.v1/0/error.sum",
+      "day_ms": 1790467200000,
+      "encoded_bytes": 368,
+      "decoded_bytes": 1782
+    },
+    {
+      "source": "demo/billing/invoices.v1/0/error.sum",
+      "day_ms": 1790553600000,
+      "encoded_bytes": 576,
+      "decoded_bytes": 3274
+    },
+    {
+      "source": "demo/billing/invoices.v1/0/error.sum",
+      "day_ms": 1790640000000,
+      "encoded_bytes": 500,
+      "decoded_bytes": 2521
+    },
+    {
+      "source": "demo/billing/invoices.v1/0/error.sum",
+      "day_ms": 1790726400000,
+      "encoded_bytes": 396,
+      "decoded_bytes": 2029
+    },
+    {
+      "source": "demo/billing/invoices.v1/0/error.sum",
+      "day_ms": 1790812800000,
+      "encoded_bytes": 370,
+      "decoded_bytes": 1782
+    },
+    {
+      "source": "demo/billing/invoices.v1/0/error.sum",
+      "day_ms": 1790899200000,
+      "encoded_bytes": 367,
+      "decoded_bytes": 1782
+    },
+    {
+      "source": "demo/billing/invoices.v1/0/error.sum",
+      "day_ms": 1790985600000,
+      "encoded_bytes": 397,
+      "decoded_bytes": 2029
+    },
+    {
+      "source": "demo/billing/invoices.v1/0/error.sum",
+      "day_ms": 1791072000000,
+      "encoded_bytes": 361,
+      "decoded_bytes": 1782
+    },
+    {
+      "source": "demo/billing/invoices.v1/0/error.sum",
+      "day_ms": 1791158400000,
+      "encoded_bytes": 605,
+      "decoded_bytes": 3244
+    },
+    {
+      "source": "demo/billing/invoices.v1/0/error.sum",
+      "day_ms": 1791244800000,
+      "encoded_bytes": 550,
+      "decoded_bytes": 2853
+    },
+    {
+      "source": "demo/billing/invoices.v1/0/error.sum",
+      "day_ms": 1791331200000,
+      "encoded_bytes": 367,
+      "decoded_bytes": 1782
+    },
+    {
+      "source": "demo/billing/invoices.v1/0/error.sum",
+      "day_ms": 1791417600000,
+      "encoded_bytes": 366,
+      "decoded_bytes": 1782
+    },
+    {
+      "source": "demo/billing/invoices.v1/0/error.sum",
+      "day_ms": 1791504000000,
+      "encoded_bytes": 365,
+      "decoded_bytes": 1782
+    },
+    {
+      "source": "demo/billing/invoices.v1/0/error.sum",
+      "day_ms": 1791590400000,
+      "encoded_bytes": 394,
+      "decoded_bytes": 2029
+    },
+    {
+      "source": "demo/billing/invoices.v1/0/error.sum",
+      "day_ms": 1791676800000,
+      "encoded_bytes": 368,
+      "decoded_bytes": 1782
+    },
+    {
+      "source": "demo/billing/invoices.v1/0/error.sum",
+      "day_ms": 1791763200000,
+      "encoded_bytes": 607,
+      "decoded_bytes": 3331
+    },
+    {
+      "source": "demo/billing/invoices.v1/0/error.sum",
+      "day_ms": 1791849600000,
+      "encoded_bytes": 497,
+      "decoded_bytes": 2679
+    },
+    {
+      "source": "demo/billing/invoices.v1/0/error.sum",
+      "day_ms": 1791936000000,
+      "encoded_bytes": 365,
+      "decoded_bytes": 1782
+    },
+    {
+      "source": "demo/billing/invoices.v1/0/error.sum",
+      "day_ms": 1792022400000,
+      "encoded_bytes": 366,
+      "decoded_bytes": 1782
+    },
+    {
+      "source": "demo/billing/invoices.v1/0/error.sum",
+      "day_ms": 1792108800000,
+      "encoded_bytes": 362,
+      "decoded_bytes": 1782
+    },
+    {
+      "source": "demo/billing/invoices.v1/0/error.sum",
+      "day_ms": 1792195200000,
+      "encoded_bytes": 395,
+      "decoded_bytes": 2027
+    },
+    {
+      "source": "demo/billing/invoices.v1/0/error.sum",
+      "day_ms": 1792281600000,
+      "encoded_bytes": 360,
+      "decoded_bytes": 1782
+    },
+    {
+      "source": "demo/billing/invoices.v1/0/error.sum",
+      "day_ms": 1792368000000,
+      "encoded_bytes": 596,
+      "decoded_bytes": 3315
+    },
+    {
+      "source": "demo/billing/invoices.v1/0/read.sum",
+      "day_ms": 1789862400000,
+      "encoded_bytes": 551,
+      "decoded_bytes": 3721
+    },
+    {
+      "source": "demo/billing/invoices.v1/0/read.sum",
+      "day_ms": 1789948800000,
+      "encoded_bytes": 1498,
+      "decoded_bytes": 13019
+    },
+    {
+      "source": "demo/billing/invoices.v1/0/read.sum",
+      "day_ms": 1790035200000,
+      "encoded_bytes": 1482,
+      "decoded_bytes": 13066
+    },
+    {
+      "source": "demo/billing/invoices.v1/0/read.sum",
+      "day_ms": 1790121600000,
+      "encoded_bytes": 1599,
+      "decoded_bytes": 13667
+    },
+    {
+      "source": "demo/billing/invoices.v1/0/read.sum",
+      "day_ms": 1790208000000,
+      "encoded_bytes": 1507,
+      "decoded_bytes": 13454
+    },
+    {
+      "source": "demo/billing/invoices.v1/0/read.sum",
+      "day_ms": 1790294400000,
+      "encoded_bytes": 1513,
+      "decoded_bytes": 13327
+    },
+    {
+      "source": "demo/billing/invoices.v1/0/read.sum",
+      "day_ms": 1790380800000,
+      "encoded_bytes": 1601,
+      "decoded_bytes": 13667
+    },
+    {
+      "source": "demo/billing/invoices.v1/0/read.sum",
+      "day_ms": 1790467200000,
+      "encoded_bytes": 1493,
+      "decoded_bytes": 13240
+    },
+    {
+      "source": "demo/billing/invoices.v1/0/read.sum",
+      "day_ms": 1790553600000,
+      "encoded_bytes": 1545,
+      "decoded_bytes": 13106
+    },
+    {
+      "source": "demo/billing/invoices.v1/0/read.sum",
+      "day_ms": 1790640000000,
+      "encoded_bytes": 1585,
+      "decoded_bytes": 13493
+    },
+    {
+      "source": "demo/billing/invoices.v1/0/read.sum",
+      "day_ms": 1790726400000,
+      "encoded_bytes": 1501,
+      "decoded_bytes": 13327
+    },
+    {
+      "source": "demo/billing/invoices.v1/0/read.sum",
+      "day_ms": 1790812800000,
+      "encoded_bytes": 1541,
+      "decoded_bytes": 13367
+    },
+    {
+      "source": "demo/billing/invoices.v1/0/read.sum",
+      "day_ms": 1790899200000,
+      "encoded_bytes": 1555,
+      "decoded_bytes": 13627
+    },
+    {
+      "source": "demo/billing/invoices.v1/0/read.sum",
+      "day_ms": 1790985600000,
+      "encoded_bytes": 1556,
+      "decoded_bytes": 13454
+    },
+    {
+      "source": "demo/billing/invoices.v1/0/read.sum",
+      "day_ms": 1791072000000,
+      "encoded_bytes": 1486,
+      "decoded_bytes": 13414
+    },
+    {
+      "source": "demo/billing/invoices.v1/0/read.sum",
+      "day_ms": 1791158400000,
+      "encoded_bytes": 1573,
+      "decoded_bytes": 13279
+    },
+    {
+      "source": "demo/billing/invoices.v1/0/read.sum",
+      "day_ms": 1791244800000,
+      "encoded_bytes": 1495,
+      "decoded_bytes": 13019
+    },
+    {
+      "source": "demo/billing/invoices.v1/0/read.sum",
+      "day_ms": 1791331200000,
+      "encoded_bytes": 1530,
+      "decoded_bytes": 13414
+    },
+    {
+      "source": "demo/billing/invoices.v1/0/read.sum",
+      "day_ms": 1791417600000,
+      "encoded_bytes": 1570,
+      "decoded_bytes": 13580
+    },
+    {
+      "source": "demo/billing/invoices.v1/0/read.sum",
+      "day_ms": 1791504000000,
+      "encoded_bytes": 1518,
+      "decoded_bytes": 13327
+    },
+    {
+      "source": "demo/billing/invoices.v1/0/read.sum",
+      "day_ms": 1791590400000,
+      "encoded_bytes": 1530,
+      "decoded_bytes": 13541
+    },
+    {
+      "source": "demo/billing/invoices.v1/0/read.sum",
+      "day_ms": 1791676800000,
+      "encoded_bytes": 1588,
+      "decoded_bytes": 13580
+    },
+    {
+      "source": "demo/billing/invoices.v1/0/read.sum",
+      "day_ms": 1791763200000,
+      "encoded_bytes": 1492,
+      "decoded_bytes": 13066
+    },
+    {
+      "source": "demo/billing/invoices.v1/0/read.sum",
+      "day_ms": 1791849600000,
+      "encoded_bytes": 1553,
+      "decoded_bytes": 13280
+    },
+    {
+      "source": "demo/billing/invoices.v1/0/read.sum",
+      "day_ms": 1791936000000,
+      "encoded_bytes": 1569,
+      "decoded_bytes": 13627
+    },
+    {
+      "source": "demo/billing/invoices.v1/0/read.sum",
+      "day_ms": 1792022400000,
+      "encoded_bytes": 1497,
+      "decoded_bytes": 13367
+    },
+    {
+      "source": "demo/billing/invoices.v1/0/read.sum",
+      "day_ms": 1792108800000,
+      "encoded_bytes": 1508,
+      "decoded_bytes": 13327
+    },
+    {
+      "source": "demo/billing/invoices.v1/0/read.sum",
+      "day_ms": 1792195200000,
+      "encoded_bytes": 1584,
+      "decoded_bytes": 13667
+    },
+    {
+      "source": "demo/billing/invoices.v1/0/read.sum",
+      "day_ms": 1792281600000,
+      "encoded_bytes": 1529,
+      "decoded_bytes": 13367
+    },
+    {
+      "source": "demo/billing/invoices.v1/0/read.sum",
+      "day_ms": 1792368000000,
+      "encoded_bytes": 1508,
+      "decoded_bytes": 12979
+    },
+    {
+      "source": "demo/billing/invoices.v1/0/write.sum",
+      "day_ms": 1789862400000,
+      "encoded_bytes": 736,
+      "decoded_bytes": 4886
+    },
+    {
+      "source": "demo/billing/invoices.v1/0/write.sum",
+      "day_ms": 1789948800000,
+      "encoded_bytes": 2311,
+      "decoded_bytes": 21259
+    },
+    {
+      "source": "demo/billing/invoices.v1/0/write.sum",
+      "day_ms": 1790035200000,
+      "encoded_bytes": 2358,
+      "decoded_bytes": 21781
+    },
+    {
+      "source": "demo/billing/invoices.v1/0/write.sum",
+      "day_ms": 1790121600000,
+      "encoded_bytes": 2386,
+      "decoded_bytes": 21823
+    },
+    {
+      "source": "demo/billing/invoices.v1/0/write.sum",
+      "day_ms": 1790208000000,
+      "encoded_bytes": 2392,
+      "decoded_bytes": 22197
+    },
+    {
+      "source": "demo/billing/invoices.v1/0/write.sum",
+      "day_ms": 1790294400000,
+      "encoded_bytes": 2434,
+      "decoded_bytes": 21987
+    },
+    {
+      "source": "demo/billing/invoices.v1/0/write.sum",
+      "day_ms": 1790380800000,
+      "encoded_bytes": 2400,
+      "decoded_bytes": 21849
+    },
+    {
+      "source": "demo/billing/invoices.v1/0/write.sum",
+      "day_ms": 1790467200000,
+      "encoded_bytes": 2428,
+      "decoded_bytes": 22416
+    },
+    {
+      "source": "demo/billing/invoices.v1/0/write.sum",
+      "day_ms": 1790553600000,
+      "encoded_bytes": 2418,
+      "decoded_bytes": 21617
+    },
+    {
+      "source": "demo/billing/invoices.v1/0/write.sum",
+      "day_ms": 1790640000000,
+      "encoded_bytes": 2450,
+      "decoded_bytes": 21604
+    },
+    {
+      "source": "demo/billing/invoices.v1/0/write.sum",
+      "day_ms": 1790726400000,
+      "encoded_bytes": 2487,
+      "decoded_bytes": 22000
+    },
+    {
+      "source": "demo/billing/invoices.v1/0/write.sum",
+      "day_ms": 1790812800000,
+      "encoded_bytes": 2405,
+      "decoded_bytes": 22226
+    },
+    {
+      "source": "demo/billing/invoices.v1/0/write.sum",
+      "day_ms": 1790899200000,
+      "encoded_bytes": 2468,
+      "decoded_bytes": 22152
+    },
+    {
+      "source": "demo/billing/invoices.v1/0/write.sum",
+      "day_ms": 1790985600000,
+      "encoded_bytes": 2511,
+      "decoded_bytes": 22139
+    },
+    {
+      "source": "demo/billing/invoices.v1/0/write.sum",
+      "day_ms": 1791072000000,
+      "encoded_bytes": 2437,
+      "decoded_bytes": 22226
+    },
+    {
+      "source": "demo/billing/invoices.v1/0/write.sum",
+      "day_ms": 1791158400000,
+      "encoded_bytes": 2485,
+      "decoded_bytes": 21227
+    },
+    {
+      "source": "demo/billing/invoices.v1/0/write.sum",
+      "day_ms": 1791244800000,
+      "encoded_bytes": 2391,
+      "decoded_bytes": 21772
+    },
+    {
+      "source": "demo/billing/invoices.v1/0/write.sum",
+      "day_ms": 1791331200000,
+      "encoded_bytes": 2456,
+      "decoded_bytes": 22352
+    },
+    {
+      "source": "demo/billing/invoices.v1/0/write.sum",
+      "day_ms": 1791417600000,
+      "encoded_bytes": 2404,
+      "decoded_bytes": 22126
+    },
+    {
+      "source": "demo/billing/invoices.v1/0/write.sum",
+      "day_ms": 1791504000000,
+      "encoded_bytes": 2436,
+      "decoded_bytes": 22310
+    },
+    {
+      "source": "demo/billing/invoices.v1/0/write.sum",
+      "day_ms": 1791590400000,
+      "encoded_bytes": 2385,
+      "decoded_bytes": 22268
+    },
+    {
+      "source": "demo/billing/invoices.v1/0/write.sum",
+      "day_ms": 1791676800000,
+      "encoded_bytes": 2504,
+      "decoded_bytes": 21981
+    },
+    {
+      "source": "demo/billing/invoices.v1/0/write.sum",
+      "day_ms": 1791763200000,
+      "encoded_bytes": 2404,
+      "decoded_bytes": 21298
+    },
+    {
+      "source": "demo/billing/invoices.v1/0/write.sum",
+      "day_ms": 1791849600000,
+      "encoded_bytes": 2414,
+      "decoded_bytes": 21807
+    },
+    {
+      "source": "demo/billing/invoices.v1/0/write.sum",
+      "day_ms": 1791936000000,
+      "encoded_bytes": 2500,
+      "decoded_bytes": 22010
+    },
+    {
+      "source": "demo/billing/invoices.v1/0/write.sum",
+      "day_ms": 1792022400000,
+      "encoded_bytes": 2476,
+      "decoded_bytes": 21971
+    },
+    {
+      "source": "demo/billing/invoices.v1/0/write.sum",
+      "day_ms": 1792108800000,
+      "encoded_bytes": 2462,
+      "decoded_bytes": 22168
+    },
+    {
+      "source": "demo/billing/invoices.v1/0/write.sum",
+      "day_ms": 1792195200000,
+      "encoded_bytes": 2412,
+      "decoded_bytes": 22068
+    },
+    {
+      "source": "demo/billing/invoices.v1/0/write.sum",
+      "day_ms": 1792281600000,
+      "encoded_bytes": 2445,
+      "decoded_bytes": 22168
+    },
+    {
+      "source": "demo/billing/invoices.v1/0/write.sum",
+      "day_ms": 1792368000000,
+      "encoded_bytes": 2428,
+      "decoded_bytes": 21617
+    },
+    {
+      "source": "demo/gateway/routes.v1/0/error.sum",
+      "day_ms": 1789862400000,
+      "encoded_bytes": 164,
+      "decoded_bytes": 548
+    },
+    {
+      "source": "demo/gateway/routes.v1/0/error.sum",
+      "day_ms": 1789948800000,
+      "encoded_bytes": 653,
+      "decoded_bytes": 3850
+    },
+    {
+      "source": "demo/gateway/routes.v1/0/error.sum",
+      "day_ms": 1790035200000,
+      "encoded_bytes": 350,
+      "decoded_bytes": 1766
+    },
+    {
+      "source": "demo/gateway/routes.v1/0/error.sum",
+      "day_ms": 1790121600000,
+      "encoded_bytes": 389,
+      "decoded_bytes": 2010
+    },
+    {
+      "source": "demo/gateway/routes.v1/0/error.sum",
+      "day_ms": 1790208000000,
+      "encoded_bytes": 357,
+      "decoded_bytes": 1766
+    },
+    {
+      "source": "demo/gateway/routes.v1/0/error.sum",
+      "day_ms": 1790294400000,
+      "encoded_bytes": 356,
+      "decoded_bytes": 1766
+    },
+    {
+      "source": "demo/gateway/routes.v1/0/error.sum",
+      "day_ms": 1790380800000,
+      "encoded_bytes": 385,
+      "decoded_bytes": 2009
+    },
+    {
+      "source": "demo/gateway/routes.v1/0/error.sum",
+      "day_ms": 1790467200000,
+      "encoded_bytes": 357,
+      "decoded_bytes": 1766
+    },
+    {
+      "source": "demo/gateway/routes.v1/0/error.sum",
+      "day_ms": 1790553600000,
+      "encoded_bytes": 623,
+      "decoded_bytes": 3938
+    },
+    {
+      "source": "demo/gateway/routes.v1/0/error.sum",
+      "day_ms": 1790640000000,
+      "encoded_bytes": 353,
+      "decoded_bytes": 1766
+    },
+    {
+      "source": "demo/gateway/routes.v1/0/error.sum",
+      "day_ms": 1790726400000,
+      "encoded_bytes": 385,
+      "decoded_bytes": 2010
+    },
+    {
+      "source": "demo/gateway/routes.v1/0/error.sum",
+      "day_ms": 1790812800000,
+      "encoded_bytes": 358,
+      "decoded_bytes": 1766
+    },
+    {
+      "source": "demo/gateway/routes.v1/0/error.sum",
+      "day_ms": 1790899200000,
+      "encoded_bytes": 357,
+      "decoded_bytes": 1766
+    },
+    {
+      "source": "demo/gateway/routes.v1/0/error.sum",
+      "day_ms": 1790985600000,
+      "encoded_bytes": 388,
+      "decoded_bytes": 2010
+    },
+    {
+      "source": "demo/gateway/routes.v1/0/error.sum",
+      "day_ms": 1791072000000,
+      "encoded_bytes": 354,
+      "decoded_bytes": 1766
+    },
+    {
+      "source": "demo/gateway/routes.v1/0/error.sum",
+      "day_ms": 1791158400000,
+      "encoded_bytes": 682,
+      "decoded_bytes": 3866
+    },
+    {
+      "source": "demo/gateway/routes.v1/0/error.sum",
+      "day_ms": 1791244800000,
+      "encoded_bytes": 398,
+      "decoded_bytes": 2009
+    },
+    {
+      "source": "demo/gateway/routes.v1/0/error.sum",
+      "day_ms": 1791331200000,
+      "encoded_bytes": 357,
+      "decoded_bytes": 1766
+    },
+    {
+      "source": "demo/gateway/routes.v1/0/error.sum",
+      "day_ms": 1791417600000,
+      "encoded_bytes": 356,
+      "decoded_bytes": 1766
+    },
+    {
+      "source": "demo/gateway/routes.v1/0/error.sum",
+      "day_ms": 1791504000000,
+      "encoded_bytes": 354,
+      "decoded_bytes": 1766
+    },
+    {
+      "source": "demo/gateway/routes.v1/0/error.sum",
+      "day_ms": 1791590400000,
+      "encoded_bytes": 383,
+      "decoded_bytes": 2010
+    },
+    {
+      "source": "demo/gateway/routes.v1/0/error.sum",
+      "day_ms": 1791676800000,
+      "encoded_bytes": 356,
+      "decoded_bytes": 1766
+    },
+    {
+      "source": "demo/gateway/routes.v1/0/error.sum",
+      "day_ms": 1791763200000,
+      "encoded_bytes": 675,
+      "decoded_bytes": 3779
+    },
+    {
+      "source": "demo/gateway/routes.v1/0/error.sum",
+      "day_ms": 1791849600000,
+      "encoded_bytes": 386,
+      "decoded_bytes": 2010
+    },
+    {
+      "source": "demo/gateway/routes.v1/0/error.sum",
+      "day_ms": 1791936000000,
+      "encoded_bytes": 356,
+      "decoded_bytes": 1766
+    },
+    {
+      "source": "demo/gateway/routes.v1/0/error.sum",
+      "day_ms": 1792022400000,
+      "encoded_bytes": 357,
+      "decoded_bytes": 1766
+    },
+    {
+      "source": "demo/gateway/routes.v1/0/error.sum",
+      "day_ms": 1792108800000,
+      "encoded_bytes": 355,
+      "decoded_bytes": 1766
+    },
+    {
+      "source": "demo/gateway/routes.v1/0/error.sum",
+      "day_ms": 1792195200000,
+      "encoded_bytes": 387,
+      "decoded_bytes": 2009
+    },
+    {
+      "source": "demo/gateway/routes.v1/0/error.sum",
+      "day_ms": 1792281600000,
+      "encoded_bytes": 350,
+      "decoded_bytes": 1766
+    },
+    {
+      "source": "demo/gateway/routes.v1/0/error.sum",
+      "day_ms": 1792368000000,
+      "encoded_bytes": 639,
+      "decoded_bytes": 3899
+    },
+    {
+      "source": "demo/gateway/routes.v1/0/read.sum",
+      "day_ms": 1789862400000,
+      "encoded_bytes": 547,
+      "decoded_bytes": 3703
+    },
+    {
+      "source": "demo/gateway/routes.v1/0/read.sum",
+      "day_ms": 1789948800000,
+      "encoded_bytes": 1456,
+      "decoded_bytes": 12751
+    },
+    {
+      "source": "demo/gateway/routes.v1/0/read.sum",
+      "day_ms": 1790035200000,
+      "encoded_bytes": 1485,
+      "decoded_bytes": 13186
+    },
+    {
+      "source": "demo/gateway/routes.v1/0/read.sum",
+      "day_ms": 1790121600000,
+      "encoded_bytes": 1571,
+      "decoded_bytes": 13605
+    },
+    {
+      "source": "demo/gateway/routes.v1/0/read.sum",
+      "day_ms": 1790208000000,
+      "encoded_bytes": 1512,
+      "decoded_bytes": 13485
+    },
+    {
+      "source": "demo/gateway/routes.v1/0/read.sum",
+      "day_ms": 1790294400000,
+      "encoded_bytes": 1525,
+      "decoded_bytes": 13186
+    },
+    {
+      "source": "demo/gateway/routes.v1/0/read.sum",
+      "day_ms": 1790380800000,
+      "encoded_bytes": 1607,
+      "decoded_bytes": 13605
+    },
+    {
+      "source": "demo/gateway/routes.v1/0/read.sum",
+      "day_ms": 1790467200000,
+      "encoded_bytes": 1479,
+      "decoded_bytes": 13186
+    },
+    {
+      "source": "demo/gateway/routes.v1/0/read.sum",
+      "day_ms": 1790553600000,
+      "encoded_bytes": 1511,
+      "decoded_bytes": 12838
+    },
+    {
+      "source": "demo/gateway/routes.v1/0/read.sum",
+      "day_ms": 1790640000000,
+      "encoded_bytes": 1577,
+      "decoded_bytes": 13605
+    },
+    {
+      "source": "demo/gateway/routes.v1/0/read.sum",
+      "day_ms": 1790726400000,
+      "encoded_bytes": 1486,
+      "decoded_bytes": 13273
+    },
+    {
+      "source": "demo/gateway/routes.v1/0/read.sum",
+      "day_ms": 1790812800000,
+      "encoded_bytes": 1521,
+      "decoded_bytes": 13311
+    },
+    {
+      "source": "demo/gateway/routes.v1/0/read.sum",
+      "day_ms": 1790899200000,
+      "encoded_bytes": 1561,
+      "decoded_bytes": 13567
+    },
+    {
+      "source": "demo/gateway/routes.v1/0/read.sum",
+      "day_ms": 1790985600000,
+      "encoded_bytes": 1545,
+      "decoded_bytes": 13485
+    },
+    {
+      "source": "demo/gateway/routes.v1/0/read.sum",
+      "day_ms": 1791072000000,
+      "encoded_bytes": 1480,
+      "decoded_bytes": 13273
+    },
+    {
+      "source": "demo/gateway/routes.v1/0/read.sum",
+      "day_ms": 1791158400000,
+      "encoded_bytes": 1579,
+      "decoded_bytes": 13045
+    },
+    {
+      "source": "demo/gateway/routes.v1/0/read.sum",
+      "day_ms": 1791244800000,
+      "encoded_bytes": 1491,
+      "decoded_bytes": 13137
+    },
+    {
+      "source": "demo/gateway/routes.v1/0/read.sum",
+      "day_ms": 1791331200000,
+      "encoded_bytes": 1503,
+      "decoded_bytes": 13360
+    },
+    {
+      "source": "demo/gateway/routes.v1/0/read.sum",
+      "day_ms": 1791417600000,
+      "encoded_bytes": 1552,
+      "decoded_bytes": 13518
+    },
+    {
+      "source": "demo/gateway/routes.v1/0/read.sum",
+      "day_ms": 1791504000000,
+      "encoded_bytes": 1500,
+      "decoded_bytes": 13273
+    },
+    {
+      "source": "demo/gateway/routes.v1/0/read.sum",
+      "day_ms": 1791590400000,
+      "encoded_bytes": 1505,
+      "decoded_bytes": 13485
+    },
+    {
+      "source": "demo/gateway/routes.v1/0/read.sum",
+      "day_ms": 1791676800000,
+      "encoded_bytes": 1581,
+      "decoded_bytes": 13518
+    },
+    {
+      "source": "demo/gateway/routes.v1/0/read.sum",
+      "day_ms": 1791763200000,
+      "encoded_bytes": 1490,
+      "decoded_bytes": 12838
+    },
+    {
+      "source": "demo/gateway/routes.v1/0/read.sum",
+      "day_ms": 1791849600000,
+      "encoded_bytes": 1548,
+      "decoded_bytes": 13398
+    },
+    {
+      "source": "demo/gateway/routes.v1/0/read.sum",
+      "day_ms": 1791936000000,
+      "encoded_bytes": 1587,
+      "decoded_bytes": 13567
+    },
+    {
+      "source": "demo/gateway/routes.v1/0/read.sum",
+      "day_ms": 1792022400000,
+      "encoded_bytes": 1496,
+      "decoded_bytes": 13311
+    },
+    {
+      "source": "demo/gateway/routes.v1/0/read.sum",
+      "day_ms": 1792108800000,
+      "encoded_bytes": 1522,
+      "decoded_bytes": 13273
+    },
+    {
+      "source": "demo/gateway/routes.v1/0/read.sum",
+      "day_ms": 1792195200000,
+      "encoded_bytes": 1593,
+      "decoded_bytes": 13605
+    },
+    {
+      "source": "demo/gateway/routes.v1/0/read.sum",
+      "day_ms": 1792281600000,
+      "encoded_bytes": 1479,
+      "decoded_bytes": 13311
+    },
+    {
+      "source": "demo/gateway/routes.v1/0/read.sum",
+      "day_ms": 1792368000000,
+      "encoded_bytes": 1489,
+      "decoded_bytes": 12838
+    },
+    {
+      "source": "demo/gateway/routes.v1/0/write.sum",
+      "day_ms": 1789862400000,
+      "encoded_bytes": 678,
+      "decoded_bytes": 5146
+    },
+    {
+      "source": "demo/gateway/routes.v1/0/write.sum",
+      "day_ms": 1789948800000,
+      "encoded_bytes": 2329,
+      "decoded_bytes": 20992
+    },
+    {
+      "source": "demo/gateway/routes.v1/0/write.sum",
+      "day_ms": 1790035200000,
+      "encoded_bytes": 2330,
+      "decoded_bytes": 22120
+    },
+    {
+      "source": "demo/gateway/routes.v1/0/write.sum",
+      "day_ms": 1790121600000,
+      "encoded_bytes": 2322,
+      "decoded_bytes": 21872
+    },
+    {
+      "source": "demo/gateway/routes.v1/0/write.sum",
+      "day_ms": 1790208000000,
+      "encoded_bytes": 2381,
+      "decoded_bytes": 22143
+    },
+    {
+      "source": "demo/gateway/routes.v1/0/write.sum",
+      "day_ms": 1790294400000,
+      "encoded_bytes": 2436,
+      "decoded_bytes": 22052
+    },
+    {
+      "source": "demo/gateway/routes.v1/0/write.sum",
+      "day_ms": 1790380800000,
+      "encoded_bytes": 2335,
+      "decoded_bytes": 21972
+    },
+    {
+      "source": "demo/gateway/routes.v1/0/write.sum",
+      "day_ms": 1790467200000,
+      "encoded_bytes": 2435,
+      "decoded_bytes": 22349
+    },
+    {
+      "source": "demo/gateway/routes.v1/0/write.sum",
+      "day_ms": 1790553600000,
+      "encoded_bytes": 2405,
+      "decoded_bytes": 20957
+    },
+    {
+      "source": "demo/gateway/routes.v1/0/write.sum",
+      "day_ms": 1790640000000,
+      "encoded_bytes": 2452,
+      "decoded_bytes": 22014
+    },
+    {
+      "source": "demo/gateway/routes.v1/0/write.sum",
+      "day_ms": 1790726400000,
+      "encoded_bytes": 2435,
+      "decoded_bytes": 22252
+    },
+    {
+      "source": "demo/gateway/routes.v1/0/write.sum",
+      "day_ms": 1790812800000,
+      "encoded_bytes": 2485,
+      "decoded_bytes": 21962
+    },
+    {
+      "source": "demo/gateway/routes.v1/0/write.sum",
+      "day_ms": 1790899200000,
+      "encoded_bytes": 2504,
+      "decoded_bytes": 21943
+    },
+    {
+      "source": "demo/gateway/routes.v1/0/write.sum",
+      "day_ms": 1790985600000,
+      "encoded_bytes": 2456,
+      "decoded_bytes": 22017
+    },
+    {
+      "source": "demo/gateway/routes.v1/0/write.sum",
+      "day_ms": 1791072000000,
+      "encoded_bytes": 2479,
+      "decoded_bytes": 22091
+    },
+    {
+      "source": "demo/gateway/routes.v1/0/write.sum",
+      "day_ms": 1791158400000,
+      "encoded_bytes": 2378,
+      "decoded_bytes": 20863
+    },
+    {
+      "source": "demo/gateway/routes.v1/0/write.sum",
+      "day_ms": 1791244800000,
+      "encoded_bytes": 2438,
+      "decoded_bytes": 22162
+    },
+    {
+      "source": "demo/gateway/routes.v1/0/write.sum",
+      "day_ms": 1791331200000,
+      "encoded_bytes": 2482,
+      "decoded_bytes": 22072
+    },
+    {
+      "source": "demo/gateway/routes.v1/0/write.sum",
+      "day_ms": 1791417600000,
+      "encoded_bytes": 2421,
+      "decoded_bytes": 21868
+    },
+    {
+      "source": "demo/gateway/routes.v1/0/write.sum",
+      "day_ms": 1791504000000,
+      "encoded_bytes": 2488,
+      "decoded_bytes": 22101
+    },
+    {
+      "source": "demo/gateway/routes.v1/0/write.sum",
+      "day_ms": 1791590400000,
+      "encoded_bytes": 2447,
+      "decoded_bytes": 21881
+    },
+    {
+      "source": "demo/gateway/routes.v1/0/write.sum",
+      "day_ms": 1791676800000,
+      "encoded_bytes": 2470,
+      "decoded_bytes": 21891
+    },
+    {
+      "source": "demo/gateway/routes.v1/0/write.sum",
+      "day_ms": 1791763200000,
+      "encoded_bytes": 2355,
+      "decoded_bytes": 21108
+    },
+    {
+      "source": "demo/gateway/routes.v1/0/write.sum",
+      "day_ms": 1791849600000,
+      "encoded_bytes": 2471,
+      "decoded_bytes": 21907
+    },
+    {
+      "source": "demo/gateway/routes.v1/0/write.sum",
+      "day_ms": 1791936000000,
+      "encoded_bytes": 2488,
+      "decoded_bytes": 21843
+    },
+    {
+      "source": "demo/gateway/routes.v1/0/write.sum",
+      "day_ms": 1792022400000,
+      "encoded_bytes": 2450,
+      "decoded_bytes": 22026
+    },
+    {
+      "source": "demo/gateway/routes.v1/0/write.sum",
+      "day_ms": 1792108800000,
+      "encoded_bytes": 2473,
+      "decoded_bytes": 21949
+    },
+    {
+      "source": "demo/gateway/routes.v1/0/write.sum",
+      "day_ms": 1792195200000,
+      "encoded_bytes": 2504,
+      "decoded_bytes": 21804
+    },
+    {
+      "source": "demo/gateway/routes.v1/0/write.sum",
+      "day_ms": 1792281600000,
+      "encoded_bytes": 2472,
+      "decoded_bytes": 21923
+    },
+    {
+      "source": "demo/gateway/routes.v1/0/write.sum",
+      "day_ms": 1792368000000,
+      "encoded_bytes": 2378,
+      "decoded_bytes": 20673
+    },
+    {
+      "source": "demo/payment/transactions.v1/0/error.sum",
+      "day_ms": 1789862400000,
+      "encoded_bytes": 181,
+      "decoded_bytes": 558
+    },
+    {
+      "source": "demo/payment/transactions.v1/0/error.sum",
+      "day_ms": 1789948800000,
+      "encoded_bytes": 372,
+      "decoded_bytes": 1818
+    },
+    {
+      "source": "demo/payment/transactions.v1/0/error.sum",
+      "day_ms": 1790035200000,
+      "encoded_bytes": 661,
+      "decoded_bytes": 4032
+    },
+    {
+      "source": "demo/payment/transactions.v1/0/error.sum",
+      "day_ms": 1790121600000,
+      "encoded_bytes": 405,
+      "decoded_bytes": 2072
+    },
+    {
+      "source": "demo/payment/transactions.v1/0/error.sum",
+      "day_ms": 1790208000000,
+      "encoded_bytes": 373,
+      "decoded_bytes": 1818
+    },
+    {
+      "source": "demo/payment/transactions.v1/0/error.sum",
+      "day_ms": 1790294400000,
+      "encoded_bytes": 373,
+      "decoded_bytes": 1818
+    },
+    {
+      "source": "demo/payment/transactions.v1/0/error.sum",
+      "day_ms": 1790380800000,
+      "encoded_bytes": 402,
+      "decoded_bytes": 2067
+    },
+    {
+      "source": "demo/payment/transactions.v1/0/error.sum",
+      "day_ms": 1790467200000,
+      "encoded_bytes": 373,
+      "decoded_bytes": 1818
+    },
+    {
+      "source": "demo/payment/transactions.v1/0/error.sum",
+      "day_ms": 1790553600000,
+      "encoded_bytes": 373,
+      "decoded_bytes": 1818
+    },
+    {
+      "source": "demo/payment/transactions.v1/0/error.sum",
+      "day_ms": 1790640000000,
+      "encoded_bytes": 694,
+      "decoded_bytes": 3956
+    },
+    {
+      "source": "demo/payment/transactions.v1/0/error.sum",
+      "day_ms": 1790726400000,
+      "encoded_bytes": 403,
+      "decoded_bytes": 2072
+    },
+    {
+      "source": "demo/payment/transactions.v1/0/error.sum",
+      "day_ms": 1790812800000,
+      "encoded_bytes": 376,
+      "decoded_bytes": 1818
+    },
+    {
+      "source": "demo/payment/transactions.v1/0/error.sum",
+      "day_ms": 1790899200000,
+      "encoded_bytes": 375,
+      "decoded_bytes": 1818
+    },
+    {
+      "source": "demo/payment/transactions.v1/0/error.sum",
+      "day_ms": 1790985600000,
+      "encoded_bytes": 408,
+      "decoded_bytes": 2072
+    },
+    {
+      "source": "demo/payment/transactions.v1/0/error.sum",
+      "day_ms": 1791072000000,
+      "encoded_bytes": 370,
+      "decoded_bytes": 1818
+    },
+    {
+      "source": "demo/payment/transactions.v1/0/error.sum",
+      "day_ms": 1791158400000,
+      "encoded_bytes": 370,
+      "decoded_bytes": 1818
+    },
+    {
+      "source": "demo/payment/transactions.v1/0/error.sum",
+      "day_ms": 1791244800000,
+      "encoded_bytes": 748,
+      "decoded_bytes": 4118
+    },
+    {
+      "source": "demo/payment/transactions.v1/0/error.sum",
+      "day_ms": 1791331200000,
+      "encoded_bytes": 376,
+      "decoded_bytes": 1818
+    },
+    {
+      "source": "demo/payment/transactions.v1/0/error.sum",
+      "day_ms": 1791417600000,
+      "encoded_bytes": 373,
+      "decoded_bytes": 1818
+    },
+    {
+      "source": "demo/payment/transactions.v1/0/error.sum",
+      "day_ms": 1791504000000,
+      "encoded_bytes": 374,
+      "decoded_bytes": 1818
+    },
+    {
+      "source": "demo/payment/transactions.v1/0/error.sum",
+      "day_ms": 1791590400000,
+      "encoded_bytes": 401,
+      "decoded_bytes": 2072
+    },
+    {
+      "source": "demo/payment/transactions.v1/0/error.sum",
+      "day_ms": 1791676800000,
+      "encoded_bytes": 372,
+      "decoded_bytes": 1818
+    },
+    {
+      "source": "demo/payment/transactions.v1/0/error.sum",
+      "day_ms": 1791763200000,
+      "encoded_bytes": 378,
+      "decoded_bytes": 1818
+    },
+    {
+      "source": "demo/payment/transactions.v1/0/error.sum",
+      "day_ms": 1791849600000,
+      "encoded_bytes": 712,
+      "decoded_bytes": 4215
+    },
+    {
+      "source": "demo/payment/transactions.v1/0/error.sum",
+      "day_ms": 1791936000000,
+      "encoded_bytes": 373,
+      "decoded_bytes": 1818
+    },
+    {
+      "source": "demo/payment/transactions.v1/0/error.sum",
+      "day_ms": 1792022400000,
+      "encoded_bytes": 372,
+      "decoded_bytes": 1818
+    },
+    {
+      "source": "demo/payment/transactions.v1/0/error.sum",
+      "day_ms": 1792108800000,
+      "encoded_bytes": 371,
+      "decoded_bytes": 1818
+    },
+    {
+      "source": "demo/payment/transactions.v1/0/error.sum",
+      "day_ms": 1792195200000,
+      "encoded_bytes": 404,
+      "decoded_bytes": 2067
+    },
+    {
+      "source": "demo/payment/transactions.v1/0/error.sum",
+      "day_ms": 1792281600000,
+      "encoded_bytes": 371,
+      "decoded_bytes": 1818
+    },
+    {
+      "source": "demo/payment/transactions.v1/0/error.sum",
+      "day_ms": 1792368000000,
+      "encoded_bytes": 375,
+      "decoded_bytes": 1818
+    },
+    {
+      "source": "demo/payment/transactions.v1/0/read.sum",
+      "day_ms": 1789862400000,
+      "encoded_bytes": 557,
+      "decoded_bytes": 3757
+    },
+    {
+      "source": "demo/payment/transactions.v1/0/read.sum",
+      "day_ms": 1789948800000,
+      "encoded_bytes": 1504,
+      "decoded_bytes": 13566
+    },
+    {
+      "source": "demo/payment/transactions.v1/0/read.sum",
+      "day_ms": 1790035200000,
+      "encoded_bytes": 1489,
+      "decoded_bytes": 12826
+    },
+    {
+      "source": "demo/payment/transactions.v1/0/read.sum",
+      "day_ms": 1790121600000,
+      "encoded_bytes": 1597,
+      "decoded_bytes": 13791
+    },
+    {
+      "source": "demo/payment/transactions.v1/0/read.sum",
+      "day_ms": 1790208000000,
+      "encoded_bytes": 1507,
+      "decoded_bytes": 13566
+    },
+    {
+      "source": "demo/payment/transactions.v1/0/read.sum",
+      "day_ms": 1790294400000,
+      "encoded_bytes": 1498,
+      "decoded_bytes": 13348
+    },
+    {
+      "source": "demo/payment/transactions.v1/0/read.sum",
+      "day_ms": 1790380800000,
+      "encoded_bytes": 1602,
+      "decoded_bytes": 13791
+    },
+    {
+      "source": "demo/payment/transactions.v1/0/read.sum",
+      "day_ms": 1790467200000,
+      "encoded_bytes": 1484,
+      "decoded_bytes": 13435
+    },
+    {
+      "source": "demo/payment/transactions.v1/0/read.sum",
+      "day_ms": 1790553600000,
+      "encoded_bytes": 1543,
+      "decoded_bytes": 13566
+    },
+    {
+      "source": "demo/payment/transactions.v1/0/read.sum",
+      "day_ms": 1790640000000,
+      "encoded_bytes": 1545,
+      "decoded_bytes": 13021
+    },
+    {
+      "source": "demo/payment/transactions.v1/0/read.sum",
+      "day_ms": 1790726400000,
+      "encoded_bytes": 1546,
+      "decoded_bytes": 13435
+    },
+    {
+      "source": "demo/payment/transactions.v1/0/read.sum",
+      "day_ms": 1790812800000,
+      "encoded_bytes": 1548,
+      "decoded_bytes": 13479
+    },
+    {
+      "source": "demo/payment/transactions.v1/0/read.sum",
+      "day_ms": 1790899200000,
+      "encoded_bytes": 1550,
+      "decoded_bytes": 13747
+    },
+    {
+      "source": "demo/payment/transactions.v1/0/read.sum",
+      "day_ms": 1790985600000,
+      "encoded_bytes": 1538,
+      "decoded_bytes": 13566
+    },
+    {
+      "source": "demo/payment/transactions.v1/0/read.sum",
+      "day_ms": 1791072000000,
+      "encoded_bytes": 1506,
+      "decoded_bytes": 13435
+    },
+    {
+      "source": "demo/payment/transactions.v1/0/read.sum",
+      "day_ms": 1791158400000,
+      "encoded_bytes": 1571,
+      "decoded_bytes": 13834
+    },
+    {
+      "source": "demo/payment/transactions.v1/0/read.sum",
+      "day_ms": 1791244800000,
+      "encoded_bytes": 1542,
+      "decoded_bytes": 12783
+    },
+    {
+      "source": "demo/payment/transactions.v1/0/read.sum",
+      "day_ms": 1791331200000,
+      "encoded_bytes": 1519,
+      "decoded_bytes": 13522
+    },
+    {
+      "source": "demo/payment/transactions.v1/0/read.sum",
+      "day_ms": 1791417600000,
+      "encoded_bytes": 1592,
+      "decoded_bytes": 13704
+    },
+    {
+      "source": "demo/payment/transactions.v1/0/read.sum",
+      "day_ms": 1791504000000,
+      "encoded_bytes": 1522,
+      "decoded_bytes": 13435
+    },
+    {
+      "source": "demo/payment/transactions.v1/0/read.sum",
+      "day_ms": 1791590400000,
+      "encoded_bytes": 1546,
+      "decoded_bytes": 13653
+    },
+    {
+      "source": "demo/payment/transactions.v1/0/read.sum",
+      "day_ms": 1791676800000,
+      "encoded_bytes": 1570,
+      "decoded_bytes": 13704
+    },
+    {
+      "source": "demo/payment/transactions.v1/0/read.sum",
+      "day_ms": 1791763200000,
+      "encoded_bytes": 1521,
+      "decoded_bytes": 13522
+    },
+    {
+      "source": "demo/payment/transactions.v1/0/read.sum",
+      "day_ms": 1791849600000,
+      "encoded_bytes": 1516,
+      "decoded_bytes": 13044
+    },
+    {
+      "source": "demo/payment/transactions.v1/0/read.sum",
+      "day_ms": 1791936000000,
+      "encoded_bytes": 1572,
+      "decoded_bytes": 13747
+    },
+    {
+      "source": "demo/payment/transactions.v1/0/read.sum",
+      "day_ms": 1792022400000,
+      "encoded_bytes": 1531,
+      "decoded_bytes": 13566
+    },
+    {
+      "source": "demo/payment/transactions.v1/0/read.sum",
+      "day_ms": 1792108800000,
+      "encoded_bytes": 1534,
+      "decoded_bytes": 13435
+    },
+    {
+      "source": "demo/payment/transactions.v1/0/read.sum",
+      "day_ms": 1792195200000,
+      "encoded_bytes": 1581,
+      "decoded_bytes": 13791
+    },
+    {
+      "source": "demo/payment/transactions.v1/0/read.sum",
+      "day_ms": 1792281600000,
+      "encoded_bytes": 1529,
+      "decoded_bytes": 13479
+    },
+    {
+      "source": "demo/payment/transactions.v1/0/read.sum",
+      "day_ms": 1792368000000,
+      "encoded_bytes": 1495,
+      "decoded_bytes": 13435
+    },
+    {
+      "source": "demo/payment/transactions.v1/0/write.sum",
+      "day_ms": 1789862400000,
+      "encoded_bytes": 693,
+      "decoded_bytes": 4760
+    },
+    {
+      "source": "demo/payment/transactions.v1/0/write.sum",
+      "day_ms": 1789948800000,
+      "encoded_bytes": 2401,
+      "decoded_bytes": 22288
+    },
+    {
+      "source": "demo/payment/transactions.v1/0/write.sum",
+      "day_ms": 1790035200000,
+      "encoded_bytes": 2381,
+      "decoded_bytes": 21286
+    },
+    {
+      "source": "demo/payment/transactions.v1/0/write.sum",
+      "day_ms": 1790121600000,
+      "encoded_bytes": 2511,
+      "decoded_bytes": 21785
+    },
+    {
+      "source": "demo/payment/transactions.v1/0/write.sum",
+      "day_ms": 1790208000000,
+      "encoded_bytes": 2435,
+      "decoded_bytes": 22527
+    },
+    {
+      "source": "demo/payment/transactions.v1/0/write.sum",
+      "day_ms": 1790294400000,
+      "encoded_bytes": 2459,
+      "decoded_bytes": 22233
+    },
+    {
+      "source": "demo/payment/transactions.v1/0/write.sum",
+      "day_ms": 1790380800000,
+      "encoded_bytes": 2347,
+      "decoded_bytes": 22146
+    },
+    {
+      "source": "demo/payment/transactions.v1/0/write.sum",
+      "day_ms": 1790467200000,
+      "encoded_bytes": 2539,
+      "decoded_bytes": 22553
+    },
+    {
+      "source": "demo/payment/transactions.v1/0/write.sum",
+      "day_ms": 1790553600000,
+      "encoded_bytes": 2473,
+      "decoded_bytes": 22427
+    },
+    {
+      "source": "demo/payment/transactions.v1/0/write.sum",
+      "day_ms": 1790640000000,
+      "encoded_bytes": 2414,
+      "decoded_bytes": 21105
+    },
+    {
+      "source": "demo/payment/transactions.v1/0/write.sum",
+      "day_ms": 1790726400000,
+      "encoded_bytes": 2456,
+      "decoded_bytes": 22355
+    },
+    {
+      "source": "demo/payment/transactions.v1/0/write.sum",
+      "day_ms": 1790812800000,
+      "encoded_bytes": 2473,
+      "decoded_bytes": 22385
+    },
+    {
+      "source": "demo/payment/transactions.v1/0/write.sum",
+      "day_ms": 1790899200000,
+      "encoded_bytes": 2519,
+      "decoded_bytes": 22092
+    },
+    {
+      "source": "demo/payment/transactions.v1/0/write.sum",
+      "day_ms": 1790985600000,
+      "encoded_bytes": 2416,
+      "decoded_bytes": 22572
+    },
+    {
+      "source": "demo/payment/transactions.v1/0/write.sum",
+      "day_ms": 1791072000000,
+      "encoded_bytes": 2467,
+      "decoded_bytes": 22288
+    },
+    {
+      "source": "demo/payment/transactions.v1/0/write.sum",
+      "day_ms": 1791158400000,
+      "encoded_bytes": 2494,
+      "decoded_bytes": 22324
+    },
+    {
+      "source": "demo/payment/transactions.v1/0/write.sum",
+      "day_ms": 1791244800000,
+      "encoded_bytes": 2451,
+      "decoded_bytes": 21221
+    },
+    {
+      "source": "demo/payment/transactions.v1/0/write.sum",
+      "day_ms": 1791331200000,
+      "encoded_bytes": 2472,
+      "decoded_bytes": 22447
+    },
+    {
+      "source": "demo/payment/transactions.v1/0/write.sum",
+      "day_ms": 1791417600000,
+      "encoded_bytes": 2403,
+      "decoded_bytes": 22300
+    },
+    {
+      "source": "demo/payment/transactions.v1/0/write.sum",
+      "day_ms": 1791504000000,
+      "encoded_bytes": 2506,
+      "decoded_bytes": 22379
+    },
+    {
+      "source": "demo/payment/transactions.v1/0/write.sum",
+      "day_ms": 1791590400000,
+      "encoded_bytes": 2448,
+      "decoded_bytes": 22436
+    },
+    {
+      "source": "demo/payment/transactions.v1/0/write.sum",
+      "day_ms": 1791676800000,
+      "encoded_bytes": 2505,
+      "decoded_bytes": 22298
+    },
+    {
+      "source": "demo/payment/transactions.v1/0/write.sum",
+      "day_ms": 1791763200000,
+      "encoded_bytes": 2457,
+      "decoded_bytes": 22443
+    },
+    {
+      "source": "demo/payment/transactions.v1/0/write.sum",
+      "day_ms": 1791849600000,
+      "encoded_bytes": 2456,
+      "decoded_bytes": 21054
+    },
+    {
+      "source": "demo/payment/transactions.v1/0/write.sum",
+      "day_ms": 1791936000000,
+      "encoded_bytes": 2425,
+      "decoded_bytes": 22531
+    },
+    {
+      "source": "demo/payment/transactions.v1/0/write.sum",
+      "day_ms": 1792022400000,
+      "encoded_bytes": 2517,
+      "decoded_bytes": 22294
+    },
+    {
+      "source": "demo/payment/transactions.v1/0/write.sum",
+      "day_ms": 1792108800000,
+      "encoded_bytes": 2455,
+      "decoded_bytes": 22398
+    },
+    {
+      "source": "demo/payment/transactions.v1/0/write.sum",
+      "day_ms": 1792195200000,
+      "encoded_bytes": 2462,
+      "decoded_bytes": 22311
+    },
+    {
+      "source": "demo/payment/transactions.v1/0/write.sum",
+      "day_ms": 1792281600000,
+      "encoded_bytes": 2417,
+      "decoded_bytes": 22514
+    },
+    {
+      "source": "demo/payment/transactions.v1/0/write.sum",
+      "day_ms": 1792368000000,
+      "encoded_bytes": 2403,
+      "decoded_bytes": 22618
+    },
+    {
+      "source": "demo/vault/secrets.v1/0/error.sum",
+      "day_ms": 1789862400000,
+      "encoded_bytes": 170,
+      "decoded_bytes": 549
+    },
+    {
+      "source": "demo/vault/secrets.v1/0/error.sum",
+      "day_ms": 1789948800000,
+      "encoded_bytes": 361,
+      "decoded_bytes": 1768
+    },
+    {
+      "source": "demo/vault/secrets.v1/0/error.sum",
+      "day_ms": 1790035200000,
+      "encoded_bytes": 681,
+      "decoded_bytes": 4025
+    },
+    {
+      "source": "demo/vault/secrets.v1/0/error.sum",
+      "day_ms": 1790121600000,
+      "encoded_bytes": 396,
+      "decoded_bytes": 2013
+    },
+    {
+      "source": "demo/vault/secrets.v1/0/error.sum",
+      "day_ms": 1790208000000,
+      "encoded_bytes": 364,
+      "decoded_bytes": 1768
+    },
+    {
+      "source": "demo/vault/secrets.v1/0/error.sum",
+      "day_ms": 1790294400000,
+      "encoded_bytes": 365,
+      "decoded_bytes": 1768
+    },
+    {
+      "source": "demo/vault/secrets.v1/0/error.sum",
+      "day_ms": 1790380800000,
+      "encoded_bytes": 392,
+      "decoded_bytes": 2010
+    },
+    {
+      "source": "demo/vault/secrets.v1/0/error.sum",
+      "day_ms": 1790467200000,
+      "encoded_bytes": 364,
+      "decoded_bytes": 1768
+    },
+    {
+      "source": "demo/vault/secrets.v1/0/error.sum",
+      "day_ms": 1790553600000,
+      "encoded_bytes": 361,
+      "decoded_bytes": 1768
+    },
+    {
+      "source": "demo/vault/secrets.v1/0/error.sum",
+      "day_ms": 1790640000000,
+      "encoded_bytes": 661,
+      "decoded_bytes": 4025
+    },
+    {
+      "source": "demo/vault/secrets.v1/0/error.sum",
+      "day_ms": 1790726400000,
+      "encoded_bytes": 390,
+      "decoded_bytes": 2013
+    },
+    {
+      "source": "demo/vault/secrets.v1/0/error.sum",
+      "day_ms": 1790812800000,
+      "encoded_bytes": 364,
+      "decoded_bytes": 1768
+    },
+    {
+      "source": "demo/vault/secrets.v1/0/error.sum",
+      "day_ms": 1790899200000,
+      "encoded_bytes": 363,
+      "decoded_bytes": 1768
+    },
+    {
+      "source": "demo/vault/secrets.v1/0/error.sum",
+      "day_ms": 1790985600000,
+      "encoded_bytes": 397,
+      "decoded_bytes": 2013
+    },
+    {
+      "source": "demo/vault/secrets.v1/0/error.sum",
+      "day_ms": 1791072000000,
+      "encoded_bytes": 361,
+      "decoded_bytes": 1768
+    },
+    {
+      "source": "demo/vault/secrets.v1/0/error.sum",
+      "day_ms": 1791158400000,
+      "encoded_bytes": 371,
+      "decoded_bytes": 1768
+    },
+    {
+      "source": "demo/vault/secrets.v1/0/error.sum",
+      "day_ms": 1791244800000,
+      "encoded_bytes": 701,
+      "decoded_bytes": 4270
+    },
+    {
+      "source": "demo/vault/secrets.v1/0/error.sum",
+      "day_ms": 1791331200000,
+      "encoded_bytes": 363,
+      "decoded_bytes": 1768
+    },
+    {
+      "source": "demo/vault/secrets.v1/0/error.sum",
+      "day_ms": 1791417600000,
+      "encoded_bytes": 362,
+      "decoded_bytes": 1768
+    },
+    {
+      "source": "demo/vault/secrets.v1/0/error.sum",
+      "day_ms": 1791504000000,
+      "encoded_bytes": 362,
+      "decoded_bytes": 1768
+    },
+    {
+      "source": "demo/vault/secrets.v1/0/error.sum",
+      "day_ms": 1791590400000,
+      "encoded_bytes": 389,
+      "decoded_bytes": 2013
+    },
+    {
+      "source": "demo/vault/secrets.v1/0/error.sum",
+      "day_ms": 1791676800000,
+      "encoded_bytes": 359,
+      "decoded_bytes": 1768
+    },
+    {
+      "source": "demo/vault/secrets.v1/0/error.sum",
+      "day_ms": 1791763200000,
+      "encoded_bytes": 364,
+      "decoded_bytes": 1768
+    },
+    {
+      "source": "demo/vault/secrets.v1/0/error.sum",
+      "day_ms": 1791849600000,
+      "encoded_bytes": 710,
+      "decoded_bytes": 4199
+    },
+    {
+      "source": "demo/vault/secrets.v1/0/error.sum",
+      "day_ms": 1791936000000,
+      "encoded_bytes": 364,
+      "decoded_bytes": 1768
+    },
+    {
+      "source": "demo/vault/secrets.v1/0/error.sum",
+      "day_ms": 1792022400000,
+      "encoded_bytes": 362,
+      "decoded_bytes": 1768
+    },
+    {
+      "source": "demo/vault/secrets.v1/0/error.sum",
+      "day_ms": 1792108800000,
+      "encoded_bytes": 361,
+      "decoded_bytes": 1768
+    },
+    {
+      "source": "demo/vault/secrets.v1/0/error.sum",
+      "day_ms": 1792195200000,
+      "encoded_bytes": 393,
+      "decoded_bytes": 2010
+    },
+    {
+      "source": "demo/vault/secrets.v1/0/error.sum",
+      "day_ms": 1792281600000,
+      "encoded_bytes": 357,
+      "decoded_bytes": 1768
+    },
+    {
+      "source": "demo/vault/secrets.v1/0/error.sum",
+      "day_ms": 1792368000000,
+      "encoded_bytes": 363,
+      "decoded_bytes": 1768
+    },
+    {
+      "source": "demo/vault/secrets.v1/0/read.sum",
+      "day_ms": 1789862400000,
+      "encoded_bytes": 548,
+      "decoded_bytes": 3694
+    },
+    {
+      "source": "demo/vault/secrets.v1/0/read.sum",
+      "day_ms": 1789948800000,
+      "encoded_bytes": 1537,
+      "decoded_bytes": 13370
+    },
+    {
+      "source": "demo/vault/secrets.v1/0/read.sum",
+      "day_ms": 1790035200000,
+      "encoded_bytes": 1504,
+      "decoded_bytes": 12724
+    },
+    {
+      "source": "demo/vault/secrets.v1/0/read.sum",
+      "day_ms": 1790121600000,
+      "encoded_bytes": 1596,
+      "decoded_bytes": 13574
+    },
+    {
+      "source": "demo/vault/secrets.v1/0/read.sum",
+      "day_ms": 1790208000000,
+      "encoded_bytes": 1501,
+      "decoded_bytes": 13370
+    },
+    {
+      "source": "demo/vault/secrets.v1/0/read.sum",
+      "day_ms": 1790294400000,
+      "encoded_bytes": 1496,
+      "decoded_bytes": 13159
+    },
+    {
+      "source": "demo/vault/secrets.v1/0/read.sum",
+      "day_ms": 1790380800000,
+      "encoded_bytes": 1582,
+      "decoded_bytes": 13661
+    },
+    {
+      "source": "demo/vault/secrets.v1/0/read.sum",
+      "day_ms": 1790467200000,
+      "encoded_bytes": 1499,
+      "decoded_bytes": 13159
+    },
+    {
+      "source": "demo/vault/secrets.v1/0/read.sum",
+      "day_ms": 1790553600000,
+      "encoded_bytes": 1550,
+      "decoded_bytes": 13370
+    },
+    {
+      "source": "demo/vault/secrets.v1/0/read.sum",
+      "day_ms": 1790640000000,
+      "encoded_bytes": 1573,
+      "decoded_bytes": 13052
+    },
+    {
+      "source": "demo/vault/secrets.v1/0/read.sum",
+      "day_ms": 1790726400000,
+      "encoded_bytes": 1506,
+      "decoded_bytes": 13246
+    },
+    {
+      "source": "demo/vault/secrets.v1/0/read.sum",
+      "day_ms": 1790812800000,
+      "encoded_bytes": 1545,
+      "decoded_bytes": 13283
+    },
+    {
+      "source": "demo/vault/secrets.v1/0/read.sum",
+      "day_ms": 1790899200000,
+      "encoded_bytes": 1524,
+      "decoded_bytes": 13537
+    },
+    {
+      "source": "demo/vault/secrets.v1/0/read.sum",
+      "day_ms": 1790985600000,
+      "encoded_bytes": 1545,
+      "decoded_bytes": 13370
+    },
+    {
+      "source": "demo/vault/secrets.v1/0/read.sum",
+      "day_ms": 1791072000000,
+      "encoded_bytes": 1481,
+      "decoded_bytes": 13246
+    },
+    {
+      "source": "demo/vault/secrets.v1/0/read.sum",
+      "day_ms": 1791158400000,
+      "encoded_bytes": 1582,
+      "decoded_bytes": 13711
+    },
+    {
+      "source": "demo/vault/secrets.v1/0/read.sum",
+      "day_ms": 1791244800000,
+      "encoded_bytes": 1479,
+      "decoded_bytes": 12346
+    },
+    {
+      "source": "demo/vault/secrets.v1/0/read.sum",
+      "day_ms": 1791331200000,
+      "encoded_bytes": 1516,
+      "decoded_bytes": 13333
+    },
+    {
+      "source": "demo/vault/secrets.v1/0/read.sum",
+      "day_ms": 1791417600000,
+      "encoded_bytes": 1567,
+      "decoded_bytes": 13487
+    },
+    {
+      "source": "demo/vault/secrets.v1/0/read.sum",
+      "day_ms": 1791504000000,
+      "encoded_bytes": 1500,
+      "decoded_bytes": 13246
+    },
+    {
+      "source": "demo/vault/secrets.v1/0/read.sum",
+      "day_ms": 1791590400000,
+      "encoded_bytes": 1524,
+      "decoded_bytes": 13457
+    },
+    {
+      "source": "demo/vault/secrets.v1/0/read.sum",
+      "day_ms": 1791676800000,
+      "encoded_bytes": 1559,
+      "decoded_bytes": 13487
+    },
+    {
+      "source": "demo/vault/secrets.v1/0/read.sum",
+      "day_ms": 1791763200000,
+      "encoded_bytes": 1500,
+      "decoded_bytes": 13333
+    },
+    {
+      "source": "demo/vault/secrets.v1/0/read.sum",
+      "day_ms": 1791849600000,
+      "encoded_bytes": 1511,
+      "decoded_bytes": 12761
+    },
+    {
+      "source": "demo/vault/secrets.v1/0/read.sum",
+      "day_ms": 1791936000000,
+      "encoded_bytes": 1572,
+      "decoded_bytes": 13624
+    },
+    {
+      "source": "demo/vault/secrets.v1/0/read.sum",
+      "day_ms": 1792022400000,
+      "encoded_bytes": 1487,
+      "decoded_bytes": 13283
+    },
+    {
+      "source": "demo/vault/secrets.v1/0/read.sum",
+      "day_ms": 1792108800000,
+      "encoded_bytes": 1507,
+      "decoded_bytes": 13246
+    },
+    {
+      "source": "demo/vault/secrets.v1/0/read.sum",
+      "day_ms": 1792195200000,
+      "encoded_bytes": 1570,
+      "decoded_bytes": 13574
+    },
+    {
+      "source": "demo/vault/secrets.v1/0/read.sum",
+      "day_ms": 1792281600000,
+      "encoded_bytes": 1523,
+      "decoded_bytes": 13283
+    },
+    {
+      "source": "demo/vault/secrets.v1/0/read.sum",
+      "day_ms": 1792368000000,
+      "encoded_bytes": 1499,
+      "decoded_bytes": 13246
+    },
+    {
+      "source": "demo/vault/secrets.v1/0/write.sum",
+      "day_ms": 1789862400000,
+      "encoded_bytes": 668,
+      "decoded_bytes": 4784
+    },
+    {
+      "source": "demo/vault/secrets.v1/0/write.sum",
+      "day_ms": 1789948800000,
+      "encoded_bytes": 2401,
+      "decoded_bytes": 21838
+    },
+    {
+      "source": "demo/vault/secrets.v1/0/write.sum",
+      "day_ms": 1790035200000,
+      "encoded_bytes": 2360,
+      "decoded_bytes": 20780
+    },
+    {
+      "source": "demo/vault/secrets.v1/0/write.sum",
+      "day_ms": 1790121600000,
+      "encoded_bytes": 2416,
+      "decoded_bytes": 21693
+    },
+    {
+      "source": "demo/vault/secrets.v1/0/write.sum",
+      "day_ms": 1790208000000,
+      "encoded_bytes": 2446,
+      "decoded_bytes": 21880
+    },
+    {
+      "source": "demo/vault/secrets.v1/0/write.sum",
+      "day_ms": 1790294400000,
+      "encoded_bytes": 2408,
+      "decoded_bytes": 22109
+    },
+    {
+      "source": "demo/vault/secrets.v1/0/write.sum",
+      "day_ms": 1790380800000,
+      "encoded_bytes": 2415,
+      "decoded_bytes": 21763
+    },
+    {
+      "source": "demo/vault/secrets.v1/0/write.sum",
+      "day_ms": 1790467200000,
+      "encoded_bytes": 2435,
+      "decoded_bytes": 22352
+    },
+    {
+      "source": "demo/vault/secrets.v1/0/write.sum",
+      "day_ms": 1790553600000,
+      "encoded_bytes": 2477,
+      "decoded_bytes": 21964
+    },
+    {
+      "source": "demo/vault/secrets.v1/0/write.sum",
+      "day_ms": 1790640000000,
+      "encoded_bytes": 2456,
+      "decoded_bytes": 20725
+    },
+    {
+      "source": "demo/vault/secrets.v1/0/write.sum",
+      "day_ms": 1790726400000,
+      "encoded_bytes": 2462,
+      "decoded_bytes": 22111
+    },
+    {
+      "source": "demo/vault/secrets.v1/0/write.sum",
+      "day_ms": 1790812800000,
+      "encoded_bytes": 2471,
+      "decoded_bytes": 21896
+    },
+    {
+      "source": "demo/vault/secrets.v1/0/write.sum",
+      "day_ms": 1790899200000,
+      "encoded_bytes": 2488,
+      "decoded_bytes": 22130
+    },
+    {
+      "source": "demo/vault/secrets.v1/0/write.sum",
+      "day_ms": 1790985600000,
+      "encoded_bytes": 2430,
+      "decoded_bytes": 21867
+    },
+    {
+      "source": "demo/vault/secrets.v1/0/write.sum",
+      "day_ms": 1791072000000,
+      "encoded_bytes": 2392,
+      "decoded_bytes": 22277
+    },
+    {
+      "source": "demo/vault/secrets.v1/0/write.sum",
+      "day_ms": 1791158400000,
+      "encoded_bytes": 2472,
+      "decoded_bytes": 21877
+    },
+    {
+      "source": "demo/vault/secrets.v1/0/write.sum",
+      "day_ms": 1791244800000,
+      "encoded_bytes": 2392,
+      "decoded_bytes": 20946
+    },
+    {
+      "source": "demo/vault/secrets.v1/0/write.sum",
+      "day_ms": 1791331200000,
+      "encoded_bytes": 2425,
+      "decoded_bytes": 22188
+    },
+    {
+      "source": "demo/vault/secrets.v1/0/write.sum",
+      "day_ms": 1791417600000,
+      "encoded_bytes": 2394,
+      "decoded_bytes": 22142
+    },
+    {
+      "source": "demo/vault/secrets.v1/0/write.sum",
+      "day_ms": 1791504000000,
+      "encoded_bytes": 2452,
+      "decoded_bytes": 22117
+    },
+    {
+      "source": "demo/vault/secrets.v1/0/write.sum",
+      "day_ms": 1791590400000,
+      "encoded_bytes": 2431,
+      "decoded_bytes": 22179
+    },
+    {
+      "source": "demo/vault/secrets.v1/0/write.sum",
+      "day_ms": 1791676800000,
+      "encoded_bytes": 2417,
+      "decoded_bytes": 22232
+    },
+    {
+      "source": "demo/vault/secrets.v1/0/write.sum",
+      "day_ms": 1791763200000,
+      "encoded_bytes": 2502,
+      "decoded_bytes": 22119
+    },
+    {
+      "source": "demo/vault/secrets.v1/0/write.sum",
+      "day_ms": 1791849600000,
+      "encoded_bytes": 2399,
+      "decoded_bytes": 21017
+    },
+    {
+      "source": "demo/vault/secrets.v1/0/write.sum",
+      "day_ms": 1791936000000,
+      "encoded_bytes": 2507,
+      "decoded_bytes": 22101
+    },
+    {
+      "source": "demo/vault/secrets.v1/0/write.sum",
+      "day_ms": 1792022400000,
+      "encoded_bytes": 2428,
+      "decoded_bytes": 22137
+    },
+    {
+      "source": "demo/vault/secrets.v1/0/write.sum",
+      "day_ms": 1792108800000,
+      "encoded_bytes": 2425,
+      "decoded_bytes": 22119
+    },
+    {
+      "source": "demo/vault/secrets.v1/0/write.sum",
+      "day_ms": 1792195200000,
+      "encoded_bytes": 2471,
+      "decoded_bytes": 22019
+    },
+    {
+      "source": "demo/vault/secrets.v1/0/write.sum",
+      "day_ms": 1792281600000,
+      "encoded_bytes": 2416,
+      "decoded_bytes": 22132
+    },
+    {
+      "source": "demo/vault/secrets.v1/0/write.sum",
+      "day_ms": 1792368000000,
+      "encoded_bytes": 2506,
+      "decoded_bytes": 22117
+    },
+    {
+      "source": "demo/worker/jobs.v1/0/error.sum",
+      "day_ms": 1789862400000,
+      "encoded_bytes": 171,
+      "decoded_bytes": 548
+    },
+    {
+      "source": "demo/worker/jobs.v1/0/error.sum",
+      "day_ms": 1789948800000,
+      "encoded_bytes": 362,
+      "decoded_bytes": 1760
+    },
+    {
+      "source": "demo/worker/jobs.v1/0/error.sum",
+      "day_ms": 1790035200000,
+      "encoded_bytes": 726,
+      "decoded_bytes": 4024
+    },
+    {
+      "source": "demo/worker/jobs.v1/0/error.sum",
+      "day_ms": 1790121600000,
+      "encoded_bytes": 398,
+      "decoded_bytes": 2004
+    },
+    {
+      "source": "demo/worker/jobs.v1/0/error.sum",
+      "day_ms": 1790208000000,
+      "encoded_bytes": 363,
+      "decoded_bytes": 1760
+    },
+    {
+      "source": "demo/worker/jobs.v1/0/error.sum",
+      "day_ms": 1790294400000,
+      "encoded_bytes": 364,
+      "decoded_bytes": 1760
+    },
+    {
+      "source": "demo/worker/jobs.v1/0/error.sum",
+      "day_ms": 1790380800000,
+      "encoded_bytes": 391,
+      "decoded_bytes": 2000
+    },
+    {
+      "source": "demo/worker/jobs.v1/0/error.sum",
+      "day_ms": 1790467200000,
+      "encoded_bytes": 362,
+      "decoded_bytes": 1760
+    },
+    {
+      "source": "demo/worker/jobs.v1/0/error.sum",
+      "day_ms": 1790553600000,
+      "encoded_bytes": 362,
+      "decoded_bytes": 1760
+    },
+    {
+      "source": "demo/worker/jobs.v1/0/error.sum",
+      "day_ms": 1790640000000,
+      "encoded_bytes": 688,
+      "decoded_bytes": 3851
+    },
+    {
+      "source": "demo/worker/jobs.v1/0/error.sum",
+      "day_ms": 1790726400000,
+      "encoded_bytes": 392,
+      "decoded_bytes": 2004
+    },
+    {
+      "source": "demo/worker/jobs.v1/0/error.sum",
+      "day_ms": 1790812800000,
+      "encoded_bytes": 366,
+      "decoded_bytes": 1760
+    },
+    {
+      "source": "demo/worker/jobs.v1/0/error.sum",
+      "day_ms": 1790899200000,
+      "encoded_bytes": 364,
+      "decoded_bytes": 1760
+    },
+    {
+      "source": "demo/worker/jobs.v1/0/error.sum",
+      "day_ms": 1790985600000,
+      "encoded_bytes": 398,
+      "decoded_bytes": 2004
+    },
+    {
+      "source": "demo/worker/jobs.v1/0/error.sum",
+      "day_ms": 1791072000000,
+      "encoded_bytes": 358,
+      "decoded_bytes": 1760
+    },
+    {
+      "source": "demo/worker/jobs.v1/0/error.sum",
+      "day_ms": 1791158400000,
+      "encoded_bytes": 369,
+      "decoded_bytes": 1760
+    },
+    {
+      "source": "demo/worker/jobs.v1/0/error.sum",
+      "day_ms": 1791244800000,
+      "encoded_bytes": 707,
+      "decoded_bytes": 4213
+    },
+    {
+      "source": "demo/worker/jobs.v1/0/error.sum",
+      "day_ms": 1791331200000,
+      "encoded_bytes": 363,
+      "decoded_bytes": 1760
+    },
+    {
+      "source": "demo/worker/jobs.v1/0/error.sum",
+      "day_ms": 1791417600000,
+      "encoded_bytes": 363,
+      "decoded_bytes": 1760
+    },
+    {
+      "source": "demo/worker/jobs.v1/0/error.sum",
+      "day_ms": 1791504000000,
+      "encoded_bytes": 363,
+      "decoded_bytes": 1760
+    },
+    {
+      "source": "demo/worker/jobs.v1/0/error.sum",
+      "day_ms": 1791590400000,
+      "encoded_bytes": 390,
+      "decoded_bytes": 2004
+    },
+    {
+      "source": "demo/worker/jobs.v1/0/error.sum",
+      "day_ms": 1791676800000,
+      "encoded_bytes": 363,
+      "decoded_bytes": 1760
+    },
+    {
+      "source": "demo/worker/jobs.v1/0/error.sum",
+      "day_ms": 1791763200000,
+      "encoded_bytes": 365,
+      "decoded_bytes": 1760
+    },
+    {
+      "source": "demo/worker/jobs.v1/0/error.sum",
+      "day_ms": 1791849600000,
+      "encoded_bytes": 705,
+      "decoded_bytes": 4257
+    },
+    {
+      "source": "demo/worker/jobs.v1/0/error.sum",
+      "day_ms": 1791936000000,
+      "encoded_bytes": 363,
+      "decoded_bytes": 1760
+    },
+    {
+      "source": "demo/worker/jobs.v1/0/error.sum",
+      "day_ms": 1792022400000,
+      "encoded_bytes": 362,
+      "decoded_bytes": 1760
+    },
+    {
+      "source": "demo/worker/jobs.v1/0/error.sum",
+      "day_ms": 1792108800000,
+      "encoded_bytes": 360,
+      "decoded_bytes": 1760
+    },
+    {
+      "source": "demo/worker/jobs.v1/0/error.sum",
+      "day_ms": 1792195200000,
+      "encoded_bytes": 393,
+      "decoded_bytes": 2000
+    },
+    {
+      "source": "demo/worker/jobs.v1/0/error.sum",
+      "day_ms": 1792281600000,
+      "encoded_bytes": 359,
+      "decoded_bytes": 1760
+    },
+    {
+      "source": "demo/worker/jobs.v1/0/error.sum",
+      "day_ms": 1792368000000,
+      "encoded_bytes": 363,
+      "decoded_bytes": 1760
+    },
+    {
+      "source": "demo/worker/jobs.v1/0/read.sum",
+      "day_ms": 1789862400000,
+      "encoded_bytes": 547,
+      "decoded_bytes": 3676
+    },
+    {
+      "source": "demo/worker/jobs.v1/0/read.sum",
+      "day_ms": 1789948800000,
+      "encoded_bytes": 1519,
+      "decoded_bytes": 13314
+    },
+    {
+      "source": "demo/worker/jobs.v1/0/read.sum",
+      "day_ms": 1790035200000,
+      "encoded_bytes": 1482,
+      "decoded_bytes": 12461
+    },
+    {
+      "source": "demo/worker/jobs.v1/0/read.sum",
+      "day_ms": 1790121600000,
+      "encoded_bytes": 1585,
+      "decoded_bytes": 13512
+    },
+    {
+      "source": "demo/worker/jobs.v1/0/read.sum",
+      "day_ms": 1790208000000,
+      "encoded_bytes": 1495,
+      "decoded_bytes": 13314
+    },
+    {
+      "source": "demo/worker/jobs.v1/0/read.sum",
+      "day_ms": 1790294400000,
+      "encoded_bytes": 1468,
+      "decoded_bytes": 13105
+    },
+    {
+      "source": "demo/worker/jobs.v1/0/read.sum",
+      "day_ms": 1790380800000,
+      "encoded_bytes": 1586,
+      "decoded_bytes": 13599
+    },
+    {
+      "source": "demo/worker/jobs.v1/0/read.sum",
+      "day_ms": 1790467200000,
+      "encoded_bytes": 1491,
+      "decoded_bytes": 13105
+    },
+    {
+      "source": "demo/worker/jobs.v1/0/read.sum",
+      "day_ms": 1790553600000,
+      "encoded_bytes": 1523,
+      "decoded_bytes": 13314
+    },
+    {
+      "source": "demo/worker/jobs.v1/0/read.sum",
+      "day_ms": 1790640000000,
+      "encoded_bytes": 1570,
+      "decoded_bytes": 12868
+    },
+    {
+      "source": "demo/worker/jobs.v1/0/read.sum",
+      "day_ms": 1790726400000,
+      "encoded_bytes": 1500,
+      "decoded_bytes": 13192
+    },
+    {
+      "source": "demo/worker/jobs.v1/0/read.sum",
+      "day_ms": 1790812800000,
+      "encoded_bytes": 1518,
+      "decoded_bytes": 13227
+    },
+    {
+      "source": "demo/worker/jobs.v1/0/read.sum",
+      "day_ms": 1790899200000,
+      "encoded_bytes": 1524,
+      "decoded_bytes": 13477
+    },
+    {
+      "source": "demo/worker/jobs.v1/0/read.sum",
+      "day_ms": 1790985600000,
+      "encoded_bytes": 1518,
+      "decoded_bytes": 13314
+    },
+    {
+      "source": "demo/worker/jobs.v1/0/read.sum",
+      "day_ms": 1791072000000,
+      "encoded_bytes": 1483,
+      "decoded_bytes": 13192
+    },
+    {
+      "source": "demo/worker/jobs.v1/0/read.sum",
+      "day_ms": 1791158400000,
+      "encoded_bytes": 1583,
+      "decoded_bytes": 13651
+    },
+    {
+      "source": "demo/worker/jobs.v1/0/read.sum",
+      "day_ms": 1791244800000,
+      "encoded_bytes": 1504,
+      "decoded_bytes": 12496
+    },
+    {
+      "source": "demo/worker/jobs.v1/0/read.sum",
+      "day_ms": 1791331200000,
+      "encoded_bytes": 1512,
+      "decoded_bytes": 13279
+    },
+    {
+      "source": "demo/worker/jobs.v1/0/read.sum",
+      "day_ms": 1791417600000,
+      "encoded_bytes": 1571,
+      "decoded_bytes": 13425
+    },
+    {
+      "source": "demo/worker/jobs.v1/0/read.sum",
+      "day_ms": 1791504000000,
+      "encoded_bytes": 1502,
+      "decoded_bytes": 13192
+    },
+    {
+      "source": "demo/worker/jobs.v1/0/read.sum",
+      "day_ms": 1791590400000,
+      "encoded_bytes": 1525,
+      "decoded_bytes": 13401
+    },
+    {
+      "source": "demo/worker/jobs.v1/0/read.sum",
+      "day_ms": 1791676800000,
+      "encoded_bytes": 1560,
+      "decoded_bytes": 13425
+    },
+    {
+      "source": "demo/worker/jobs.v1/0/read.sum",
+      "day_ms": 1791763200000,
+      "encoded_bytes": 1520,
+      "decoded_bytes": 13279
+    },
+    {
+      "source": "demo/worker/jobs.v1/0/read.sum",
+      "day_ms": 1791849600000,
+      "encoded_bytes": 1499,
+      "decoded_bytes": 12792
+    },
+    {
+      "source": "demo/worker/jobs.v1/0/read.sum",
+      "day_ms": 1791936000000,
+      "encoded_bytes": 1587,
+      "decoded_bytes": 13564
+    },
+    {
+      "source": "demo/worker/jobs.v1/0/read.sum",
+      "day_ms": 1792022400000,
+      "encoded_bytes": 1512,
+      "decoded_bytes": 13227
+    },
+    {
+      "source": "demo/worker/jobs.v1/0/read.sum",
+      "day_ms": 1792108800000,
+      "encoded_bytes": 1513,
+      "decoded_bytes": 13192
+    },
+    {
+      "source": "demo/worker/jobs.v1/0/read.sum",
+      "day_ms": 1792195200000,
+      "encoded_bytes": 1568,
+      "decoded_bytes": 13512
+    },
+    {
+      "source": "demo/worker/jobs.v1/0/read.sum",
+      "day_ms": 1792281600000,
+      "encoded_bytes": 1529,
+      "decoded_bytes": 13227
+    },
+    {
+      "source": "demo/worker/jobs.v1/0/read.sum",
+      "day_ms": 1792368000000,
+      "encoded_bytes": 1507,
+      "decoded_bytes": 13192
+    },
+    {
+      "source": "demo/worker/jobs.v1/0/write.sum",
+      "day_ms": 1789862400000,
+      "encoded_bytes": 697,
+      "decoded_bytes": 4777
+    },
+    {
+      "source": "demo/worker/jobs.v1/0/write.sum",
+      "day_ms": 1789948800000,
+      "encoded_bytes": 2416,
+      "decoded_bytes": 21920
+    },
+    {
+      "source": "demo/worker/jobs.v1/0/write.sum",
+      "day_ms": 1790035200000,
+      "encoded_bytes": 2360,
+      "decoded_bytes": 20808
+    },
+    {
+      "source": "demo/worker/jobs.v1/0/write.sum",
+      "day_ms": 1790121600000,
+      "encoded_bytes": 2504,
+      "decoded_bytes": 21633
+    },
+    {
+      "source": "demo/worker/jobs.v1/0/write.sum",
+      "day_ms": 1790208000000,
+      "encoded_bytes": 2415,
+      "decoded_bytes": 21949
+    },
+    {
+      "source": "demo/worker/jobs.v1/0/write.sum",
+      "day_ms": 1790294400000,
+      "encoded_bytes": 2476,
+      "decoded_bytes": 21852
+    },
+    {
+      "source": "demo/worker/jobs.v1/0/write.sum",
+      "day_ms": 1790380800000,
+      "encoded_bytes": 2375,
+      "decoded_bytes": 21830
+    },
+    {
+      "source": "demo/worker/jobs.v1/0/write.sum",
+      "day_ms": 1790467200000,
+      "encoded_bytes": 2505,
+      "decoded_bytes": 22136
+    },
+    {
+      "source": "demo/worker/jobs.v1/0/write.sum",
+      "day_ms": 1790553600000,
+      "encoded_bytes": 2469,
+      "decoded_bytes": 22046
+    },
+    {
+      "source": "demo/worker/jobs.v1/0/write.sum",
+      "day_ms": 1790640000000,
+      "encoded_bytes": 2433,
+      "decoded_bytes": 21002
+    },
+    {
+      "source": "demo/worker/jobs.v1/0/write.sum",
+      "day_ms": 1790726400000,
+      "encoded_bytes": 2444,
+      "decoded_bytes": 22091
+    },
+    {
+      "source": "demo/worker/jobs.v1/0/write.sum",
+      "day_ms": 1790812800000,
+      "encoded_bytes": 2443,
+      "decoded_bytes": 22046
+    },
+    {
+      "source": "demo/worker/jobs.v1/0/write.sum",
+      "day_ms": 1790899200000,
+      "encoded_bytes": 2497,
+      "decoded_bytes": 22169
+    },
+    {
+      "source": "demo/worker/jobs.v1/0/write.sum",
+      "day_ms": 1790985600000,
+      "encoded_bytes": 2431,
+      "decoded_bytes": 22188
+    },
+    {
+      "source": "demo/worker/jobs.v1/0/write.sum",
+      "day_ms": 1791072000000,
+      "encoded_bytes": 2413,
+      "decoded_bytes": 22204
+    },
+    {
+      "source": "demo/worker/jobs.v1/0/write.sum",
+      "day_ms": 1791158400000,
+      "encoded_bytes": 2394,
+      "decoded_bytes": 22072
+    },
+    {
+      "source": "demo/worker/jobs.v1/0/write.sum",
+      "day_ms": 1791244800000,
+      "encoded_bytes": 2403,
+      "decoded_bytes": 20957
+    },
+    {
+      "source": "demo/worker/jobs.v1/0/write.sum",
+      "day_ms": 1791331200000,
+      "encoded_bytes": 2479,
+      "decoded_bytes": 22127
+    },
+    {
+      "source": "demo/worker/jobs.v1/0/write.sum",
+      "day_ms": 1791417600000,
+      "encoded_bytes": 2428,
+      "decoded_bytes": 22055
+    },
+    {
+      "source": "demo/worker/jobs.v1/0/write.sum",
+      "day_ms": 1791504000000,
+      "encoded_bytes": 2467,
+      "decoded_bytes": 22114
+    },
+    {
+      "source": "demo/worker/jobs.v1/0/write.sum",
+      "day_ms": 1791590400000,
+      "encoded_bytes": 2425,
+      "decoded_bytes": 22007
+    },
+    {
+      "source": "demo/worker/jobs.v1/0/write.sum",
+      "day_ms": 1791676800000,
+      "encoded_bytes": 2487,
+      "decoded_bytes": 21988
+    },
+    {
+      "source": "demo/worker/jobs.v1/0/write.sum",
+      "day_ms": 1791763200000,
+      "encoded_bytes": 2454,
+      "decoded_bytes": 22075
+    },
+    {
+      "source": "demo/worker/jobs.v1/0/write.sum",
+      "day_ms": 1791849600000,
+      "encoded_bytes": 2387,
+      "decoded_bytes": 20918
+    },
+    {
+      "source": "demo/worker/jobs.v1/0/write.sum",
+      "day_ms": 1791936000000,
+      "encoded_bytes": 2560,
+      "decoded_bytes": 21801
+    },
+    {
+      "source": "demo/worker/jobs.v1/0/write.sum",
+      "day_ms": 1792022400000,
+      "encoded_bytes": 2478,
+      "decoded_bytes": 21936
+    },
+    {
+      "source": "demo/worker/jobs.v1/0/write.sum",
+      "day_ms": 1792108800000,
+      "encoded_bytes": 2435,
+      "decoded_bytes": 21933
+    },
+    {
+      "source": "demo/worker/jobs.v1/0/write.sum",
+      "day_ms": 1792195200000,
+      "encoded_bytes": 2447,
+      "decoded_bytes": 22104
+    },
+    {
+      "source": "demo/worker/jobs.v1/0/write.sum",
+      "day_ms": 1792281600000,
+      "encoded_bytes": 2430,
+      "decoded_bytes": 22046
+    },
+    {
+      "source": "demo/worker/jobs.v1/0/write.sum",
+      "day_ms": 1792368000000,
+      "encoded_bytes": 2435,
+      "decoded_bytes": 21988
+    }
+  ],
+  "sealed_decoded_bytes": 5476672,
+  "sealed_encoded_bytes": 643693,
+  "sealed_packets": 450,
+  "seed_and_verify_ms": 406678
+}

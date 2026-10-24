@@ -4,6 +4,7 @@ import {
   type Field,
   type LogEvent,
 } from "./dictionary.ts";
+import { matchesSource } from "./source.ts";
 
 export const parameterNames = [
   "level",
@@ -11,12 +12,8 @@ export const parameterNames = [
   "resource",
   "operation",
 ] as const;
-export type Parameters = Partial<
-  Record<(typeof parameterNames)[number], string>
->;
-export type Choices = Partial<
-  Record<(typeof parameterNames)[number], readonly string[]>
->;
+export type Parameters = Partial<Record<string, string>>;
+export type Choices = Partial<Record<string, readonly string[]>>;
 export type Predicate = (event: LogEvent) => boolean;
 export type LocalSelection = {
   parameters: Parameters;
@@ -41,10 +38,10 @@ export function collectionWindow(
 
 function selected(
   parameters: Parameters,
-): [(typeof parameterNames)[number], string][] {
-  return parameterNames.flatMap((name) =>
-    parameters[name] ? [[name, parameters[name]!]] : [],
-  );
+): [string, string][] {
+  const names: string[] = [...parameterNames, ...Object.keys(parameters).filter(name =>
+    !parameterNames.includes(name as (typeof parameterNames)[number])).sort()];
+  return names.flatMap(name => parameters[name] ? [[name, parameters[name]!]] : []);
 }
 
 export function where(parameters: Parameters): string[] {
@@ -85,7 +82,7 @@ export function compileSearch(
   >();
   return (event) => {
     if (
-      (selection.tap && event.dictionary.tap !== selection.tap) ||
+      !matchesSource(selection.tap, event.dictionary.tap) ||
       event.millis < start ||
       event.millis >= end
     )

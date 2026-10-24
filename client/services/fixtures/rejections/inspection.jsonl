@@ -1,0 +1,2 @@
+{"received_at":"2026-10-16T12:00:00-04:00","source":"demo/payment/transactions.v1/write","event_id":"01a14496406070008000000000000002","definition_version":"f43422f8b9312de034030de817efff360b710b78d3aeacb97e9ce3a394f7e7b6","finalized_before":"2026-10-16T11:45:00-04:00","reason":"arrival_after_finalization","event_json":"{\n  \"amount\": 18446744073709551615,\n  \"duration\": 12,\n  \"event_id\": \"01a14496-4060-7000-8000-000000000002\",\n  \"id\": 42,\n  \"message\": \"request completed\",\n  \"revision_id\": 2,\n  \"state\": \"canceled\"\n}"}
+{"complete":true,"count":1}

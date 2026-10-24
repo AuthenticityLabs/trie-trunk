@@ -9,7 +9,7 @@ publish = false
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-pil-codec = { path = "../../pil" }
+pil-codec = { path = "../../pil", features = ["gzip"] }
 ciborium = "0.2.2"
 crc32c = "0.6.8"
 

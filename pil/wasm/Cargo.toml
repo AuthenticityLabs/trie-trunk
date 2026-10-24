@@ -8,7 +8,7 @@ publish = false
 [lib]
 crate-type = ["cdylib"]
 [dependencies]
-pil-codec = { path = ".." }
+pil-codec = { path = "..", features = ["gzip"] }
 [profile.release]
 opt-level = "s"
 lto = true

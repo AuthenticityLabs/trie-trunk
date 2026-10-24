@@ -1,0 +1,12 @@
+goos: darwin
+goarch: arm64
+pkg: trie-trunk/go/server/cache
+cpu: Apple M1 Max
+BenchmarkCollectionPlatform100K-10    	  159472	      2095 ns/op	       0 B/op	       0 allocs/op
+--- BENCH: BenchmarkCollectionPlatform100K-10
+    collection_platform_test.go:254: 100K UUIDs: build=1.325082916s file=10387456 bytes current fences=1170 (23400 packed bytes)
+    collection_platform_test.go:254: 100K UUIDs: build=1.349920417s file=10387456 bytes current fences=1170 (23400 packed bytes)
+    collection_platform_test.go:254: 100K UUIDs: build=1.331092458s file=10387456 bytes current fences=1170 (23400 packed bytes)
+    collection_platform_test.go:254: 100K UUIDs: build=1.329370292s file=10387456 bytes current fences=1170 (23400 packed bytes)
+PASS
+ok  	trie-trunk/go/server/cache	5.844s

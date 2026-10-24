@@ -1,0 +1,477 @@
+ok  	trie-trunk/go/cmd/seed-demo	32.403s
+?   	trie-trunk/go/cmd/storage-bench	[no test files]
+flag needs an argument: -window
+Usage of search:
+  -all
+    	search all stored history; default window is today in UTC
+  -ca string
+    	server CA certificate
+  -client-cert string
+    	mTLS client certificate
+  -client-key string
+    	mTLS client private key
+  -dir string
+    	store root (default "./taps")
+  -endpoint string
+    	HTTPS search server; default local socket
+  -entry-headers string
+    	comma-separated top-level JSON fields to render first
+  -env string
+    	environment file; empty disables file loading (default ".env")
+  -f	alias for --follow
+  -follow
+    	keep streaming newly appended matches until interrupted
+  -from string
+    	inclusive timestamp or relative start
+  -head uint
+    	earliest N matches within the window; omitted N means 100 (default 100)
+  -jsonl
+    	explicitly select JSONL output (the default)
+  -local
+    	search files directly without a server
+  -pretty
+    	indent JSON objects; default is JSONL
+  -socket string
+    	Unix socket; default <dir>/.trunk/search.sock
+  -tail uint
+    	latest N matches within the window; omitted N means 100 (default 100)
+  -tap string
+    	search one tap; default searches all taps
+  -to string
+    	exclusive timestamp or relative end
+  -transport string
+    	remote transport: auto (HTTP/3 then HTTP/2), http3 or http2 (default "auto")
+  -w string
+    	alias for --win
+  -where value
+    	whitespace-separated predicates must all match; repeat --where for alternatives
+  -win string
+    	start[,end]: date, time, now-15m, today or yesterday; default timezone UTC
+  -window string
+    	alias for --win
+flag provided but not defined: -unknown
+Usage of search:
+  -all
+    	search all stored history; default window is today in UTC
+  -ca string
+    	server CA certificate
+  -client-cert string
+    	mTLS client certificate
+  -client-key string
+    	mTLS client private key
+  -dir string
+    	store root (default "./taps")
+  -endpoint string
+    	HTTPS search server; default local socket
+  -entry-headers string
+    	comma-separated top-level JSON fields to render first
+  -env string
+    	environment file; empty disables file loading (default ".env")
+  -f	alias for --follow
+  -follow
+    	keep streaming newly appended matches until interrupted
+  -from string
+    	inclusive timestamp or relative start
+  -head uint
+    	earliest N matches within the window; omitted N means 100 (default 100)
+  -jsonl
+    	explicitly select JSONL output (the default)
+  -local
+    	search files directly without a server
+  -pretty
+    	indent JSON objects; default is JSONL
+  -socket string
+    	Unix socket; default <dir>/.trunk/search.sock
+  -tail uint
+    	latest N matches within the window; omitted N means 100 (default 100)
+  -tap string
+    	search one tap; default searches all taps
+  -to string
+    	exclusive timestamp or relative end
+  -transport string
+    	remote transport: auto (HTTP/3 then HTTP/2), http3 or http2 (default "auto")
+  -w string
+    	alias for --win
+  -where value
+    	whitespace-separated predicates must all match; repeat --where for alternatives
+  -win string
+    	start[,end]: date, time, now-15m, today or yesterday; default timezone UTC
+  -window string
+    	alias for --win
+invalid boolean value "invalid" for -jsonl: parse error
+Usage of search:
+  -all
+    	search all stored history; default window is today in UTC
+  -ca string
+    	server CA certificate
+  -client-cert string
+    	mTLS client certificate
+  -client-key string
+    	mTLS client private key
+  -dir string
+    	store root (default "./taps")
+  -endpoint string
+    	HTTPS search server; default local socket
+  -entry-headers string
+    	comma-separated top-level JSON fields to render first
+  -env string
+    	environment file; empty disables file loading (default ".env")
+  -f	alias for --follow
+  -follow
+    	keep streaming newly appended matches until interrupted
+  -from string
+    	inclusive timestamp or relative start
+  -head uint
+    	earliest N matches within the window; omitted N means 100 (default 100)
+  -jsonl
+    	explicitly select JSONL output (the default)
+  -local
+    	search files directly without a server
+  -pretty
+    	indent JSON objects; default is JSONL
+  -socket string
+    	Unix socket; default <dir>/.trunk/search.sock
+  -tail uint
+    	latest N matches within the window; omitted N means 100 (default 100)
+  -tap string
+    	search one tap; default searches all taps
+  -to string
+    	exclusive timestamp or relative end
+  -transport string
+    	remote transport: auto (HTTP/3 then HTTP/2), http3 or http2 (default "auto")
+  -w string
+    	alias for --win
+  -where value
+    	whitespace-separated predicates must all match; repeat --where for alternatives
+  -win string
+    	start[,end]: date, time, now-15m, today or yesterday; default timezone UTC
+  -window string
+    	alias for --win
+--- FAIL: TestSearchCommandWindowAndFromTo (0.42s)
+    search_test.go:100: trunk-search is required beside trunk or on PATH; run make build: exec: "trunk-search": executable file not found in $PATH
+flag provided but not defined: -unknown
+Usage of search:
+  -all
+    	search all stored history; default window is today in UTC
+  -ca string
+    	server CA certificate
+  -client-cert string
+    	mTLS client certificate
+  -client-key string
+    	mTLS client private key
+  -dir string
+    	store root (default "./taps")
+  -endpoint string
+    	HTTPS search server; default local socket
+  -entry-headers string
+    	comma-separated top-level JSON fields to render first
+  -env string
+    	environment file; empty disables file loading (default ".env")
+  -f	alias for --follow
+  -follow
+    	keep streaming newly appended matches until interrupted
+  -from string
+    	inclusive timestamp or relative start
+  -head uint
+    	earliest N matches within the window; omitted N means 100 (default 100)
+  -jsonl
+    	explicitly select JSONL output (the default)
+  -local
+    	search files directly without a server
+  -pretty
+    	indent JSON objects; default is JSONL
+  -socket string
+    	Unix socket; default <dir>/.trunk/search.sock
+  -tail uint
+    	latest N matches within the window; omitted N means 100 (default 100)
+  -tap string
+    	search one tap; default searches all taps
+  -to string
+    	exclusive timestamp or relative end
+  -transport string
+    	remote transport: auto (HTTP/3 then HTTP/2), http3 or http2 (default "auto")
+  -w string
+    	alias for --win
+  -where value
+    	whitespace-separated predicates must all match; repeat --where for alternatives
+  -win string
+    	start[,end]: date, time, now-15m, today or yesterday; default timezone UTC
+  -window string
+    	alias for --win
+flag needs an argument: -tap
+Usage of search:
+  -all
+    	search all stored history; default window is today in UTC
+  -ca string
+    	server CA certificate
+  -client-cert string
+    	mTLS client certificate
+  -client-key string
+    	mTLS client private key
+  -dir string
+    	store root (default "./taps")
+  -endpoint string
+    	HTTPS search server; default local socket
+  -entry-headers string
+    	comma-separated top-level JSON fields to render first
+  -env string
+    	environment file; empty disables file loading (default ".env")
+  -f	alias for --follow
+  -follow
+    	keep streaming newly appended matches until interrupted
+  -from string
+    	inclusive timestamp or relative start
+  -head uint
+    	earliest N matches within the window; omitted N means 100 (default 100)
+  -jsonl
+    	explicitly select JSONL output (the default)
+  -local
+    	search files directly without a server
+  -pretty
+    	indent JSON objects; default is JSONL
+  -socket string
+    	Unix socket; default <dir>/.trunk/search.sock
+  -tail uint
+    	latest N matches within the window; omitted N means 100 (default 100)
+  -tap string
+    	search one tap; default searches all taps
+  -to string
+    	exclusive timestamp or relative end
+  -transport string
+    	remote transport: auto (HTTP/3 then HTTP/2), http3 or http2 (default "auto")
+  -w string
+    	alias for --win
+  -where value
+    	whitespace-separated predicates must all match; repeat --where for alternatives
+  -win string
+    	start[,end]: date, time, now-15m, today or yesterday; default timezone UTC
+  -window string
+    	alias for --win
+invalid boolean value "invalid" for -pretty: parse error
+Usage of search:
+  -all
+    	search all stored history; default window is today in UTC
+  -ca string
+    	server CA certificate
+  -client-cert string
+    	mTLS client certificate
+  -client-key string
+    	mTLS client private key
+  -dir string
+    	store root (default "./taps")
+  -endpoint string
+    	HTTPS search server; default local socket
+  -entry-headers string
+    	comma-separated top-level JSON fields to render first
+  -env string
+    	environment file; empty disables file loading (default ".env")
+  -f	alias for --follow
+  -follow
+    	keep streaming newly appended matches until interrupted
+  -from string
+    	inclusive timestamp or relative start
+  -head uint
+    	earliest N matches within the window; omitted N means 100 (default 100)
+  -jsonl
+    	explicitly select JSONL output (the default)
+  -local
+    	search files directly without a server
+  -pretty
+    	indent JSON objects; default is JSONL
+  -socket string
+    	Unix socket; default <dir>/.trunk/search.sock
+  -tail uint
+    	latest N matches within the window; omitted N means 100 (default 100)
+  -tap string
+    	search one tap; default searches all taps
+  -to string
+    	exclusive timestamp or relative end
+  -transport string
+    	remote transport: auto (HTTP/3 then HTTP/2), http3 or http2 (default "auto")
+  -w string
+    	alias for --win
+  -where value
+    	whitespace-separated predicates must all match; repeat --where for alternatives
+  -win string
+    	start[,end]: date, time, now-15m, today or yesterday; default timezone UTC
+  -window string
+    	alias for --win
+invalid value "-1" for flag -tail: parse error
+Usage of search:
+  -all
+    	search all stored history; default window is today in UTC
+  -ca string
+    	server CA certificate
+  -client-cert string
+    	mTLS client certificate
+  -client-key string
+    	mTLS client private key
+  -dir string
+    	store root (default "./taps")
+  -endpoint string
+    	HTTPS search server; default local socket
+  -entry-headers string
+    	comma-separated top-level JSON fields to render first
+  -env string
+    	environment file; empty disables file loading (default ".env")
+  -f	alias for --follow
+  -follow
+    	keep streaming newly appended matches until interrupted
+  -from string
+    	inclusive timestamp or relative start
+  -head uint
+    	earliest N matches within the window; omitted N means 100 (default 100)
+  -jsonl
+    	explicitly select JSONL output (the default)
+  -local
+    	search files directly without a server
+  -pretty
+    	indent JSON objects; default is JSONL
+  -socket string
+    	Unix socket; default <dir>/.trunk/search.sock
+  -tail uint
+    	latest N matches within the window; omitted N means 100 (default 100)
+  -tap string
+    	search one tap; default searches all taps
+  -to string
+    	exclusive timestamp or relative end
+  -transport string
+    	remote transport: auto (HTTP/3 then HTTP/2), http3 or http2 (default "auto")
+  -w string
+    	alias for --win
+  -where value
+    	whitespace-separated predicates must all match; repeat --where for alternatives
+  -win string
+    	start[,end]: date, time, now-15m, today or yesterday; default timezone UTC
+  -window string
+    	alias for --win
+2026/10/23 20:30:22 ingest PIL listening on https://127.0.0.1:64165
+2026/10/23 20:30:22 serve http2/http3 listening on https://127.0.0.1:64166; socket /var/folders/85/cj8xpvmj32jfrbhxvj3f44jh0000gn/T/trunk-2094846660/logs/.trunk/search.sock
+2026/10/23 20:30:22 serve HTTP origin listening on http://127.0.0.1:64167 (trusted local proxy)
+FAIL
+FAIL	trie-trunk/go/cmd/trunk	7.637s
+?   	trie-trunk/go/cmd/trunk/os	[no test files]
+ok  	trie-trunk/go/codec	0.067s
+ok  	trie-trunk/go/logger/client	2.530s
+?   	trie-trunk/go/logger/client/examples/http	[no test files]
+?   	trie-trunk/go/logger/client/keys	[no test files]
+ok  	trie-trunk/go/logger/out	0.066s
+ok  	trie-trunk/go/logger/pil	9.955s
+?   	trie-trunk/go/models	[no test files]
+ok  	trie-trunk/go/server/cache	108.037s
+?   	trie-trunk/go/server/ingest	[no test files]
+?   	trie-trunk/go/server/ingest/cbor	[no test files]
+?   	trie-trunk/go/server/ingest/json	[no test files]
+ok  	trie-trunk/go/server/ingest/sample	0.075s
+--- FAIL: TestPullEncodesOpenAndExplicitFollowWindows (0.01s)
+    --- FAIL: TestPullEncodesOpenAndExplicitFollowWindows/open_follow (0.00s)
+        client_test.go:58: trunk-search is required beside trunk or on PATH; run make build: exec: "trunk-search": executable file not found in $PATH
+    --- FAIL: TestPullEncodesOpenAndExplicitFollowWindows/bounded_follow (0.00s)
+        client_test.go:58: trunk-search is required beside trunk or on PATH; run make build: exec: "trunk-search": executable file not found in $PATH
+    --- FAIL: TestPullEncodesOpenAndExplicitFollowWindows/finite_search (0.00s)
+        client_test.go:58: trunk-search is required beside trunk or on PATH; run make build: exec: "trunk-search": executable file not found in $PATH
+--- FAIL: TestDictionaryStreamPreservesReferencesAndCatalogScope (1.06s)
+    dictionary_test.go:50: trunk-search is required beside trunk or on PATH; run make build: exec: "trunk-search": executable file not found in $PATH
+--- FAIL: TestResidentReaderReuseAndCancellation (1.00s)
+    engine_test.go:36: trunk-search is required beside trunk or on PATH; run make build: exec: "trunk-search": executable file not found in $PATH
+--- FAIL: TestEventsNativePartitionsAndPIL (5.95s)
+    --- FAIL: TestEventsNativePartitionsAndPIL/3 (3.07s)
+        events_test.go:53: trunk-search is required beside trunk or on PATH; run make build: exec: "trunk-search": executable file not found in $PATH
+    --- FAIL: TestEventsNativePartitionsAndPIL/4 (2.89s)
+        events_test.go:53: trunk-search is required beside trunk or on PATH; run make build: exec: "trunk-search": executable file not found in $PATH
+--- FAIL: TestEventsCompactPredecessorSurvivesSparseMatch (32.71s)
+    --- FAIL: TestEventsCompactPredecessorSurvivesSparseMatch/3 (18.45s)
+        events_test.go:113: trunk-search is required beside trunk or on PATH; run make build: exec: "trunk-search": executable file not found in $PATH
+    --- FAIL: TestEventsCompactPredecessorSurvivesSparseMatch/4 (14.25s)
+        events_test.go:113: trunk-search is required beside trunk or on PATH; run make build: exec: "trunk-search": executable file not found in $PATH
+--- FAIL: TestPartitionParallelOrder (4.60s)
+    --- FAIL: TestPartitionParallelOrder/3 (2.30s)
+        events_test.go:146: trunk-search is required beside trunk or on PATH; run make build: exec: "trunk-search": executable file not found in $PATH
+    --- FAIL: TestPartitionParallelOrder/4 (2.31s)
+        events_test.go:146: trunk-search is required beside trunk or on PATH; run make build: exec: "trunk-search": executable file not found in $PATH
+--- FAIL: TestFollowAcrossMaturityAndLateRun (10.62s)
+    --- FAIL: TestFollowAcrossMaturityAndLateRun/3 (5.31s)
+        events_test.go:180: follow did not emit 01a0ce19-ea40-78ee-a638-5fe11039107c
+        follow_test.go:71: trunk-search is required beside trunk or on PATH; run make build: exec: "trunk-search": executable file not found in $PATH
+    --- FAIL: TestFollowAcrossMaturityAndLateRun/4 (5.31s)
+        events_test.go:180: follow did not emit 01a0ce19-ea40-7a52-ab25-c2ba095a93ac
+        follow_test.go:71: trunk-search is required beside trunk or on PATH; run make build: exec: "trunk-search": executable file not found in $PATH
+--- FAIL: TestWhereAcrossLineagesPopulationAndVersions (0.84s)
+    --- FAIL: TestWhereAcrossLineagesPopulationAndVersions/1 (0.44s)
+        filter_test.go:93: trunk-search is required beside trunk or on PATH; run make build: exec: "trunk-search": executable file not found in $PATH
+    --- FAIL: TestWhereAcrossLineagesPopulationAndVersions/65536 (0.40s)
+        filter_test.go:93: trunk-search is required beside trunk or on PATH; run make build: exec: "trunk-search": executable file not found in $PATH
+--- FAIL: TestWhereFollowRejectsThenAcceptsAndRebinds (5.27s)
+    filter_test.go:127: follow did not emit 01a0ce31-b800-75ae-97e9-29768ebb51cf
+    follow_test.go:71: trunk-search is required beside trunk or on PATH; run make build: exec: "trunk-search": executable file not found in $PATH
+--- FAIL: TestWhereDoesNotReadExcludedPopulation (0.34s)
+    filter_test.go:184: trunk-search is required beside trunk or on PATH; run make build: exec: "trunk-search": executable file not found in $PATH
+--- FAIL: TestWhereExplicitNull (0.25s)
+    filter_test.go:217: trunk-search is required beside trunk or on PATH; run make build: exec: "trunk-search": executable file not found in $PATH
+--- FAIL: TestSearchHeadTailAcrossDays (0.39s)
+    follow_test.go:32: trunk-search is required beside trunk or on PATH; run make build: exec: "trunk-search": executable file not found in $PATH
+--- FAIL: TestFollowLateEventsTrieGrowthAndNewPartitions (5.22s)
+    follow_test.go:105: follow did not emit 01a0ce31-b800-75f0-9385-35a8f30d5906
+    follow_test.go:71: trunk-search is required beside trunk or on PATH; run make build: exec: "trunk-search": executable file not found in $PATH
+--- FAIL: TestFollowWaitsForCompleteBlock (5.21s)
+    follow_test.go:160: follow did not emit 01a0ce31-b800-73ec-ba14-a344f76cdde8
+    follow_test.go:71: trunk-search is required beside trunk or on PATH; run make build: exec: "trunk-search": executable file not found in $PATH
+--- FAIL: TestFollowWaitsForNewTapAndHonorsEnd (5.21s)
+    follow_test.go:242: follow did not emit 01a0ce31-b800-75d0-acb2-c577f5b8f676
+    follow_test.go:71: trunk-search is required beside trunk or on PATH; run make build: exec: "trunk-search": executable file not found in $PATH
+--- FAIL: TestNamedObjectsShareVersionAndPILRetainsTap (0.65s)
+    objects_test.go:47: trunk-search is required beside trunk or on PATH; run make build: exec: "trunk-search": executable file not found in $PATH
+--- FAIL: TestPILSearchMatchesJSONAcrossCatalogs (0.36s)
+    pil_test.go:50: trunk-search is required beside trunk or on PATH; run make build: exec: "trunk-search": executable file not found in $PATH
+--- FAIL: TestPILFollowIntroducesNewDefinitionBeforeNewEvents (0.21s)
+    pil_test.go:98: trunk-search is required beside trunk or on PATH; run make build: exec: "trunk-search": executable file not found in $PATH
+--- FAIL: TestPILDirectSearchPreservesPopulationAndFilterSemantics (0.39s)
+    --- FAIL: TestPILDirectSearchPreservesPopulationAndFilterSemantics/1 (0.21s)
+        pil_test.go:196: trunk-search is required beside trunk or on PATH; run make build: exec: "trunk-search": executable file not found in $PATH
+    --- FAIL: TestPILDirectSearchPreservesPopulationAndFilterSemantics/65536 (0.17s)
+        pil_test.go:196: trunk-search is required beside trunk or on PATH; run make build: exec: "trunk-search": executable file not found in $PATH
+--- FAIL: TestPostingSelectionAcrossBufferedAndOverlappingRuns (0.23s)
+    postings_test.go:73: trunk-search is required beside trunk or on PATH; run make build: exec: "trunk-search": executable file not found in $PATH
+--- FAIL: TestSearchRendersIndexThenLineageThenPopulation (0.17s)
+    search_test.go:44: trunk-search is required beside trunk or on PATH; run make build: exec: "trunk-search": executable file not found in $PATH
+--- FAIL: TestSearchWindowMergesTapsVersionsAndRuns (0.81s)
+    search_test.go:170: trunk-search is required beside trunk or on PATH; run make build: exec: "trunk-search": executable file not found in $PATH
+--- FAIL: TestSearchCrossDayExpansionAndLiveSnapshot (0.22s)
+    search_test.go:216: trunk-search is required beside trunk or on PATH; run make build: exec: "trunk-search": executable file not found in $PATH
+--- FAIL: TestSearchPartialTailAndCorruption (1.07s)
+    --- FAIL: TestSearchPartialTailAndCorruption/partial_index (0.13s)
+        search_test.go:298: 0 trunk-search is required beside trunk or on PATH; run make build: exec: "trunk-search": executable file not found in $PATH
+    --- FAIL: TestSearchPartialTailAndCorruption/partial_trie (0.17s)
+        search_test.go:298: 0 trunk-search is required beside trunk or on PATH; run make build: exec: "trunk-search": executable file not found in $PATH
+    --- FAIL: TestSearchPartialTailAndCorruption/orphan_pop (0.13s)
+        search_test.go:298: 0 trunk-search is required beside trunk or on PATH; run make build: exec: "trunk-search": executable file not found in $PATH
+--- FAIL: TestSearchCancellationAndAbsentDay (0.16s)
+    search_test.go:322: trunk-search is required beside trunk or on PATH; run make build: exec: "trunk-search": executable file not found in $PATH
+--- FAIL: TestSearchFractionalBoundariesAndLiteralValues (0.20s)
+    search_test.go:389: trunk-search is required beside trunk or on PATH; run make build: exec: "trunk-search": executable file not found in $PATH
+--- FAIL: TestSearchCancelsDuringOutput (0.27s)
+    search_test.go:425: 0 trunk-search is required beside trunk or on PATH; run make build: exec: "trunk-search": executable file not found in $PATH
+FAIL
+FAIL	trie-trunk/go/server/search	85.593s
+--- FAIL: TestHTTP2HTTP3AndSocket (0.66s)
+    listener_test.go:140: trunk-search is required beside trunk or on PATH; run make build: exec: "trunk-search": executable file not found in $PATH
+--- FAIL: TestFollowDisconnectAndShutdown (0.49s)
+    listener_test.go:310: search: 422 Unprocessable Entity: search failed: trunk-search is required beside trunk or on PATH; run make build: exec: "trunk-search": executable file not found in $PATH
+--- FAIL: TestLoopbackHTTPOrigin (1.13s)
+    --- FAIL: TestLoopbackHTTPOrigin/token= (0.52s)
+        listener_test.go:452: collect: 422 Unprocessable Entity 736561726368206661696c65643a207472756e6b2d73656172636820697320726571756972656420626573696465207472756e6b206f72206f6e20504154483b2072756e206d616b65206275696c643a20657865633a20227472756e6b2d736561726368223a2065786563757461626c652066696c65206e6f7420666f756e6420696e2024504154480a
+    --- FAIL: TestLoopbackHTTPOrigin/token=test-token (0.62s)
+        listener_test.go:452: collect: 422 Unprocessable Entity 736561726368206661696c65643a207472756e6b2d73656172636820697320726571756972656420626573696465207472756e6b206f72206f6e20504154483b2072756e206d616b65206275696c643a20657865633a20227472756e6b2d736561726368223a2065786563757461626c652066696c65206e6f7420666f756e6420696e2024504154480a
+--- FAIL: TestPILWireOverHTTP2AndHTTP3 (0.65s)
+    pil_test.go:26: trunk-search is required beside trunk or on PATH; run make build: exec: "trunk-search": executable file not found in $PATH
+--- FAIL: TestPILFallsBackToHTTP2BeforeEventPull (2.50s)
+    pil_test.go:102: search: 422 Unprocessable Entity: search failed: trunk-search is required beside trunk or on PATH; run make build: exec: "trunk-search": executable file not found in $PATH
+--- FAIL: TestCollectVersionNegotiationOverHTTP2AndHTTP3 (0.50s)
+    --- FAIL: TestCollectVersionNegotiationOverHTTP2AndHTTP3/HTTP2 (0.01s)
+        pil_test.go:153: cold collect: &{422 Unprocessable Entity 422 HTTP/2.0 2 0 map[Alt-Svc:[h3=":64179"; ma=2592000] Cache-Control:[no-store] Content-Length:[138] Content-Type:[text/plain; charset=utf-8] Date:[Sat, 24 Oct 2026 00:30:28 GMT] Definition-Version:[15a4eeaa1d6d98fd7457f58070d3eefeb2192708692e6316eda00fecf685c513] Pil-Version:[2] Trunk-Completion:[body] Trunk-Entry-Headers:[] Vary:[Accept, PIL-Version, Definition-Version Definition-Known] X-Content-Type-Options:[nosniff]] 0x6ba962d62000 138 [] false false map[] 0x6ba9628dadc0 0x6ba962a58540} 736561726368206661696c65643a207472756e6b2d73656172636820697320726571756972656420626573696465207472756e6b206f72206f6e20504154483b2072756e206d616b65206275696c643a20657865633a20227472756e6b2d736561726368223a2065786563757461626c652066696c65206e6f7420666f756e6420696e2024504154480a
+    --- FAIL: TestCollectVersionNegotiationOverHTTP2AndHTTP3/HTTP3 (0.00s)
+        pil_test.go:153: cold collect: &{422 Unprocessable Entity 422 HTTP/3.0 3 0 map[Cache-Control:[no-store] Content-Length:[138] Content-Type:[text/plain; charset=utf-8] Date:[Sat, 24 Oct 2026 00:30:28 GMT] Definition-Version:[15a4eeaa1d6d98fd7457f58070d3eefeb2192708692e6316eda00fecf685c513] Pil-Version:[2] Trunk-Completion:[body] Trunk-Entry-Headers:[] Vary:[Accept, PIL-Version, Definition-Version Definition-Known] X-Content-Type-Options:[nosniff]] 0x6ba9629aede0 138 [] false false map[] 0x6ba9628db2c0 0x6ba962a58900} 736561726368206661696c65643a207472756e6b2d73656172636820697320726571756972656420626573696465207472756e6b206f72206f6e20504154483b2072756e206d616b65206275696c643a20657865633a20227472756e6b2d736561726368223a2065786563757461626c652066696c65206e6f7420666f756e6420696e2024504154480a
+FAIL
+FAIL	trie-trunk/go/server/serve	13.908s
+ok  	trie-trunk/go/server/store	52.731s
+FAIL

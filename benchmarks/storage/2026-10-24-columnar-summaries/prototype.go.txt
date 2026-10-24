@@ -1,0 +1,593 @@
+package cache
+
+// Experimental only: this codec is deliberately outside the production build.
+// It compares the existing aggregate model without changing live files or the
+// Go/Rust ownership boundary. All public-reader-like entry points validate data.
+import (
+	"bytes"
+	"fmt"
+	"hash/crc32"
+	"os"
+	"path/filepath"
+	"reflect"
+	"testing"
+)
+
+const colHeader = 40
+const colHour = 80
+const colEntry = 32
+
+type colHourInput struct {
+	known bool
+	sum   Summary
+}
+type colSummary struct{ raw []byte }
+type colSpec struct {
+	id, width               uint32
+	start, first, firstHour uint64
+}
+
+// Header: magic[8], hours U32, columns U32, rows U64, UTC origin I64,
+// column-directory byte address U64. Version zero, not a migration format.
+// Hour record: first row U64, 13 relative bucket boundaries U32, state U32,
+// auxiliary-statistics byte address U64, auxiliary length U64.
+// Column entry: stable metric ID U32, element width U32, byte address U64,
+// first supported row U64, first supported hour U64. Column length is (rows-first)*width.
+// No compression: the prototype isolates layout and addressing effects.
+func buildColSummary(origin int64, hours []colHourInput) (colSummary, error) {
+	if origin < 0 || origin%TimeHourMS != 0 {
+		return colSummary{}, fmt.Errorf("unaligned origin")
+	}
+	rowCount := 0
+	for _, h := range hours {
+		rowCount += len(h.sum.Groups)
+	}
+	raw := make([]byte, colHeader+len(hours)*colHour, colHeader+len(hours)*(colHour+1)+rowCount*42+6*colEntry)
+	copy(raw, "COLSUM00")
+	order.PutUint32(raw[8:], uint32(len(hours)))
+	order.PutUint64(raw[24:], uint64(origin))
+	groups := make([]Group, 0, rowCount)
+	aux := make([][]byte, len(hours))
+	for i, h := range hours {
+		d := raw[colHeader+i*colHour:][:colHour]
+		order.PutUint64(d, uint64(len(groups)))
+		if !h.known {
+			if len(h.sum.Groups) > 0 || len(h.sum.Statistics) > 0 {
+				return colSummary{}, fmt.Errorf("unknown hour has data")
+			}
+			continue
+		}
+		order.PutUint32(d[60:], 1)
+		if len(h.sum.Groups) > 0 {
+			if _, err := validateSummary(h.sum); err != nil {
+				return colSummary{}, err
+			}
+		}
+		base := origin + int64(i)*TimeHourMS
+		at := 0
+		for bucket := 0; bucket < 12; bucket++ {
+			order.PutUint32(d[8+bucket*4:], uint32(at))
+			for at < len(h.sum.Groups) && h.sum.Groups[at].Period == base+int64(bucket)*300000 {
+				at++
+			}
+		}
+		if at != len(h.sum.Groups) {
+			return colSummary{}, fmt.Errorf("groups outside hour")
+		}
+		order.PutUint32(d[56:], uint32(at))
+		groups = append(groups, h.sum.Groups...)
+		var err error
+		aux[i], err = encoder.Marshal(h.sum.Statistics)
+		if err != nil {
+			return colSummary{}, err
+		}
+	}
+	order.PutUint64(raw[16:], uint64(len(groups)))
+	var specs []colSpec
+	for id := uint32(0); id < 6; id++ {
+		width := uint32(8)
+		if id == 0 {
+			width = 2
+		}
+		specs = append(specs, colSpec{id, width, uint64(len(raw)), 0, 0})
+		for _, g := range groups {
+			values := [6]uint64{uint64(g.Reference), g.Aggregate.Count, g.Aggregate.DurationCount, g.Aggregate.Sum, g.Aggregate.Min, g.Aggregate.Max}
+			at := len(raw)
+			raw = append(raw, make([]byte, width)...)
+			if width == 2 {
+				order.PutUint16(raw[at:], uint16(values[id]))
+			} else {
+				order.PutUint64(raw[at:], values[id])
+			}
+		}
+	}
+	for i, a := range aux {
+		d := raw[colHeader+i*colHour:][:colHour]
+		order.PutUint64(d[64:], uint64(len(raw)))
+		order.PutUint64(d[72:], uint64(len(a)))
+		raw = append(raw, a...)
+	}
+	return colSummary{appendColDirectory(raw, specs)}, nil
+}
+func appendColDirectory(raw []byte, specs []colSpec) []byte {
+	order.PutUint32(raw[12:], uint32(len(specs)))
+	order.PutUint64(raw[32:], uint64(len(raw)))
+	for _, s := range specs {
+		at := len(raw)
+		raw = append(raw, make([]byte, colEntry)...)
+		order.PutUint32(raw[at:], s.id)
+		order.PutUint32(raw[at+4:], s.width)
+		order.PutUint64(raw[at+8:], s.start)
+		order.PutUint64(raw[at+16:], s.first)
+		order.PutUint64(raw[at+24:], s.firstHour)
+	}
+	return raw
+}
+func (c colSummary) specs() []colSpec {
+	n, at := int(order.Uint32(c.raw[12:])), int(order.Uint64(c.raw[32:]))
+	out := make([]colSpec, n)
+	for i := range out {
+		b := c.raw[at+i*colEntry:]
+		out[i] = colSpec{order.Uint32(b), order.Uint32(b[4:]), order.Uint64(b[8:]), order.Uint64(b[16:]), order.Uint64(b[24:])}
+	}
+	return out
+}
+func parseColSummary(raw []byte) (colSummary, error) {
+	fail := func() (colSummary, error) { return colSummary{}, fmt.Errorf("invalid columnar summary") }
+	if len(raw) < colHeader || string(raw[:8]) != "COLSUM00" {
+		return fail()
+	}
+	hours, cols := uint64(order.Uint32(raw[8:])), uint64(order.Uint32(raw[12:]))
+	rows, dir := order.Uint64(raw[16:]), order.Uint64(raw[32:])
+	start := colHeader + hours*colHour
+	if cols < 6 || start > uint64(len(raw)) || dir < start || dir > uint64(len(raw)) || cols*colEntry != uint64(len(raw))-dir || order.Uint64(raw[24:])%uint64(TimeHourMS) != 0 {
+		return fail()
+	}
+	c := colSummary{raw}
+	seen := map[uint32]bool{}
+	for _, s := range c.specs() {
+		if seen[s.id] || (s.width != 2 && s.width != 8) || s.firstHour > hours || s.first > rows || s.start < start || s.start > dir || rows-s.first > (dir-s.start)/uint64(s.width) {
+			return fail()
+		}
+		if s.id < 6 {
+			w := uint32(8)
+			if s.id == 0 {
+				w = 2
+			}
+			if s.width != w || s.first != 0 || s.firstHour != 0 {
+				return fail()
+			}
+		}
+		seen[s.id] = true
+	}
+	for id := uint32(0); id < 6; id++ {
+		if !seen[id] {
+			return fail()
+		}
+	}
+	var next uint64
+	for i := uint64(0); i < hours; i++ {
+		d := raw[colHeader+i*colHour:][:colHour]
+		if order.Uint64(d) != next || order.Uint32(d[8:]) != 0 || order.Uint32(d[60:]) > 1 {
+			return fail()
+		}
+		var prior uint32
+		for j := 0; j < 13; j++ {
+			v := order.Uint32(d[8+j*4:])
+			if v < prior {
+				return fail()
+			}
+			prior = v
+		}
+		if uint64(prior) > rows-next || (order.Uint32(d[60:]) == 0 && prior != 0) {
+			return fail()
+		}
+		next += uint64(prior)
+		a, n := order.Uint64(d[64:]), order.Uint64(d[72:])
+		if n > 0 && (a < start || a > dir || n > dir-a) {
+			return fail()
+		}
+	}
+	for _, s := range c.specs() {
+		first := rows
+		if s.firstHour < hours {
+			first = order.Uint64(raw[colHeader+s.firstHour*colHour:])
+		}
+		if first != s.first {
+			return fail()
+		}
+	}
+	if next != rows {
+		return fail()
+	}
+	return c, nil
+}
+func (c colSummary) column(id uint32) (colSpec, bool) {
+	for _, s := range c.specs() {
+		if s.id == id {
+			return s, true
+		}
+	}
+	return colSpec{}, false
+}
+func (c colSummary) value(s colSpec, row uint64) (uint64, bool) {
+	if row < s.first || row >= order.Uint64(c.raw[16:]) {
+		return 0, false
+	}
+	at := s.start + (row-s.first)*uint64(s.width)
+	return getUintWidth(c.raw[at : at+uint64(s.width)]), true
+}
+
+// The trie can supply this hour ordinal; no scan of preceding hours is needed.
+func (c colSummary) bucketRange(hour, from, to int) (uint64, uint64, bool) {
+	if hour < 0 || hour >= int(order.Uint32(c.raw[8:])) || from < 0 || to > 12 || from > to {
+		return 0, 0, false
+	}
+	d := c.raw[colHeader+hour*colHour:][:colHour]
+	if order.Uint32(d[60:]) == 0 {
+		return 0, 0, false
+	}
+	base := order.Uint64(d)
+	return base + uint64(order.Uint32(d[8+from*4:])), base + uint64(order.Uint32(d[8+to*4:])), true
+}
+func (c colSummary) total(s colSpec, hour, from, to int) (uint64, bool) {
+	a, z, ok := c.bucketRange(hour, from, to)
+	if !ok || uint64(hour) < s.firstHour || a < s.first {
+		return 0, false
+	}
+	if s.width != 8 {
+		return 0, false
+	}
+	data := c.raw[s.start+(a-s.first)*8 : s.start+(z-s.first)*8]
+	var sum uint64
+	for len(data) >= 8 {
+		sum += order.Uint64(data)
+		data = data[8:]
+	}
+	return sum, true
+}
+
+// Demonstrates column addition only. Crash-safe publication is intentionally not
+// claimed: a production implementation needs its normal commit/root protocol.
+func (c colSummary) addColumn(id uint32, firstHour uint64, values []uint64) (colSummary, error) {
+	if firstHour >= uint64(order.Uint32(c.raw[8:])) {
+		return colSummary{}, fmt.Errorf("invalid start hour")
+	}
+	first := order.Uint64(c.raw[colHeader+firstHour*colHour:])
+	if _, exists := c.column(id); exists || first > order.Uint64(c.raw[16:]) || uint64(len(values)) != order.Uint64(c.raw[16:])-first {
+		return colSummary{}, fmt.Errorf("invalid column addition")
+	}
+	raw := bytes.Clone(c.raw)
+	specs := c.specs()
+	specs = append(specs, colSpec{id, 8, uint64(len(raw)), first, firstHour})
+	for _, v := range values {
+		at := len(raw)
+		raw = append(raw, make([]byte, 8)...)
+		order.PutUint64(raw[at:], v)
+	}
+	return parseColSummary(appendColDirectory(raw, specs))
+}
+
+func prototypeHours(n, groups int, sparse bool) []colHourInput {
+	hours := make([]colHourInput, n)
+	for h := range hours {
+		hours[h].known = true
+		s := &hours[h].sum
+		s.From = 1
+		for b := 0; b < 12; b++ {
+			if sparse && b%3 != 0 {
+				continue
+			}
+			for g := 0; g < groups; g++ {
+				s.Groups = append(s.Groups, Group{int64(h)*TimeHourMS + int64(b)*300000, uint16(g), Aggregate{100, 100, 1000, 10, 10}})
+				s.Through += 100
+			}
+		}
+		s.Through++
+	}
+	return hours
+}
+func TestColumnarSummaryPrototype(t *testing.T) {
+	hours := prototypeHours(3, 3, true)
+	hours[1] = colHourInput{known: true}
+	hours[2] = colHourInput{}
+	c, err := buildColSummary(0, hours)
+	if err != nil {
+		t.Fatal(err)
+	}
+	c, err = parseColSummary(c.raw)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for i, g := range hours[0].sum.Groups {
+		for id, want := range []uint64{uint64(g.Reference), g.Aggregate.Count, g.Aggregate.DurationCount, g.Aggregate.Sum, g.Aggregate.Min, g.Aggregate.Max} {
+			s, _ := c.column(uint32(id))
+			v, ok := c.value(s, uint64(i))
+			if !ok || v != want {
+				t.Fatal("roundtrip")
+			}
+		}
+	}
+	count, _ := c.column(1)
+	if v, ok := c.total(count, 0, 0, 1); !ok || v != 300 {
+		t.Fatal("bucket selection")
+	}
+	if v, ok := c.total(count, 1, 0, 12); !ok || v != 0 {
+		t.Fatal("complete empty")
+	}
+	if _, ok := c.total(count, 2, 0, 12); ok {
+		t.Fatal("unknown became zero")
+	}
+	trie, err := buildTimeDirectory(nil, 0, 3*TimeHourMS, 0, [16]byte{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	leaf, ok := trie.leaf(TimeHourMS)
+	if !ok {
+		t.Fatal("missing trie hour")
+	}
+	hourRecord := (leaf.From - int64(order.Uint64(c.raw[24:]))) / TimeHourMS
+	if v, ok := c.total(count, int(hourRecord), 0, 12); !ok || v != 0 {
+		t.Fatal("trie to fixed hour record")
+	}
+	for from := 0; from < 12; from++ {
+		for to := from; to <= 12; to++ {
+			var want uint64
+			for _, g := range hours[0].sum.Groups {
+				if g.Period >= int64(from)*300000 && g.Period < int64(to)*300000 {
+					want += g.Aggregate.Count
+				}
+			}
+			if got, ok := c.total(count, 0, from, to); !ok || got != want {
+				t.Fatal("column/row query mismatch")
+			}
+		}
+	}
+	evolving, err := buildColSummary(0, prototypeHours(3, 1, true))
+	if err != nil {
+		t.Fatal(err)
+	}
+	next, err := evolving.addColumn(99, 1, []uint64{7, 9, 0, 0, 1, 2, 3, 4})
+	if err != nil {
+		t.Fatal(err)
+	}
+	s, _ := next.column(99)
+	if _, ok := next.value(s, 3); ok {
+		t.Fatal("historical metric became zero")
+	}
+	if v, _ := next.value(s, 4); v != 7 {
+		t.Fatal("new metric")
+	}
+	if !bytes.Equal(evolving.raw[colHeader:], next.raw[colHeader:len(evolving.raw)]) {
+		t.Fatal("old arrays moved")
+	}
+	empty, err := buildColSummary(0, []colHourInput{{known: true}, {known: true}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	empty, err = empty.addColumn(99, 1, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	metric, _ := empty.column(99)
+	if _, ok := empty.total(metric, 0, 0, 12); ok {
+		t.Fatal("historical empty became available")
+	}
+	if v, ok := empty.total(metric, 1, 0, 12); !ok || v != 0 {
+		t.Fatal("supported empty not zero")
+	}
+	path := filepath.Join(t.TempDir(), "prototype.sum")
+	if err = os.WriteFile(path, next.raw, 0600); err != nil {
+		t.Fatal(err)
+	}
+	raw, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err = parseColSummary(raw); err != nil {
+		t.Fatal(err)
+	}
+	for n := 0; n < len(c.raw); n++ {
+		if _, err := parseColSummary(c.raw[:n]); err == nil {
+			t.Fatalf("truncation %d", n)
+		}
+	}
+	for _, at := range []int{0, 8, 12, 16, 32, colHeader, colHeader + 56, colHeader + 60} {
+		bad := bytes.Clone(c.raw)
+		for j := 0; j < 4; j++ {
+			bad[at+j] = 255
+		}
+		if _, err := parseColSummary(bad); err == nil {
+			t.Fatalf("corruption %d", at)
+		}
+	}
+}
+
+// Read current fixtures without opening a writable store or replaying recovery.
+func TestColumnarSummaryDemo(t *testing.T) {
+	root := os.Getenv("TRUNK_COLUMNAR_DEMO")
+	if root == "" {
+		t.Skip("opt-in read-only demo measurement")
+	}
+	var oldBytes, newBytes, rows, files int
+	err := filepath.WalkDir(root, func(path string, d os.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if d.IsDir() || filepath.Ext(path) != ".sum" {
+			return nil
+		}
+		raw, err := os.ReadFile(path)
+		if err != nil {
+			return err
+		}
+		oldBytes += len(raw)
+		var sums []Summary
+		var first, last int64
+		for at := headerSize; at < len(raw); {
+			if len(raw)-at < 8 {
+				return fmt.Errorf("truncated journal")
+			}
+			n := int(order.Uint32(raw[at:]))
+			crc := order.Uint32(raw[at+4:])
+			at += 8
+			if n > len(raw)-at {
+				return fmt.Errorf("truncated summary")
+			}
+			body := raw[at : at+n]
+			at += n
+			if crc32.Checksum(body, checksum) != crc {
+				return fmt.Errorf("CRC")
+			}
+			var s Summary
+			if err = decodeSummary(body, &s); err != nil {
+				return err
+			}
+			h := utcHour(s.Groups[0].Period)
+			if len(sums) == 0 {
+				first = h
+			}
+			last = h
+			sums = append(sums, s)
+			rows += len(s.Groups)
+		}
+		if len(sums) == 0 {
+			return nil
+		}
+		hours := make([]colHourInput, (last-first)/TimeHourMS+1)
+		for _, s := range sums {
+			i := (utcHour(s.Groups[0].Period) - first) / TimeHourMS
+			if hours[i].known {
+				return fmt.Errorf("duplicate hour")
+			}
+			hours[i] = colHourInput{true, s}
+		}
+		c, err := buildColSummary(first, hours)
+		if err != nil {
+			return err
+		}
+		c, err = parseColSummary(c.raw)
+		if err != nil {
+			return err
+		}
+		var row uint64
+		for i, h := range hours {
+			for _, g := range h.sum.Groups {
+				for id, want := range []uint64{uint64(g.Reference), g.Aggregate.Count, g.Aggregate.DurationCount, g.Aggregate.Sum, g.Aggregate.Min, g.Aggregate.Max} {
+					s, _ := c.column(uint32(id))
+					v, ok := c.value(s, row)
+					if !ok || v != want {
+						return fmt.Errorf("metric mismatch")
+					}
+				}
+				row++
+			}
+			d := c.raw[colHeader+i*colHour:]
+			a, n := order.Uint64(d[64:]), order.Uint64(d[72:])
+			if n > 0 {
+				var stats []statisticsGroup
+				if err = decoder.Unmarshal(c.raw[a:a+n], &stats); err != nil {
+					return err
+				}
+				if !reflect.DeepEqual(stats, h.sum.Statistics) {
+					return fmt.Errorf("statistics mismatch")
+				}
+			}
+		}
+		newBytes += len(c.raw)
+		files++
+		return nil
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Logf("files=%d rows=%d current_bytes=%d columnar_bytes=%d change_pct=%.2f (same metrics and auxiliary statistics; columnar excludes production recovery framing)", files, rows, oldBytes, newBytes, 100*(float64(newBytes)/float64(oldBytes)-1))
+}
+
+var columnarSink uint64
+
+func BenchmarkColumnarSummaryPrototype(b *testing.B) {
+	for _, tc := range []struct {
+		name   string
+		groups int
+		sparse bool
+	}{{"sparse", 1, true}, {"dense", 32, false}} {
+		b.Run(tc.name, func(b *testing.B) {
+			hours := prototypeHours(24*30, tc.groups, tc.sparse)
+			c, err := buildColSummary(0, hours)
+			if err != nil {
+				b.Fatal(err)
+			}
+			count, _ := c.column(1)
+			var rawBytes int
+			for _, h := range hours {
+				r, e := encodeSummary(h.sum)
+				if e != nil {
+					b.Fatal(e)
+				}
+				rawBytes += len(r) + 8
+			}
+			b.Run("BuildColumnar", func(b *testing.B) {
+				b.ReportAllocs()
+				for i := 0; i < b.N; i++ {
+					x, e := buildColSummary(0, hours)
+					if e != nil {
+						b.Fatal(e)
+					}
+					columnarSink = uint64(len(x.raw))
+				}
+				b.ReportMetric(float64(len(c.raw)), "file-bytes")
+			})
+			b.Run("BuildCurrent", func(b *testing.B) {
+				b.ReportAllocs()
+				for i := 0; i < b.N; i++ {
+					for _, h := range hours {
+						r, e := encodeSummary(h.sum)
+						if e != nil {
+							b.Fatal(e)
+						}
+						columnarSink = uint64(len(r))
+					}
+				}
+				b.ReportMetric(float64(rawBytes+headerSize), "file-bytes")
+			})
+			b.Run("ColumnCount", func(b *testing.B) {
+				b.ReportAllocs()
+				for i := 0; i < b.N; i++ {
+					v, _ := c.total(count, i%len(hours), 3, 9)
+					columnarSink = v
+				}
+			})
+			b.Run("ResidentRowCount", func(b *testing.B) {
+				b.ReportAllocs()
+				for i := 0; i < b.N; i++ {
+					h := i % len(hours)
+					from := int64(h)*TimeHourMS + 3*300000
+					to := from + 6*300000
+					var v uint64
+					for _, g := range hours[h].sum.Groups {
+						if g.Period >= from && g.Period < to {
+							v += g.Aggregate.Count
+						}
+					}
+					columnarSink = v
+				}
+			})
+			// Same precomputed bucket bounds as the column path, separating
+			// column locality from the benefit of avoiding a bucket scan.
+			b.Run("IndexedResidentRowCount", func(b *testing.B) {
+				b.ReportAllocs()
+				for i := 0; i < b.N; i++ {
+					h := i % len(hours)
+					a, z, _ := c.bucketRange(h, 3, 9)
+					base := order.Uint64(c.raw[colHeader+h*colHour:])
+					var v uint64
+					for _, g := range hours[h].sum.Groups[a-base : z-base] {
+						v += g.Aggregate.Count
+					}
+					columnarSink = v
+				}
+			})
+		})
+	}
+}

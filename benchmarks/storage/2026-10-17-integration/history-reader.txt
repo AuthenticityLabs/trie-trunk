@@ -1,0 +1,36 @@
+goos: darwin
+goarch: arm64
+pkg: trie-trunk/go/server/cache
+cpu: Apple M1 Max
+BenchmarkHistorySnapshot/10/locked-reader-10         	   44602	      5458 ns/op	       532.0 PIL-B/op	    4898 B/op	      75 allocs/op
+BenchmarkHistorySnapshot/10/locked-reader-10         	   44952	      5575 ns/op	       532.0 PIL-B/op	    4898 B/op	      75 allocs/op
+BenchmarkHistorySnapshot/10/locked-reader-10         	   44044	      5445 ns/op	       532.0 PIL-B/op	    4898 B/op	      75 allocs/op
+BenchmarkHistorySnapshot/10/locked-reader-10         	   44066	      5475 ns/op	       532.0 PIL-B/op	    4898 B/op	      75 allocs/op
+BenchmarkHistorySnapshot/10/locked-reader-10         	   44157	      5432 ns/op	       532.0 PIL-B/op	    4898 B/op	      75 allocs/op
+BenchmarkHistorySnapshot/10/snapshot-reader-10       	    8923	     24518 ns/op	       532.0 PIL-B/op	    5954 B/op	      75 allocs/op
+BenchmarkHistorySnapshot/10/snapshot-reader-10       	    9600	     24681 ns/op	       532.0 PIL-B/op	    5955 B/op	      75 allocs/op
+BenchmarkHistorySnapshot/10/snapshot-reader-10       	    9340	     24472 ns/op	       532.0 PIL-B/op	    5955 B/op	      75 allocs/op
+BenchmarkHistorySnapshot/10/snapshot-reader-10       	    9193	     25146 ns/op	       532.0 PIL-B/op	    5955 B/op	      75 allocs/op
+BenchmarkHistorySnapshot/10/snapshot-reader-10       	    9645	     24543 ns/op	       532.0 PIL-B/op	    5955 B/op	      75 allocs/op
+BenchmarkHistorySnapshot/1000/locked-reader-10       	     429	    495161 ns/op	     51352 PIL-B/op	  326561 B/op	    5038 allocs/op
+BenchmarkHistorySnapshot/1000/locked-reader-10       	     486	    492108 ns/op	     51352 PIL-B/op	  326557 B/op	    5038 allocs/op
+BenchmarkHistorySnapshot/1000/locked-reader-10       	     486	    512775 ns/op	     51352 PIL-B/op	  326553 B/op	    5038 allocs/op
+BenchmarkHistorySnapshot/1000/locked-reader-10       	     466	    514267 ns/op	     51352 PIL-B/op	  326555 B/op	    5038 allocs/op
+BenchmarkHistorySnapshot/1000/locked-reader-10       	     465	    514616 ns/op	     51352 PIL-B/op	  326553 B/op	    5038 allocs/op
+BenchmarkHistorySnapshot/1000/snapshot-reader-10     	     801	    296807 ns/op	     51352 PIL-B/op	  356088 B/op	    4054 allocs/op
+BenchmarkHistorySnapshot/1000/snapshot-reader-10     	     807	    298846 ns/op	     51352 PIL-B/op	  356077 B/op	    4054 allocs/op
+BenchmarkHistorySnapshot/1000/snapshot-reader-10     	     820	    298404 ns/op	     51352 PIL-B/op	  356078 B/op	    4054 allocs/op
+BenchmarkHistorySnapshot/1000/snapshot-reader-10     	     758	    285001 ns/op	     51352 PIL-B/op	  356086 B/op	    4054 allocs/op
+BenchmarkHistorySnapshot/1000/snapshot-reader-10     	     819	    288352 ns/op	     51352 PIL-B/op	  356086 B/op	    4054 allocs/op
+BenchmarkHistorySnapshot/10000/locked-reader-10      	      38	   5753053 ns/op	    513352 PIL-B/op	 4786986 B/op	   50062 allocs/op
+BenchmarkHistorySnapshot/10000/locked-reader-10      	      39	   5742496 ns/op	    513352 PIL-B/op	 4786909 B/op	   50061 allocs/op
+BenchmarkHistorySnapshot/10000/locked-reader-10      	      43	   5785898 ns/op	    513352 PIL-B/op	 4786916 B/op	   50062 allocs/op
+BenchmarkHistorySnapshot/10000/locked-reader-10      	      43	   5729341 ns/op	    513352 PIL-B/op	 4786846 B/op	   50061 allocs/op
+BenchmarkHistorySnapshot/10000/locked-reader-10      	      43	   5657275 ns/op	    513352 PIL-B/op	 4786881 B/op	   50061 allocs/op
+BenchmarkHistorySnapshot/10000/snapshot-reader-10    	      76	   3124495 ns/op	    513352 PIL-B/op	 5771356 B/op	   40087 allocs/op
+BenchmarkHistorySnapshot/10000/snapshot-reader-10    	      72	   3141800 ns/op	    513352 PIL-B/op	 5771360 B/op	   40086 allocs/op
+BenchmarkHistorySnapshot/10000/snapshot-reader-10    	      73	   3128260 ns/op	    513352 PIL-B/op	 5771440 B/op	   40087 allocs/op
+BenchmarkHistorySnapshot/10000/snapshot-reader-10    	      72	   3152532 ns/op	    513352 PIL-B/op	 5771463 B/op	   40087 allocs/op
+BenchmarkHistorySnapshot/10000/snapshot-reader-10    	      74	   3153507 ns/op	    513352 PIL-B/op	 5771409 B/op	   40087 allocs/op
+PASS
+ok  	trie-trunk/go/server/cache	8.941s

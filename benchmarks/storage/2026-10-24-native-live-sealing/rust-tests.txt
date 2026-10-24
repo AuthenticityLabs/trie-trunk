@@ -1,0 +1,40 @@
+   Compiling trie-trunk-search v0.1.0 (/Users/Shared/code/applications/trie-trunk/rust)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.69s
+     Running unittests src/lib.rs (rust/target/debug/deps/trie_trunk_search-af49c7acf8b0ce7a)
+
+running 32 tests
+test buffers::tests::append_only_suffix_survives_pool_and_other_hour_release ... ok
+test buffers::tests::pins_budget_and_freezing ... ok
+test disk_rows::tests::compact_starts_follow_physical_rows_not_matches ... ok
+test disk_rows::tests::ref16_rows_preserve_boundaries_and_maximum_reference ... ok
+test live::tests::expired_pending_survives_until_commit ... ok
+test filter::tests::rejects_unsupported_or_ambiguous_syntax ... ok
+test live::tests::seal_keeps_pending_until_publication_and_prune_cleans_objects ... ok
+test filter::tests::parses_complete_predicates_and_deduplicates ... ok
+test tantivy_engine::address_tradeoff_test::compare_address_layouts ... ignored, controlled storage/latency experiment; TRUNK_ADDRESS_BENCH required
+test tantivy_engine::address_tradeoff_test::compare_object_lookup ... ignored, object lookup experiment; TRUNK_ADDRESS_BENCH required
+test filter::tests::comparisons_preserve_types_and_integer_precision ... ok
+test search::tests::time_uses_only_significant_fractional_digits ... ok
+test index_cache::tests::cache_obeys_snapshot_end_incarnation_and_age ... ok
+test store::tests::scan_resumes_after_last_complete_block ... ok
+test search::tests::ordered_json_preserves_values_and_indentation ... ok
+test search::tests::cached_lineage_keeps_traversal_order ... ok
+test tests::boundaries_and_repeated_timestamps ... ok
+test tests::empty_index ... ok
+test filter::tests::packed_states_cross_byte_boundaries_and_extend ... ok
+test tests::ignores_uuid_suffix ... ok
+test tests::timestamp_byte_rollovers ... ok
+test filter::tests::lineage_decisions_match_full_record_evaluation ... ok
+test tests::timestamp_limit ... ok
+test tests::window_boundaries ... ok
+test postings::tests::multiple_leaves_and_windows_match_row_scan ... ok
+test tantivy_engine::native::registry::tests::canceled_collector_rejects_query_without_poisoning_reader ... ok
+test tantivy_engine::native::registry::tests::warm_queries_share_source_read_lock_and_cancel_independently ... ok
+test tantivy_engine::tests::prefix_does_not_silently_truncate_matching_terms ... ok
+test tantivy_engine::native::registry::tests::one_source_writer_does_not_gate_another_source_query ... ok
+test tantivy_engine::tests::text_modes_respect_values_and_do_not_store_payloads ... ok
+test tests::matches_linear_reference ... ok
+test tests::window_matches_linear_reference ... ok
+
+test result: ok. 30 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 0.21s
+

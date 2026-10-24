@@ -2,6 +2,7 @@
 import wasmURL from "../../assets/trunk-store.wasm?url";
 import { createArchive } from "./runtime.ts";
 import { EventIndex } from "./index.ts";
+import { nativeFiles } from "./native-files.ts";
 import { directory, handle, write, entries } from "./files.ts";
 const module = fetch(wasmURL).then((r) => WebAssembly.compileStreaming(r));
 let execute = createArchive(module);
@@ -62,6 +63,15 @@ self.onmessage = ({ data }) => {
               db.close();
             }
           }
+          if(data.kind==="compact-native-state"){
+            const db=await EventIndex.open(data.namespace);
+            try{
+              const root=await directory(await navigator.storage.getDirectory(),"trie-trunk-v2",data.namespace);
+              const start=performance.now();
+              const compacted=await nativeFiles(root,db).compactState(data.source,true);
+              return {compacted,elapsedMs:performance.now()-start};
+            }finally{db.close();}
+          }
           if (data.kind === "fail-publication") {
             const publish = EventIndex.prototype.publish;
             EventIndex.prototype.publish = function (
@@ -78,6 +88,17 @@ self.onmessage = ({ data }) => {
               }
               return publish.call(this, records, ends, collection, members);
             };
+            return {};
+          }
+          if(data.kind==="fail-native-publication"){
+            const transaction=EventIndex.prototype.transaction;
+            EventIndex.prototype.transaction=function(this:EventIndex,names,mode,action){
+              if(mode==="readwrite"&&names.length===1&&names[0]==="state"){
+                EventIndex.prototype.transaction=transaction;
+                return Promise.reject(Error("simulated native IDB abort after file flush"));
+              }
+              return transaction.call(this,names,mode,action) as ReturnType<typeof transaction>;
+            } as typeof transaction;
             return {};
           }
           if (data.kind === "abort-transaction") {

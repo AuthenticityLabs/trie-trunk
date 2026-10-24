@@ -1,0 +1,2 @@
+   Compiling trie-trunk-search v0.1.0 (/Users/Shared/code/applications/trie-trunk/rust)
+    Finished `release` profile [optimized] target(s) in 3.01s
