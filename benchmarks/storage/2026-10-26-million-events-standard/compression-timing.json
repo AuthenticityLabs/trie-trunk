@@ -1,0 +1,138 @@
+{
+  "arch": "arm64",
+  "cpu": "Apple M1 Max",
+  "events": 1000000,
+  "go": "go1.26.4",
+  "gomaxprocs": 1,
+  "hourly_packets": 18021,
+  "notes": [
+    "Median total compression/decompression elapsed time across three serial passes; same prebuilt hourly inputs and Go compress/gzip implementation. Each result verified byte-for-byte.",
+    "Excludes disk I/O, JSON serialization, PIL encoding/packing, schema compilation and rendering. This is compressor cost, not end-to-end ingestion or retrieval latency.",
+    "Seed packs use uncompressed fallback when gzip plus its 16-byte header would grow the packet. Decode then copies the plain bytes. Definitions are counted in size but not repeated in timed packet operations."
+  ],
+  "os": "darwin",
+  "repeats": 3,
+  "rows": [
+    {
+      "format": "jsonl",
+      "gzip_level": 1,
+      "samples": [
+        {
+          "encode_ms": 1049.099121,
+          "decode_ms": 604.448042
+        },
+        {
+          "encode_ms": 1043.015476,
+          "decode_ms": 600.886203
+        },
+        {
+          "encode_ms": 1043.726374,
+          "decode_ms": 601.017659
+        }
+      ],
+      "encode_ms": 1043.726374,
+      "decode_ms": 601.017659
+    },
+    {
+      "format": "seed_packs",
+      "gzip_level": 1,
+      "samples": [
+        {
+          "encode_ms": 842.739124,
+          "decode_ms": 332.814668
+        },
+        {
+          "encode_ms": 839.769092,
+          "decode_ms": 332.024448
+        },
+        {
+          "encode_ms": 827.20374,
+          "decode_ms": 330.147106
+        }
+      ],
+      "encode_ms": 839.769092,
+      "decode_ms": 332.024448
+    },
+    {
+      "format": "jsonl",
+      "gzip_level": 6,
+      "samples": [
+        {
+          "encode_ms": 2059.509867,
+          "decode_ms": 501.267067
+        },
+        {
+          "encode_ms": 2047.812408,
+          "decode_ms": 499.942097
+        },
+        {
+          "encode_ms": 2049.379733,
+          "decode_ms": 499.852003
+        }
+      ],
+      "encode_ms": 2049.379733,
+      "decode_ms": 499.942097
+    },
+    {
+      "format": "seed_packs",
+      "gzip_level": 6,
+      "samples": [
+        {
+          "encode_ms": 1838.075883,
+          "decode_ms": 244.718935
+        },
+        {
+          "encode_ms": 1825.869732,
+          "decode_ms": 243.615165
+        },
+        {
+          "encode_ms": 1834.266255,
+          "decode_ms": 244.67282
+        }
+      ],
+      "encode_ms": 1834.266255,
+      "decode_ms": 244.67282
+    },
+    {
+      "format": "jsonl",
+      "gzip_level": 9,
+      "samples": [
+        {
+          "encode_ms": 3417.459916,
+          "decode_ms": 483.096317
+        },
+        {
+          "encode_ms": 3401.055924,
+          "decode_ms": 481.657638
+        },
+        {
+          "encode_ms": 3404.174136,
+          "decode_ms": 482.052852
+        }
+      ],
+      "encode_ms": 3404.174136,
+      "decode_ms": 482.052852
+    },
+    {
+      "format": "seed_packs",
+      "gzip_level": 9,
+      "samples": [
+        {
+          "encode_ms": 3339.215604,
+          "decode_ms": 242.1155
+        },
+        {
+          "encode_ms": 3320.677747,
+          "decode_ms": 241.407549
+        },
+        {
+          "encode_ms": 3328.16401,
+          "decode_ms": 241.293658
+        }
+      ],
+      "encode_ms": 3328.16401,
+      "decode_ms": 241.407549
+    }
+  ],
+  "source_sha256": "28a2c5504bd9a93e49d55776161834a029224ce348889302d6c005265af23680"
+}

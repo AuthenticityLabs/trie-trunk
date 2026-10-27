@@ -55,7 +55,7 @@ try{
  assert.ok(await page.locator('.paged-results .event-summary').count()>=loaded);
  // Standalone history retains its own query and accordion state across refresh.
  const nav=page.getByRole('complementary',{name:'Main Navigation'});
- await nav.locator('button[title="Object History"]').click();
+ await nav.locator('button[title="Collections"]').click();
  const history=page.getByRole('form',{name:'Object History',exact:true});await history.waitFor();
  assert.equal(await history.getByLabel('Object ID',{exact:true}).inputValue(),'','modal must not replace the standalone history draft');
  await history.getByLabel('History Resource').selectOption('demo/payment/transactions.v1/write');

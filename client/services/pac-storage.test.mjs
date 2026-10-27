@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {Codec} from './pil/wasm.ts';
 import {PILStream} from './pil/stream.ts';
-import {NativeStore} from './store/native.ts';
+import {NativeStore,committedRanges} from './store/native.ts';
 import {NativeEvent,NativeTrie} from './pil/native-event.ts';
 import {compile} from './pil/metadata.ts';
 import {Backend} from './native-backend-fixture.mjs';
@@ -23,7 +23,7 @@ async function receive(store,backend,bytes=wire,stride=137){
 test('sealed Go PACs persist native rows, shared prefixes and sparse member pages across restart',async()=>{
  const backend=new Backend(),store=new NativeStore(backend);
  const source=await receive(store,backend);
- assert.equal(source.index.reduce((n,r)=>n+r.End-r.Start,0),8);
+ assert.equal(committedRanges(source).index.reduce((n,r)=>n+r.End-r.Start,0),8);
  assert.equal(source.contexts.length,1);
  assert.equal(source.files.population.end,(1<<20)+8);
  assert.equal(source.files.index.end,(1<<20)+8);
@@ -47,7 +47,7 @@ test('a truncated hour never certifies persistent completeness; retry reuses sta
  await assert.rejects(receive(store,backend,wire.subarray(0,-1)),/complet|Truncated/i);
  assert.deepEqual(await store.coverage(),[]);
  const source=await receive(new NativeStore(backend),backend);
- assert.equal(source.index.reduce((n,r)=>n+r.End-r.Start,0),8);
+ assert.equal(committedRanges(source).index.reduce((n,r)=>n+r.End-r.Start,0),8);
  assert.equal(source.files.population.end,(1<<20)+8);
 });
 
@@ -58,14 +58,14 @@ test('out-of-order whole hours share pages, fill gaps, and retire without rebind
  // Deliver the latest hour before the earliest; leave the middle hour absent.
  await receive(store,backend,fixture('gap-2'),65536);
  let source=await receive(store,backend,fixture('gap-0'),65536);
- assert.deepEqual(source.index,[{Start:1,End:3},{Start:7,End:9}]);
+ assert.deepEqual(committedRanges(source).index,[{Start:1,End:3},{Start:7,End:9}]);
  assert.deepEqual(Object.keys(source.files.population.pages).map(Number).sort(),[0,1,3,4]);
  assert.equal(source.files.population.end,4*(1<<20)+8,'missing page 2 occupies no disk');
  const localPages=structuredClone(source.files.population.pages);
  const before=await store.page(source.key,at+2*hour,at+3*hour);
  assert.equal(before.rows.length,32);assert.ok(before.population.length>1_600_000);
  source=await receive(store,backend,fixture('gap-1'),65536);
- assert.deepEqual(source.index,[{Start:1,End:3},{Start:4,End:6},{Start:7,End:9}]);
+ assert.deepEqual(committedRanges(source).index,[{Start:1,End:3},{Start:4,End:6},{Start:7,End:9}]);
  assert.equal(source.files.population.end,5*(1<<20)+8);
  for(const [page,physical]of Object.entries(localPages))assert.equal(source.files.population.pages[page],physical);
  assert.deepEqual(await store.page(source.key,at+2*hour,at+3*hour),before,'gap fill changed neighboring hour');
@@ -74,14 +74,14 @@ test('out-of-order whole hours share pages, fill gaps, and retire without rebind
  for(let i=0;i<6;i++)assert.equal(all.population[all.offsets[i*2+1]-1],97+i,'cross-page member corrupted');
  const originalRows=before.rows.slice();
  source=await receive(store,backend,fixture('retired'),65536);
- assert.deepEqual(source.index,[{Start:7,End:9}]);assert.equal(source.retiredRows,6);
+ assert.deepEqual(committedRanges(source).index,[{Start:7,End:9}]);assert.equal(source.retiredRows,6);
  assert.equal(source.files.index.retired,96);
  assert.deepEqual((await new NativeStore(backend).page(source.key,at+2*hour,at+3*hour)).rows,originalRows);
  assert.deepEqual(Object.keys(source.files.population.pages).map(Number).sort(),[3,4]);
  await assert.rejects(receive(store,backend,fixture('gap-0'),65536),/Stale PAC retirement/);
- assert.deepEqual((await backend.get(source.key)).index,[{Start:7,End:9}]);
+ assert.deepEqual(committedRanges(await backend.get(source.key)).index,[{Start:7,End:9}]);
  source=await receive(store,backend,fixture('after-retirement'),65536);
- assert.equal(source.retiredRows,9);assert.deepEqual(source.index,[{Start:10,End:11}]);
+ assert.equal(source.retiredRows,9);assert.deepEqual(committedRanges(source).index,[{Start:10,End:11}]);
  const final=await store.page(source.key,at+72*hour,at+73*hour);
  assert.equal(final.rows.length,16);assert.equal(final.after,10);
  assert.ok(source.files.population.end<=5*(1<<20)+8,'retention failed to reuse storage');
@@ -100,7 +100,7 @@ test('quota failure during member-page allocation cannot certify an hour',async(
  await assert.rejects(receive(store,backend),e=>e.name==="QuotaExceededError");
  assert.deepEqual(await store.coverage(),[]);
  blocked=false;const source=await receive(new NativeStore(backend),backend);
- assert.deepEqual(source.index,[{Start:1,End:9}]);assert.equal(source.files.population.end,(1<<20)+8);
+ assert.deepEqual(committedRanges(source).index,[{Start:1,End:9}]);assert.equal(source.files.population.end,(1<<20)+8);
 });
 
 test('fixed 16-byte index segments cross sparse physical pages without ordinal translation',async()=>{

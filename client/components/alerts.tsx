@@ -12,7 +12,7 @@ export function AlertCenter(props:{token:string;children:JSX.Element;lostEvents:
     const token=props.token;
     setAvailable(false);setSelected(false);setError("");sessionKey='';
     let active:AbortController|undefined,disposed=false;
-    void credentialScope(token).then(scope=>{if(!disposed){sessionKey=`snoot-alert-tab:${scope}`;setSelected(readTab<boolean>(sessionKey)===true)}});
+    void credentialScope(token).then(scope=>{if(!disposed){sessionKey=`snoot:alerts:view:${scope}`;setSelected(readTab<boolean>(sessionKey)===true)}});
     async function check(){
       if(active||disposed)return;
       const controller=new AbortController();active=controller;

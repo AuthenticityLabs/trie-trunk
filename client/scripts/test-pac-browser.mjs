@@ -17,8 +17,8 @@ const root=fileURLToPath(new URL('../../',import.meta.url)),output=await mkdtemp
 const cold=new Uint8Array(await readFile(root+'client/services/fixtures/pac-view/cold.pil'));
 const warm=await readFile(root+'client/services/fixtures/pac-view/warm.pil'),next=await readFile(root+'client/services/fixtures/pac-view/next.pil');
 const compressed = await Promise.all(['cold','warm','next'].map(n=>readFile(root+'client/services/fixtures/pac-view/'+n+'.pil.gz')));
-const spliced=await readFile(root+'pil/tests/fixtures/pac/spliced.gz');
-const packedPAC=await readFile(root+'pil/tests/fixtures/pac/packed.pac'),splicedPAC=await readFile(root+'pil/tests/fixtures/pac/spliced-pacs.gz');
+const spliced=await readFile(root+'../pill-packer/rust/tests/fixtures/pac/spliced.gz');
+const packedPAC=await readFile(root+'../pill-packer/rust/tests/fixtures/pac/packed.pac'),splicedPAC=await readFile(root+'../pill-packer/rust/tests/fixtures/pac/spliced-pacs.gz');
 let metadata,binding,view;
 const wasm=await WebAssembly.compile(await readFile(root+'client/assets/pil.wasm'));
 const parser=new PILStream(new Codec(await WebAssembly.instantiate(wasm)),new Map(),d=>metadata=d,b=>binding=b,async()=>{},undefined,v=>view=v);
@@ -87,7 +87,7 @@ try{
  assert.match(await nav.getByRole('button',{name:/Search/}).textContent(),/7/);
  await page.evaluate(()=>{window.scrollTo(0,160);window.dispatchEvent(new Event('pagehide'))});
  const searchScroll=await page.evaluate(()=>window.scrollY);assert.ok(searchScroll>0);
- await nav.getByRole('button',{name:'Dashboard',exact:true}).click();
+ await nav.getByRole('button',{name:'Dashboards',exact:true}).click();
  assert.equal(await page.locator('[data-dashboard-matched]').textContent(),'7');
  assert.match(await page.locator('[data-paged-dashboard]').textContent(),/Loaded Events4/);
  await page.waitForFunction(()=>window.scrollY===0);
@@ -95,27 +95,20 @@ try{
  const dashboardScroll=await page.evaluate(()=>window.scrollY);assert.ok(dashboardScroll>0);
  await page.reload();
  await page.locator('[data-dashboard-matched]').waitFor();
- await page.waitForFunction(top=>window.scrollY===top,dashboardScroll).catch(async error=>{console.error('dashboard scroll',dashboardScroll,await page.evaluate(()=>({y:scrollY,tab:sessionStorage.getItem('snoot-tab-v1')})));throw error});
+ await page.waitForFunction(top=>window.scrollY===top,dashboardScroll).catch(async error=>{console.error('dashboard scroll',dashboardScroll,await page.evaluate(()=>({y:scrollY,tab:sessionStorage.getItem('snoot:workspace')})));throw error});
  await nav.getByRole('button',{name:/Search/}).click();
- await page.waitForFunction(top=>window.scrollY===top,searchScroll).catch(async error=>{console.error('search scroll',searchScroll,await page.evaluate(()=>({y:scrollY,tab:sessionStorage.getItem('snoot-tab-v1')})));throw error});
+ await page.waitForFunction(top=>window.scrollY===top,searchScroll).catch(async error=>{console.error('search scroll',searchScroll,await page.evaluate(()=>({y:scrollY,tab:sessionStorage.getItem('snoot:workspace')})));throw error});
  assert.equal(await page.locator('.event-summary').count(),4);
  assert.equal(calls.length,3,'navigation must retain loaded rows without another request');
- // A real document reload must reopen PIL bytes locally, not replay page GETs.
- await page.locator('.paged-results .table-scroll').evaluate(el=>{el.scrollTop=125;el.scrollLeft=35;el.dispatchEvent(new Event('scroll'))});
- // Flush the same lifecycle checkpoint used by a browser reload.
+ // Reload restores query settings and refetches the first page, never base64 event pages.
  await page.evaluate(()=>window.dispatchEvent(new Event('pagehide')));
- const checkpoint=await page.evaluate(()=>JSON.parse(sessionStorage.getItem('snoot-search-v0')));
- assert.equal(checkpoint.pages,2);
+ const checkpoint=await page.evaluate(()=>JSON.parse(sessionStorage.getItem('snoot:search:workspace')));
+ assert.equal(checkpoint.pages,undefined);assert.equal(checkpoint.result,undefined);
  const beforeReload=calls.length;
  await page.reload();
- await page.waitForFunction(()=>document.querySelectorAll('.paged-results .event-summary').length===4);
- assert.equal(calls.length,beforeReload,'refresh restores pages without fetching events');
- assert.equal(await page.locator('.event-summary').first().getByRole('button',{name:/Inspect event/}).getAttribute('aria-expanded'),'true');
- assert.equal(await page.locator('.paged-results .table-scroll').evaluate(el=>el.scrollTop),checkpoint.position.top);
- assert.match(await form.locator('[data-collected-count]').textContent(),/4 loaded/);
- await page.locator('.paged-results').getByRole('button',{name:'Refresh',exact:true}).click();
  await page.waitForFunction(()=>document.querySelectorAll('.paged-results .event-summary').length===2);
- assert.equal(calls.length,4);
+ assert.equal(calls.length,beforeReload+1);
+ assert.deepEqual(await page.evaluate(async()=>await indexedDB.databases()),[{name:'snoot-profile',version:1}]);
  assert.equal(await page.getByRole('alert').count(),0);
  await page.screenshot({path:'/private/tmp/snoot-pac-preview.png',fullPage:true});
  assert.deepEqual(issues,[]);console.log('PAC browser passed: scroll appends rows, retains expansion and summaries, retries continuation, refresh reuses cache; no full collect');

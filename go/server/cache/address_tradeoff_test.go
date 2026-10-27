@@ -128,7 +128,7 @@ func TestAddressTradeoffFixture(t *testing.T) {
 				ext, e := placement.Extension()
 				mustAddress(t, e)
 				p.Extensions = []PACExtension{ext}
-				p.Bytes, e = p.marshal()
+				p.Bytes, e = p.Marshal()
 				mustAddress(t, e)
 				payloadBytes += int64(len(p.Bytes))
 				z, e := SealGzipLevel(p.Bytes, 1)

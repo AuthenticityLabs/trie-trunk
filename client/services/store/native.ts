@@ -1,3 +1,4 @@
+import { NativeCacheError } from "./errors.ts";
 import { mergeTimeWindow, missingHours, timeLeaf, retireTime } from "./time-trie.ts";
 import { indexMillis } from '../pil/pac-native.ts';
 import { pacHeader } from "../pil/pac.ts";
@@ -33,18 +34,16 @@ export type NativeSource = {
   timeTrie?:Uint8Array;
   key: string; tap: string; digest: string; generation: string;
   files: Record<Kind, File>;
-  index: Span[]; population: Span[]; trieNodes: number;
+  trieNodes: number;
   retiredRows?:number;retiredMembers?:number;
   contexts?: {placement:PACPlacement;common:Uint8Array}[];
-  packages: NativeManifest[];
   state?: StateSnapshot;
   stateFileRevision?: number;
   generationSequence?: number;
   retiredBy?: string;
   reclaimed?: boolean;
 };
-// The host serializes each operation across tabs. File flush precedes a strict
-// metadata transaction. No IDB transaction is held across OPFS I/O.
+// Data files are flushed before publishing branch leaves through the file-store commit root.
 export interface NativeBackend {
   get(key: string): Promise<NativeSource | undefined>;
   list(): Promise<NativeSource[]>;
@@ -126,7 +125,7 @@ function empty(key:string,b:Binding,m:NativeManifest):NativeSource {
   const file=():File=>({end:0,extents:[],blobs:[]});
   return {key,tap:b.tap,digest:b.digest,generation:hex(m.Generation),
     files:{index:file(),population:file(),trie:file(),map:file(),state:file()},
-    index:[],population:[],trieNodes:1,packages:[]};
+    trieNodes:1};
 }
 type Package = { rows?:{start:number;bytes:Uint8Array}[]; key:string; binding:Binding; manifest:NativeManifest; state?:StateSnapshot; stateFileRevision?:number; stateComplete:boolean; stateCount:number; stateLast?:string; closed:boolean };
 export type NativeSession = { packages: Package[]; active: Map<number,Package>; finished:boolean; serial:number };
@@ -134,13 +133,21 @@ export type NativePage = { bases: Float64Array; common?:(Uint8Array|undefined)[]
 
 export class NativeStore {
   private backend: NativeBackend;
+  private retiredHeaders=new WeakMap<FileIO,number>();
   constructor(backend: NativeBackend) { this.backend=backend; }
+  async resolveHour(q:{tap:string;digest:string;generation:string;from:number;to:number}){
+    const control=await this.backend.control(),salt=control.scopes[q.tap.split('/').slice(0,3).join('/')]??0;
+    const key=await hash(new TextEncoder().encode(JSON.stringify([q.tap,q.digest,q.generation,...(salt?[salt]:[])])));
+    const source=await this.backend.get(key);
+    if(!source||source.retiredBy||missingHours(source.timeTrie,q.from,q.to).length)return;
+    return this.dependencies(key);
+  }
   async serial():Promise<number>{return (await this.backend.control()).serial;}
   begin(serial=0):NativeSession {return {packages:[],active:new Map(),finished:false,serial};}
   async record(session:NativeSession,record:NativeRecord,definition?:Metadata){
     if(session.finished)throw Error("Native response already finished");
     const control=await this.backend.control();
-    if(control.serial!==session.serial)throw Error("Native cache rebased; retry collection");
+    if(control.serial!==session.serial)throw new NativeCacheError("Native cache rebased; retry collection",{code:"native-cache-race",reason:"Native cache rebased"});
     const b=record.binding;
     if(record.kind==="manifest"){
       if(session.active.has(b.stream))throw Error("Overlapping native package");
@@ -150,7 +157,7 @@ export class NativeStore {
       const key=await hash(new TextEncoder().encode(JSON.stringify([b.tap,b.digest,hex(m.Generation),...(salt?[salt]:[])])));
       const s=await this.backend.get(key)??empty(key,b,m);
       if(!integer(m.RetiredRows??0)||!integer(m.RetiredMembers??0)||(m.RetiredRows??0)<(s.retiredRows??0)||(m.RetiredMembers??0)<(s.retiredMembers??0))throw Error("Stale PAC retirement boundary");
-      if(s.retiredBy)throw Error("Native generation retired; retry collection");
+      if(s.retiredBy)throw new NativeCacheError("Native generation retired; retry collection",{code:"native-cache-race",reason:"Native generation retired"});
       if(!s.files.map.end){
         if(!definition||definition.digest!==b.digest||await hash(definition.store)!==b.digest||
           definition.store.length!==definition.pil.length||definition.store.some((v,i)=>v!==definition.pil[i]))
@@ -170,12 +177,12 @@ export class NativeStore {
     const s=await this.backend.get(p.key);
     if(!s)throw Error("Native source disappeared");
     if((p.manifest.RetiredRows??0)<(s.retiredRows??0)||(p.manifest.RetiredMembers??0)<(s.retiredMembers??0))throw Error("Stale PAC retirement boundary");
-    if(s.retiredBy)throw Error("Native generation retired; retry collection");
+    if(s.retiredBy)throw new NativeCacheError("Native generation retired; retry collection",{code:"native-cache-race",reason:"Native generation retired"});
     if(record.kind==="pac"){
-      await this.pac(s,p,record.bytes,record.bounds);return;
+      await this.pac(s,p,record.bytes,record.bounds,record.integrityVerified===true);return;
     }
     const {file,start,bytes,digest}=record;
-    if(!integer(start)||!bytes.length||await hash(bytes)!==digest)throw Error("Invalid native chunk");
+    if(!integer(start)||!bytes.length||(!record.integrityVerified&&await hash(bytes)!==digest))throw Error("Invalid native chunk");
     if(file==="index"||file==="population"){
       const unit=file==="index"?16:1;
       if(bytes.length%unit)throw Error("Partial native row");
@@ -200,7 +207,7 @@ export class NativeStore {
       await this.statePage(session,p,s,start,digest,bytes);
     }
   }
-  private async pac(s:NativeSource,p:Package,bytes:Uint8Array,bounds:Uint32Array){
+  private async pac(s:NativeSource,p:Package,bytes:Uint8Array,bounds:Uint32Array,integrityVerified=false){
     const header=pacHeader(bytes,0,0xffffffff,new Set([1,nativePAC]));
     if(!header||header.end!==bytes.length||header.digest!==s.digest||header.source!==s.tap)throw Error("PAC source mismatch");
     const placement=pacPlacement(header),first=Number(placement.firstRow),rows=Number(placement.rows);
@@ -208,13 +215,19 @@ export class NativeStore {
     if(bounds.length!==rows*2)throw Error("PAC bounds mismatch");
     const supplied=p.rows?.find(r=>r.start===first&&r.bytes.length===rows*16);
     if(!supplied)throw Error("Missing PAC index rows");
-    const lengths=new Uint32Array(rows);let end=header.start;
-    for(let i=0;i<rows;i++){
-      if(bounds[i*2]!==end||bounds[i*2+1]<=end||bounds[i*2+1]>header.end)throw Error("Invalid PAC member bounds");
-      lengths[i]=bounds[i*2+1]-end;end=bounds[i*2+1];
+    // Only the internal transport worker sets integrityVerified, after checking
+    // the sealed CRC and index checksum. Do not scan those same events again.
+    let local=supplied.bytes;
+    if(!integrityVerified){
+      const lengths=new Uint32Array(rows);let end=header.start;
+      for(let i=0;i<rows;i++){
+        if(bounds[i*2]!==end||bounds[i*2+1]<=end||bounds[i*2+1]>header.end)throw Error("Invalid PAC member bounds");
+        lengths[i]=bounds[i*2+1]-end;end=bounds[i*2+1];
+      }
+      if(end!==header.end)throw Error("Trailing PAC data");
+      local=pacLocalRows(placement,supplied.bytes,lengths);
     }
-    if(end!==header.end)throw Error("Trailing PAC data");
-    const local=pacLocalRows(placement,supplied.bytes,lengths),start=Number(placement.memberStart);
+    const start=Number(placement.memberStart);
     if(!Number.isSafeInteger(start+Number(placement.memberBytes)))throw Error("PAC address exceeds browser precision");
     const context={placement,common:header.common.slice()};
     const prior=s.contexts?.find(c=>c.placement.block===placement.block);
@@ -229,32 +242,35 @@ export class NativeStore {
         placement.memberStart<v.memberStart+v.memberBytes&&placement.memberStart+placement.memberBytes>v.memberStart)
         throw Error("Overlapping PAC placement");
     }
-    // Validate the temporal directory before publishing byte extents. The
-    // supplied row identity stays canonical; no per-event UUID map is built.
-    for(let i=0;i<rows;i++){
-      const row=supplied.bytes.subarray(i*16,(i+1)*16), ms=indexMillis(row,Number(placement.from));
-      if(BigInt(ms)<placement.from||BigInt(ms)>=placement.to)throw Error("Invalid PAC event row");
-      if(i>0){const previous=supplied.bytes.subarray((i-1)*16,(i-1)*16+12);let compared=0;
-        for(let j=0;j<12&&!compared;j++)compared=previous[j]-row[j];
-        if(compared>=0)throw Error("Unordered PAC event rows");
+    // Diagnostic/unverified inputs retain the full temporal consistency check.
+    if(!integrityVerified){
+      for(let i=0;i<rows;i++){
+        const row=supplied.bytes.subarray(i*16,(i+1)*16),ms=indexMillis(row,Number(placement.from));
+        if(BigInt(ms)<placement.from||BigInt(ms)>=placement.to)throw Error("Invalid PAC event row");
+        if(i>0){const previous=supplied.bytes.subarray((i-1)*16,(i-1)*16+12);let compared=0;
+          for(let j=0;j<12&&!compared;j++)compared=previous[j]-row[j];
+          if(compared>=0)throw Error("Unordered PAC event rows");
+        }
       }
     }
     const sodsHeader=new Uint8Array(4);new DataView(sodsHeader.buffer).setUint32(0,Number(placement.memberBytes)+4,true);
     if(start<4)throw Error("Invalid SODS segment start");
-    await this.range(s,"population",start-4,sodsHeader);
-    await this.range(s,"population",start,bytes.subarray(header.start,header.end));
+    const hour=new Uint8Array(4+header.end-header.start);
+    hour.set(sodsHeader);hour.set(bytes.subarray(header.start,header.end),4);
+    await this.range(s,"population",start-4,hour);
     const segmentHeader=new Uint8Array(16),hv=new DataView(segmentHeader.buffer);
     // Literal count and width match the server segment header.
     hv.setUint32(0,Number(placement.rows),true);hv.setBigInt64(4,placement.from,true);segmentHeader[12]=placement.rows<=65535n?2:placement.rows<=16777215n?3:4;
-    await this.range(s,"index",(first-1)*16,segmentHeader);
-    await this.range(s,"index",first*16,local);
+    const hourIndex=new Uint8Array(16+local.length);
+    hourIndex.set(segmentHeader);hourIndex.set(local,16);
+    await this.range(s,"index",(first-1)*16,hourIndex);
     if(!prior){(s.contexts??=[]).push(context);s.contexts.sort((a,b)=>a.placement.firstRow<b.placement.firstRow?-1:1);}
     await this.backend.put([s]);
     p.rows=p.rows!.filter(r=>r!==supplied);
   }
   private async statePage(session:NativeSession,p:Package,s:NativeSource,start:number,digest:string,bytes:Uint8Array){
     const revision=s.stateFileRevision??0;
-    if(p.stateFileRevision!==undefined&&p.stateFileRevision!==revision)throw Error("Native state compacted; retry collection");
+    if(p.stateFileRevision!==undefined&&p.stateFileRevision!==revision)throw new NativeCacheError("Native state compacted; retry collection",{code:"native-cache-race",reason:"Native state compacted"});
     p.stateFileRevision=revision;
     const v=cbor(bytes) as Record<string,unknown>;
     if(p.stateComplete||!v||!(v.Epoch instanceof Uint8Array)||v.Epoch.length!==16||
@@ -289,15 +305,20 @@ export class NativeStore {
     p.state.pages.push({...blob,first,last:entries.length?last:undefined});
     p.stateCount+=entries.length;p.stateLast=last;p.stateComplete=v.Paged?v.Final===true:true;
   }
+  private retiredHeader(h:FileIO,value:number){
+    if(this.retiredHeaders.get(h)===value)return;
+    const header=new Uint8Array(8);new DataView(header.buffer).setBigUint64(0,BigInt(value),true);
+    write(h,header,0);this.retiredHeaders.set(h,value);
+  }
   private async range(s:NativeSource,kind:"index"|"population",start:number,bytes:Uint8Array){
     const f=s.files[kind], wanted={Start:start,End:start+bytes.length};
     if(!integer(wanted.End))throw Error("Native byte address overflow");
     const h=await this.backend.file(s.key,kind);
     try{
-      // The IDB publication is authoritative across a kill between file and
-      // metadata writes. Reconcile the minimal retired_bytes header on opening.
+      // The file commit root selects durable allocation state after interruption.
+      // Reconcile the minimal retired_bytes header on opening.
       recover(h,f.end);if(f.end===0){h.truncate(8);f.end=8;}
-      const header=new Uint8Array(8);new DataView(header.buffer).setBigUint64(0,BigInt(f.retired??0),true);write(h,header,0);
+      this.retiredHeader(h,f.retired??0);
       // Repeated/interlaced pulls may overlap. Immutable bytes must agree, and
       // only missing byte runs are appended. Existing local addresses never move.
       for(const e of f.extents){
@@ -357,20 +378,20 @@ export class NativeStore {
   // Chunks are durable earlier, but no new package/range is advertised before it.
   async finish(session:NativeSession){
     if(session.finished||session.active.size||session.packages.some(p=>!p.closed))throw Error("Incomplete native response");
-    if(await this.serial()!==session.serial)throw Error("Native cache rebased; retry collection");
+    if(await this.serial()!==session.serial)throw new NativeCacheError("Native cache rebased; retry collection",{code:"native-cache-race",reason:"Native cache rebased"});
     const changed=new Map<string,NativeSource>();
     for(const p of session.packages){
       const s=changed.get(p.key)??await this.backend.get(p.key);
       if(!s)throw Error("Missing native source");
-      if(s.retiredBy)throw Error("Native generation retired; retry collection");
+      if(s.retiredBy)throw new NativeCacheError("Native generation retired; retry collection",{code:"native-cache-race",reason:"Native generation retired"});
       const m=p.manifest;
       if((m.RetiredRows??0)<(s.retiredRows??0)||(m.RetiredMembers??0)<(s.retiredMembers??0))throw Error("Stale PAC retirement boundary");
       this.retire(s,m.RetiredRows??0,m.RetiredMembers??0,m.TimeRetainedFrom);
-      if(s.generationSequence!==undefined&&m.GenerationSequence!==s.generationSequence)throw Error("Native generation sequence changed");
+      if(s.generationSequence!==undefined&&m.GenerationSequence!==s.generationSequence)throw new NativeCacheError("Native generation sequence changed",{code:"native-cache-conflict",source:s.tap,reason:"sequence-changed",detail:{generation:s.generation,cachedSequence:s.generationSequence,incomingSequence:m.GenerationSequence??null}});
       s.generationSequence=m.GenerationSequence;
       if(!p.state||!p.stateComplete)throw Error("Incomplete native state snapshot");
-      if(p.stateFileRevision!==(s.stateFileRevision??0))throw Error("Native state compacted; retry collection");
-      if(s.state&&s.state.epoch!==p.state.epoch)throw Error("Native state epoch changed; rebase required");
+      if(p.stateFileRevision!==(s.stateFileRevision??0))throw new NativeCacheError("Native state compacted; retry collection",{code:"native-cache-race",reason:"Native state compacted"});
+      if(s.state&&s.state.epoch!==p.state.epoch)throw new NativeCacheError("Native state epoch changed; rebase required",{code:"native-cache-conflict",source:s.tap,reason:"state-epoch-changed",detail:{cachedEpoch:s.state.epoch,incomingEpoch:p.state.epoch}});
       if(!s.state||p.state.sequence>s.state.sequence)s.state=structuredClone(p.state);
       for(const r of m.Index)resolve(s.files.index.extents,{Start:r.Start*16,End:r.End*16});
       if(missing(m.Population,s.files.population.extents).length)throw Error("Missing native population");
@@ -381,33 +402,33 @@ export class NativeStore {
         if(m.Provisional)throw Error("Provisional time trie publication");
         const h=new DataView(m.TimeTrie.buffer,m.TimeTrie.byteOffset,m.TimeTrie.byteLength);
         if(Number(h.getBigUint64(64,true))<m.From*1000||Number(h.getBigUint64(72,true))>m.To*1000)throw Error("Time trie outside collection");
-        s.timeTrie=mergeTimeWindow(s.timeTrie,m.TimeTrie,m.Generation,true,(m.RetiredRows??0)>0);
+        s.timeTrie=mergeTimeWindow(s.timeTrie,m.TimeTrie,m.Generation,true,(m.RetiredRows??0)>0,true);
       }
-      s.index=normalize([...s.index,...m.Index]);s.population=normalize([...s.population,...m.Population]);
       s.trieNodes=Math.max(s.trieNodes,m.TrieNodes);
-      const old=s.packages.find(v=>v.From===m.From&&v.To===m.To);
-      if(!old||old.Checkpoint<=m.Checkpoint){
-        s.packages=s.packages.filter(v=>v!==old);s.packages.push(m);
-      }
       changed.set(s.key,s);
     }
     // Publication orders physical generations, never response arrival times.
     // A failed or truncated replacement cannot retire committed coverage.
     const known=await this.backend.list();
     for(const current of [...changed.values()]){
-      const peers=known.filter(s=>s.key!==current.key&&s.tap===current.tap&&s.digest===current.digest&&!s.retiredBy&&s.packages.length);
+      const peers=known.filter(s=>s.key!==current.key&&s.tap===current.tap&&s.digest===current.digest&&!s.retiredBy&&s.state);
       if([...changed.values()].some(s=>s.key!==current.key&&s.tap===current.tap&&s.digest===current.digest))
-        throw Error("Generation changed during collection; retry collection");
+        throw new NativeCacheError("Generation changed during collection; retry collection",{code:"native-cache-race",reason:"Generation changed during collection"});
       for(const prior of peers){
         if(current.generationSequence===undefined){
-          if(prior.generationSequence!==undefined)throw Error("Unordered native generation; retry collection");
+          if(prior.generationSequence!==undefined)throw new NativeCacheError("Unordered native generation; retry collection",{code:"native-cache-conflict",source:current.tap,reason:"missing-generation-sequence"});
           continue; // Legacy peers remain isolated until a sequenced response.
         }
         if(prior.generationSequence!==undefined&&prior.generationSequence>=current.generationSequence)
-          throw Error("Stale or conflicting native generation; retry collection");
-        if(prior.state?.epoch!==current.state?.epoch)throw Error("Native state epoch changed; rebase required");
-        if(prior.state&&current.state&&prior.state.sequence>current.state.sequence)throw Error("Replacement state regressed; retry collection");
-        prior.retiredBy=current.key;prior.index=[];prior.population=[];prior.packages=[];delete prior.state;
+          throw new NativeCacheError("Stale or conflicting native generation; retry collection",{
+            code:prior.generationSequence===current.generationSequence||prior.state?.epoch!==current.state?.epoch?"native-cache-conflict":"native-cache-race",
+            source:current.tap,reason:prior.generationSequence===current.generationSequence?"generation-fork":"older-generation",
+            detail:{cachedGeneration:prior.generation,incomingGeneration:current.generation,
+              cachedSequence:prior.generationSequence,incomingSequence:current.generationSequence,
+              cachedEpoch:prior.state?.epoch??null,incomingEpoch:current.state?.epoch??null}});
+        if(prior.state?.epoch!==current.state?.epoch)throw new NativeCacheError("Native state epoch changed; rebase required",{code:"native-cache-conflict",source:current.tap,reason:"state-epoch-changed",detail:{cachedEpoch:prior.state?.epoch??null,incomingEpoch:current.state?.epoch??null}});
+        if(prior.state&&current.state&&prior.state.sequence>current.state.sequence)throw new NativeCacheError("Replacement state regressed; retry collection",{code:"native-cache-race",reason:"Replacement state regressed"});
+        prior.retiredBy=current.key;delete prior.timeTrie;delete prior.state;
         changed.set(prior.key,prior);
       }
     }
@@ -415,12 +436,12 @@ export class NativeStore {
     for(const s of changed.values())if(!s.retiredBy)for(const kind of ["index","population"] as const){
       if(s.files[kind].end<8)continue;
       const h=await this.backend.file(s.key,kind);
-      try{recover(h,s.files[kind].end);const header=new Uint8Array(8);new DataView(header.buffer).setBigUint64(0,BigInt(s.files[kind].retired??0),true);write(h,header,0);h.flush();}finally{h.close();}
+      try{recover(h,s.files[kind].end);this.retiredHeader(h,s.files[kind].retired??0);h.flush();}finally{h.close();}
     }
   }
   private retire(s:NativeSource,rows:number,members:number,first?:number){
-    if(rows>0&&first!==undefined){s.timeTrie=retireTime(s.timeTrie,first);s.packages=s.packages.filter(m=>m.To*1000>first);}
-    const clip=(spans:Span[],base:number)=>spans.filter(r=>r.End>base).map(r=>({Start:Math.max(r.Start,base),End:r.End}));
+    if(rows>0&&first!==undefined){s.timeTrie=retireTime(s.timeTrie,first);}
+    if(rows===(s.retiredRows??0)&&members===(s.retiredMembers??0))return;
     for(const [kind,base] of [["index",rows*16],["population",members]] as const){
       const f=s.files[kind];f.retired=base;
       f.extents=f.extents.filter(e=>e.End>base).map(e=>({...e,local:e.local+Math.max(0,base-e.Start),Start:Math.max(e.Start,base)}));
@@ -436,9 +457,7 @@ export class NativeStore {
       f.free=[...free];
     }
     s.retiredRows=rows;s.retiredMembers=members;
-    s.index=clip(s.index,rows);s.population=clip(s.population,members);
     s.contexts=s.contexts?.filter(c=>c.placement.firstRow+c.placement.rows>BigInt(rows));
-    s.packages=s.packages.filter(m=>!m.Index.length||m.Index.some(r=>r.End>rows));
   }
   async reclaim():Promise<number>{
     let count=0;
@@ -492,20 +511,28 @@ export class NativeStore {
   // Explicit local reset only. Never infer this from a mismatched server epoch.
   // A scoped key salt prevents old row references rebinding after server restore;
   // the global serial rejects requests that began before the reset in any tab.
-  async rebase(source:string):Promise<number>{
-    objectParameters({source,id:""});
-    const scope=source.split("/").slice(0,3).join("/");
+  async rebase(source:string):Promise<number>{return this.rebaseMany([source]);}
+  async rebaseMany(sources:readonly string[]):Promise<number>{
+    if(!sources.length)throw Error("Missing resources to refresh");
+    const scopes=new Set<string>();
+    for(const source of sources){objectParameters({source,id:""});scopes.add(source.split("/").slice(0,3).join("/"));}
     const control=await this.backend.control();
-    const next=(control.scopes[scope]??0)+1;
-    if(!integer(next)||!integer(control.serial+1))throw Error("Native rebase sequence exhausted");
-    control.serial++;control.scopes[scope]=next;
-    const sources=(await this.backend.list()).filter(s=>!s.retiredBy&&s.tap.split("/").slice(0,3).join("/")===scope);
-    for(const s of sources){s.retiredBy=`rebase:${control.serial}`;s.index=[];s.population=[];s.packages=[];delete s.state;}
-    await this.backend.put(sources,control);
-    return sources.length;
+    if(!integer(control.serial+1))throw Error("Native rebase sequence exhausted");
+    for(const scope of scopes){
+      const next=(control.scopes[scope]??0)+1;
+      if(!integer(next))throw Error("Native rebase sequence exhausted");
+      control.scopes[scope]=next;
+    }
+    control.serial++;
+    const retired=(await this.backend.list()).filter(s=>!s.retiredBy&&scopes.has(s.tap.split("/").slice(0,3).join("/")));
+    for(const s of retired){s.retiredBy=`rebase:${control.serial}`;delete s.timeTrie;delete s.state;}
+    // One durable transaction selects every resource salt and retires its old
+    // pointers. No other tab can observe a partially refreshed resource set.
+    await this.backend.put(retired,control);
+    return retired.length;
   }
   async activeSelections<T extends {source:string}>(selections:T[]):Promise<T[]>{
-    const live=new Set((await this.backend.list()).filter(s=>!s.retiredBy&&s.packages.length).map(s=>s.key));
+    const live=new Set((await this.backend.list()).filter(s=>!s.retiredBy&&s.state).map(s=>s.key));
     return selections.filter(s=>live.has(s.source));
   }
   async missingTime(key:string,from:number,to:number){
@@ -513,8 +540,8 @@ export class NativeStore {
     return missingHours(s?.retiredBy?undefined:s?.timeTrie,from,to);
   }
   async coverage(tap?:string){
-    return (await this.backend.list()).filter(s=>!s.retiredBy&&matchesSource(tap??"",s.tap)).filter(s=>s.packages.length).map(s=>({
-      Definition:unhex(s.digest),Generation:unhex(s.generation),Index:s.index,Population:s.population,TrieNodes:s.trieNodes,
+    return (await this.backend.list()).filter(s=>!s.retiredBy&&matchesSource(tap??"",s.tap)).filter(s=>s.state).map(s=>({
+      Definition:unhex(s.digest),Generation:unhex(s.generation),Index:committedRanges(s).index,Population:committedRanges(s).sods,TrieNodes:s.trieNodes,
       ...(s.state?{StateKnown:true,StateEpoch:unhex(s.state.epoch),StateSequence:s.state.sequence}:{}),
     }));
   }
@@ -593,7 +620,15 @@ export class NativeStore {
     const maps=await load("map");if(maps.length!==1)throw Error("Missing native map");
     return {source,definition:{digest:source.digest,store:maps[0].bytes,pil:maps[0].bytes} satisfies Metadata,trie:await load("trie")};
   }
+  async records(key:string,from:number,to:number,rows:number[]):Promise<NativePage>{
+    if(!Array.isArray(rows)||!rows.length||rows.length>4096||rows.some((row,i)=>!integer(row)||(i>0&&row<=rows[i-1])))
+      throw Error("Invalid native record selection");
+    return this.readPage(key,from,to,undefined,rows.length,rows);
+  }
   async page(key:string,from:number,to:number,after?:number,limit=512):Promise<NativePage>{
+    return this.readPage(key,from,to,after,limit);
+  }
+  private async readPage(key:string,from:number,to:number,after:number|undefined,limit:number,selected?:number[]):Promise<NativePage>{
     if(!integer(from)||!integer(to)||from>=to||after!==undefined&&!integer(after)||!integer(limit)||limit<1||limit>4096)
       throw Error("Invalid native page request");
     const s=await this.backend.get(key);if(!s)throw Error("Unknown native source");
@@ -609,28 +644,30 @@ export class NativeStore {
       outer: for(const context of s.contexts??[]){
         const placement=context.placement;
         if(Number(placement.to)<=from||Number(placement.from)>=to)continue;
-        if(s.timeTrie&&timeLeaf(s.timeTrie,Number(placement.from))?.state!==2)continue;
+        if(timeLeaf(s.timeTrie,Number(placement.from))?.state!==2)continue;
         const range={Start:Number(placement.firstRow),End:Number(placement.firstRow+placement.rows)};
-        if(missing([range],s.index).length)continue;
         const lower=(start:number,end:number,time:number)=>{while(start<end){const mid=start+Math.floor((end-start)/2);if(indexMillis(at(mid),Number(placement.from))<time)start=mid+1;else end=mid;}return start;};
         let first=Math.max(range.Start,after===undefined?0:after+1);
         if(first>=range.End)continue;
-        first=lower(first,range.End,from);
-        const end=lower(first,range.End,to);
-        for(let row=first;row<end;row++){
-          if(records.length>=limit||total>=8*1024*1024){done=false;break outer;}
+        first=selected?first:lower(first,range.End,from);
+        const end=selected?range.End:lower(first,range.End,to);
+        const requested=selected?.filter(row=>row>=first&&row<end);
+        for(let position=0,row=requested?requested[0]:first;row!==undefined&&row<end;row=requested?requested[++position]:row+1){
+          if(!selected&&(records.length>=limit||total>=8*1024*1024)){done=false;break outer;}
           const raw=at(row).slice(),view=new DataView(raw.buffer,raw.byteOffset,16);
+          if(selected&&(indexMillis(raw,Number(placement.from))<from||indexMillis(raw,Number(placement.from))>=to))
+            throw Error("Selected record outside requested hour");
           const base=Number(placement.memberStart),start=base+view.getUint32(12,true);
           const next=row+1<range.End?at(row+1):undefined;
           const finish=base+(next?new DataView(next.buffer,next.byteOffset,16).getUint32(12,true):Number(placement.memberBytes));
           bases.push(Number(placement.from));
           if(!Number.isSafeInteger(finish)||finish<=start)throw Error("Invalid PAC local coordinates");
           const wanted={Start:start,End:finish};
-          if(missing([wanted],s.population).length)throw Error("Native payload is not collected");
           const bytes=readPop(wanted).slice();common.push(context.common.length?context.common:undefined);
           records.push(raw);values.push(bytes);offsets.push(total,total+bytes.length);total+=bytes.length;last=row;
         }
       }
+      if(selected&&records.length!==selected.length)throw Error("Missing canonical search record");
       const rows=new Uint8Array(records.length*16),population=new Uint8Array(total);
       records.forEach((b,i)=>rows.set(b,i*16));values.forEach((b,i)=>population.set(b,offsets[i*2]));
       return {bases:Float64Array.from(bases),rows,population,offsets:Uint32Array.from(offsets),common,after:last,done};
@@ -661,4 +698,16 @@ function rangeReader(file:FileIO,extents:Extent[]){
     for(const p of parts)result.set(readFile(file,p.local,p.End-p.Start),p.Start-wanted.Start);
     return result;
   };
+}
+
+/** Derive wire coverage only from published branch leaves and their segments. */
+export function committedRanges(source:NativeSource):{index:Span[];sods:Span[]} {
+ const index:Span[]=[],sods:Span[]=[];
+ if(source.retiredBy)return {index,sods};
+ for(const {placement:p} of source.contexts??[]){
+  if(timeLeaf(source.timeTrie,Number(p.from))?.state!==2)continue;
+  if(p.rows)index.push({Start:Number(p.firstRow),End:Number(p.firstRow+p.rows)});
+  if(p.memberBytes)sods.push({Start:Number(p.memberStart),End:Number(p.memberStart+p.memberBytes)});
+ }
+ return {index:normalize(index),sods:normalize(sods)};
 }

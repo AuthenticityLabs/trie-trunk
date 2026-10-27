@@ -183,7 +183,7 @@ func (p *Endpoint) snapshotHistory(identity string, major uint32, id Value, from
 		if !s.config.ObjectIndex || s.objects == nil {
 			return nil, ErrObjectIndexDisabled
 		}
-		object := s.layout.identityValue(s.layout.Object, id)
+		object := s.layout.IdentityValue(s.layout.Object, id)
 		if e := s.validateObject(object); e != nil {
 			return nil, e
 		}

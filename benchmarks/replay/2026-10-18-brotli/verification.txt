@@ -1,2 +1,0 @@
-Native matrix: 300 cases, 2,048 events each; per-flush byte equality and stream finalization passed.
-Go: TestSparseReplayAndIncrementalCatchupMatchCompleteObject and TestSSEAtomicFramingAndSparseApplication passed.

@@ -4,10 +4,10 @@ package pil
 
 import (
 	"bytes"
-	"compress/gzip"
 	"context"
 	"errors"
 	"fmt"
+	pilcodec "github.com/AuthenticityLabs/pill-packer/go/codec"
 	"io"
 	"net"
 	"net/http"
@@ -432,15 +432,7 @@ func (w *Logger) writeOnce(ctx context.Context, frames [][]byte, branch string) 
 		// Compress the batch once, including every PIL header. Ingress removes
 		// this coding before staging; there is no per-event recompression here.
 		var packed bytes.Buffer
-		z, err := gzip.NewWriterLevel(&packed, w.config.CompressionLevel)
-		if err != nil {
-			return err
-		}
-		if _, err = io.Copy(z, body); err != nil {
-			_ = z.Close()
-			return err
-		}
-		if err = z.Close(); err != nil {
+		if err := pilcodec.Gzip(&packed, body, w.config.CompressionLevel); err != nil {
 			return err
 		}
 		plainSize := 0

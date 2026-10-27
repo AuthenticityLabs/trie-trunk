@@ -283,6 +283,18 @@ func (p *Endpoint) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		api = p.apis[r.Header.Get("Definition-Version")]
 	}
 	p.mu.Unlock()
+	if r.URL.Path == "/configurations" {
+		p.configurationHTTP(w, r, sources)
+		return
+	}
+	if r.URL.Path == "/storage/quotas" {
+		p.quotaHTTP(w, r)
+		return
+	}
+	if r.URL.Path == "/storage" {
+		(&HTTP{sources: sources, storageRoots: map[string]string{p.config.Cache: filepath.Join(p.config.Root, p.config.Cache)}}).ServeHTTP(w, r)
+		return
+	}
 	if catalogRequest(r) {
 		if !catalogGET(w, r) {
 			return
@@ -307,7 +319,7 @@ func (p *Endpoint) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		(&HTTP{}).ServeHTTP(w, r)
 		return
 	}
-	if api != nil && (r.URL.Path == "/summary-day" || r.URL.Path == "/events" || r.URL.Path == "/collect" || r.URL.Path == "/schemas" || r.URL.Path == "/rejections") {
+	if api != nil && (r.URL.Path == "/summaries" || r.URL.Path == "/events" || r.URL.Path == "/collect" || r.URL.Path == "/schemas" || r.URL.Path == "/rejections") {
 		handler := &HTTP{Store: api.Store, sources: sources}
 		handler.ServeHTTP(w, r)
 		return

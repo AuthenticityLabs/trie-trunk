@@ -84,7 +84,7 @@ func BenchmarkTantivyCandidates(b *testing.B) {
 			cases := []struct {
 				name string
 				q    QueryPlan
-			}{{"text", QueryPlan{Search: &QueryText{"timeout", "contains"}, Order: "asc"}}, {"numeric", QueryPlan{Filters: []QueryFilter{{"duration", ">=", QueryLiteral{"number", fmt.Sprint(count - 10)}}}, Order: "asc"}}, {"compound", QueryPlan{Filters: []QueryFilter{{"state", "==", QueryLiteral{"string", "authorized"}}, {"duration", ">", QueryLiteral{"number", fmt.Sprint(count / 2)}}}, Search: &QueryText{"timeout", "contains"}, Order: "asc"}}}
+			}{{"text", QueryPlan{Search: &QueryText{"timeout", "contains"}, Order: "asc"}}, {"numeric", QueryPlan{Filters: []QueryFilter{{"duration", ">=", QueryLiteral{"duration", fmt.Sprint(count-10) + "us"}}}, Order: "asc"}}, {"compound", QueryPlan{Filters: []QueryFilter{{"state", "==", QueryLiteral{"string", "authorized"}}, {"duration", ">", QueryLiteral{"duration", fmt.Sprint(count/2) + "us"}}}, Search: &QueryText{"timeout", "contains"}, Order: "asc"}}}
 			for _, c := range cases {
 				b.Run(c.name, func(b *testing.B) {
 					s.policy.SearchIndex = &off

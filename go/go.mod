@@ -17,3 +17,7 @@ require (
 	golang.org/x/net v0.43.0 // indirect
 	golang.org/x/text v0.28.0 // indirect
 )
+
+require github.com/AuthenticityLabs/pill-packer/go v0.0.0
+
+replace github.com/AuthenticityLabs/pill-packer/go => ../../pill-packer/go

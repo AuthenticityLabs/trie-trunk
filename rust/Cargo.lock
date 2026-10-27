@@ -642,7 +642,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "pil-codec"
+name = "pill-packer"
 version = "0.1.0"
 dependencies = [
  "ciborium",
@@ -1182,10 +1182,19 @@ dependencies = [
  "ciborium",
  "ciborium-ll",
  "crc32c",
- "pil-codec",
+ "pill-packer",
  "serde",
  "serde_json",
  "sha2",
+ "tantivy",
+ "trunk-search-core",
+]
+
+[[package]]
+name = "trunk-search-core"
+version = "0.1.0"
+dependencies = [
+ "serde",
  "tantivy",
 ]
 

@@ -22,7 +22,7 @@ func newTrie() sharedTrie {
 	return sharedTrie{nodes: []sharedNode{{}}, edges: map[sharedKey]uint16{}, persisted: 1}
 }
 func (t *sharedTrie) add(n sharedNode, l *Layout) error {
-	if len(t.nodes) >= 65536 || int(n.Parent) >= len(t.nodes) || int(n.Field) >= len(l.Widths) || !l.validDirectWidth(int(n.Field), n.Bytes) || len(n.Bytes) == 0 {
+	if len(t.nodes) >= 65536 || int(n.Parent) >= len(t.nodes) || int(n.Field) >= len(l.Widths) || !l.ValidDirectWidth(int(n.Field), n.Bytes) || len(n.Bytes) == 0 {
 		return fmt.Errorf("invalid shared node")
 	}
 	depth := 0

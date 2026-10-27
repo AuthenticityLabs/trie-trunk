@@ -12,6 +12,7 @@ import (
 
 	"github.com/fxamacker/cbor/v2"
 	"trie-trunk/go/codec"
+	Keys "trie-trunk/go/logger/client/keys"
 	"trie-trunk/go/logger/pil"
 	"trie-trunk/go/models"
 	"trie-trunk/go/server/cache"
@@ -174,7 +175,7 @@ func TestPILBuilderNegotiatedCompletion(t *testing.T) {
 		route  string
 		access byte
 	}{
-		{POST, INFO, "write", 1}, {GET, DEBUG, "debug", 0}, {POST, DEBUG, "debug", 1},
+		{POST, INFO, "write", 1}, {GET, WARN, "debug", 0}, {POST, WARN, "debug", 1}, {GET, DEBUG, "debug", 0}, {POST, DEBUG, "debug", 1},
 		{GET, TRACE, "trace", 0}, {POST, TRACE, "trace", 1}, {POST, ERROR, "error", 1},
 	} {
 		_, b := logger.Begin(context.Background())
@@ -189,6 +190,9 @@ func TestPILBuilderNegotiatedCompletion(t *testing.T) {
 			t.Fatal(err)
 		}
 		for i, field := range target.Definition.Fields {
+			if field.Name == "level" && (f.Values[i].State != cache.Direct || len(f.Values[i].Bytes) != 1 || field.Values[int(f.Values[i].Bytes[0])] != BuildSchema()[Keys.Level].Enums[uint16(tc.level)]) {
+				t.Fatalf("%v/%v changed level during routing", tc.method, tc.level)
+			}
 			if field.Name == "access" && (f.Values[i].State != cache.Direct || !bytes.Equal(f.Values[i].Bytes, []byte{tc.access})) {
 				t.Fatalf("%v/%v lost access", tc.method, tc.level)
 			}
@@ -302,7 +306,7 @@ func TestPILAccessSurvivesEveryLevel(t *testing.T) {
 	plan.access = "read"
 	logger, _ := newLogger(Config{Dictionary: dict})
 	for _, method := range []HttpMethod{GET, POST} {
-		for _, level := range []Level{INFO, ERROR, DEBUG, TRACE} {
+		for _, level := range []Level{INFO, ERROR, WARN, DEBUG, TRACE} {
 			_, b := logger.Begin(context.Background())
 			b.HttpMethod(method).Level(level)
 			e := b.Snapshot()

@@ -14,11 +14,12 @@ import (
 const (
 	TimeTrieHeader          = 64
 	TimeTrieDayBytes        = 24 * 16
-	TimeTrieYearBytes       = 366*TimeTrieDayBytes + 366*24/4
+	TimeTrieYearBytes       = 366*TimeTrieDayBytes + 366*24
 	TimeHourMS        int64 = 3600000
 	TimeBlank               = 0
 	TimeKnown               = 1
 	TimeComplete            = 2
+	TimeSearch              = 4 // Client has committed the immutable Tantivy index.
 )
 
 var timeTrieMagic = []byte("TTTIME00")
@@ -33,6 +34,7 @@ type TimeLeaf struct {
 	Start, End uint64
 	Segments   uint32
 	State      byte
+	Flags      byte
 	Pods, Sods uint64
 }
 
@@ -44,8 +46,8 @@ func (t *timeDirectory) baseYear() int { return time.UnixMilli(t.first()).UTC().
 func (t *timeDirectory) leafBytes() int {
 	return int(t.raw[40]) + int(t.raw[41]) + int(t.raw[42]) + int(t.raw[43])
 }
-func (t *timeDirectory) yearBytes() int { return 366*24*t.leafBytes() + 2196 }
-func (t *timeDirectory) positions(at time.Time) (year, day, hour, state, shift int, ok bool) {
+func (t *timeDirectory) yearBytes() int { return 366 * 24 * (t.leafBytes() + 1) }
+func (t *timeDirectory) positions(at time.Time) (year, day, hour, state int, ok bool) {
 	if len(t.raw) < TimeTrieHeader {
 		return
 	}
@@ -60,8 +62,7 @@ func (t *timeDirectory) positions(at time.Time) (year, day, hour, state, shift i
 	day = year + d*24*t.leafBytes()
 	hour = day + at.Hour()*t.leafBytes()
 	n := d*24 + at.Hour()
-	state = year + 366*24*t.leafBytes() + n/4
-	shift = (n % 4) * 2
+	state = year + 366*24*t.leafBytes() + n
 	ok = true
 	return
 }
@@ -70,12 +71,13 @@ func (t *timeDirectory) leaf(ms int64) (TimeLeaf, bool) {
 	if len(t.raw) < TimeTrieHeader || ms < t.first() || ms >= t.sealed() {
 		return TimeLeaf{}, false
 	}
-	_, _, h, s, b, ok := t.positions(time.UnixMilli(ms))
+	_, _, h, s, ok := t.positions(time.UnixMilli(ms))
 	if !ok {
 		return TimeLeaf{}, false
 	}
-	state := (t.raw[s] >> b) & 3
-	if state == TimeBlank || state == 3 {
+	flags := t.raw[s]
+	state := flags & 3
+	if state == TimeBlank || state == 3 || flags & ^byte(7) != 0 {
 		return TimeLeaf{}, false
 	}
 	at := h
@@ -87,7 +89,7 @@ func (t *timeDirectory) leaf(ms int64) (TimeLeaf, bool) {
 		end += IndexHeaderSlots + count
 		segments = 1
 	}
-	return TimeLeaf{From: ms, To: ms + TimeHourMS, Start: start, End: end, Segments: segments, State: state, Pods: pods, Sods: sods}, true
+	return TimeLeaf{From: ms, To: ms + TimeHourMS, Start: start, End: end, Segments: segments, State: state, Flags: flags, Pods: pods, Sods: sods}, true
 }
 func (t *timeDirectory) boundary(ms int64) (uint64, byte, bool) {
 	if len(t.raw) < TimeTrieHeader {
@@ -147,7 +149,7 @@ func buildHourDirectory(runs []Run, first, sealed int64, tail uint64, source [16
 	}
 	i := 0
 	for ms := first; ms < sealed; ms += TimeHourMS {
-		_, _, h, s, b, _ := t.positions(time.UnixMilli(ms))
+		_, _, h, s, _ := t.positions(time.UnixMilli(ms))
 		pods, sods, count := uint64(0), uint64(0), uint64(0)
 		start := row
 		if i < len(runs) && runs[i].PAC.Placement.From == ms {
@@ -168,7 +170,7 @@ func buildHourDirectory(runs []Run, first, sealed int64, tail uint64, source [16
 			putUintWidth(t.raw[at:at+w], v)
 			at += w
 		}
-		t.raw[s] |= TimeComplete << b
+		t.raw[s] = TimeComplete
 	}
 	if i != len(runs) || row != tail {
 		return timeDirectory{}, fmt.Errorf("segments outside sealed directory")
@@ -281,7 +283,7 @@ func (t *timeDirectory) window(from, to int64, retired bool) ([]byte, error) {
 		if !ok || l.State != TimeComplete {
 			return nil, fmt.Errorf("incomplete time hour")
 		}
-		_, _, h, _, _, _ := t.positions(time.UnixMilli(ms))
+		_, _, h, _, _ := t.positions(time.UnixMilli(ms))
 		raw = append(raw, t.raw[h:h+t.leafBytes()]...)
 		raw = append(raw, l.State)
 	}
@@ -301,4 +303,24 @@ func (b *branchStore) visitPeriods(from, to time.Time, fn func(*Period)) {
 		e := l.End
 		fn(&Period{From: ms, To: ms + TimeHourMS, Ranges: []RowRange{{Start: l.Start + IndexHeaderSlots, End: &e}}})
 	}
+}
+
+// podsBoundary resolves a half-open time boundary without reading event indexes.
+// Empty/blank siblings have no usable address. Walk backward to a populated leaf
+// and read only its length prefix. Coverage validation remains window's job;
+// finding an address never changes blank hours into complete-empty hours.
+func (t *timeDirectory) podsBoundary(file *os.File, retired uint64, ms int64) (uint64, error) {
+	if len(t.raw) < TimeTrieHeader || ms != utcHour(ms) || ms < t.first() || ms > t.sealed() {
+		return 0, fmt.Errorf("invalid PAC time boundary")
+	}
+	if l, ok := t.leaf(ms); ok && l.Segments > 0 {
+		return l.Pods, nil
+	}
+	for at := ms - TimeHourMS; at >= t.first(); at -= TimeHourMS {
+		if l, ok := t.leaf(at); ok && l.Segments > 0 {
+			_, end, err := storedSegmentRange(file, retired, l.Pods)
+			return end, err
+		}
+	}
+	return retired + headerSize, nil
 }

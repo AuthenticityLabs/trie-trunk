@@ -28,3 +28,10 @@ test('research retains submitted query separately from edits, scoped to credenti
   assert.equal(writeResearch('Object History','scope',state),false);
  }finally{delete globalThis.sessionStorage}
 });
+
+test('captured scroll geometry is bounded during Safari bounce and layout shrink',()=>{
+ assert.deepEqual(capturePosition({...grid,scrollTop:-50,scrollLeft:-20}),{top:0,left:0,vertical:0,horizontal:0,viewportHeight:200,viewportWidth:400});
+ const end=capturePosition({...grid,scrollTop:1200,scrollLeft:400});
+ assert.equal(end.top,800);assert.equal(end.left,200);assert.equal(end.vertical,1);assert.equal(validPosition(end),true);
+ assert.equal(capturePosition({...grid,scrollHeight:100}).vertical,0);
+});

@@ -173,7 +173,7 @@ func (p *Endpoint) replayHTTP(w http.ResponseWriter, r *http.Request) {
 		layouts = append(layouts, l)
 	}
 	for _, layout := range layouts {
-		if layout.integers != nil && !hasAdaptive(r) {
+		if layout.Adaptive() && !hasAdaptive(r) {
 			http.Error(w, "adaptive-integers feature required", 426)
 			return
 		}

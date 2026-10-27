@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"github.com/fxamacker/cbor/v2"
 	"net/http/httptest"
 	"net/url"
 	"os"
@@ -253,10 +254,25 @@ func TestDailySummaryHTTPFixture(t *testing.T) {
 			}
 		}
 		count := result.Summary.Count
+		refs := make([]summaryPackQuery, len(result.Analytics.Days))
+		for i, ref := range result.Analytics.Days {
+			refs[i] = summaryPackQuery{Source: ref.Source, Definition: ref.Definition, Key: ref.Key}
+		}
+		response := requestSummaryPacks(t, h, refs)
+		if response.Code != 200 {
+			t.Fatal(response.Code, response.Body.String())
+		}
 		var packets [][]byte
-		for _, ref := range result.Analytics.Days {
-			raw := get("/summary-day?"+url.Values{"key": {ref.Key}, "source": {ref.Source}, "definition": {ref.Definition}}.Encode(), false).Body.Bytes()
-			packets = append(packets, bytes.Clone(raw))
+		if err := cbor.Unmarshal(response.Body.Bytes(), &packets); err != nil {
+			t.Fatal(err)
+		}
+		if len(packets) != len(refs) {
+			t.Fatal("missing summary packs")
+		}
+		for i, raw := range packets {
+			if summaryDigest(raw) != refs[i].Key {
+				t.Fatal("pack order or identity changed")
+			}
 			_, _, _, sums, e := decodeSummaryDay(raw)
 			if e != nil {
 				t.Fatal(e)
@@ -358,15 +374,32 @@ func TestDailySummaryRetentionAndDirectDelivery(t *testing.T) {
 	}
 	h := &HTTP{Store: s}
 	get := func(key string) *httptest.ResponseRecorder {
-		r := httptest.NewRequest("GET", "/summary-day?"+url.Values{"key": {key}, "source": {h.tap(Read)}, "definition": {fmtDigestNative(l.Digest)}}.Encode(), nil)
-		w := httptest.NewRecorder()
-		h.ServeHTTP(w, r)
-		return w
+		return requestSummaryPacks(t, h, []summaryPackQuery{{Key: key, Source: h.tap(Read), Definition: fmtDigestNative(l.Digest)}})
 	}
-	if w := get(later.Key); w.Code != 200 || !bytes.Equal(w.Body.Bytes(), oldPacket) {
+	if w := get(later.Key); w.Code != 200 {
 		t.Fatal("direct disk delivery after restart", w.Code)
+	} else {
+		var packs [][]byte
+		if err := cbor.Unmarshal(w.Body.Bytes(), &packs); err != nil || len(packs) != 1 || !bytes.Equal(packs[0], oldPacket) {
+			t.Fatal("changed sealed pack", err)
+		}
 	}
 	if w := get(old.Key); w.Code != 409 {
 		t.Fatal("retired packet remained accessible", w.Code)
 	}
+}
+
+func requestSummaryPacks(t *testing.T, h *HTTP, refs []summaryPackQuery) *httptest.ResponseRecorder {
+	t.Helper()
+	raw, err := json.Marshal(struct {
+		Packs []summaryPackQuery `json:"packs"`
+	}{refs})
+	if err != nil {
+		t.Fatal(err)
+	}
+	r := httptest.NewRequest("POST", "/summaries", bytes.NewReader(raw))
+	r.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+	h.ServeHTTP(w, r)
+	return w
 }

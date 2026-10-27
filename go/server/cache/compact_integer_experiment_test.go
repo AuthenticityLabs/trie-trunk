@@ -236,10 +236,10 @@ func (a *compactIntegerLayout) scan(raw []byte, reuse *Frame) error {
 	} else {
 		reuse.Values = reuse.Values[:n]
 	}
-	if cap(reuse.ends) < n {
-		reuse.ends = make([][2]int, n)
+	if cap(reuse.Ends) < n {
+		reuse.Ends = make([][2]int, n)
 	} else {
-		reuse.ends = reuse.ends[:n]
+		reuse.Ends = reuse.Ends[:n]
 	}
 	at, bit := controlEnd, 0
 	for i, f := range a.fields {
@@ -285,7 +285,7 @@ func (a *compactIntegerLayout) scan(raw []byte, reuse *Frame) error {
 		if end < uint64(previous) || end > MaxFrame {
 			return fmt.Errorf("invalid end offset")
 		}
-		reuse.ends[i] = [2]int{previous, int(end)}
+		reuse.Ends[i] = [2]int{previous, int(end)}
 		previous = int(end)
 	}
 	if previous != len(raw)-at {
@@ -295,7 +295,7 @@ func (a *compactIntegerLayout) scan(raw []byte, reuse *Frame) error {
 		if v.State != Offset {
 			continue
 		}
-		v.Bytes = raw[at+reuse.ends[i][0] : at+reuse.ends[i][1]]
+		v.Bytes = raw[at+reuse.Ends[i][0] : at+reuse.Ends[i][1]]
 		if a.base.Definition.Fields[i].Type == "STRING" && !utf8.Valid(v.Bytes) {
 			return fmt.Errorf("invalid UTF-8")
 		}

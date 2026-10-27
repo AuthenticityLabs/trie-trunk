@@ -97,7 +97,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "pil-codec"
+name = "pill-packer"
 version = "0.1.0"
 dependencies = [
  "ciborium",
@@ -202,7 +202,7 @@ version = "0.1.0"
 dependencies = [
  "ciborium",
  "crc32c",
- "pil-codec",
+ "pill-packer",
 ]
 
 [[package]]

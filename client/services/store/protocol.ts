@@ -19,15 +19,19 @@ export type NativeSelection = {
   to: number;
   where: [string, string][];
 };
+export type NativeInput = {record:NativeRecord;definition?:Metadata};
 export type Command =
-  | { kind: "native-rebase"; source:string }
+  | { kind: "native-rebase"; sources:string[] }
   | { kind: "native-begin"; session: string }
+  | { kind: "native-records"; session:string; records:NativeInput[] }
+  | { kind: "native-resolve"; tap:string; digest:string; generation:string; from:number; to:number }
   | { kind: "native-record"; session: string; record: NativeRecord; definition?: Metadata }
-  | { kind: "native-finish"; session: string; collection?: string; selection?: Selection }
+  | { kind: "native-finish"; session: string; records?:NativeInput[]; collection?: string; selection?: Selection }
   | { kind: "native-abort"; session: string }
   | { kind: "native-coverage"; tap?: string }
   | { kind: "native-object-state"; query: ObjectQuery }
   | { kind: "native-dependencies"; source: string }
+  | { kind: "native-rows"; source: string; from: number; to: number; rows: number[] }
   | { kind: "native-page"; source: string; from: number; to: number; after?: number; limit?: number }
   | { kind: "definitions" }
   | { kind: "remember"; definitions: Metadata[]; bindings: Binding[] }

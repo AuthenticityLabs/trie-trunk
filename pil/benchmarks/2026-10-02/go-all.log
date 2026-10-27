@@ -1,9 +1,0 @@
-ok  	trie-trunk/go/codec	0.141s
-?   	trie-trunk/go/server/ingest	[no test files]
-?   	trie-trunk/go/server/ingest/cbor	[no test files]
-?   	trie-trunk/go/server/ingest/json	[no test files]
-ok  	trie-trunk/go/server/ingest/sample	0.091s
-ok  	trie-trunk/go/server/search	35.632s
-ok  	trie-trunk/go/server/serve	4.875s
-ok  	trie-trunk/go/server/store	24.435s
-ok  	trie-trunk/go/cmd/trunk	1.211s

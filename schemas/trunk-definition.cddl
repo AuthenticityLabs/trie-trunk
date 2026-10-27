@@ -1,0 +1,31 @@
+; Concatenate pill-packer/schemas/definition.cddl when validating this profile.
+; Use trunk-definition as the entry rule. This binding is owned by Trie-Trunk.
+trunk-definition = {
+  pil-layout,
+  pil-members,
+  resource: trunk-resource,
+  * tstr => any
+}
+trunk-resource = {
+  format: 6,
+  service: tstr,
+  resource: tstr,
+  major: 1..4095,
+  minor: 0..1048575,
+  timezone: tstr, ; validated IANA timezone name; storage uses UTC
+  roles: {
+    event_id: tstr,
+    ? id: tstr,
+    ? revision_id: tstr,
+    ? duration: tstr,
+    ? shared: tstr
+  },
+  ? path: [* tstr],
+  ? aggregations: [* tstr],
+  ? references: [* reference-translation]
+}
+reference-translation = {
+  source_definition: tstr,
+  field: tstr,
+  values: {+ (0..65535) => (0..65535)}
+}

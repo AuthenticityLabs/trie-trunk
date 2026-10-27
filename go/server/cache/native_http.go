@@ -2,6 +2,7 @@ package cache
 
 import (
 	"bufio"
+	"context"
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/hex"
@@ -9,6 +10,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 )
@@ -94,12 +96,12 @@ func (h *HTTP) nativeCollect(w http.ResponseWriter, r *http.Request) {
 		if e != nil {
 			continue
 		}
-		if l.integers != nil && !hasAdaptive(r) {
+		if l.Adaptive() && !hasAdaptive(r) {
 			http.Error(w, "adaptive-integers capability required", 426)
 			return
 		}
 		for _, b := range branches {
-			windows, e := api.Store.PlanBranchPackages(b, from, to)
+			windows, e := api.Store.planNativeRanges(b, from, to)
 			if e != nil {
 				http.Error(w, e.Error(), 400)
 				return
@@ -163,7 +165,7 @@ func (h *HTTP) nativeCollect(w http.ResponseWriter, r *http.Request) {
 			if e = r.Context().Err(); e != nil {
 				break
 			}
-			req := CollectionRequest{Branch: target.branch, At: window.From, IndexPeriod: window.IndexPeriod, Have: coverage,
+			req := CollectionRequest{Branch: target.branch, At: window.From, Until: window.To, IndexPeriod: window.IndexPeriod, Have: coverage,
 				StatePages: strings.Contains(","+r.Header.Get("PIL-Features")+",", ",native-state-pages,")}
 			if q.Get("population") != "none" {
 				req.PopulationFrom = from
@@ -176,36 +178,22 @@ func (h *HTTP) nativeCollect(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 			var manifest Manifest
-			e = target.api.Store.collectBorrowed(r.Context(), req, func(m Manifest) error {
+			e = target.api.Store.collectDelivery(r.Context(), req, func(m Manifest) error {
 				manifest = m
 				raw, err := encoder.Marshal(m)
 				if err != nil {
 					return err
 				}
-				// U32 stream, CBOR manifest: DIRECT/OFFSET mask.
-				b := []byte{4, 0xb0}
-				b = order.AppendUint32(b, target.stream)
-				b = extended(b, uint64(len(raw)))
-				b = append(b, raw...)
-				_, err = out.Write(b)
-				return err
+				return writeControl(out, 4, manifestControl, Uint(uint64(target.stream), 4), bytesValue(raw))
 			}, func(chunk NativeChunk) error {
-				if chunk.Kind != "pac" {
-					return writeNativeChunk(out, target.stream, chunk)
-				}
-
-				if _, err := out.Write([]byte{7}); err != nil {
-					return err
-				}
-				_, err := out.Write(chunk.Data)
-				return err
+				return writeNativeChunk(out, target.stream, chunk)
+			}, func(file *os.File, start, end uint64) error {
+				return writePACRange(r.Context(), out, target.stream, file, start, end)
 			})
 			if e != nil {
 				break
 			}
-			end := []byte{6, 0x80}
-			end = order.AppendUint32(end, target.stream)
-			_, e = out.Write(end)
+			e = writeControl(out, 6, endControl, Uint(uint64(target.stream), 4))
 			if coverage.Generation != manifest.Generation {
 				coverage.Index = nil
 				coverage.Population = nil
@@ -232,18 +220,37 @@ func (h *HTTP) nativeCollect(w http.ResponseWriter, r *http.Request) {
 func fmtDigestNative(d [32]byte) string { return hex.EncodeToString(d[:]) }
 func writeNativeChunk(out io.Writer, stream uint32, c NativeChunk) error {
 	kind := map[string]byte{"map": 0, "trie": 1, "state": 2, "index": 3, "population": 4}[c.Kind]
-	// stream U32, kind U8, source start U64, digest BYTES, data BYTES.
-	// Three DIRECT + two OFFSET states occupy two mask bytes.
-	b := []byte{5, 0xab, 0xc0}
-	b = order.AppendUint32(b, stream)
-	b = append(b, kind)
-	b = order.AppendUint64(b, c.Start)
-	b = extended(b, 32)
-	b = extended(b, uint64(32+len(c.Data)))
-	b = append(b, c.Digest[:]...)
-	if _, e := out.Write(b); e != nil {
-		return e
+	return writeControl(out, 5, chunkControl, Uint(uint64(stream), 4), Uint(uint64(kind), 1), Uint(c.Start, 8), bytesValue(c.Digest[:]), bytesValue(c.Data))
+}
+
+// Tag 9 carries stream U32 + byte length U64, followed by consecutive stored
+// PAC bytes, without per-PAC transport markers or payload-sized Go allocations.
+func writePACRange(ctx context.Context, out io.Writer, stream uint32, file *os.File, start, end uint64) error {
+	if end <= start || end > 1<<63-1 {
+		return fmt.Errorf("invalid PAC file range")
 	}
-	_, e := out.Write(c.Data)
-	return e
+	var header [13]byte
+	header[0] = 9
+	order.PutUint32(header[1:5], stream)
+	order.PutUint64(header[5:13], end-start)
+	if _, err := out.Write(header[:]); err != nil {
+		return err
+	}
+	n, err := io.Copy(out, contextRangeReader{ctx, io.NewSectionReader(file, int64(start), int64(end-start))})
+	if err == nil && uint64(n) != end-start {
+		return io.ErrUnexpectedEOF
+	}
+	return err
+}
+
+type contextRangeReader struct {
+	ctx    context.Context
+	reader io.Reader
+}
+
+func (r contextRangeReader) Read(p []byte) (int, error) {
+	if err := r.ctx.Err(); err != nil {
+		return 0, err
+	}
+	return r.reader.Read(p)
 }

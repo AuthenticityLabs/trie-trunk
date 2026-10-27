@@ -1,0 +1,764 @@
+{
+  "arch": "arm64",
+  "conditions": "Native Go HTTP API delivery only. Warm uncontrolled server/OS caches, one discarded setup trial, persistent transport per run. Fresh summary/seed-pack receipts each trial, no native byte-coverage hints between packs. Includes HTTP gzip decode, summary SHA256 validation, and routing metadata parse. Excludes seed-pack application decode, browser/SharedWorker/OPFS/render. KnownMetadataMS is a separate single request with receipts, not a warm full view.",
+  "logicalCPUs": 10,
+  "origin": "http://127.0.0.1:3020",
+  "os": "darwin",
+  "overlap": false,
+  "parallel": 4,
+  "protocol": 1,
+  "recordedAt": "2026-10-26T22:17:55.648599Z",
+  "runtime": "go1.26.4",
+  "samples": [
+    {
+      "Scenario": "all-full",
+      "Trial": 0,
+      "TotalMS": 67.224667,
+      "SearchMS": 50.946,
+      "SummariesMS": 8.014625,
+      "PacksMS": 8.001875,
+      "KnownMetadataMS": 28.611542,
+      "Rows": 100,
+      "SummaryPackets": 460,
+      "SeedPacks": 20,
+      "PageIdentity": "c11d2faecd795117450f8ad65c70390c3eafa59be93c6a86b2fb846bfb4df326",
+      "Requests": [
+        {
+          "Stage": "search",
+          "Path": "/events",
+          "Protocol": "HTTP/1.1",
+          "HeadersMS": 49.086042,
+          "BodyMS": 49.3285,
+          "WireBodyBytes": 31714,
+          "DecodedBodyBytes": 176855
+        },
+        {
+          "Stage": "summary",
+          "Path": "/summaries",
+          "Protocol": "HTTP/1.1",
+          "HeadersMS": 4.103125,
+          "BodyMS": 7.522459,
+          "WireBodyBytes": 714978,
+          "DecodedBodyBytes": 714978
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/1.1",
+          "HeadersMS": 0.8735,
+          "BodyMS": 0.955584,
+          "WireBodyBytes": 7704,
+          "DecodedBodyBytes": 7704
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/1.1",
+          "HeadersMS": 1.046625,
+          "BodyMS": 1.0615,
+          "WireBodyBytes": 7634,
+          "DecodedBodyBytes": 7634
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/1.1",
+          "HeadersMS": 1.753042,
+          "BodyMS": 1.76475,
+          "WireBodyBytes": 7767,
+          "DecodedBodyBytes": 7767
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/1.1",
+          "HeadersMS": 1.466166,
+          "BodyMS": 1.481208,
+          "WireBodyBytes": 7733,
+          "DecodedBodyBytes": 7733
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/1.1",
+          "HeadersMS": 1.923209,
+          "BodyMS": 1.9675,
+          "WireBodyBytes": 7602,
+          "DecodedBodyBytes": 7602
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/1.1",
+          "HeadersMS": 2.231209,
+          "BodyMS": 2.344375,
+          "WireBodyBytes": 7724,
+          "DecodedBodyBytes": 7724
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/1.1",
+          "HeadersMS": 0.569625,
+          "BodyMS": 0.611458,
+          "WireBodyBytes": 7592,
+          "DecodedBodyBytes": 7592
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/1.1",
+          "HeadersMS": 0.625583,
+          "BodyMS": 0.637666,
+          "WireBodyBytes": 7727,
+          "DecodedBodyBytes": 7727
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/1.1",
+          "HeadersMS": 5.130125,
+          "BodyMS": 5.141667,
+          "WireBodyBytes": 7694,
+          "DecodedBodyBytes": 7694
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/1.1",
+          "HeadersMS": 1.511709,
+          "BodyMS": 1.563792,
+          "WireBodyBytes": 7566,
+          "DecodedBodyBytes": 7566
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/1.1",
+          "HeadersMS": 1.868375,
+          "BodyMS": 1.879833,
+          "WireBodyBytes": 7919,
+          "DecodedBodyBytes": 7919
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/1.1",
+          "HeadersMS": 0.968542,
+          "BodyMS": 0.981042,
+          "WireBodyBytes": 8040,
+          "DecodedBodyBytes": 8040
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/1.1",
+          "HeadersMS": 3.603959,
+          "BodyMS": 3.615542,
+          "WireBodyBytes": 8017,
+          "DecodedBodyBytes": 8017
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/1.1",
+          "HeadersMS": 0.756875,
+          "BodyMS": 0.770958,
+          "WireBodyBytes": 7895,
+          "DecodedBodyBytes": 7895
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/1.1",
+          "HeadersMS": 0.746125,
+          "BodyMS": 0.758084,
+          "WireBodyBytes": 7658,
+          "DecodedBodyBytes": 7658
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/1.1",
+          "HeadersMS": 0.739333,
+          "BodyMS": 0.750458,
+          "WireBodyBytes": 7572,
+          "DecodedBodyBytes": 7572
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/1.1",
+          "HeadersMS": 0.788083,
+          "BodyMS": 0.902083,
+          "WireBodyBytes": 7714,
+          "DecodedBodyBytes": 7714
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/1.1",
+          "HeadersMS": 0.81225,
+          "BodyMS": 0.826084,
+          "WireBodyBytes": 7689,
+          "DecodedBodyBytes": 7689
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/1.1",
+          "HeadersMS": 0.632834,
+          "BodyMS": 0.679709,
+          "WireBodyBytes": 7552,
+          "DecodedBodyBytes": 7552
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/1.1",
+          "HeadersMS": 1.217084,
+          "BodyMS": 1.227542,
+          "WireBodyBytes": 7998,
+          "DecodedBodyBytes": 7998
+        },
+        {
+          "Stage": "known-metadata",
+          "Path": "/events",
+          "Protocol": "HTTP/1.1",
+          "HeadersMS": 27.805833,
+          "BodyMS": 28.145583,
+          "WireBodyBytes": 9826,
+          "DecodedBodyBytes": 39490
+        }
+      ]
+    },
+    {
+      "Scenario": "all-full",
+      "Trial": 1,
+      "TotalMS": 112.021584,
+      "SearchMS": 89.785334,
+      "SummariesMS": 12.082958,
+      "PacksMS": 9.6965,
+      "KnownMetadataMS": 65.707667,
+      "Rows": 100,
+      "SummaryPackets": 460,
+      "SeedPacks": 20,
+      "PageIdentity": "c11d2faecd795117450f8ad65c70390c3eafa59be93c6a86b2fb846bfb4df326",
+      "Requests": [
+        {
+          "Stage": "search",
+          "Path": "/events",
+          "Protocol": "HTTP/1.1",
+          "HeadersMS": 86.7465,
+          "BodyMS": 87.163583,
+          "WireBodyBytes": 31714,
+          "DecodedBodyBytes": 176855
+        },
+        {
+          "Stage": "summary",
+          "Path": "/summaries",
+          "Protocol": "HTTP/1.1",
+          "HeadersMS": 5.115167,
+          "BodyMS": 11.253292,
+          "WireBodyBytes": 714978,
+          "DecodedBodyBytes": 714978
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/1.1",
+          "HeadersMS": 1.439292,
+          "BodyMS": 1.500334,
+          "WireBodyBytes": 7704,
+          "DecodedBodyBytes": 7704
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/1.1",
+          "HeadersMS": 2.299625,
+          "BodyMS": 2.330542,
+          "WireBodyBytes": 7634,
+          "DecodedBodyBytes": 7634
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/1.1",
+          "HeadersMS": 1.801375,
+          "BodyMS": 1.827875,
+          "WireBodyBytes": 7767,
+          "DecodedBodyBytes": 7767
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/1.1",
+          "HeadersMS": 3.973,
+          "BodyMS": 3.996667,
+          "WireBodyBytes": 7733,
+          "DecodedBodyBytes": 7733
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/1.1",
+          "HeadersMS": 1.497542,
+          "BodyMS": 1.529667,
+          "WireBodyBytes": 7602,
+          "DecodedBodyBytes": 7602
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/1.1",
+          "HeadersMS": 0.954209,
+          "BodyMS": 1.081417,
+          "WireBodyBytes": 7724,
+          "DecodedBodyBytes": 7724
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/1.1",
+          "HeadersMS": 1.197084,
+          "BodyMS": 1.218875,
+          "WireBodyBytes": 7592,
+          "DecodedBodyBytes": 7592
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/1.1",
+          "HeadersMS": 1.470375,
+          "BodyMS": 1.500583,
+          "WireBodyBytes": 7727,
+          "DecodedBodyBytes": 7727
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/1.1",
+          "HeadersMS": 3.496291,
+          "BodyMS": 3.517916,
+          "WireBodyBytes": 7694,
+          "DecodedBodyBytes": 7694
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/1.1",
+          "HeadersMS": 4.594541,
+          "BodyMS": 4.646916,
+          "WireBodyBytes": 7566,
+          "DecodedBodyBytes": 7566
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/1.1",
+          "HeadersMS": 0.806834,
+          "BodyMS": 0.826459,
+          "WireBodyBytes": 7919,
+          "DecodedBodyBytes": 7919
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/1.1",
+          "HeadersMS": 0.755959,
+          "BodyMS": 1.010167,
+          "WireBodyBytes": 8040,
+          "DecodedBodyBytes": 8040
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/1.1",
+          "HeadersMS": 1.05925,
+          "BodyMS": 1.20925,
+          "WireBodyBytes": 8017,
+          "DecodedBodyBytes": 8017
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/1.1",
+          "HeadersMS": 0.761541,
+          "BodyMS": 0.782708,
+          "WireBodyBytes": 7895,
+          "DecodedBodyBytes": 7895
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/1.1",
+          "HeadersMS": 1.078666,
+          "BodyMS": 1.099291,
+          "WireBodyBytes": 7658,
+          "DecodedBodyBytes": 7658
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/1.1",
+          "HeadersMS": 0.732833,
+          "BodyMS": 0.796,
+          "WireBodyBytes": 7572,
+          "DecodedBodyBytes": 7572
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/1.1",
+          "HeadersMS": 0.936833,
+          "BodyMS": 0.966417,
+          "WireBodyBytes": 7714,
+          "DecodedBodyBytes": 7714
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/1.1",
+          "HeadersMS": 1.504917,
+          "BodyMS": 1.538458,
+          "WireBodyBytes": 7689,
+          "DecodedBodyBytes": 7689
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/1.1",
+          "HeadersMS": 2.067959,
+          "BodyMS": 2.101625,
+          "WireBodyBytes": 7552,
+          "DecodedBodyBytes": 7552
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/1.1",
+          "HeadersMS": 1.963583,
+          "BodyMS": 2.092958,
+          "WireBodyBytes": 7998,
+          "DecodedBodyBytes": 7998
+        },
+        {
+          "Stage": "known-metadata",
+          "Path": "/events",
+          "Protocol": "HTTP/1.1",
+          "HeadersMS": 63.715,
+          "BodyMS": 64.558291,
+          "WireBodyBytes": 9826,
+          "DecodedBodyBytes": 39490
+        }
+      ]
+    },
+    {
+      "Scenario": "all-full",
+      "Trial": 2,
+      "TotalMS": 74.599541,
+      "SearchMS": 53.8155,
+      "SummariesMS": 10.4665,
+      "PacksMS": 8.791667,
+      "KnownMetadataMS": 49.405167,
+      "Rows": 100,
+      "SummaryPackets": 460,
+      "SeedPacks": 20,
+      "PageIdentity": "c11d2faecd795117450f8ad65c70390c3eafa59be93c6a86b2fb846bfb4df326",
+      "Requests": [
+        {
+          "Stage": "search",
+          "Path": "/events",
+          "Protocol": "HTTP/1.1",
+          "HeadersMS": 47.994625,
+          "BodyMS": 48.631125,
+          "WireBodyBytes": 31714,
+          "DecodedBodyBytes": 176855
+        },
+        {
+          "Stage": "summary",
+          "Path": "/summaries",
+          "Protocol": "HTTP/1.1",
+          "HeadersMS": 4.504292,
+          "BodyMS": 9.133875,
+          "WireBodyBytes": 714978,
+          "DecodedBodyBytes": 714978
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/1.1",
+          "HeadersMS": 1.345125,
+          "BodyMS": 1.385292,
+          "WireBodyBytes": 7704,
+          "DecodedBodyBytes": 7704
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/1.1",
+          "HeadersMS": 3.029375,
+          "BodyMS": 3.054083,
+          "WireBodyBytes": 7634,
+          "DecodedBodyBytes": 7634
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/1.1",
+          "HeadersMS": 1.588542,
+          "BodyMS": 1.631792,
+          "WireBodyBytes": 7767,
+          "DecodedBodyBytes": 7767
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/1.1",
+          "HeadersMS": 1.866,
+          "BodyMS": 1.907625,
+          "WireBodyBytes": 7733,
+          "DecodedBodyBytes": 7733
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/1.1",
+          "HeadersMS": 1.216333,
+          "BodyMS": 1.243666,
+          "WireBodyBytes": 7602,
+          "DecodedBodyBytes": 7602
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/1.1",
+          "HeadersMS": 0.558958,
+          "BodyMS": 0.593875,
+          "WireBodyBytes": 7724,
+          "DecodedBodyBytes": 7724
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/1.1",
+          "HeadersMS": 1.782417,
+          "BodyMS": 1.80425,
+          "WireBodyBytes": 7592,
+          "DecodedBodyBytes": 7592
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/1.1",
+          "HeadersMS": 1.076333,
+          "BodyMS": 1.101541,
+          "WireBodyBytes": 7727,
+          "DecodedBodyBytes": 7727
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/1.1",
+          "HeadersMS": 1.390292,
+          "BodyMS": 1.424375,
+          "WireBodyBytes": 7694,
+          "DecodedBodyBytes": 7694
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/1.1",
+          "HeadersMS": 1.51375,
+          "BodyMS": 1.536666,
+          "WireBodyBytes": 7566,
+          "DecodedBodyBytes": 7566
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/1.1",
+          "HeadersMS": 2.0245,
+          "BodyMS": 2.049292,
+          "WireBodyBytes": 7919,
+          "DecodedBodyBytes": 7919
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/1.1",
+          "HeadersMS": 0.486584,
+          "BodyMS": 0.513459,
+          "WireBodyBytes": 8040,
+          "DecodedBodyBytes": 8040
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/1.1",
+          "HeadersMS": 4.483083,
+          "BodyMS": 4.507208,
+          "WireBodyBytes": 8017,
+          "DecodedBodyBytes": 8017
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/1.1",
+          "HeadersMS": 0.453042,
+          "BodyMS": 0.484375,
+          "WireBodyBytes": 7895,
+          "DecodedBodyBytes": 7895
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/1.1",
+          "HeadersMS": 0.515875,
+          "BodyMS": 0.546792,
+          "WireBodyBytes": 7658,
+          "DecodedBodyBytes": 7658
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/1.1",
+          "HeadersMS": 1.109875,
+          "BodyMS": 1.13325,
+          "WireBodyBytes": 7572,
+          "DecodedBodyBytes": 7572
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/1.1",
+          "HeadersMS": 0.662166,
+          "BodyMS": 0.754541,
+          "WireBodyBytes": 7714,
+          "DecodedBodyBytes": 7714
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/1.1",
+          "HeadersMS": 0.910458,
+          "BodyMS": 0.956458,
+          "WireBodyBytes": 7689,
+          "DecodedBodyBytes": 7689
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/1.1",
+          "HeadersMS": 2.066167,
+          "BodyMS": 2.087,
+          "WireBodyBytes": 7552,
+          "DecodedBodyBytes": 7552
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/1.1",
+          "HeadersMS": 0.919875,
+          "BodyMS": 0.995,
+          "WireBodyBytes": 7998,
+          "DecodedBodyBytes": 7998
+        },
+        {
+          "Stage": "known-metadata",
+          "Path": "/events",
+          "Protocol": "HTTP/1.1",
+          "HeadersMS": 45.507625,
+          "BodyMS": 46.118625,
+          "WireBodyBytes": 9826,
+          "DecodedBodyBytes": 39490
+        }
+      ]
+    }
+  ],
+  "scenarios": [
+    {
+      "Name": "all-full",
+      "Tap": "",
+      "From": "2026-09-25T00:00:00Z",
+      "To": "2026-10-26T00:00:00Z",
+      "Include": "summary,page,statistics",
+      "Query": "",
+      "Page": 100
+    },
+    {
+      "Name": "all-page",
+      "Tap": "",
+      "From": "2026-09-25T00:00:00Z",
+      "To": "2026-10-26T00:00:00Z",
+      "Include": "page",
+      "Query": "",
+      "Page": 100
+    },
+    {
+      "Name": "all-summary",
+      "Tap": "",
+      "From": "2026-09-25T00:00:00Z",
+      "To": "2026-10-26T00:00:00Z",
+      "Include": "summary",
+      "Query": "",
+      "Page": 100
+    },
+    {
+      "Name": "branch-full",
+      "Tap": "demo/payment/transactions.v1/write",
+      "From": "2026-09-25T00:00:00Z",
+      "To": "2026-10-26T00:00:00Z",
+      "Include": "summary,page,statistics",
+      "Query": "",
+      "Page": 100
+    },
+    {
+      "Name": "all-numeric",
+      "Tap": "",
+      "From": "2026-09-25T00:00:00Z",
+      "To": "2026-10-26T00:00:00Z",
+      "Include": "page",
+      "Query": "{\"filters\":[{\"field\":\"duration\",\"op\":\"\u003e\",\"value\":{\"kind\":\"number\",\"value\":\"600\"}}],\"order\":\"desc\"}",
+      "Page": 100
+    },
+    {
+      "Name": "branch-numeric",
+      "Tap": "demo/payment/transactions.v1/write",
+      "From": "2026-09-25T00:00:00Z",
+      "To": "2026-10-26T00:00:00Z",
+      "Include": "page",
+      "Query": "{\"filters\":[{\"field\":\"duration\",\"op\":\"\u003e\",\"value\":{\"kind\":\"number\",\"value\":\"600\"}}],\"order\":\"desc\"}",
+      "Page": 100
+    },
+    {
+      "Name": "all-text",
+      "Tap": "",
+      "From": "2026-09-25T00:00:00Z",
+      "To": "2026-10-26T00:00:00Z",
+      "Include": "page",
+      "Query": "{\"filters\":[],\"search\":{\"text\":\"authorized\",\"mode\":\"terms\"},\"order\":\"desc\"}",
+      "Page": 100
+    },
+    {
+      "Name": "branch-text",
+      "Tap": "demo/payment/transactions.v1/write",
+      "From": "2026-09-25T00:00:00Z",
+      "To": "2026-10-26T00:00:00Z",
+      "Include": "page",
+      "Query": "{\"filters\":[],\"search\":{\"text\":\"authorized\",\"mode\":\"terms\"},\"order\":\"desc\"}",
+      "Page": 100
+    },
+    {
+      "Name": "all-1000",
+      "Tap": "",
+      "From": "2026-09-25T00:00:00Z",
+      "To": "2026-10-26T00:00:00Z",
+      "Include": "summary,page,statistics",
+      "Query": "",
+      "Page": 1000
+    }
+  ],
+  "trials": 3
+}

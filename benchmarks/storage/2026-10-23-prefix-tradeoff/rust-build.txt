@@ -1,3 +1,0 @@
-   Compiling trie-trunk-search v0.1.0 (/Users/Shared/code/applications/trie-trunk/rust)
-    Finished `release` profile [optimized] target(s) in 2.43s
-  Executable unittests src/tantivy.rs (rust/target/release/deps/trunk_tantivy-e5977a037979f011)

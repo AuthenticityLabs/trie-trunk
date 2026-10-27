@@ -1,0 +1,184 @@
+{
+  "id": "overview",
+  "title": "Overview",
+  "mode": "fast",
+  "source": "summaries",
+  "scope": "subscriptions",
+  "time": {
+    "preset": "30d",
+    "timezone": "UTC",
+    "completeDays": true
+  },
+  "layout": {
+    "columns": 12,
+    "mobileColumns": 1
+  },
+  "panels": [
+    {
+      "id": "events",
+      "title": "Summarized Events",
+      "span": 3,
+      "data": {
+        "shape": "number",
+        "metric": "events"
+      },
+      "view": {
+        "kind": "value",
+        "unit": "count",
+        "indicator": "trend"
+      }
+    },
+    {
+      "id": "error-rate",
+      "title": "Error Rate",
+      "span": 3,
+      "data": {
+        "shape": "number",
+        "metric": "errorRate"
+      },
+      "view": {
+        "kind": "value",
+        "unit": "percent",
+        "indicator": "trend"
+      }
+    },
+    {
+      "id": "average",
+      "title": "Average Duration",
+      "span": 3,
+      "data": {
+        "shape": "number",
+        "metric": "average"
+      },
+      "view": {
+        "kind": "value",
+        "unit": "ms",
+        "indicator": "trend"
+      }
+    },
+    {
+      "id": "p95",
+      "title": "P95 Duration",
+      "span": 3,
+      "data": {
+        "shape": "number",
+        "metric": "p95"
+      },
+      "view": {
+        "kind": "value",
+        "unit": "ms",
+        "indicator": "trend"
+      }
+    },
+    {
+      "id": "activity",
+      "title": "Event Activity",
+      "span": 6,
+      "data": {
+        "shape": "series",
+        "metric": "events"
+      },
+      "view": {
+        "kind": "timechart",
+        "unit": "count"
+      }
+    },
+    {
+      "id": "duration-trend",
+      "title": "P95 Duration Trend",
+      "span": 6,
+      "data": {
+        "shape": "series",
+        "metric": "p95"
+      },
+      "view": {
+        "kind": "timechart",
+        "unit": "ms"
+      }
+    },
+    {
+      "id": "top",
+      "title": "Top 10 Resources",
+      "span": 6,
+      "data": {
+        "shape": "table",
+        "metric": "events",
+        "groupBy": "resource",
+        "order": "desc",
+        "limit": 10
+      },
+      "view": {
+        "kind": "bars",
+        "unit": "count"
+      }
+    },
+    {
+      "id": "bottom",
+      "title": "Bottom 10 Active Resources",
+      "span": 6,
+      "data": {
+        "shape": "table",
+        "metric": "events",
+        "groupBy": "resource",
+        "order": "asc",
+        "limit": 10
+      },
+      "view": {
+        "kind": "bars",
+        "unit": "count"
+      }
+    },
+    {
+      "id": "service-trends",
+      "title": "Services With Trends",
+      "span": 6,
+      "data": {
+        "shape": "table",
+        "metric": "events",
+        "groupBy": "service",
+        "order": "desc",
+        "limit": 10
+      },
+      "view": {
+        "kind": "list-trends",
+        "unit": "count"
+      }
+    },
+    {
+      "id": "levels",
+      "title": "Observed Levels",
+      "span": 6,
+      "data": {
+        "shape": "set",
+        "metric": "events",
+        "groupBy": "level"
+      },
+      "view": {
+        "kind": "tags",
+        "unit": "count"
+      }
+    },
+    {
+      "id": "resources",
+      "title": "Resource Summary",
+      "span": 12,
+      "data": {
+        "shape": "table",
+        "metric": "events",
+        "groupBy": "resource",
+        "order": "desc"
+      },
+      "view": {
+        "kind": "table",
+        "unit": "count",
+        "columns": [
+          "events",
+          "errors",
+          "errorRate",
+          "average",
+          "p95"
+        ]
+      }
+    }
+  ]
+}

@@ -23,7 +23,9 @@
     "@unovis/solid": "1.7.1",
     "@unovis/ts": "1.7.1",
     "an-array-of-english-words": "2.0.0",
-    "solid-js": "1.9.17"
+    "echarts": "6.1.0",
+    "solid-js": "1.9.17",
+    "pill-packer": "file:../../pill-packer/npm"
   },
   "devDependencies": {
     "typescript": "7.0.2",

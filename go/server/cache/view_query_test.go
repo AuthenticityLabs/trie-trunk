@@ -39,7 +39,7 @@ func TestTextQueryPaginationSummariesAndSnapshot(t *testing.T) {
 		h.ServeHTTP(w, r)
 		return w
 	}
-	q := QueryPlan{Filters: []QueryFilter{{"state", "==", QueryLiteral{"string", "authorized"}}, {"duration", ">=", QueryLiteral{"number", "14"}}}, Search: &QueryText{"REQUEST", "contains"}, Order: "desc"}
+	q := QueryPlan{Filters: []QueryFilter{{"state", "==", QueryLiteral{"string", "authorized"}}, {"duration", ">=", QueryLiteral{"duration", "14us"}}}, Search: &QueryText{"REQUEST", "contains"}, Order: "desc"}
 	first := get(q, "")
 	if first.Code != 200 {
 		t.Fatal(first.Code, first.Body.String())
@@ -114,7 +114,7 @@ func TestQueryScalarPrecisionAndStates(t *testing.T) {
 	l := testLayout(t, false)
 	f := Frame{Values: make([]Value, len(l.Widths))}
 	f.Values[3] = Uint(^uint64(0), 8)
-	if !matchQuery(l, &f, &QueryPlan{Filters: []QueryFilter{{"duration", ">", QueryLiteral{"number", "18446744073709551614"}}}}) {
+	if !matchQuery(l, &f, &QueryPlan{Filters: []QueryFilter{{"duration", ">", QueryLiteral{"duration", "18446744073709551614us"}}}}) {
 		t.Fatal("full width integer")
 	}
 	f.Values[5] = Value{Null, nil}

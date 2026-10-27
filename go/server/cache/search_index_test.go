@@ -86,7 +86,7 @@ func TestTantivyIndexedAndStagedSearch(t *testing.T) {
 	if got := searchRows(t, s, at, now, q); !reflect.DeepEqual(got, []uint64{3}) {
 		t.Fatal("U64 precision", got)
 	}
-	q = QueryPlan{Filters: []QueryFilter{{"state", "==", QueryLiteral{"string", "authorized"}}, {"duration", ">=", QueryLiteral{"number", "13"}}}, Search: &QueryText{"timeout", "terms"}, Order: "desc"}
+	q = QueryPlan{Filters: []QueryFilter{{"state", "==", QueryLiteral{"string", "authorized"}}, {"duration", ">=", QueryLiteral{"duration", "13us"}}}, Search: &QueryText{"timeout", "terms"}, Order: "desc"}
 	if got := searchRows(t, s, at, now, q); !reflect.DeepEqual(got, []uint64{4}) {
 		t.Fatal("intersection", got)
 	}
@@ -175,7 +175,7 @@ func TestTantivySnapshotHighWaterAndLiteralSemantics(t *testing.T) {
 	}
 	// A fractional bound must not be rounded by the index into a false negative.
 	for _, value := range []string{"11.5", "1.15e1", "18446744073709551616"} {
-		q = QueryPlan{Filters: []QueryFilter{{"duration", ">", QueryLiteral{"number", value}}}, Order: "asc"}
+		q = QueryPlan{Filters: []QueryFilter{{"duration", ">", QueryLiteral{"duration", value + "us"}}}, Order: "asc"}
 		indexed := searchRows(t, s, at, now, q)
 		s.policy.SearchIndex = &off
 		scanned := searchRows(t, s, at, now, q)

@@ -1,0 +1,418 @@
+{
+  "date": "2026-10-27",
+  "method": {
+    "environment": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+    "measurement": "Actual Chrome worker, prepared wire response in memory, production storage worker port, cold benchmark OPFS namespace per trial.",
+    "excludes": [
+      "network download",
+      "WASM module compilation",
+      "post-write verification",
+      "UI rendering"
+    ],
+    "fixture": "Same dense server-sealed fixture as ../2026-10-27-hourly-client/results.json",
+    "validation": "CRC32C once per wire PAC, SHA-256 once per received index/chunk, structural offsets from server index; no native PAC field scan.",
+    "baseline": "../2026-10-27-hourly-client/results.json",
+    "notes": "Stage times overlap. Verification compares payload bytes, index identities, and every event boundary after timed writes."
+  },
+  "dense": {
+    "wireBytes": 22303400,
+    "trials": [
+      {
+        "decode": {
+          "decodeMs": 115.39999985694885,
+          "hours": 256,
+          "events": 1048576,
+          "payloadBytes": 19997232,
+          "codec": {
+            "uploadMs": 4.599999904632568,
+            "uploadedBytes": 90081370,
+            "uploads": 3874,
+            "scanMs": 0,
+            "scanStructuralMs": 1.5000004768371582,
+            "pacMs": 0,
+            "pacStructuralMs": 0,
+            "pacs": 0,
+            "inflateMs": 60.80000114440918,
+            "inflates": 256,
+            "verifyCRC32CMs": 3.799999952316284,
+            "checksums": 256
+          }
+        },
+        "write": {
+          "mode": "production-worker-port",
+          "namespace": "aac41d6df5f9f4812e31839d853599c3e30130bea67d4f16e446c9033a83d70d",
+          "elapsedMs": 560.5999999046326,
+          "archiveMs": 445.09999990463257,
+          "commands": {
+            "native-begin": 1,
+            "native-coverage": 1,
+            "native-records": 11,
+            "native-finish": 1
+          },
+          "stages": {
+            "checksum": {
+              "ms": 10.59999966621399,
+              "calls": 514
+            }
+          },
+          "codec": {
+            "uploadMs": 4.700000047683716,
+            "uploadedBytes": 79717486,
+            "uploads": 2825,
+            "scanMs": 0,
+            "scanStructuralMs": 0.9000005722045898,
+            "pacMs": 0,
+            "pacStructuralMs": 0,
+            "pacs": 0,
+            "inflateMs": 54.30000019073486,
+            "inflates": 256,
+            "verifyCRC32CMs": 3.999999523162842,
+            "checksums": 256
+          },
+          "sources": 1,
+          "coverageRows": 1048576,
+          "sampleRows": 10,
+          "verifiedHours": 0,
+          "verifiedEvents": 0
+        }
+      },
+      {
+        "decode": {
+          "decodeMs": 107.70000004768372,
+          "hours": 256,
+          "events": 1048576,
+          "payloadBytes": 19997232,
+          "codec": {
+            "uploadMs": 3.200000286102295,
+            "uploadedBytes": 90081370,
+            "uploads": 3874,
+            "scanMs": 0,
+            "scanStructuralMs": 1.4999995231628418,
+            "pacMs": 0,
+            "pacStructuralMs": 0,
+            "pacs": 0,
+            "inflateMs": 57.5,
+            "inflates": 256,
+            "verifyCRC32CMs": 3.40000057220459,
+            "checksums": 256
+          }
+        },
+        "write": {
+          "mode": "production-worker-port",
+          "namespace": "aac41d6df5f9f4812e31839d853599c3e30130bea67d4f16e446c9033a83d70d",
+          "elapsedMs": 482.2999999523163,
+          "archiveMs": 377.59999990463257,
+          "commands": {
+            "native-begin": 1,
+            "native-coverage": 1,
+            "native-records": 11,
+            "native-finish": 1
+          },
+          "stages": {
+            "checksum": {
+              "ms": 9.5,
+              "calls": 514
+            }
+          },
+          "codec": {
+            "uploadMs": 4.09999942779541,
+            "uploadedBytes": 79717486,
+            "uploads": 2825,
+            "scanMs": 0,
+            "scanStructuralMs": 0.8000001907348633,
+            "pacMs": 0,
+            "pacStructuralMs": 0,
+            "pacs": 0,
+            "inflateMs": 54.09999918937683,
+            "inflates": 256,
+            "verifyCRC32CMs": 4.200000286102295,
+            "checksums": 256
+          },
+          "sources": 1,
+          "coverageRows": 1048576,
+          "sampleRows": 10,
+          "verifiedHours": 0,
+          "verifiedEvents": 0
+        }
+      },
+      {
+        "decode": {
+          "decodeMs": 101.69999980926514,
+          "hours": 256,
+          "events": 1048576,
+          "payloadBytes": 19997232,
+          "codec": {
+            "uploadMs": 3.6999988555908203,
+            "uploadedBytes": 90081370,
+            "uploads": 3874,
+            "scanMs": 0,
+            "scanStructuralMs": 0.7000000476837158,
+            "pacMs": 0,
+            "pacStructuralMs": 0,
+            "pacs": 0,
+            "inflateMs": 58.60000157356262,
+            "inflates": 256,
+            "verifyCRC32CMs": 3.4999992847442627,
+            "checksums": 256
+          }
+        },
+        "write": {
+          "mode": "production-worker-port",
+          "namespace": "aac41d6df5f9f4812e31839d853599c3e30130bea67d4f16e446c9033a83d70d",
+          "elapsedMs": 485.40000009536743,
+          "archiveMs": 379.80000019073486,
+          "commands": {
+            "native-begin": 1,
+            "native-coverage": 1,
+            "native-records": 11,
+            "native-finish": 1
+          },
+          "stages": {
+            "checksum": {
+              "ms": 8.499999284744263,
+              "calls": 514
+            }
+          },
+          "codec": {
+            "uploadMs": 4.500000715255737,
+            "uploadedBytes": 79717486,
+            "uploads": 2825,
+            "scanMs": 0,
+            "scanStructuralMs": 0.5999999046325684,
+            "pacMs": 0,
+            "pacStructuralMs": 0,
+            "pacs": 0,
+            "inflateMs": 54.499998807907104,
+            "inflates": 256,
+            "verifyCRC32CMs": 3.600001096725464,
+            "checksums": 256
+          },
+          "sources": 1,
+          "coverageRows": 1048576,
+          "sampleRows": 10,
+          "verifiedHours": 0,
+          "verifiedEvents": 0
+        }
+      }
+    ],
+    "verification": {
+      "mode": "production-worker-port",
+      "namespace": "aac41d6df5f9f4812e31839d853599c3e30130bea67d4f16e446c9033a83d70d",
+      "elapsedMs": 506.90000009536743,
+      "archiveMs": 387.40000009536743,
+      "commands": {
+        "native-begin": 1,
+        "native-coverage": 1,
+        "native-records": 11,
+        "native-finish": 1
+      },
+      "stages": {
+        "checksum": {
+          "ms": 11.800000190734863,
+          "calls": 514
+        }
+      },
+      "codec": {
+        "uploadMs": 4.300000905990601,
+        "uploadedBytes": 79717486,
+        "uploads": 2825,
+        "scanMs": 0,
+        "scanStructuralMs": 1.1999993324279785,
+        "pacMs": 0,
+        "pacStructuralMs": 0,
+        "pacs": 0,
+        "inflateMs": 58.30000066757202,
+        "inflates": 256,
+        "verifyCRC32CMs": 3.599999189376831,
+        "checksums": 256
+      },
+      "sources": 1,
+      "coverageRows": 1048576,
+      "sampleRows": 10,
+      "verifiedHours": 256,
+      "verifiedEvents": 1048576
+    }
+  },
+  "sparse": {
+    "fixture": {
+      "wireBytes": 1282141,
+      "downloadMs": 241.90000009536743
+    },
+    "trials": [
+      {
+        "decode": {
+          "decodeMs": 61.10000014305115,
+          "hours": 721,
+          "events": 6232,
+          "payloadBytes": 476087,
+          "codec": {
+            "uploadMs": 2.5000007152557373,
+            "uploadedBytes": 12235261,
+            "uploads": 3696,
+            "scanMs": 0,
+            "scanStructuralMs": 1.299999475479126,
+            "pacMs": 0,
+            "pacStructuralMs": 0,
+            "pacs": 0,
+            "inflateMs": 0,
+            "inflates": 0,
+            "verifyCRC32CMs": 1.3999996185302734,
+            "checksums": 721
+          }
+        },
+        "write": {
+          "mode": "production-worker-port",
+          "namespace": "aac41d6df5f9f4812e31839d853599c3e30130bea67d4f16e446c9033a83d70d",
+          "elapsedMs": 485.89999985694885,
+          "archiveMs": 419.09999990463257,
+          "commands": {
+            "native-begin": 1,
+            "native-coverage": 1,
+            "native-finish": 1
+          },
+          "stages": {
+            "checksum": {
+              "ms": 6.100001573562622,
+              "calls": 1467
+            }
+          },
+          "codec": {
+            "uploadMs": 1.9000003337860107,
+            "uploadedBytes": 12566445,
+            "uploads": 3684,
+            "scanMs": 0,
+            "scanStructuralMs": 0.7000002861022949,
+            "pacMs": 0,
+            "pacStructuralMs": 0,
+            "pacs": 0,
+            "inflateMs": 0,
+            "inflates": 0,
+            "verifyCRC32CMs": 1.4000005722045898,
+            "checksums": 721
+          },
+          "sources": 1,
+          "coverageRows": 6232,
+          "sampleRows": 10,
+          "verifiedHours": 0,
+          "verifiedEvents": 0
+        }
+      },
+      {
+        "decode": {
+          "decodeMs": 43,
+          "hours": 721,
+          "events": 6232,
+          "payloadBytes": 476087,
+          "codec": {
+            "uploadMs": 1.500000238418579,
+            "uploadedBytes": 12235261,
+            "uploads": 3696,
+            "scanMs": 0,
+            "scanStructuralMs": 0.6000003814697266,
+            "pacMs": 0,
+            "pacStructuralMs": 0,
+            "pacs": 0,
+            "inflateMs": 0,
+            "inflates": 0,
+            "verifyCRC32CMs": 1.4000003337860107,
+            "checksums": 721
+          }
+        },
+        "write": {
+          "mode": "production-worker-port",
+          "namespace": "aac41d6df5f9f4812e31839d853599c3e30130bea67d4f16e446c9033a83d70d",
+          "elapsedMs": 469.2999999523163,
+          "archiveMs": 421.7999999523163,
+          "commands": {
+            "native-begin": 1,
+            "native-coverage": 1,
+            "native-finish": 1
+          },
+          "stages": {
+            "checksum": {
+              "ms": 3.5999996662139893,
+              "calls": 1467
+            }
+          },
+          "codec": {
+            "uploadMs": 1.3000004291534424,
+            "uploadedBytes": 12566445,
+            "uploads": 3684,
+            "scanMs": 0,
+            "scanStructuralMs": 1.0000004768371582,
+            "pacMs": 0,
+            "pacStructuralMs": 0,
+            "pacs": 0,
+            "inflateMs": 0,
+            "inflates": 0,
+            "verifyCRC32CMs": 0.7999999523162842,
+            "checksums": 721
+          },
+          "sources": 1,
+          "coverageRows": 6232,
+          "sampleRows": 10,
+          "verifiedHours": 0,
+          "verifiedEvents": 0
+        }
+      },
+      {
+        "decode": {
+          "decodeMs": 43.59999990463257,
+          "hours": 721,
+          "events": 6232,
+          "payloadBytes": 476087,
+          "codec": {
+            "uploadMs": 0.9999997615814209,
+            "uploadedBytes": 12235261,
+            "uploads": 3696,
+            "scanMs": 0,
+            "scanStructuralMs": 0.6999998092651367,
+            "pacMs": 0,
+            "pacStructuralMs": 0,
+            "pacs": 0,
+            "inflateMs": 0,
+            "inflates": 0,
+            "verifyCRC32CMs": 1.3999991416931152,
+            "checksums": 721
+          }
+        },
+        "write": {
+          "mode": "production-worker-port",
+          "namespace": "aac41d6df5f9f4812e31839d853599c3e30130bea67d4f16e446c9033a83d70d",
+          "elapsedMs": 464.90000009536743,
+          "archiveMs": 418.30000019073486,
+          "commands": {
+            "native-begin": 1,
+            "native-coverage": 1,
+            "native-finish": 1
+          },
+          "stages": {
+            "checksum": {
+              "ms": 4.200000047683716,
+              "calls": 1467
+            }
+          },
+          "codec": {
+            "uploadMs": 1.9000000953674316,
+            "uploadedBytes": 12566445,
+            "uploads": 3684,
+            "scanMs": 0,
+            "scanStructuralMs": 1.1000001430511475,
+            "pacMs": 0,
+            "pacStructuralMs": 0,
+            "pacs": 0,
+            "inflateMs": 0,
+            "inflates": 0,
+            "verifyCRC32CMs": 1.000000238418579,
+            "checksums": 721
+          },
+          "sources": 1,
+          "coverageRows": 6232,
+          "sampleRows": 10,
+          "verifiedHours": 721,
+          "verifiedEvents": 6232
+        }
+      }
+    ]
+  }
+}

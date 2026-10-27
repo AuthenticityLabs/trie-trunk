@@ -187,7 +187,7 @@ func BenchmarkNativeIngressChunks(b *testing.B) {
 								got, err = l.ReadFrame(reader, nil)
 							case "native-record":
 								buffer := m.buffer()
-								got, err = l.readFrameBuffer(reader, nil, true, buffer.resize)
+								got, err = l.ReadFrameBuffer(reader, nil, true, buffer.resize)
 								if err != nil || !bytes.Equal(got, raw) {
 									b.Fatal(err)
 								}
@@ -232,7 +232,7 @@ func BenchmarkNativeIngressParallel(b *testing.B) {
 						got, err = l.ReadFrame(reader, nil)
 					case "native-record":
 						buffer := m.buffer()
-						got, err = l.readFrameBuffer(reader, nil, true, buffer.resize)
+						got, err = l.ReadFrameBuffer(reader, nil, true, buffer.resize)
 						if err != nil || !bytes.Equal(got, raw) {
 							b.Fatal(err)
 						}
@@ -326,7 +326,7 @@ func BenchmarkNativeIngressSparse(b *testing.B) {
 						got, e = l.ReadFrame(reader, nil)
 					case "native-record":
 						buffer := m.buffer()
-						got, e = l.readFrameBuffer(reader, nil, true, buffer.resize)
+						got, e = l.ReadFrameBuffer(reader, nil, true, buffer.resize)
 						if e != nil || !bytes.Equal(got, raw) {
 							b.Fatal(e)
 						}

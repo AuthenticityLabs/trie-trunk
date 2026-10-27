@@ -20,6 +20,7 @@ type HTTP struct {
 	rollover     func() (*Layout, error)
 	Store        *Store
 	sources      []*HTTP
+	storageRoots map[string]string
 	Token        string
 	ingressOnce  sync.Once
 	ingressSlots chan struct{}
@@ -78,8 +79,12 @@ func (h *HTTP) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "no-store")
 	w.Header().Set("X-Content-Type-Options", "nosniff")
 	w.Header().Set("Trunk-Features", "native-ranges,pac-arrays,"+CompressionFeature)
-	if r.URL.Path == "/summary-day" {
-		h.summaryDayHTTP(w, r)
+	if r.URL.Path == "/storage" {
+		h.storageHTTP(w, r)
+		return
+	}
+	if r.URL.Path == "/summaries" {
+		h.summariesHTTP(w, r)
 		return
 	}
 	if r.URL.Path == "/events" {
@@ -148,7 +153,7 @@ func (h *HTTP) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "PIL-Version: 2 required", 426)
 		return
 	}
-	if len(h.sources) == 0 && l.integers != nil && !strings.Contains(","+r.Header.Get("PIL-Features")+",", ",adaptive-integers,") {
+	if len(h.sources) == 0 && l.Adaptive() && !strings.Contains(","+r.Header.Get("PIL-Features")+",", ",adaptive-integers,") {
 		http.Error(w, "PIL-Features: adaptive-integers required", 426)
 		return
 	}
@@ -315,7 +320,7 @@ func (h *HTTP) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	for _, target := range targets {
-		if target.api.Store.layout.integers != nil && !hasAdaptive(r) {
+		if target.api.Store.layout.Adaptive() && !hasAdaptive(r) {
 			http.Error(w, "adaptive-integers feature required", 426)
 			return
 		}
@@ -368,25 +373,8 @@ func (h *HTTP) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 func writeDefine(out io.Writer, l *Layout) error {
-	raw := []byte{1, 0xfc}
-	var end uint64
-	for _, b := range [][]byte{l.Digest[:], l.Bytes, l.Bytes} {
-		end += uint64(len(b))
-		raw = extended(raw, end)
-	}
-	raw = append(raw, l.Digest[:]...)
-	raw = append(raw, l.Bytes...)
-	raw = append(raw, l.Bytes...)
-	_, e := out.Write(raw)
-	return e
+	return writeControl(out, 1, defineControl, bytesValue(l.Digest[:]), bytesValue(l.Bytes), bytesValue(l.Bytes))
 }
 func writeBind(out io.Writer, id uint32, digest [32]byte, tap string) error {
-	raw := []byte{2, 0xbc}
-	raw = order.AppendUint32(raw, id)
-	raw = extended(raw, 32)
-	raw = extended(raw, uint64(32+len(tap)))
-	raw = append(raw, digest[:]...)
-	raw = append(raw, tap...)
-	_, e := out.Write(raw)
-	return e
+	return writeControl(out, 2, bindControl, Uint(uint64(id), 4), bytesValue(digest[:]), Text(tap))
 }

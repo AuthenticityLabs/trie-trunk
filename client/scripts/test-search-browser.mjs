@@ -122,7 +122,7 @@ try {
  console.log("PASS: hierarchy selection → native collection; local object criteria; clear; coverage-only refresh; offline restore.");
  console.log(`Wire fixture: cold ${wire.length} B, warm ${warm.length} B; 2 GETs for collection + refresh, 0 GETs for local search/clear/reload.`);
  await page.setViewportSize({width:1200,height:900});
- await page.getByRole("button",{name:"Object History",exact:true}).click();
+ await page.getByRole("button",{name:"Collections",exact:true}).click();
  const historyForm=page.getByRole("form",{name:"Object History",exact:true});
  await historyForm.getByLabel("History Resource",{exact:true}).selectOption(binding.tap);
  await historyForm.getByLabel("Object ID",{exact:true}).fill("42");

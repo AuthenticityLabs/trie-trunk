@@ -1,0 +1,28 @@
+[package]
+name = "trunk-search-wasm"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.88"
+license = "AGPL-3.0-only"
+publish = false
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+trunk-search-core = { path = "../search" }
+tantivy = { version = "=0.25.0", default-features = false, features = ["lz4-compression"] }
+tantivy-common = "=0.10.0"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+wasm-bindgen = "=0.2.129"
+js-sys = "=0.3.106"
+getrandom = { version = "0.2", features = ["js"] }
+uuid = { version = "1", features = ["js"] }
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true

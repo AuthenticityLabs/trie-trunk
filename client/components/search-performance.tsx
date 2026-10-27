@@ -1,6 +1,6 @@
 import { For, Show, createMemo, createSignal, createUniqueId, onCleanup, onMount } from 'solid-js';
 import type { ViewTimings } from '../services/pil/view';
-export type SearchTiming = { kind: 'Search' | 'Restore' | 'Page'; ms: number; phases?: ViewTimings };
+export type SearchTiming = { kind: 'Search' | 'Restore' | 'Page' | 'Charts'; ms: number; phases?: ViewTimings };
 const duration=(ms:number)=>ms<1000?`${Math.round(ms)} ms`:`${(ms/1000).toFixed(2)} s`;
 const stages = [
  ['request','Request & Wait','Server wait and network time until response headers.'],
@@ -11,7 +11,7 @@ const stages = [
 ] as const;
 
 /** Phase totals use durations across worker boundaries, never mixed clock origins. */
-export function SearchPerformance(props: { timing?: SearchTiming }) {
+export function SearchPerformance(props: { timing?: SearchTiming; matched?: number; loaded?: number }) {
  const [open,setOpen]=createSignal(false);
  const [position,setPosition]=createSignal({left:'8px',top:'8px'});
  const tooltipId=createUniqueId();
@@ -66,8 +66,10 @@ export function SearchPerformance(props: { timing?: SearchTiming }) {
   </button>
   <span class="performance-details" ref={details} id={tooltipId} role="tooltip" style={position()}>
    <strong>{timing().kind} Performance</strong>
+   <Show when={props.matched!==undefined}><span class="performance-count">Matched Events <b data-matched-count>{props.matched?.toLocaleString()}</b></span></Show>
+   <Show when={props.loaded!==undefined}><span class="performance-count">Loaded Events <b data-collected-count>{props.loaded?.toLocaleString()}</b></span></Show>
    <For each={rows()}>{row=><span class="performance-row" title={row.hint}><i class={`performance-${row.key}`} /><span>{row.label}</span><b>{duration(row.ms)}</b></span>}</For>
-   <span class="performance-note">Elapsed in this tab. Request includes network and server wait. Summaries and Event Data include cache or network access. Excludes chart painting and background cache writes.</span>
+   <span class="performance-note">{timing().kind==='Charts'?'Time from search start until chart data is ready.':'Time until event data is ready; charts load separately.'} Includes network and local reads. Excludes painting and background cache writes.</span>
   </span>
  </span>}</Show>;
 }

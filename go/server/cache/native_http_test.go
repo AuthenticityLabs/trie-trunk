@@ -7,6 +7,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	pil "github.com/AuthenticityLabs/pill-packer/go/codec"
 	"io"
 	"net/http/httptest"
 	"net/url"
@@ -17,12 +18,13 @@ import (
 )
 
 func nativeControl(types ...string) *Layout {
-	l := &Layout{}
+	l := &Layout{Layout: &pil.Layout{Identity: pil.IdentityProfile{Primary: -1}}}
 	for i, kind := range types {
 		w, _ := width(kind)
 		l.Widths = append(l.Widths, w)
 		l.Definition.Fields = append(l.Definition.Fields, Field{Name: fmt.Sprint(i), Type: kind})
 	}
+	l.Layout.Definition.Fields = l.Definition.Fields
 	return l
 }
 func readNativeTest(t *testing.T, raw []byte) ([]Manifest, []NativeChunk) {
@@ -45,10 +47,27 @@ func readNativeTest(t *testing.T, raw []byte) ([]Manifest, []NativeChunk) {
 	var manifests []Manifest
 	var chunks []NativeChunk
 	open := false
+	var rangeLeft uint64
+	var e error
 	for {
-		tag, e := r.ReadByte()
-		if e != nil {
-			t.Fatal(e)
+		tag := byte(7)
+		if rangeLeft == 0 {
+			var e error
+			tag, e = r.ReadByte()
+			if e != nil {
+				t.Fatal(e)
+			}
+		}
+		if tag == 9 {
+			var h [12]byte
+			if _, e = io.ReadFull(r, h[:]); e != nil {
+				t.Fatal(e)
+			}
+			rangeLeft = order.Uint64(h[4:])
+			if !open || rangeLeft == 0 || rangeLeft > uint64(r.Len()) {
+				t.Fatal("invalid PAC range")
+			}
+			continue
 		}
 		if tag == 255 {
 			last, _ := r.ReadByte()
@@ -70,6 +89,12 @@ func readNativeTest(t *testing.T, raw []byte) ([]Manifest, []NativeChunk) {
 			copy(data, h)
 			if _, e = io.ReadFull(r, data[4:]); e != nil {
 				t.Fatal(e)
+			}
+			if rangeLeft > 0 {
+				if n > rangeLeft {
+					t.Fatal("PAC exceeds range")
+				}
+				rangeLeft -= n
 			}
 			chunks = append(chunks, NativeChunk{Kind: "pac", Data: data})
 			continue

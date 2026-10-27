@@ -1,4 +1,0 @@
-Native compression matrix: PASS, 200 runs, 409600 immediately decoded updates plus stream finalization.
-Go raw-fixture and full/sparse application tests: PASS.
-Full benchmark-module suite attempted but loopback HTTP test could not bind in sandbox; targeted non-network tests passed.
-No production behavior changed. End-to-end binary transport latency not measured.

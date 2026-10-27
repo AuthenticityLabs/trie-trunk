@@ -80,7 +80,8 @@ type CollectionRequest struct {
 	Branch                       Branch
 	Day                          time.Time // Legacy explicit daily request; use At for policy-sized packages.
 	At                           time.Time
-	IndexPeriod                  string // Optional plan guard, e.g. 1h; reject a stale sizing plan.
+	Until                        time.Time // Internal contiguous delivery window; preserves hourly storage.
+	IndexPeriod                  string    // Optional plan guard, e.g. 1h; reject a stale sizing plan.
 	PopulationFrom, PopulationTo time.Time
 	Have                         Coverage
 	StatePages                   bool
@@ -131,6 +132,12 @@ func (s *Store) Collect(ctx context.Context, request CollectionRequest, manifest
 // collectBorrowed leases chunk bytes only for the duration of send. The HTTP
 // writer consumes them synchronously, without creating an owned Go payload.
 func (s *Store) collectBorrowed(ctx context.Context, request CollectionRequest, manifest func(Manifest) error, send func(NativeChunk) error) error {
+	return s.collectDelivery(ctx, request, manifest, send, nil)
+}
+
+// A range callback borrows a pinned descriptor and streams consecutive wire PACs.
+// Collect retains the per-PAC callback API for in-process consumers, not HTTP.
+func (s *Store) collectDelivery(ctx context.Context, request CollectionRequest, manifest func(Manifest) error, send func(NativeChunk) error, sendRange func(*os.File, uint64, uint64) error) error {
 	s.mu.Lock()
 	locked := true
 	defer func() {
@@ -161,6 +168,12 @@ func (s *Store) collectBorrowed(ctx context.Context, request CollectionRequest, 
 		return fmt.Errorf("package policy changed; replan collection")
 	}
 	from, to := semanticBounds(at, hours, s.location)
+	if !request.Until.IsZero() {
+		if !request.Until.After(from) || request.Until.UnixMilli() != utcHour(request.Until.UnixMilli()) {
+			return fmt.Errorf("invalid native delivery window")
+		}
+		to = request.Until
+	}
 	b, e := s.openBranch(request.Branch)
 	if e != nil {
 		return s.fail(e)
@@ -201,7 +214,9 @@ func (s *Store) collectBorrowed(ctx context.Context, request CollectionRequest, 
 	if m.Provisional {
 		m.Index = nil
 	}
-	for _, run := range b.runs {
+	firstRun := sort.Search(len(b.runs), func(i int) bool { return b.runs[i].PAC.Placement.From >= from.UnixMilli() })
+	lastRun := sort.Search(len(b.runs), func(i int) bool { return b.runs[i].PAC.Placement.From >= to.UnixMilli() })
+	for _, run := range b.runs[firstRun:lastRun] {
 		if !m.Provisional && run.PAC.Placement.From >= from.UnixMilli() && run.PAC.Placement.To <= to.UnixMilli() {
 			m.Blocks = append(m.Blocks, run)
 			p := run.PAC.Placement
@@ -220,19 +235,29 @@ func (s *Store) collectBorrowed(ctx context.Context, request CollectionRequest, 
 		have.Index = nil
 		have.Population = nil
 	}
+	// Normalize once, then walk only the selected block metadata and coverage.
+	indexHave, e := Normalize(have.Index)
+	if e != nil {
+		return e
+	}
+	popHave, e := Normalize(have.Population)
+	if e != nil {
+		return e
+	}
+	iIndex, iPop := 0, 0
+	covered := func(spans []Span, at *int, start, end uint64) bool {
+		for *at < len(spans) && spans[*at].End <= start {
+			*at++
+		}
+		return *at < len(spans) && spans[*at].Start <= start && spans[*at].End >= end
+	}
 	var missingBlocks []Run
 	var missingIndex []Span
 	for _, run := range m.Blocks {
 		p := run.PAC.Placement
-		mi, err := Missing([]Span{{run.Start, run.End}}, have.Index)
-		if err != nil {
-			return err
-		}
-		mp, err := Missing([]Span{{p.MemberStart, p.MemberStart + p.MemberBytes}}, have.Population)
-		if err != nil {
-			return err
-		}
-		if len(mi)+len(mp) > 0 {
+		indexOK := covered(indexHave, &iIndex, run.Start, run.End)
+		popOK := covered(popHave, &iPop, p.MemberStart, p.MemberStart+p.MemberBytes)
+		if !indexOK || !popOK {
 			missingBlocks = append(missingBlocks, run)
 			missingIndex = append(missingIndex, Span{run.Start, run.End})
 		}
@@ -279,8 +304,11 @@ func (s *Store) collectBorrowed(ctx context.Context, request CollectionRequest, 
 		}
 		defer population.Close()
 	}
-	output := s.memory.buffer()
-	defer output.close()
+	var output *nativeBuffer
+	if sendRange == nil {
+		output = s.memory.buffer()
+		defer output.close()
+	}
 	baseRows, popRetired := b.baseRows, b.popRetired
 	directory := b.time
 	s.mu.Unlock()
@@ -309,6 +337,40 @@ func (s *Store) collectBorrowed(ctx context.Context, request CollectionRequest, 
 	}
 	if e = state.send(func(start uint64, raw []byte) error { return emit("state", start, raw) }); e != nil {
 		return e
+	}
+	if sendRange != nil {
+		// Index rows are copied as opaque sidecars. They are not consulted to find
+		// PAC bytes; the client uses them to avoid rescanning event fields.
+		for _, run := range missingBlocks {
+			if e = emit("index", run.Start, rows[(run.Start-baseRows)*IndexRowSize:(run.End-baseRows)*IndexRowSize]); e != nil {
+				return e
+			}
+		}
+		for i := 0; i < len(missingBlocks); {
+			j := i + 1
+			for j < len(missingBlocks) && missingBlocks[j-1].PopEnd == missingBlocks[j].PopStart {
+				j++
+			}
+			start, err := directory.podsBoundary(population, popRetired, missingBlocks[i].PAC.Placement.From)
+			if err != nil {
+				return err
+			}
+			end, err := directory.podsBoundary(population, popRetired, missingBlocks[j-1].PAC.Placement.To)
+			if err != nil {
+				return err
+			}
+			if start != missingBlocks[i].PopStart || end != missingBlocks[j-1].PopEnd || end <= start {
+				return fmt.Errorf("invalid committed PAC range")
+			}
+			if err = ctx.Err(); err != nil {
+				return err
+			}
+			if err = sendRange(population, start-popRetired, end-popRetired); err != nil {
+				return err
+			}
+			i = j
+		}
+		return nil
 	}
 	for _, run := range missingBlocks {
 		if e = emit("index", run.Start, rows[(run.Start-baseRows)*IndexRowSize:(run.End-baseRows)*IndexRowSize]); e != nil {

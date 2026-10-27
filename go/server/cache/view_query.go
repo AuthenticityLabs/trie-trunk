@@ -80,6 +80,10 @@ func parseQueryPlan(raw string) (*QueryPlan, string, error) {
 		}
 		switch f.Value.Kind {
 		case "string":
+		case "duration":
+			if _, _, ok := durationLiteral(f.Value.Value); !ok {
+				return nil, "", fmt.Errorf("invalid duration literal")
+			}
 		case "number":
 			if !validQueryNumber(f.Value.Value) {
 				return nil, "", fmt.Errorf("invalid numeric literal")
@@ -145,7 +149,7 @@ func validateQueryPlan(q *QueryPlan, sources []*viewSource) error {
 					return fmt.Errorf("object identity searches require == and collection indexing")
 				}
 			}
-			valid := f.Value.Kind == "null" || f.Value.Kind == "string" && (t == "STRING" || t == "UUID") || f.Value.Kind == "boolean" && t == "BOOL" || f.Value.Kind == "number" && (strings.HasPrefix(t, "TIMESTAMP_") || t == "REF16" || strings.Contains("|I8|I16|I32|I64|U8|U16|U32|U64|F32|F64|", "|"+t+"|"))
+			valid := f.Value.Kind == "duration" && i == l.Duration || f.Value.Kind == "null" || f.Value.Kind == "string" && (t == "STRING" || t == "UUID") || f.Value.Kind == "boolean" && t == "BOOL" || f.Value.Kind == "number" && (strings.HasPrefix(t, "TIMESTAMP_") || t == "REF16" || strings.Contains("|I8|I16|I32|I64|U8|U16|U32|U64|F32|F64|", "|"+t+"|"))
 			if !valid {
 				return fmt.Errorf("literal type does not match %s (%s); narrow the resource", f.Field, t)
 			}
@@ -270,6 +274,7 @@ type boundQueryFilter struct {
 func bindQuery(l *Layout, q *QueryPlan) []boundQueryFilter {
 	out := make([]boundQueryFilter, len(q.Filters))
 	for i, f := range q.Filters {
+		f.Value = durationQueryValue(l, fieldIndex(l, f.Field), f.Value)
 		if j := fieldIndex(l, f.Field); j >= 0 && l.Definition.Fields[j].Type == "UUID" {
 			f.Value.Value = strings.ToLower(f.Value.Value)
 		}
@@ -556,7 +561,7 @@ func (s *viewSource) objectQueryCandidates(q *QueryPlan) error {
 			if span.end > s.binding.Tail {
 				var frame Frame
 				for row := max(span.at, s.binding.Tail); row < span.end; row++ {
-					if err := l.identityFrame(s.pending[row-s.binding.Tail].frame, &frame); err != nil {
+					if err := l.IdentityFrame(s.pending[row-s.binding.Tail].frame, &frame); err != nil {
 						return err
 					}
 					if frame.Values[l.Revision].State == Direct {

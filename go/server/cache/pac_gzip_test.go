@@ -48,7 +48,7 @@ func TestPACGzipSplice(t *testing.T) {
 			} else {
 				err = w.Flush()
 				if err == nil {
-					err = w.append(s)
+					err = w.Append(s)
 				}
 			}
 			if err != nil {
@@ -87,7 +87,7 @@ func TestPACGzipSplice(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if err = w.append(s); err != nil {
+		if err = w.Append(s); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -127,7 +127,7 @@ func BenchmarkPACGzipDelivery(b *testing.B) {
 			out.Reset()
 			w := NewGzipPACWriter(&out)
 			for j := 0; j < 4; j++ {
-				if err := w.append(sealed); err != nil {
+				if err := w.Append(sealed); err != nil {
 					b.Fatal(err)
 				}
 			}
@@ -141,15 +141,14 @@ func BenchmarkPACGzipDelivery(b *testing.B) {
 		b.SetBytes(int64(4 * len(p.Bytes)))
 		var out bytes.Buffer
 		out.Grow(4*len(sealed.Bytes()) + 32)
+		w, _ := gzip.NewWriterLevel(io.Discard, gzip.BestSpeed)
 		for i := 0; i < b.N; i++ {
 			out.Reset()
-			w := fastGzipWriters.Get().(*gzip.Writer)
 			w.Reset(&out)
 			for j := 0; j < 4; j++ {
 				w.Write(p.Bytes)
 			}
 			w.Close()
-			fastGzipWriters.Put(w)
 		}
 	})
 }

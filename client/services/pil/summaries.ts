@@ -1,3 +1,7 @@
+import {unsignedNumber as compact,unsignedBig as compactBig,shuffleColumns,type ColumnSpan,type UnsignedEncoding} from 'pill-packer/columns';
+import {inflateGzip} from 'pill-packer/gzip';
+import { readSummaryPacks, summaryBatchLimit } from './summary-packs.ts';
+import { queueSummaryPacket, storeSummaryPacket } from './summary-storage.ts';
 import type { ViewSummary, ViewStatistics } from './view.ts';
 export type SummaryDayReference = {
   key: string;
@@ -59,7 +63,7 @@ function safeAdd(a: number, b: number) {
 function magic(b: Uint8Array, s: string) {
   return b.length >= s.length && s.split('').every((c, i) => b[i] === c.charCodeAt(0));
 }
-type NumericEncoding = { width: number; base: bigint };
+type NumericEncoding=UnsignedEncoding;
 const encodingSize = 81, dayDirectory = 433;
 function readEncoding(v: DataView, at: number): NumericEncoding[] {
   return Array.from({length: 9}, (_, i) => {
@@ -68,35 +72,6 @@ function readEncoding(v: DataView, at: number): NumericEncoding[] {
       throw Error('Invalid summary column encoding');
     return {width, base};
   });
-}
-function compactSmall(v: DataView, at: number, width: number) {
-  switch (width) {
-    case 1: return v.getUint8(at);
-    case 2: return v.getUint16(at, true);
-    case 3: return v.getUint16(at, true) + v.getUint8(at + 2) * 65536;
-    case 4: return v.getUint32(at, true);
-  }
-  let n = 0;
-  for (let i = width - 1; i >= 0; i--) n = n * 256 + v.getUint8(at + i);
-  return n;
-}
-function compactBig(v: DataView, at: number, e: NumericEncoding) {
-  let n: bigint;
-  if (e.width <= 6) n = BigInt(compactSmall(v, at, e.width));
-  else if (e.width === 8) n = v.getBigUint64(at, true);
-  else n = BigInt(v.getUint32(at, true)) + BigInt(v.getUint16(at + 4, true)) * 4294967296n
-    + BigInt(v.getUint8(at + 6)) * 281474976710656n;
-  n += e.base;
-  if (n > 0xffffffffffffffffn) throw Error('Summary base overflow');
-  return n;
-}
-function compact(v: DataView, at: number, e: NumericEncoding, exact = true) {
-  // Common columns avoid BigInt arithmetic on each row.
-  const n = e.width <= 6 && e.base <= BigInt(Number.MAX_SAFE_INTEGER)
-    ? compactSmall(v, at, e.width) + Number(e.base)
-    : Number(compactBig(v, at, e));
-  if (exact && !Number.isSafeInteger(n)) throw Error('Summary integer exceeds safe range');
-  return n;
 }
 function unshuffleSummary(bytes: Uint8Array, enc: NumericEncoding[]) {
   if (bytes.length < 116 || !magic(bytes, 'SUMCOL00') || bytes[48] !== 1)
@@ -107,22 +82,14 @@ function unshuffleSummary(bytes: Uint8Array, enc: NumericEncoding[]) {
   const expected = 116 + n * (2 + w[0] + w[1] + w[2] + w[3] + w[4])
     + m * (13 + w[5] + w[6]) + p * (w[7] + w[8]) + d;
   if (expected !== bytes.length) throw Error('Invalid shuffled column lengths');
-  let at = 116 + n * 2, scratch = new Uint8Array(0);
-  const column = (count: number, width: number) => {
-    const length = count * width;
-    if (count > 1 && width > 1) {
-      if (scratch.length < length) scratch = new Uint8Array(length);
-      scratch.set(bytes.subarray(at, at + length));
-      for (let b = 0; b < width; b++)
-        for (let i = 0; i < count; i++) bytes[at + i * width + b] = scratch[b * count + i];
-    }
-    at += length;
-  };
+  let at=116+n*2;const spans:ColumnSpan[]=[];
+  const column=(count:number,width:number)=>{spans.push({offset:at,count,width});at+=count*width;};
   for (let k = 0; k < 5; k++) column(n, w[k]);
   at += m * 5;
   column(m, w[5]); column(m, w[6]);
   at += m * 8;
   column(p, w[7]); column(p, w[8]);
+  shuffleColumns(bytes,spans,true);
 }
 export type SummaryHour = {
   encoding: NumericEncoding[];
@@ -258,27 +225,7 @@ export async function decodeSummaryDay(raw: Uint8Array) {
   if (v.getUint32(12, true) !== raw.length || length < dayDirectory || length > maximum || raw[8] > 1 || raw[9] > 1 || raw[10]>1 || raw[11] || time % day) throw Error('Invalid daily summary header');
   let bytes = raw.subarray(32);
   if (raw[8] === 1) {
-    const reader = new Blob([bytes.slice().buffer]).stream().pipeThrough(new DecompressionStream('gzip')).getReader();
-    bytes = new Uint8Array(length);
-    let at = 0;
-    try {
-      for (;;) {
-        const {
-          done,
-          value
-        } = await reader.read();
-        if (done) break;
-        if (at + value.length > length) throw Error('Expanded summary exceeds limit');
-        bytes.set(value, at);
-        at += value.length;
-      }
-      if (at !== length) throw Error('Short expanded summary');
-    } catch (e) {
-      await reader.cancel().catch(() => {});
-      throw e;
-    } finally {
-      reader.releaseLock();
-    }
+    bytes=await inflateGzip(bytes,length,maximum);
   }
   if (bytes.length !== length || crc32c(bytes) !== v.getUint32(20, true)) throw Error('Summary checksum mismatch');
   if(raw[10]&&raw[8]===0)bytes=bytes.slice();
@@ -335,6 +282,32 @@ export async function decodeSummaryDay(raw: Uint8Array) {
   };
 }
 export type DecodedDay = Awaited<ReturnType<typeof decodeSummaryDay>>;
+
+/** Iterate aggregate cells, never individual events. Histogram counts are weights. */
+export function* summaryCells(day: DecodedDay, from: number, to: number) {
+  for (const c of day.hours) {
+    for (let b = 0; b < 12; b++) {
+      const time = c.time + b * bucket;
+      if (time < from || time + bucket > to) continue;
+      let expected = 0, represented = 0;
+      for (let i = c.boundaries[b]; i < c.boundaries[b + 1]; i++) expected = safeAdd(expected, compact(c.view,c.count+i*c.encoding[0].width,c.encoding[0]));
+      for (let i = 0; i < c.stats; i++) {
+        if (c.bytes[c.statBucket + i] !== b) continue;
+        const count = compact(c.view,c.statCount+i*c.encoding[5].width,c.encoding[5]);
+        represented = safeAdd(represented, count);
+        const histogram: [number, number][] = [];
+        const start = c.view.getUint32(c.histStart + i * 4, true), end = c.view.getUint32(c.histEnd + i * 4, true);
+        for (let j = start; j < end; j++) histogram.push([
+          compact(c.view,c.histValue+j*c.encoding[7].width,c.encoding[7],false),
+          compact(c.view,c.histCount+j*c.encoding[8].width,c.encoding[8]),
+        ]);
+        yield { time, count, errors: compact(c.view,c.statErrors+i*c.encoding[6].width,c.encoding[6]),
+          labels: c.labels[c.view.getUint32(c.statLabel + i * 4, true)], histogram };
+      }
+      if (represented !== expected) throw Error('These summaries do not contain complete chart dimensions.');
+    }
+  }
+}
 async function digest(bytes: Uint8Array) {
   return [...new Uint8Array(await crypto.subtle.digest('SHA-256', bytes.slice().buffer))].map(b => b.toString(16).padStart(2, '0')).join('');
 }
@@ -345,107 +318,93 @@ export class SummaryDayCache {
   private held = new Map<string, DecodedDay>();
   private loading = new Map<string, Promise<DecodedDay>>();
   private bytes = 0;
-  async load(ref: SummaryDayReference, token: string, fetcher: typeof fetch, signal: AbortSignal): Promise<DecodedDay> {
-    if (!/^[a-f0-9]{64}$/.test(ref.key) || !/^[a-f0-9]{64}$/.test(ref.definition) || !/^[a-f0-9]{32}$/.test(ref.generation) || typeof ref.source !== 'string' || !Number.isSafeInteger(ref.day) || ref.day < 0 || ref.day % day || typeof ref.sealed !== 'boolean') throw Error('Invalid summary manifest');
-    const partition = await digest(new TextEncoder().encode(token)),
-      key = partition + '/' + ref.key,
-      existing = this.held.get(key);
-    if (existing) {
-      if (existing.day !== ref.day || existing.sealed !== ref.sealed) throw Error('Summary manifest mismatch');
-      return existing;
-    }
-    let pending = this.loading.get(key);
-    if (!pending) {
-      pending = this.fetchDay(ref, key, fetcher, signal, token);
-      this.loading.set(key, pending);
-      void pending.finally(() => this.loading.delete(key)).catch(() => {});
-    }
-    const decoded = await pending;
-    signal.throwIfAborted();
-    if (decoded.day !== ref.day || decoded.sealed !== ref.sealed) throw Error('Summary manifest mismatch');
-    return decoded;
+  private partition?: {token: string; digest: Promise<string>};
+  async load(ref: SummaryDayReference, token: string, fetcher: typeof fetch, signal: AbortSignal, requireStorage = false): Promise<DecodedDay> {
+    return (await this.loadMany([ref], token, fetcher, signal, requireStorage))[0];
   }
-  private async fetchDay(ref: SummaryDayReference, key: string, fetcher: typeof fetch, signal: AbortSignal, token: string): Promise<DecodedDay> {
-    const cacheURL = new URL('/__snoot_summary_cache/' + key, globalThis.location?.origin ?? 'http://localhost').href;
-    let cache: Cache | undefined;
-    try {
-      if (ref.sealed && typeof caches !== 'undefined') cache = await caches.open('snoot-summary-days');
-    } catch {}
-    let raw: Uint8Array | undefined;
-    try {
-      const stored = await cache?.match(cacheURL);
-      if (stored) raw = new Uint8Array(await stored.arrayBuffer());
-    } catch {}
-    if (raw && (await digest(raw)) !== ref.key) {
-      await cache?.delete(cacheURL);
-      raw = undefined;
+  async loadMany(refs: SummaryDayReference[], token: string, fetcher: typeof fetch, signal: AbortSignal, requireStorage = false): Promise<DecodedDay[]> {
+    signal.throwIfAborted();
+    for (const ref of refs) {
+      if (!/^[a-f0-9]{64}$/.test(ref.key) || !/^[a-f0-9]{64}$/.test(ref.definition) || !/^[a-f0-9]{32}$/.test(ref.generation) || typeof ref.source !== 'string' || !Number.isSafeInteger(ref.day) || ref.day < 0 || ref.day % day || typeof ref.sealed !== 'boolean') throw Error('Invalid summary manifest');
     }
-    if (!raw) {
-      const q = new URLSearchParams({
-        source: ref.source,
-        definition: ref.definition,
-        key: ref.key
-      });
-      const response = await fetcher('/summary-day?' + q, {
-        signal,
-        cache: 'no-store',
-        headers: token ? {
-          Authorization: `Bearer ${token}`
-        } : {}
-      });
-      if (!response.ok) throw Error(response.status === 409 ? 'Summary snapshot expired; repeat search' : `Summary retrieval failed (${response.status})`);
-      const parts: Uint8Array[] = [];
-      let length = 0;
-      const reader = response.body?.getReader();
-      if (!reader) throw Error('Missing summary body');
+    if(this.partition?.token !== token)this.partition={token,digest:digest(new TextEncoder().encode(token))};
+    const partition = await this.partition.digest;
+    type Pending = {ref:SummaryDayReference; key:string; flight:string; url:string; cache?:Cache; missing?:boolean; resolve:(day:DecodedDay)=>void; reject:(error:unknown)=>void};
+    const owned:Pending[]=[];
+    const results=refs.map(ref=>{
+      const key=partition+'/'+ref.key, held=this.held.get(key);
+      if(held&&!requireStorage)return Promise.resolve(held);
+      const flight=key+(requireStorage?'/persistent':'/search');
+      let pending=this.loading.get(flight);
+      if(!pending){
+        let resolve!:Pending['resolve'],reject!:Pending['reject'];
+        pending=new Promise<DecodedDay>((yes,no)=>{resolve=yes;reject=no});
+        this.loading.set(flight,pending);
+        void pending.finally(()=>{if(this.loading.get(flight)===pending)this.loading.delete(flight)}).catch(()=>{});
+        owned.push({ref,key,flight,url:new URL('/__snoot_summary_cache/'+key,globalThis.location?.origin??'http://localhost').href,resolve,reject});
+      }
+      return pending;
+    });
+    const complete=async(item:Pending,raw:Uint8Array,cacheHit:boolean)=>{
+      if(await digest(raw)!==item.ref.key)throw Error('Summary content identity mismatch');
+      const decoded=await decodeSummaryDay(raw);
+      if(decoded.day!==item.ref.day||decoded.sealed!==item.ref.sealed)throw Error('Summary manifest mismatch');
+      if(item.cache&&!cacheHit){
+        try {
+          if(requireStorage)await storeSummaryPacket(item.cache,item.url,raw);
+          else queueSummaryPacket(item.cache,item.url,raw);
+        }catch(error){if(requireStorage)throw Error(`Unable to save summaries: ${error instanceof Error?error.message:String(error)}`)}
+      }
+      this.remember(item.key,decoded);item.resolve(decoded);
+    };
+    const run=(async()=>{
       try {
-        for (;;) {
-          const {
-            done,
-            value
-          } = await reader.read();
-          if (done) break;
-          length += value.length;
-          if (length > maximum + 32) throw Error('Summary exceeds limit');
-          parts.push(value);
+        // Bound cache I/O separately from HTTP. The network receives only misses,
+        // including holes in an otherwise cached date range.
+        let next=0;
+        const prepares=await Promise.allSettled(Array.from({length:Math.min(16,owned.length)},async()=>{
+          for(;;){
+            signal.throwIfAborted();const item=owned[next++];if(!item)return;
+            try {if(item.ref.sealed&&typeof caches!=='undefined')item.cache=await caches.open('snoot-summary-days')}catch{}
+            if(requireStorage&&item.ref.sealed&&!item.cache)throw Error('Local summary storage is unavailable.');
+            let raw:Uint8Array|undefined;
+            try {const stored=await item.cache?.match(item.url);if(stored)raw=new Uint8Array(await stored.arrayBuffer())}catch{}
+            if(raw&&await digest(raw)!==item.ref.key){await item.cache?.delete(item.url);raw=undefined}
+            if(raw)await complete(item,raw,true);else item.missing=true;
+          }
+        }));
+        for(const result of prepares)if(result.status==='rejected')throw result.reason;
+        const missing=owned.filter(item=>item.missing);
+        for(let start=0;start<missing.length;start+=summaryBatchLimit){
+          signal.throwIfAborted();
+          const batch=missing.slice(start,start+summaryBatchLimit);
+          const response=await fetcher('/summaries',{
+            method:'POST',signal,cache:'no-store',
+            headers:{'Content-Type':'application/json',Accept:'application/cbor',...(token?{Authorization:`Bearer ${token}`}:{})},
+            body:JSON.stringify({packs:batch.map(({ref:{source,definition,key}})=>({source,definition,key}))})
+          });
+          await readSummaryPacks(response,batch.length,maximum+32,signal,(index,raw)=>complete(batch[index],raw,false));
         }
-      } catch (e) {
-        await reader.cancel().catch(() => {});
-        throw e;
-      } finally {
-        reader.releaseLock();
-      }
-      ;
-      raw = new Uint8Array(length);
-      let at = 0;
-      for (const part of parts) {
-        raw.set(part, at);
-        at += part.length;
-      }
-      if ((await digest(raw)) !== ref.key) throw Error('Summary content identity mismatch');
+      }catch(error){for(const item of owned)item.reject(error);throw error}
+    })();
+    // Observe every promise immediately, including when a late pack is corrupt.
+    const settled=await Promise.allSettled([run,Promise.all(results)]);
+    for(const result of settled)if(result.status==='rejected')throw result.reason;
+    signal.throwIfAborted();
+    const days=(settled[1] as PromiseFulfilledResult<DecodedDay[]>).value;
+    days.forEach((decoded,i)=>{if(decoded.day!==refs[i].day||decoded.sealed!==refs[i].sealed)throw Error('Summary manifest mismatch')});
+    return days;
+  }
+  private remember(key:string,decoded:DecodedDay) {
+    if(decoded.bytes<=32*1024*1024){
+      this.bytes-=this.held.get(key)?.bytes??0;this.held.delete(key);this.held.set(key,decoded);this.bytes+=decoded.bytes;
     }
-    const decoded = await decodeSummaryDay(raw);
-    if (decoded.day !== ref.day || decoded.sealed !== ref.sealed) throw Error('Summary manifest mismatch');
-    if (cache) {
-      try {
-        await cache.put(cacheURL, new Response(raw.slice().buffer));
-        const keys = await cache.keys();
-        for (const request of keys.slice(0, Math.max(0, keys.length - 128))) await cache.delete(request);
-      } catch {}
+    while(this.bytes>32*1024*1024&&this.held.size>1){
+      const first=this.held.keys().next().value!;this.bytes-=this.held.get(first)!.bytes;this.held.delete(first);
     }
-    if (decoded.bytes <= 32 * 1024 * 1024) {
-      this.held.set(key, decoded);
-      this.bytes += decoded.bytes;
-    }
-    while (this.bytes > 32 * 1024 * 1024 && this.held.size > 1) {
-      const first = this.held.keys().next().value!;
-      this.bytes -= this.held.get(first)!.bytes;
-      this.held.delete(first);
-    }
-    ;
-    return decoded;
   }
 }
+
 export function mergeDailyAnalytics(base: ViewSummary, manifest: DailyAnalytics, days: DecodedDay[]): ViewSummary {
   if (!Number.isSafeInteger(manifest.from) || !Number.isSafeInteger(manifest.to) || manifest.from % bucket || manifest.to % bucket || manifest.from < base.from || manifest.to > base.to || manifest.from >= manifest.to || days.length !== manifest.days.length) throw Error('Invalid analytics window');
   const result: ViewSummary = {

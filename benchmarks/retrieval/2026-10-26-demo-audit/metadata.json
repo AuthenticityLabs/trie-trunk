@@ -1,0 +1,16 @@
+{
+  "baseCommit": "c892d35955c221ec5d14a76ffbe7f48e644a8609",
+  "workingTreeDirty": true,
+  "productionModified": false,
+  "conditions": "Three measured trials after one discarded setup trial per scenario. Go API client only; no browser rendering, OPFS or application seed-pack decoding. Server and OS caches uncontrolled. HTTP major verified on every response. Sixteen-stream run is a scheduling experiment only.",
+  "sha256": {
+    "client/services/pil/view.ts": "190343ebc1f0f170304b853a61bc9f18b0d4b8fb8b15d318085245e4106010aa",
+    "client/services/pil/summaries.ts": "06314aef81fe04b7132f8ae7641402723849177762dc32bbf044f68cf749e2b8",
+    "client/services/pil/summary-storage.ts": "2270c2d2e8283c94748862f2fa31879d41ae0e319a2bd5afecf025405216100e",
+    "client/services/store/runtime.ts": "50dfeb28c0645ee890d551a7e7b8dc401ccfcfd7aa2c5fcea889c375a9be6322",
+    "client/services/store/native.ts": "2430d10e1cfeff7feabda4782a8d55e12f934dd8d8cf296ff5de42b843b86f53",
+    "client/services/search-session.ts": "b1c232855d3e96ce5aa09fdfbe858a5f42ae431827e12bcbe26e92ceb29973c0",
+    "go/cmd/bench-retrieval/main.go": "5c6a3be36b8489704a36ae98916a98faad31415bf6c6be3a124edd7ffd13a0e7",
+    "rust/src/tantivy/native/registry.rs": "6b94a259dcd729068014bdef27c2ba937a6aee811aa4e20e97e7449f5edf823f"
+  }
+}

@@ -57,7 +57,15 @@ func TestDemoFootprint(t *testing.T) {
 		}
 	}
 	started := time.Now()
-	manifest, e := seedWithMemoryBudget(root, count, 30, end, clock, nativeMemoryBytes)
+	objectIndex := false
+	if value := os.Getenv("TRUNK_FOOTPRINT_COLLECTIONS"); value != "" {
+		var err error
+		objectIndex, err = strconv.ParseBool(value)
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+	manifest, e := seedWithStorageProfile(root, count, 30, end, clock, nativeMemoryBytes, objectIndex)
 	if e != nil {
 		t.Fatal(e)
 	}
@@ -86,7 +94,7 @@ func TestDemoFootprint(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		s, err := cache.Open(cache.Config{Root: root, Cache: manifest.Cache, Tenant: manifest.Tenant, Layout: l, ObjectIndex: true, Now: clock, NativeMemoryBytes: nativeMemoryBytes})
+		s, err := cache.Open(cache.Config{Root: root, Cache: manifest.Cache, Tenant: manifest.Tenant, Layout: l, ObjectIndex: objectIndex, Now: clock, NativeMemoryBytes: nativeMemoryBytes})
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -230,10 +238,14 @@ func TestDemoFootprint(t *testing.T) {
 		if e != nil {
 			return e
 		}
-		if filepath.Ext(path) == ".sum" {
-			// Preserve the exact measured aggregates for the paired old/new
-			// numeric-codec control, outside the measured cache directory.
-			target := filepath.Join(out, "summaries", name)
+		if filepath.Ext(path) == ".sum" || filepath.Ext(path) == ".pods" {
+			// Preserve measured packets for validation and paired codec controls,
+			// outside the measured cache directory.
+			folder := "summaries"
+			if filepath.Ext(path) == ".pods" {
+				folder = "pods"
+			}
+			target := filepath.Join(out, folder, name)
 			if e = os.MkdirAll(filepath.Dir(target), 0755); e != nil {
 				return e
 			}
@@ -263,8 +275,19 @@ func TestDemoFootprint(t *testing.T) {
 	if e != nil {
 		t.Fatal(e)
 	}
-	result := map[string]any{"events": events, "from": manifest.From, "to": manifest.To, "fixture": "seed-demo; five resources; 15 fields; adaptive integers=16; all five branches", "expanded_jsonl_bytes": exInfo.Size(), "payload_only_jsonl_bytes": payInfo.Size(), "expanded_jsonl_sha256": hex.EncodeToString(exHash.Sum(nil)), "payload_jsonl_sha256": hex.EncodeToString(payHash.Sum(nil)), "trie_trunk_bytes": total, "trie_trunk_allocated_bytes": allocated, "by_component": groups, "files": files, "file_count": len(files), "seed_and_verification_ns": seedElapsed.Nanoseconds(), "notes": []string{"Every event read back from current-format storage; expanded field names, dictionaries, UUIDs, booleans and numeric values; count and unique UUIDs verified.", "Payload JSONL excludes derived time and cache/service/resource/branch context. Expanded JSONL includes them.", "All regular files under demo are counted after closing stores and synchronously catching up Tantivy. Manifest outside demo excluded. Logical and allocated bytes reported separately.", "All hours finalized at a fixed clock. Write PACs remain uncompressed; non-write PACs use the configured default gzip. Optional object indexing enabled.", "Seed timing includes generation, ingress, sealing, Tantivy background work and read-back verification; it is not pure ingestion throughput.", "JSONL is ordered by resource, branch, then time, matching sequential per-source traversal."}}
+	result := map[string]any{"events": events, "from": manifest.From, "to": manifest.To, "fixture": "seed-demo; five resources; 15 fields; adaptive integers=16; all five branches", "expanded_jsonl_bytes": exInfo.Size(), "payload_only_jsonl_bytes": payInfo.Size(), "expanded_jsonl_sha256": hex.EncodeToString(exHash.Sum(nil)), "payload_jsonl_sha256": hex.EncodeToString(payHash.Sum(nil)), "trie_trunk_bytes": total, "trie_trunk_allocated_bytes": allocated, "by_component": groups, "files": files, "file_count": len(files), "seed_and_verification_ns": seedElapsed.Nanoseconds()}
+
 	result["native_memory_budget_override"] = nativeMemoryBytes
+	result["object_index"] = objectIndex
+	result["pac_gzip_level"] = 1
+	result["notes"] = []string{
+		"Every event read back; expanded names, dictionaries, UUIDs, booleans and numerics; counts and unique UUIDs verified.",
+		"Expanded JSONL includes time and routing context; payload JSONL excludes that derived context.",
+		"All regular datastore files counted after close and synchronous Tantivy catch-up. Logical and allocated bytes are separate.",
+		fmt.Sprintf("Collection indexing enabled: %t. All branches use default gzip-1 unless collection replay requires uncompressed writes. Incompressible packs remain plain.", objectIndex),
+		"Seeding duration includes generation, ingress, sealing, indexing and read-back; not a pure ingestion benchmark.",
+		"JSONL is ordered by resource, branch, then time. Exact Pods and summaries retained for paired measurements.",
+	}
 	raw, e := json.MarshalIndent(result, "", "  ")
 	if e != nil {
 		t.Fatal(e)

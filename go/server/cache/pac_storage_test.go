@@ -188,8 +188,8 @@ func TestHourlyPACWaitsForClosingGrace(t *testing.T) {
 	if len(s.branches[Write].rows) != 3*IndexRowSize {
 		t.Fatal("sealed hour missing late event")
 	}
-	if s.branches[Write].runs[0].PAC.Gzip {
-		t.Fatal("write storage compressed")
+	if !s.branches[Write].runs[0].PAC.Gzip {
+		t.Fatal("writes without collection indexing were not compressed")
 	}
 }
 

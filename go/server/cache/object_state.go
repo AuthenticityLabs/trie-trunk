@@ -153,7 +153,7 @@ func (s *Store) invalidate(objects [][]byte, collection bool) error {
 }
 func (s *Store) token(id Value) StateToken {
 	if s.layout.Object >= 0 {
-		id = s.layout.identityValue(s.layout.Object, id)
+		id = s.layout.IdentityValue(s.layout.Object, id)
 	}
 	return StateToken{Epoch: s.state.epoch, Collection: s.state.collection, Object: s.state.objects[string(id.Bytes)]}
 }
@@ -164,7 +164,7 @@ func (s *Store) validateObject(id Value) error {
 	}
 	w := s.layout.Widths[s.layout.Object]
 	if w > 0 {
-		if id.State != Direct || !s.layout.validDirectWidth(s.layout.Object, s.layout.shortValue(s.layout.Object, id).Bytes) {
+		if id.State != Direct || !s.layout.ValidDirectWidth(s.layout.Object, s.layout.ShortValue(s.layout.Object, id).Bytes) {
 			return fmt.Errorf("object identity type mismatch")
 		}
 	} else if id.State != Offset {

@@ -1,7 +1,8 @@
 import { For, Show, createEffect, createSignal } from "solid-js";
 import { Icon } from "./icon";
+import { DesktopConnection } from "./desktop-connection";
 
-export type Panel = "connection" | "help";
+export type Panel = "connection" | "profile" | "help";
 
 export function Settings(props: {
   panel: Panel | undefined;
@@ -46,7 +47,7 @@ export function Settings(props: {
             <h2>
               {props.panel === "connection"
                 ? "Connection"
-                : "Search Guide"}
+                : props.panel === "profile" ? "Demo User" : "Search Guide"}
             </h2>
           </div>
           <button
@@ -58,7 +59,7 @@ export function Settings(props: {
           </button>
         </div>
         <Show
-          when={props.panel === "connection"}
+          when={props.panel === "connection" || props.panel === "profile"}
           fallback={
             <div class="guide-content">
               <p>
@@ -99,8 +100,8 @@ export function Settings(props: {
                 </div>
               </dl>
               <p class="helper">
-                Times use UTC. Duration is stored in microseconds and displayed
-                in a readable unit. Follow adds matching events to this tab.
+                Times use UTC. Duration comparisons default to milliseconds. Use an explicit
+                unit when needed: 500ms, 2s, or 100us. Storage retains microseconds.
               </p>
             </div>
           }
@@ -111,11 +112,11 @@ export function Settings(props: {
               dialog?.close();
             }}
           >
-            <p>Collect events from this trie-trunk server.</p>
-            <label class="form-label">
+            <p>{props.panel === "profile" ? "Your connection for this workspace. Log Out ends this tab’s session; browser-managed authentication is unchanged." : "Collect events from this trie-trunk server."}</p>
+            <Show when={document.documentElement.hasAttribute('data-snoot-desktop')} fallback={<label class="form-label">
               Endpoint
               <input value={`${location.origin}/collect`} readonly />
-            </label>
+            </label>}><DesktopConnection/></Show>
             <label class="form-label">
               Bearer Token <span>if required</span>
               <input

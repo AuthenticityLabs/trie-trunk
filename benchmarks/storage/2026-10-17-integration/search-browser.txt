@@ -1,3 +1,0 @@
-{ innerWidth: 390, scroll: 390, body: 390 }
-PASS: hierarchy selection → native collection; local object criteria; clear; coverage-only refresh; offline restore.
-Wire fixture: cold 1937 B, warm 457 B; 2 GETs for collection + refresh, 0 GETs for local search/clear/reload.

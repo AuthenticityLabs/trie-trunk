@@ -1,0 +1,19 @@
+{
+  "calendar_rollup_bytes": 12360,
+  "calendar_rollup_rows": 135,
+  "files": 15,
+  "new_decoded_bytes": 10726419,
+  "new_file_bytes": 4250846,
+  "new_open_hour_bytes": 308223,
+  "new_sealed_bytes": 3925583,
+  "new_without_calendar_rollups": 4238486,
+  "old_decoded_bytes": 27672681,
+  "old_file_bytes": 5846308,
+  "old_open_hour_bytes": 745206,
+  "old_sealed_bytes": 5096422,
+  "open_hours": 285,
+  "sealed_packets": 450,
+  "whole_day_max_bytes": 138235,
+  "whole_day_median_bytes": 133386,
+  "whole_day_min_bytes": 32893
+}

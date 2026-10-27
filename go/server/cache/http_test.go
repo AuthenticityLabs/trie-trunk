@@ -3,6 +3,7 @@ package cache
 import (
 	"bytes"
 	"context"
+	pil "github.com/AuthenticityLabs/pill-packer/go/codec"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -52,7 +53,7 @@ func TestNativeHTTPInterop(t *testing.T) {
 	if !bytes.HasPrefix(raw, []byte{'T', 'P', 'I', 'L', 2, 1}) || !bytes.HasSuffix(raw, []byte{255, 254}) {
 		t.Fatal("framing")
 	}
-	define := &Layout{Widths: []int{0, 0, 0}}
+	define := &pil.Layout{Widths: []int{0, 0, 0}}
 	reader := bytes.NewReader(raw[6:])
 	d, e := define.ReadFrame(reader, nil)
 	if e != nil {
@@ -64,7 +65,7 @@ func TestNativeHTTPInterop(t *testing.T) {
 	if tag, _ := reader.ReadByte(); tag != 2 {
 		t.Fatal("binding")
 	}
-	bind := &Layout{Widths: []int{4, 0, 0}}
+	bind := &pil.Layout{Widths: []int{4, 0, 0}}
 	if _, e = bind.ReadFrame(reader, nil); e != nil {
 		t.Fatal(e)
 	}

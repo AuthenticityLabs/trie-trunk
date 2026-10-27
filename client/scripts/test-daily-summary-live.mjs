@@ -11,7 +11,7 @@ const cache=new ViewCache(async(path,options)=>{
  calls.push(path);
  const response=await fetch(new URL(path,origin),options);
  if(!response.ok)throw Error(`${response.status}: ${await response.text()}`);
- if(path.startsWith('/summary-day?')) {
+ if(path==='/summaries') {
   summaryRequests++;
   const bytes=await response.arrayBuffer();summaryBytes+=bytes.byteLength;
   return new Response(bytes,{headers:response.headers});

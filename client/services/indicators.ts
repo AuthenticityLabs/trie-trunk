@@ -191,20 +191,13 @@ export function compileIndicator(indicator: Indicator): Matcher {
 }
 
 export async function loadIndicators(): Promise<Indicator[]> {
-  const indicators: Indicator[] = await transact(
-    "indicators",
-    "readonly",
-    (store) => store.getAll(),
-  );
-  for (const indicator of indicators) compileIndicator(indicator);
-  return indicators;
+  const value = await transact<Indicator[] | undefined>('preferences','readonly',s=>s.get('event-highlights'));
+  const indicators=value ?? [];for(const indicator of indicators)compileIndicator(indicator);return indicators;
 }
-
 export async function saveIndicator(indicator: Indicator): Promise<void> {
   compileIndicator(indicator);
-  await transact("indicators", "readwrite", (store) => store.put(indicator));
+  await transact('preferences','readwrite',s=>{const r=s.get('event-highlights');r.onsuccess=()=>s.put([...(r.result??[]).filter((i:Indicator)=>i.id!==indicator.id),indicator],'event-highlights');return r;});
 }
-
 export async function deleteIndicator(id: string): Promise<void> {
-  await transact("indicators", "readwrite", (store) => store.delete(id));
+  await transact('preferences','readwrite',s=>{const r=s.get('event-highlights');r.onsuccess=()=>s.put((r.result??[]).filter((i:Indicator)=>i.id!==id),'event-highlights');return r;});
 }

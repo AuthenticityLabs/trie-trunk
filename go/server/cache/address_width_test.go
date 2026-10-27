@@ -78,7 +78,7 @@ func TestPACCompressionWrapperBoundaries(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	p.Bytes, err = p.marshal()
+	p.Bytes, err = p.Marshal()
 	if err != nil {
 		t.Fatal(err)
 	}

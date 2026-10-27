@@ -1,3 +1,4 @@
+import { restoreCacheError } from "./errors.ts";
 import type { Archive } from "./protocol.ts";
 // The tab transfers this channel between the SharedWorker and its dedicated
 // file worker. PIL batches never pass through the UI on their way to storage.
@@ -11,7 +12,7 @@ export function storagePort(port: MessagePort): Archive {
     const job = pending.get(data.id);
     if (!job) return;
     pending.delete(data.id);
-    data.error ? job.reject(Error(data.error)) : job.resolve(data.reply);
+    data.error ? job.reject(restoreCacheError(data.error,data.cacheIssue)) : job.resolve(data.reply);
   };
   port.start();
   let closed = false;

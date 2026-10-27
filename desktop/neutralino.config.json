@@ -1,0 +1,28 @@
+{
+  "applicationId": "com.authenticitylabs.snoot",
+  "applicationName": "Snoot",
+  "version": "0.1.0",
+  "defaultMode": "window",
+  "enableServer": false,
+  "enableNativeAPI": false,
+  "enableExtensions": false,
+  "dataLocation": "system",
+  "storageLocation": "system",
+  "logging": {"enabled": true, "writeToLogFile": false},
+  "modes": {
+    "window": {
+      "title": "Snoot",
+      "width": 1360,
+      "height": 920,
+      "minWidth": 640,
+      "minHeight": 480,
+      "center": true,
+      "resizable": true,
+      "exitProcessOnClose": true,
+      "useSavedState": true,
+      "enableInspector": false,
+      "injectGlobals": false,
+      "injectClientLibrary": false
+    }
+  }
+}

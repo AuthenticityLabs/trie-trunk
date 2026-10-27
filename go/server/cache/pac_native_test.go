@@ -28,7 +28,7 @@ func TestPACNativePlacementAndRows(t *testing.T) {
 		t.Fatal(err)
 	}
 	p.Extensions = []PACExtension{ext}
-	p.Bytes, err = p.marshal()
+	p.Bytes, err = p.Marshal()
 	if err != nil {
 		t.Fatal(err)
 	}

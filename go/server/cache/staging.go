@@ -218,14 +218,14 @@ func (s *Store) invalidateReceived(branch Branch, raw []byte) error {
 		return nil
 	}
 	var f Frame
-	if e := s.layout.identityFrame(raw, &f); e != nil {
+	if e := s.layout.IdentityFrame(raw, &f); e != nil {
 		return e
 	}
 	if branch == Write && f.Values[s.layout.Revision].State != Absent {
 		return nil
 	}
 	if s.layout.Object >= 0 && f.Values[s.layout.Object].State >= Direct {
-		return s.invalidate([][]byte{s.layout.identityValue(s.layout.Object, f.Values[s.layout.Object]).Bytes}, false)
+		return s.invalidate([][]byte{s.layout.IdentityValue(s.layout.Object, f.Values[s.layout.Object]).Bytes}, false)
 	}
 	return s.invalidate(nil, true)
 }

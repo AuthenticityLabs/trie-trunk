@@ -49,6 +49,13 @@ func TestHTTPLifecycle(t *testing.T) {
 			if entry["http_status"] != float64(tc.status) || entry["response_bytes"] != float64(w.Body.Len()) {
 				t.Fatalf("wrong response metadata: %s", out.String())
 			}
+			wantLevel := "INFO"
+			if tc.code != "" {
+				wantLevel = "ERROR"
+			}
+			if entry["level"] != wantLevel {
+				t.Fatalf("outcome level: want %s, got %v", wantLevel, entry["level"])
+			}
 			if tc.code != "" && entry["error"].(map[string]any)["code"] != tc.code {
 				t.Fatalf("wrong error: %s", out.String())
 			}
@@ -100,6 +107,13 @@ func TestCancellationAndFlush(t *testing.T) {
 	}, HTTPOptions{})
 	w := httptest.NewRecorder()
 	h.ServeHTTP(w, httptest.NewRequest("GET", "/", nil).WithContext(ctx))
+	var entry map[string]any
+	if err := json.Unmarshal(out.Bytes(), &entry); err != nil {
+		t.Fatal(err)
+	}
+	if entry["level"] != "ERROR" {
+		t.Fatalf("cancellation must be an error outcome: %s", out.String())
+	}
 	if !w.Flushed || !bytes.Contains(out.Bytes(), []byte("CANCELED")) {
 		t.Fatalf("flush/cancel failed: %s", out.String())
 	}

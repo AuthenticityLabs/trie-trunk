@@ -186,7 +186,7 @@ func (h *HTTP) viewHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	for _, t := range targets {
-		if t.api.Store.layout.integers != nil && !hasAdaptive(r) {
+		if t.api.Store.layout.Adaptive() && !hasAdaptive(r) {
 			http.Error(w, "adaptive-integers capability required", 426)
 			return
 		}
@@ -565,8 +565,5 @@ func acceptsGzip(r *http.Request) bool {
 	return false
 }
 func writeViewControl(w io.Writer, raw []byte) error {
-	b := extended([]byte{8, 0xc0}, uint64(len(raw)))
-	b = append(b, raw...)
-	_, e := w.Write(b)
-	return e
+	return writeControl(w, 8, viewControl, bytesValue(raw))
 }

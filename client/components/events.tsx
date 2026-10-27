@@ -1,5 +1,6 @@
+import { RowWindow } from '../services/row-window';
 import { capturePosition, resolvePosition, type ScrollPosition } from '../services/ui-position';
-import { For, Show, createEffect, createSignal, on, onCleanup, onMount } from "solid-js";
+import { For, Show, createEffect, createMemo, createSignal, on, onCleanup, onMount } from "solid-js";
 import { Dynamic } from "solid-js/web";
 import { duration, field, level, type LogEvent } from "../services/events";
 import { Icon } from "./icon";
@@ -99,20 +100,46 @@ export function Events(props: {
   const [saved, setSaved] = createSignal<{ event: LogEvent; name: string }>();
   let table: HTMLDivElement | undefined;
   let scrollTimer: ReturnType<typeof setTimeout> | undefined;
+  let scrollFrame = 0;
+  const model = new RowWindow();
+  const [measureVersion, setMeasureVersion] = createSignal(0);
+  const [viewport, setViewport] = createSignal({top:0,height:590});
+  const updateViewport = () => {
+    if(table)setViewport({top:Math.max(0,table.scrollTop-32),height:table.clientHeight||590});
+  };
   const savePosition = () => {clearTimeout(scrollTimer);if(table?.getClientRects().length)props.onPosition?.(capturePosition(table))};
-  onMount(()=>{
-    queueMicrotask(()=>{if(table&&props.position)table.scrollTo(resolvePosition(props.position,table))});
-    addEventListener('pagehide',savePosition);
-    onCleanup(()=>{clearTimeout(scrollTimer);removeEventListener('pagehide',savePosition)});
+  const visible = () => props.onNearEnd ? props.events : props.events.slice(0, visibleCount());
+  let first: LogEvent | undefined, previousRevision: number | undefined;
+  const available = createMemo(() => {
+    const rows=visible(), reset=first!==rows[0]||previousRevision!==props.revision;
+    model.resize(rows.length,reset);first=rows[0];previousRevision=props.revision;
+    return rows;
   });
-  createEffect(on(()=>props.active,active=>{
-    if(active)queueMicrotask(()=>{if(table&&props.position)table.scrollTo(resolvePosition(props.position,table))});
-  }));
-  const visible = () => props.onNearEnd
-    ? props.events
-    : props.events.slice(0, visibleCount());
+  const windowRange = createMemo(() => {
+    available();measureVersion();
+    return model.range(viewport().top,viewport().height);
+  });
+  const windowRows = createMemo(() => available().slice(windowRange().start,windowRange().end));
   const more = () => props.onNearEnd ? props.hasMore : visibleCount() < props.events.length;
   const loadMore = () => props.onNearEnd ? props.onNearEnd() : setVisibleCount(n => n + props.pageSize);
+  const restorePosition = () => {
+    if(table&&props.position)table.scrollTo(resolvePosition(props.position,table));
+    updateViewport();
+  };
+  onMount(()=>{
+    queueMicrotask(restorePosition);
+    let width=table?.clientWidth;
+    const resize=new ResizeObserver(()=>{
+      if(table?.clientWidth&&width!==table.clientWidth){
+        width=table.clientWidth;model.resize(available().length,true);setMeasureVersion(n=>n+1);
+      }
+      updateViewport();
+    });
+    if(table)resize.observe(table);
+    addEventListener('pagehide',savePosition);
+    onCleanup(()=>{resize.disconnect();cancelAnimationFrame(scrollFrame);clearTimeout(scrollTimer);removeEventListener('pagehide',savePosition)});
+  });
+  createEffect(on(()=>props.active,active=>{if(active)queueMicrotask(restorePosition)}));
 
   createEffect(
     on(
@@ -122,7 +149,8 @@ export function Events(props: {
         const index = props.events.indexOf(request.event);
         if (index < 0) return;
         setVisibleCount(n => Math.max(n, index + props.pageSize));
-        queueMicrotask(() => {
+        if(table){table.scrollTop=Math.max(0,model.offset(index)-table.clientHeight/2);updateViewport();}
+        requestAnimationFrame(() => {
           if (props.reveal !== request) return;
           const row = table?.querySelector<HTMLTableRowElement>(
             `[data-event-row="${index}"]`,
@@ -139,7 +167,7 @@ export function Events(props: {
       () => props.revision,
       () => {
         setVisibleCount(props.pageSize);
-        queueMicrotask(()=>table?.scrollTo(resolvePosition(props.position ?? {top:0,left:0},table)));
+        queueMicrotask(()=>{if(table)table.scrollTo(resolvePosition(props.position ?? {top:0,left:0},table));updateViewport()});
         setNotebook(undefined);
       },
     ),
@@ -147,7 +175,7 @@ export function Events(props: {
 
   return (
     <>
-      <div class="table-scroll" ref={table} onScroll={()=>{clearTimeout(scrollTimer);scrollTimer=setTimeout(savePosition,100)}}>
+      <div class="table-scroll windowed-events" ref={table} onScroll={()=>{cancelAnimationFrame(scrollFrame);scrollFrame=requestAnimationFrame(updateViewport);clearTimeout(scrollTimer);scrollTimer=setTimeout(savePosition,100)}}>
         <table class="event-table">
           <thead>
             <tr>
@@ -166,9 +194,23 @@ export function Events(props: {
               <th class="duration-cell">Duration</th>
             </tr>
           </thead>
-          <tbody>
-            <For each={visible()}>
+          <tbody aria-hidden="true"><tr class="event-spacer"><td colSpan={9} style={{height:`${windowRange().before}px`}} /></tr></tbody>
+            <For each={windowRows()}>
               {(event, index) => {
+                const absoluteIndex=()=>windowRange().start+index();
+                let group!: HTMLTableSectionElement;
+                onMount(()=>{
+                  const observer=new ResizeObserver(entries=>{
+                    const height=entries[0]?.contentRect.height;
+                    if(!height)return;
+                    const at=absoluteIndex(),oldEnd=model.offset(at+1),delta=model.measure(at,height);
+                    if(Math.abs(delta)<0.1)return;
+                    if(table&&oldEnd<viewport().top)table.scrollTop+=delta;
+                    setMeasureVersion(n=>n+1);updateViewport();
+                  });
+                  observer.observe(group);
+                  onCleanup(()=>observer.disconnect());
+                });
                 const id = eventId(event);
                 const message = field(event, "message");
                 const fields = eventFields(event);
@@ -179,11 +221,11 @@ export function Events(props: {
                 );
                 const severity = level(event);
                 return (
-                  <>
+                  <tbody ref={group}>
                     <tr
                       class="event-summary"
                       id={`event-${id}`}
-                      data-event-row={index()}
+                      data-event-row={absoluteIndex()}
                       tabIndex={-1}
                       classList={{
                         selected: props.selected === event,
@@ -327,11 +369,11 @@ export function Events(props: {
                         </td>
                       </tr>
                     </Show>
-                  </>
+                  </tbody>
                 );
               }}
             </For>
-          </tbody>
+          <tbody aria-hidden="true"><tr class="event-spacer"><td colSpan={9} style={{height:`${windowRange().after}px`}} /></tr></tbody>
         </table>
         <ScrollEnd root={() => table} enabled={!!more() && !props.loading && props.active !== false}
           version={visible().length} onNearEnd={loadMore} />

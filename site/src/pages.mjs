@@ -1,5 +1,9 @@
+import {summaries, retention} from './storage-visuals.mjs';
 import {icon} from './diagrams.mjs';
+import {taxonomy} from './taxonomy.mjs';
 import {storage,mb,kb} from './measurements.mjs';
+import {seedPages} from './seeds.mjs';
+import {pagePath} from './routes.mjs';
 
 export const github = 'https://github.com/AuthenticityLabs/trie-trunk';
 const source = path => `${github}/blob/main/${path}`;
@@ -14,79 +18,81 @@ const stamp = text => `<div class="scene-note">${icon('check')} ${text}</div>`;
 
 export const stages = [
  {
-  name:'Seeds', file:'.seed', location:'Server / Ingress', action:'Accept the Change',
-  copy:'A PIL record arrives under a negotiated Definition. The seed journal supports recovery; recent records stay in native memory for live search and replay.',
-  foot:'Bad records go to Lost Events with their original content.',
-  scene:`<div class="scene-route"><span>payment / transactions</span><span>PIL Record</span></div>
+  name:'Seeds', file:'.seed', location:'Server / Ingress', action:'Observability Ingress', acronym:'SEED · Sequentially Encoded Event Data',
+  note:'*Data seeds are trie-trunk’s implementation of <a href="/PIL">PIL</a>. Each seed arrives under a negotiated Definition.',
+  copy:'The seed journal supports durability until the hourly seal completes, and recent seeds stay in native memory for live tail.\n\nCollections feature supports live fanout revision subscriptions for app synchronization.',
+  foot:'Rejected data seeds go to Lost Events with their original content.',
+  scene:`<div class="scene-route"><span>payment / transactions</span><span>Data Seed</span></div>
    <div class="field-lines"><div><code>event_id</code><span>UUIDv7</span></div><div><code>id</code><span>Transaction UUID</span></div><div><code>revision_id</code><span>17</span></div><div class="highlighted"><code>state</code><span>authorized</span></div></div>
    <div class="scene-bottom"><span>Append to .seed</span><span>Available in Memory</span></div>`,
  },
  {
-  name:'Packs', file:'.pack', location:'Server / Sealing', action:'Gather an Hour',
-  copy:'Once the late-arrival window closes, the hour is prepared as a PIL PAC. Records share a Definition, and common values can move into the prefix.',
+  name:'Packs', file:'.pack', location:'Server / Sealing', action:'Seal & Compress the Hour', acronym:'PACK · Packed Array Container',
+  copy:'Seed packs are Trie-Trunk’s implementation of PIL PACs. Once the late-arrival window closes, data seeds from the hour are packed under a shared Definition. Common values can move into the prefix; compression is configurable by branch.',
   foot:'Sealing runs separately from incoming writes.',
-  scene:`<div class="scene-route"><span>10:00 — 11:00 UTC</span><span>Hourly PAC</span></div><div class="packet-prefix"><span>Shared Definition</span><code>payment/transactions</code></div>${table}${stamp('The illustrated change keeps its place in the hour.')}`,
+  scene:`<div class="scene-route"><span>10:00 — 11:00 UTC</span><span>Hourly Seed Pack</span></div><div class="packet-prefix"><span>Shared Definition</span><code>payment/transactions</code></div>${table}${stamp('The illustrated change keeps its place in the hour.')}`,
  },
  {
-  name:'Pods', file:'.pods', location:'Server / Storage', action:'Store the Hour',
-  copy:'The sealed PAC enters persistent storage. Research collects complete segments. Object history and replay use a separate, record-level lookup.',
-  foot:'Write PACs remain uncompressed for replay. Other branches can reuse their compressed bodies for delivery.',
-  scene:`<div class="scene-route"><span>Persistent Event Store</span><span>.pods</span></div><div class="pod-stack"><div><span>09:00</span><i></i><code>PAC</code></div><div class="highlighted"><span>10:00</span><i></i><code>PAC</code></div><div><span>11:00</span><i></i><code>PAC</code></div></div><div class="scene-bottom"><span>Time & Text → Segment</span><span>Object ID → Record</span></div>`,
+  name:'Pods', file:'.pods', location:'Server / Storage', action:'Packed Data Storage', acronym:'PODS · Packed Observability Datastore',
+  copy:'Pods hold sealed seed packs on the server. Research collects complete seed packs. Object history and replay use a separate lookup for individual data seeds.',
+  foot:'All branches can reuse compressed seed packs for delivery. Enabling Collections keeps write packs uncompressed for direct replay.',
+  scene:`<div class="scene-route"><span>Pods / Server Datastore</span><span>.pods</span></div><div class="pod-stack"><div><span>09:00</span><i></i><code>Seed Pack</code></div><div class="highlighted"><span>10:00</span><i></i><code>Seed Pack</code></div><div><span>11:00</span><i></i><code>Seed Pack</code></div></div><div class="scene-bottom"><span>Time & Text → Seed Pack</span><span>Object ID → Data Seed</span></div>`,
  },
  {
-  name:'Sods', file:'.sods', location:'Browser / Local Storage', action:'Keep What You Collect',
-  copy:'The browser decodes the collected PAC into sparse local storage. A complete hour is recorded as known; a missing hour remains unknown.',
-  foot:'The SharedWorker coordinates access. Repeated research can reuse the same collected records.',
-  scene:`<div class="scene-route"><span>Browser Working Set</span><span>.sods</span></div><div class="hour-grid">${[8,9,10,11,12,13].map(h=>`<div class="${h===10?'selected-hour':h===9||h===11?'known-hour':'missing-hour'}"><span>${h}:00</span><b>${h>=9&&h<=11?'Collected':'Missing'}</b></div>`).join('')}</div>${table}<div class="scene-note">A missing interval is different from an empty interval.</div>`,
+  name:'Sods', file:'.sods', location:'Client / Local Storage', action:'Sparse Replication', acronym:'SODS · Sparse Observability Datastore',
+  copy:'Sods hold decoded data seeds in the browser. Collected seed packs populate complete hours; a missing hour remains unknown.',
+  foot:'The SharedWorker coordinates access. Repeated research can reuse the same collected data seeds.',
+  scene:`<div class="scene-route"><span>Client Working Set</span><span>.sods</span></div><div class="hour-grid">${[8,9,10,11,12,13].map(h=>`<div class="${h===10?'selected-hour':h===9||h===11?'known-hour':'missing-hour'}"><span>${h}:00</span><b>${h>=9&&h<=11?'Collected':'Missing'}</b></div>`).join('')}</div>${table}<div class="scene-note">A missing interval is different from an empty interval.</div>`,
  },
  {
-  name:'Stalks', file:'In Memory', location:'Browser / Analytics', action:'Work Down the Columns',
-  copy:'Analytic columns make counts, durations, and distributions inexpensive to revisit. Summary columns can answer a wide-range question without collecting every event.',
-  foot:'Summary columns work today. Broader event-to-column projection is the next direction for Stalks.',
+  name:'Stalks', file:'In Memory', location:'Client / Analytics', action:'Analytic Engine', acronym:'STALKS · Sparse Telemetry Analytic Lineage Kolumns',
+  copy:'Stalks use precomputed columnar summaries for event counts, errors, and duration statistics in the browser. Collected summaries can be reused across time views without loading every data seed.',
+  foot:'Planned Lineage: definition-declared relationships connecting resources, such as payments and invoices, through identity and time.',
   scene:`<div class="scene-route"><span>5-Minute Columnar Summaries</span><span>In Memory</span></div><div class="column-demo">${[['Period','10:00','10:05','10:10','10:15'],['Count','84','107','92','116'],['Errors','2','0','1','3']].map(col=>`<div><strong>${col[0]}</strong>${col.slice(1).map(v=>`<span>${v}</span>`).join('')}</div>`).join('')}</div><div class="scene-note">Illustrative values · summaries travel independently of event detail.</div>`,
  }
 ];
 
 const glyphs = [
  `<span class="diagram-glyph seeds-glyph">${[0,1,2,3].map(i=>`<i><b>${i===1?'17':'·'}</b><span></span></i>`).join('')}</span>`,
- `<span class="diagram-glyph pack-glyph"><b>PAC</b><i></i><i></i><i></i></span>`,
+ `<span class="diagram-glyph pack-glyph"><b>Compress</b><i></i><i></i><i></i></span>`,
  `<span class="diagram-glyph pods-glyph"><i>09</i><i>10</i><i>11</i></span>`,
- `<span class="diagram-glyph sods-glyph">${Array.from({length:12},(_,i)=>`<i class="${[0,3,7,8].includes(i)?'gap':''}"></i>`).join('')}</span>`,
+ `<span class="diagram-glyph sods-glyph">${Array.from({length:12},(_,i)=>`<i class="${[0,3,5,7,8].includes(i)?'gap':''}"></i>`).join('')}</span>`,
  `<span class="diagram-glyph stalks-glyph"><i></i><i></i><i></i><i></i></span>`
 ];
 const lifecycle = `
 <section id="lifecycle" class="lifecycle">
- <div class="document-heading"><div><p class="mono-label">One Event Store</p></div><p>Ingest events once. Replay object changes, investigate collected data locally, and query compact summaries without loading every event.</p></div>
+ <div class="section-heading"><h2>Lifecycle</h2><p>Ingest events once. Replay object changes, investigate collected data locally, and query compact summaries without loading every event.</p></div>
  <div class="system-map">
-  <div class="system-boundaries"><span>Server</span><span>Browser</span></div>
+  <div class="system-boundaries"><span>Server</span><span>Client</span></div>
   <div class="lifecycle-track" role="tablist" aria-label="Data Lifecycle">
    ${stages.map((stage,i)=>`<button id="stage-${i}" role="tab" data-stage="${i}" aria-controls="stage-panel" aria-selected="${i===0}" tabindex="${i===0?0:-1}">${glyphs[i]}<strong>${stage.name}</strong><code>${stage.file}</code></button>`).join('')}
   </div>
-  <div class="summary-bypass"><span class="bypass-start" aria-hidden="true"></span><code>.sum</code><span>5-Minute Columnar Summaries → Daily Packets → Charts</span><span class="bypass-end" aria-hidden="true">↑</span></div>
   <div class="map-caption"><span>Select a Stage</span><span>Data Shapes Are Schematic</span></div>
  </div>
  <div id="stage-panel" role="tabpanel" aria-labelledby="stage-0" tabindex="0" class="stage-panel">
-  <div class="stage-explanation"><span id="stage-place" class="mono-label">${stages[0].location}</span><h2 id="stage-title">${stages[0].action}</h2><p id="stage-copy">${stages[0].copy}</p><p id="stage-foot" class="aside">${stages[0].foot}</p></div>
-  <div class="data-workbench"><div class="workbench-heading"><span>${icon('code')} Record View</span><small>Example Data</small></div><div id="stage-scene">${stages[0].scene}</div></div>
+  <div class="stage-explanation"><span id="stage-place" class="mono-label">${stages[0].location}</span><h3 id="stage-title">${stages[0].action}</h3><p id="stage-acronym" class="stage-acronym" ${stages[0].acronym?'':'hidden'}>${stages[0].acronym}</p><p id="stage-note" class="stage-note">${stages[0].note}</p><p id="stage-copy">${stages[0].copy}</p><p id="stage-foot" class="aside">${stages[0].foot}</p></div>
+  <div class="data-workbench"><div class="workbench-heading"><span>${icon('code')} Data Seed View</span><small>Example Data</small></div><div id="stage-scene">${stages[0].scene}</div></div>
  </div>
 </section>`;
 
+
 const questions = `
-<section class="wrap questions" id="analytics">
- <div class="section-heading"><h2>Query Paths</h2><p>Time, object identity, and text each have<br>a useful way into the journal.</p></div>
- <div class="question-row"><div>${icon('search')}<h3>Time & Text</h3></div><p>Bound a search by time, then refine by fields or text. Collect the matching hours for local investigation.</p><code>Time Trie + Tantivy</code></div>
- <div class="question-row"><div>${icon('clock')}<h3>Object Replay</h3></div><p>Follow one object’s revisions. The optional collection index supports history and replay without rebuilding the full object.</p><code>collection.idx → Writes</code></div>
+<section class="wrap questions" id="search">
+ <div class="section-heading"><h2>Search</h2><p>Time, object identity, and text each have a useful way into the journal.</p></div>
+ <div class="question-row"><div>${icon('search')}<h3>Time & Text</h3></div><p>Bound a search by time, then refine by fields or text. Collect matching seed packs for local investigation.</p><code>Time Trie + Tantivy</code></div>
+ <div class="question-row"><div>${icon('clock')}<h3>Collections</h3></div><p>Follow one object’s revisions via collection subscriptions. The optional collection index supports history and replay without rebuilding the full object.</p><code>collection.idx → Writes</code></div>
  <div class="question-row"><div>${icon('activity')}<h3>Analytics</h3></div><p>Render counts, errors, and duration distributions from summaries. Daily totals also feed weekly, monthly, and yearly rollups.</p><code>.sum → Analytic Columns</code></div>
  <p class="section-note">Retention is configured per resource and branch. Completeness and lost events remain visible. Scheduled reports and external alert delivery are still planned.</p>
 </section>`;
 
 const performance = `
-<section class="measurements" id="performance"><div class="wrap">
- <div class="section-heading"><h2>Storage Measurements</h2><p>${storage.events} synthetic events. 30 days. Five resources.<br>Indexes, journals, and metadata included.</p></div>
- <div class="measure-layout"><div class="measurement-total"><strong>${mb(storage.total)} <span>MB</span></strong><p>Total logical storage</p><a class="text-link" href="/measurements.txt">Read the Benchmark ${arrow}</a></div>
+<section class="measurements" id="storage"><div class="wrap">
+ <div class="section-heading"><h2>Storage</h2><p>A sample of 1 million searchable events modeled in trunk storage.</p></div>
+ <p class="measurement-scope">Default compression, search indexes, and precomputed aggregates. 30 days. Five resources.</p>
+ <div class="measure-layout"><div class="measurement-total"><p class="measurement-comparison"><strong>Trunk Datastore vs. JSONL</strong></p><p>${mb(storage.total)} MB vs ${mb(storage.expanded)} MB</p><strong>${(100*(1-storage.total/storage.expanded)).toFixed(1)}<span>% Smaller</span></strong><p>Including Indexes, Summaries & Journals</p><a class="text-link" href="/measurements.txt">Read the Benchmark ${arrow}</a></div>
  <div class="storage-detail"><div class="storage-bar" role="img" aria-label="Storage breakdown: ${storage.components.map(c=>`${c.name} ${mb(c.bytes)} MB`).join(', ')}">${storage.components.map(c=>`<span class="bar-${c.key}" style="flex:${c.bytes}"></span>`).join('')}</div>
  <dl class="storage-list">${storage.components.map(c=>`<div class="bar-${c.key}"><dt>${c.name}</dt><dd>${mb(c.bytes)} MB</dd></div>`).join('')}</dl></div></div>
- <div class="measurement-context"><p><strong>${kb(storage.dailyMedian)} KB</strong> median daily summary transfer across the fixture’s resources.</p><p><strong>${(storage.total/storage.eventCount).toFixed(1)} bytes/event</strong> including optional collection indexing and Tantivy in this fixture.</p><p>Expanded JSONL: <strong>${mb(storage.expanded)} MB</strong>. Gzip-6 JSONL: <strong>${mb(storage.gzip)} MB</strong>, without equivalent search indexes.</p></div>
+ <div class="measurement-context"><p><strong>${kb(storage.dailyMedian)} KB</strong> median daily summary transfer for analytics across the fixture’s resources.</p><p><strong>${(storage.total/storage.eventCount).toFixed(1)} bytes/event</strong> for the full indexed datastore, including journals and metadata.</p><p><strong>${mb(storage.seedPacks)} MB</strong> of seed packs in Pods, retrievable by hour for event detail. <a href="/seeds">See How Seeds Are Packed ↗</a></p></div>
  <p class="section-note">These are development measurements, not production guarantees. The linked report includes allocation, coverage, and format tradeoffs.</p>
 </div></section>`;
 
@@ -101,45 +107,53 @@ const definitionExample = `<pre class="definition-code"><code>{
       "values": ["pending", "authorized", "captured"] }
   ]
 }</code></pre>`;
-const definition = `
-<section class="wrap definition-section" id="definition"><div><span class="mono-label">PIL / Positional Interchange Layout</span><h2>PIL Definitions</h2><p>Field positions, types, and dictionaries live in a shared Definition. A record can carry complete state or a single changed field.</p><p>Definitions are encoded as CBOR. <a href="https://www.rfc-editor.org/rfc/rfc8610.html">CDDL</a> describes their structure; the codec enforces the remaining semantic rules.</p><a class="text-link" href="/definition.cddl" download>Download the Definition Schema ${icon('download')}</a></div><div class="definition-example"><div class="example-title"><span>A Definition</span><small>JSON View of CBOR</small></div>${definitionExample}<div class="sparse-example"><span>A Change</span><code>state: authorized</code><small>Omitted fields remain omitted.</small></div></div></section>`;
+const definition = (pil = false) => `
+<section class="wrap definition-section${pil ? '' : ' home-definition'}" id="${pil ? 'definition' : 'definitions'}">${pil ? '' : '<div class="section-heading"><h2>Definitions</h2><p>Define field positions, types, and dictionaries once. Data seeds share that definition and can carry complete state or a single changed field.</p></div>'}<div>${pil
+ ? `<span class="mono-label">PIL / Positional Interchange Layout</span><h2>PIL Definitions</h2><p>Field positions, types, and dictionaries live in a shared Definition. A PIL record can carry complete state or a single changed field.</p><p>Definitions are encoded as CBOR. <a href="https://www.rfc-editor.org/rfc/rfc8610.html">CDDL</a> describes their structure; the codec enforces the remaining semantic rules.</p><a class="text-link" href="/definition.cddl" download>Download the Definition Schema ${icon('download')}</a>`
+ : `<p>Trie-Trunk data definitions are an implementation of <a href="/PIL#definition">PIL Definitions</a>. <a href="/definition.cddl">CDDL</a> describes the definition structure; Trie-Trunk adds resource bindings and application rules.</p>`
+}</div><div class="definition-example"><div class="example-title"><span>${pil ? 'A Definition' : 'A Data Definition'}</span><small>JSON View of PIL Definition</small></div>${definitionExample}<div class="sparse-example"><span>A Change</span><code>state: authorized</code><small>Omitted fields remain omitted.</small></div></div></section>`;
 
 const snootIntro = `
-<section class="wrap snoot-intro"><div class="snoot-portrait"><img src="/assets/brand/snoot-forward.png" alt="Front-Facing Snoot Anteater" width="1254" height="1254" loading="lazy"/></div><div><img class="snoot-wordmark" src="/assets/brand/snoot-wordmark.jpg" alt="Snoot" width="1280" height="426" loading="lazy"/><h2>Search & Investigation</h2><p>Search the journal, inspect a change, and look at the pattern. Snoot brings the detail and the summaries into the same research session.</p><div class="actions"><a class="button" href="https://snoot.trietrunk.com">Open Snoot ${arrow}</a><a class="text-link" href="/snoot">About Snoot ${arrow}</a></div></div></section>`;
+<section class="wrap snoot-intro"><div class="snoot-portrait"><img src="/assets/brand/snoot-forward.png" alt="Front-Facing Snoot Anteater" width="1254" height="1254" loading="lazy"/></div><div><img class="snoot-wordmark" src="/assets/brand/snoot-wordmark.png" alt="Snoot" width="1280" height="426" loading="lazy"/><h2>Search & Investigation</h2><p>Search the journal, inspect a change, and look at the pattern. Snoot brings the detail and the summaries into the same research session.</p><div class="actions"><a class="button" href="https://snoot.trietrunk.com">Open Snoot ${arrow}</a><a class="text-link" href="/snoot">About Snoot ${arrow}</a></div></div></section>`;
 
 const trunk = `
 <div class="trunk-document wrap">
  <aside class="document-rail" aria-label="On This Page">
-  <a class="brand main-brand" href="/trunk" aria-label="Trie-Trunk Home">${brand}</a>
-  <p>An event datastore.<br>A replay cache.<br>A local research dataset.</p>
-  <nav aria-label="Page Sections"><a href="#lifecycle">Lifecycle</a><a href="#analytics">Query Paths</a><a href="#definition">Definition</a><a href="#performance">Measurements</a></nav>
+  <a class="brand main-brand" href="/" aria-label="Trie-Trunk Home">${brand}</a>
+  <p>A time-series database.<br>Typed events.<br>Local analytics.</p>
+  <nav aria-label="Page Sections"><a href="#lifecycle">Lifecycle</a><a href="#tries">Tries</a><a href="#search">Search</a><a href="#storage">Storage</a><a href="#retention">Retention</a><a href="#analytics">Analytics</a><a href="#definitions">Definitions</a></nav>
   <a class="rail-launch" href="https://snoot.trietrunk.com">Open Snoot ${arrow}</a>
   <small>Open Source / Version Zero</small>
  </aside>
- <div class="document-body">${lifecycle}${questions}${definition}${performance}${snootIntro}</div>
+ <div class="document-body"><section class="trunk-intro"><h1><span class="trunk-headline">Hierarchical Time-Series</span><span class="trunk-promise">Minimal Footprint<br>at Lightning Speeds.</span></h1><p>Typed events. Tiny indexes. Precomputed columnar analytics. All within a <a href="#storage">70% smaller storage footprint</a> than expanded JSONL in our million-event benchmark.</p></section>${lifecycle}${taxonomy}${questions}${performance}${retention}${summaries}${definition()}${snootIntro}</div>
 </div>`;
 
 const snoot = `
-<section class="wrap snoot-hero"><div><img class="snoot-wordmark" src="/assets/brand/snoot-wordmark.jpg" alt="Snoot" width="1280" height="426"/><h1>Search the Journal.</h1><p class="intro">Time windows, text queries, object history, and analytic views over Trie-Trunk.</p><a class="button" href="https://snoot.trietrunk.com">Try It Out ${arrow}</a></div><img class="snoot-hero-portrait" src="/assets/brand/snoot-forward.png" alt="Front-Facing Snoot Anteater" width="1254" height="1254"/></section>
-<section class="wrap query-section"><div class="section-heading"><h2>Query Syntax</h2><p>Builder and pipeline syntax share one query model.<br>Definitions guide field and value completion.</p></div><div class="query-example"><div class="example-title"><div class="syntax-toggle" role="tablist" aria-label="Query Syntax"><button id="syntax-builder" type="button" role="tab" data-syntax="builder" aria-selected="true" aria-controls="query-builder">Builder</button><button id="syntax-pipeline" type="button" role="tab" data-syntax="pipeline" aria-selected="false" aria-controls="query-pipeline" tabindex="-1">Pipeline</button></div><small>Illustrative Query</small></div><pre id="query-builder" role="tabpanel" aria-labelledby="syntax-builder" tabindex="0"><code>events.query()
+<section class="wrap snoot-hero"><div><img class="snoot-wordmark" src="/assets/brand/snoot-wordmark.png" alt="Snoot" width="1280" height="426"/><h1>Snoot through Logs with ease!</h1><p class="intro">Dig into your logs, follow object changes, and explore patterns across time.</p><a class="button" href="https://snoot.trietrunk.com">Try It Out ${arrow}</a></div><img class="snoot-hero-portrait" src="/assets/brand/snoot-forward.png" alt="Front-Facing Snoot Anteater" width="1254" height="1254"/></section>
+<section class="wrap query-section"><div class="section-heading"><h2>Query Syntax</h2><p>Pipeline and builder syntax share one query model.<br>Definitions guide field and value completion.</p></div><div class="query-example"><div class="example-title"><div class="syntax-toggle" role="tablist" aria-label="Query Syntax"><button id="syntax-pipeline" type="button" role="tab" data-syntax="pipeline" aria-selected="true" aria-controls="query-pipeline">Pipeline</button><button id="syntax-builder" type="button" role="tab" data-syntax="builder" aria-selected="false" aria-controls="query-builder" tabindex="-1">Builder</button></div><small>Illustrative Query</small></div><pre id="query-builder" role="tabpanel" aria-labelledby="syntax-builder" tabindex="0" hidden><code>events.query()
   .where(level, ==, error)
   .search("timeout")
   .order(timestamp, desc)
-  .page(50)</code></pre><pre id="query-pipeline" role="tabpanel" aria-labelledby="syntax-pipeline" tabindex="0" hidden><code>events query
+  .page(50)</code></pre><pre id="query-pipeline" role="tabpanel" aria-labelledby="syntax-pipeline" tabindex="0"><code>events
   | where level == error
   | search "timeout"
   | order timestamp desc
   | page 50</code></pre></div><div class="query-caption"><span>${icon('search')} Refine by Field or Text</span><span>${icon('clock')} Bound by Your Time Window</span><span>${icon('down')} Scroll for More Events</span></div></section>
-${questions}<section class="wrap product-notes"><h2>The Research Workspace</h2><div><p>The SharedWorker coordinates local datasets. Complete hours and cached daily summaries can be reused as you refine an investigation.</p><p>Object History is available when collection indexing is enabled. Lost Events surface rejected records. Session state preserves the research workspace across refreshes.</p><a class="text-link" href="https://snoot.trietrunk.com">Try the Current App ${arrow}</a></div></section>`;
+${questions}<section class="wrap product-notes"><h2>The Research Workspace</h2><div><p>The SharedWorker coordinates local datasets. Complete hours and cached daily summaries can be reused as you refine an investigation.</p><p>Object History is available when collection indexing is enabled. Lost Events surface rejected data seeds. Session state preserves the research workspace across refreshes.</p><a class="text-link" href="https://snoot.trietrunk.com">Try the Current App ${arrow}</a></div></section>`;
 
 const pil = `
-<section class="wrap pil-hero"><p class="project-line">PIL / Positional Interchange Layout</p><h1>Positional Interchange Layout</h1><p class="intro">A binary layout for complete objects and partial changes.<br>Independent of the datastore that carries it.</p><div class="actions"><a class="button" href="${source('README.md#pil')}">Read the Specification ${arrow}</a><a class="text-link" href="/definition.cddl" download>Download CDDL ${icon('download')}</a></div></section>
+<section class="wrap pil-hero"><p class="project-line">PIL / Positional Interchange Layout</p><h1>Positional Interchange Layout</h1><p class="intro">A binary layout for complete objects and partial changes.<br>Independent of the datastore that carries it.</p><div class="actions"><a class="button" href="/pill-packer.txt">Read the Specification ${arrow}</a><a class="text-link" href="/definition.cddl" download>Download CDDL ${icon('download')}</a></div></section>
 <section class="wrap layout-section"><div class="section-heading"><h2>Inside a PIL Record.</h2><p>Conceptual layout. Actual widths depend<br>on the Definition and present fields.</p></div><div class="byte-lane">${[['Field States','Absent · Null · Direct · Offset'],['Integer Widths','When Enabled'],['Direct Values','Scalars & Dictionary IDs'],['End Offsets','Variable Boundaries'],['Variable Values','Strings · Bytes · Arrays']].map(([name,detail],i)=>`<div><small>0${i+1}</small><strong>${name}</strong><span>${detail}</span></div>`).join('')}</div><p class="section-note">Absent is different from null. Adaptive integer encoding is selected by the Definition. REF16 remains an optional shared-value reference.</p></section>
-${definition}<section class="wrap product-notes"><h2>Records and Containers.</h2><div><p>PIL describes a record. A PAC groups records under a Definition and can factor common values. Trie-Trunk supplies the storage binding, segment placement, and replication behavior.</p><p>The CDDL download describes the existing CBOR Definition structure, including its optional resource binding. It does not replace semantic validation or introduce a new wire format.</p><a class="text-link" href="${source('README.md#pil')}">Explore the Codec ${arrow}</a></div></section>`;
+${definition(true)}<section class="wrap product-notes"><h2>Data Seeds & Seed Packs</h2><div><p>Trie-Trunk implements PIL as data seeds and PIL PACs as seed packs. A seed pack groups data seeds under a Definition and can factor common values. Pods and Sods are the datastores that hold them on the server and in the browser.</p><p>The CDDL download describes the portable CBOR Definition structure. Trie-Trunk resource bindings belong to a separate application profile. It does not replace semantic validation or introduce a new wire format.</p><a class="text-link" href="/seeds">Explore Seeds ${arrow}</a></div></section>
+<section class="wrap seed-section" id="libraries"><h2>Pill Packer Libraries</h2><p class="seed-lead">Portable codecs, separate from Trie-Trunk’s storage and delivery policies.</p>
+<div class="seed-explanation"><h3>Rust</h3><p>PIL encoding and decoding, borrowed scans, PAC reading, and gzip decoding. The native codec also exposes a C ABI for language bindings.</p></div>
+<div class="seed-explanation"><h3>JavaScript / WASM</h3><p>Initial npm reader and definition-import bindings around the Rust codec, including browser use. Full encoding API parity is still pending.</p></div>
+<div class="seed-explanation"><h3>Go</h3><p>A synchronized wrapper over the Rust C ABI provides initial reader and definition APIs. The codec stays native; Go manages the integration.</p></div>
+<p class="seed-lead">Packages are not published yet. Pill Packer owns PIL codecs, PAC packing, common-value factoring, and compression. Trie-Trunk supplies storage and replication policies.</p><div class="actions"><a class="text-link" href="https://github.com/AuthenticityLabs/pill-packer">Pill Packer on GitHub ${arrow}</a><a class="text-link" href="https://github.com/AuthenticityLabs/pill-packer#build--test">Build Instructions ${arrow}</a><a class="text-link" href="/definition.cddl">Definition Schema ${arrow}</a></div></section>`;
 
 const logger = `
-<section class="wrap pil-hero"><p class="project-line">Logger / PIL Ingress</p><h1>Define Once. Emit Changes.</h1><p class="intro">Typed events from your application to Trie-Trunk.<br>Negotiate the Definition before the first write.</p><div class="actions"><a class="button" href="${source('README.md#logger')}">Integration Guide ${arrow}</a><a class="text-link" href="${source('go/logger/client/examples/http/main.go')}">HTTP Example ${arrow}</a></div></section>
-<section class="wrap query-section logger-example"><div class="section-heading"><h2>Connect With a Definition</h2><p>The Go logger accepts your compiled resource map.<br>Already encoded PIL frames can be submitted together.</p></div><div class="query-example"><div class="example-title"><span>PIL Logger</span><small>Go · Inside Your Application</small></div><pre><code>mapBytes, err := os.ReadFile("resource.map")
+<section class="wrap pil-hero"><p class="project-line">Logger / PIL Ingress</p><h1>Define Once. Emit Changes.</h1><p class="intro">Typed data seeds from your application to Trie-Trunk.<br>Negotiate the Definition before the first write.</p><div class="actions"><a class="button" href="${source('README.md#logger')}">Integration Guide ${arrow}</a><a class="text-link" href="${source('go/logger/client/examples/http/main.go')}">HTTP Example ${arrow}</a></div></section>
+<section class="wrap query-section logger-example"><div class="section-heading"><h2>Connect With a Definition</h2><p>The Go logger accepts your compiled resource map.<br>Data seeds encoded as PIL frames can be submitted together.</p></div><div class="query-example"><div class="example-title"><span>PIL Logger</span><small>Go · Inside Your Application</small></div><pre><code>mapBytes, err := os.ReadFile("resource.map")
 if err != nil { return err }
 
 logger, err := pil.Open(ctx, pil.Config{
@@ -152,23 +166,25 @@ logger, err := pil.Open(ctx, pil.Config{
 if err != nil { return err }
 defer logger.Close()
 
-// PIL frames encoded against the producer Definition.
+// Data seeds encoded as PIL frames against the producer Definition.
 return logger.WriteFrames(ctx, frames...)</code></pre></div><p class="section-note">Import <code>trie-trunk/go/logger/pil</code>. Use <code>WriteValues</code> to encode positional values directly into the accepted layout.</p></section>
 <section class="wrap questions"><div class="section-heading"><h2>From Application to Journal</h2><p>One Definition binds the producer and receiver.<br>Partial changes keep their original meaning.</p></div>
 <div class="question-row"><div>${icon('code')}<h3>Register</h3></div><p>Exchange Definition identity and digest. Send missing maps, validate compatible server layouts, and prepare the encoder before delivery.</p><code>Definition → Accepted Layout</code></div>
-<div class="question-row"><div>${icon('clock')}<h3>Batch & Deliver</h3></div><p>Send immediately or configure a millisecond batching window for concurrent producers. HTTP gzip can compress the entire batch; revisions are preserved without coalescing.</p><code>PIL Frames → HTTP → .seed</code></div>
+<div class="question-row"><div>${icon('clock')}<h3>Batch & Deliver</h3></div><p>Send immediately or configure a millisecond batching window for concurrent producers. HTTP gzip can compress the entire batch; revisions are preserved without coalescing.</p><code>Data Seeds → HTTP → .seed</code></div>
 <div class="question-row"><div>${icon('check')}<h3>Handle Failures</h3></div><p>Observe delivery errors and retain event identities for retries. A successful call requires the server’s staging acknowledgement; queueing alone is not success.</p><code>event_id → Delivery Identity</code></div></section>
 <section class="wrap product-notes"><h2>Requests & Object Changes</h2><div><p>The request-scoped logger supplies a fluent builder, HTTP middleware, durations, and checkpoints through <code>client.NewPIL</code>. A request completion does not imply a committed object mutation.</p><p>Use the generic PIL logger for explicit object changes. Define object identity and revision roles when collection replay is enabled. Omitted fields remain absent; null remains an explicit value.</p><p>Definitions can allow <code>@fields</code> for extensions. Compatible newer Definitions can promote these values into typed fields without renaming them.</p><a class="text-link" href="${source('README.md#logger')}">Request Logger Reference ${arrow}</a></div></section>`;
 
 export const pages = {
- trunk:{title:'Trie-Trunk — Telemetry, Replay & Analytics',description:'One event store for telemetry, object replay, and analytics. Ingest once, reuse collected data locally, and query compact summaries without loading every event.',body:trunk},
+ trunk:{title:'Trie-Trunk — Time-Series Database',description:'An open-source time-series database for typed events, temporal search, and precomputed columnar summaries. Collect data locally for browser analytics.',body:trunk},
+ ...seedPages,
  snoot:{title:'Snoot — Search the Event Journal',description:'Research Trie-Trunk events with time windows, text queries, object history, and analytic views.',body:snoot},
- pil:{title:'PIL — Positional Interchange Layout',description:'Definition-driven binary records for full objects, partial changes, dictionaries, and PAC containers.',body:pil},
+ PIL:{title:'PIL — Positional Interchange Layout',description:'Definition-driven binary records for full objects, partial changes, dictionaries, and PAC containers. Portable Pill Packer libraries for Rust, JavaScript/WASM, and Go.',body:pil},
  logger:{title:'Logger — Typed PIL Events',description:'Negotiate Definitions, emit typed PIL events, and batch application logs and object changes into Trie-Trunk.',body:logger}
 };
 const attribute = value => value.replaceAll('&','&amp;').replaceAll('"','&quot;').replaceAll('<','&lt;');
+const navigation = ['trunk','seeds','logger','snoot'];
 export function render(name,css,js) {
- const p=pages[name], canonical=`https://trietrunk.com/${name}`;
+ const p=pages[name], canonical=`https://trietrunk.com${pagePath(name)}`;
  const title=attribute(p.title), description=attribute(p.description);
  const shareImage='https://trietrunk.com/assets/brand/trie-trunk-gray.jpg';
  return `<!doctype html><html lang="en"><head>
@@ -185,6 +201,6 @@ export function render(name,css,js) {
  <link rel="canonical" href="${canonical}"><link rel="icon" href="/assets/brand/trie-trunk-transparent.png" type="image/png">
  <link rel="stylesheet" href="/assets/${css}"><script src="/assets/${js}" type="module"></script>
  </head><body data-page="${name}"><a class="skip-link" href="#main">Skip to Content</a>
- <header class="site-header wrap"><a class="brand header-brand" href="/trunk" aria-label="Trie-Trunk Home">${brand}</a><nav aria-label="Main Navigation">${Object.keys(pages).map(n=>`<a href="/${n}" ${n===name?'aria-current="page"':''}>${n==='pil'?'PIL':n[0].toUpperCase()+n.slice(1)}</a>`).join('')}<a href="${github}">GitHub ${arrow}</a></nav><div class="theme-picker" role="group" aria-label="Color Theme">${['light','dark','auto'].map(mode=>`<button type="button" data-theme-choice="${mode}" aria-pressed="false" title="${mode==='auto'?'Follow System Theme':mode==='dark'?'Dark Mode':'Light Mode'}">${mode[0].toUpperCase()+mode.slice(1)}</button>`).join('')}</div></header>
+ <header class="site-header wrap"><a class="brand header-brand" href="/" aria-label="Trie-Trunk Home">${brand}</a><nav aria-label="Main Navigation">${navigation.map(n=>`<a href="${pagePath(n)}" ${n===name?'aria-current="page"':(n==='seeds' && (name.startsWith('seeds/') || name==='PIL'))?'aria-current="location"':''}>${n[0].toUpperCase()+n.slice(1)}</a>`).join('')}<a href="${github}">GitHub ${arrow}</a></nav><div class="theme-picker" role="group" aria-label="Color Theme">${['light','dark','auto'].map(mode=>`<button type="button" data-theme-choice="${mode}" aria-pressed="false" title="${mode==='auto'?'Follow System Theme':mode==='dark'?'Dark Mode':'Light Mode'}">${mode[0].toUpperCase()+mode.slice(1)}</button>`).join('')}</div></header>
  <main id="main">${p.body}</main><footer class="wrap site-footer"><div><a href="${source('README.md#licensing')}">Licensing</a><a href="${source('README.md#architecture')}">Architecture</a><a href="${github}">GitHub ${arrow}</a></div><p>Authenticity Labs · Version Zero</p></footer></body></html>`;
 }

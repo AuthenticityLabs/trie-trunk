@@ -2,12 +2,11 @@ package cache
 
 import (
 	"bytes"
-	"compress/gzip"
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
+	pilcodec "github.com/AuthenticityLabs/pill-packer/go/codec"
 	"hash/crc32"
-	"io"
 	"os"
 	"path/filepath"
 	"sort"
@@ -77,7 +76,9 @@ func encodeSummaryDayFiltered(day, from, to int64, sums []Summary, compressed bo
 			return nil, fmt.Errorf("summary day exceeds limit")
 		}
 		if shuffled {
-			shuffleSummary(raw, enc, false)
+			if e := shuffleSummary(raw, enc, false); e != nil {
+				return nil, e
+			}
 		}
 		chunks[slot] = raw
 		size += len(raw)
@@ -107,11 +108,7 @@ func encodeSummaryDayFiltered(day, from, to int64, sums []Summary, compressed bo
 	codec := byte(0)
 	if compressed {
 		var b bytes.Buffer
-		gz, _ := gzip.NewWriterLevel(&b, level)
-		if _, e := gz.Write(body); e != nil {
-			return nil, e
-		}
-		if e := gz.Close(); e != nil {
+		if e := pilcodec.Gzip(&b, bytes.NewReader(body), level); e != nil {
 			return nil, e
 		}
 		encoded = b.Bytes()
@@ -147,28 +144,10 @@ func decodeSummaryDay(raw []byte) (day, from, to int64, sums []Summary, err erro
 	}
 	body := raw[32:]
 	if raw[8] == 1 {
-		gz, e := gzip.NewReader(bytes.NewReader(body))
+		var e error
+		body, e = pilcodec.InflateGzip(body, int(n), maxSummaryDay)
 		if e != nil {
 			return 0, 0, 0, nil, e
-		}
-		body = make([]byte, int(n))
-		_, e = io.ReadFull(gz, body)
-		if e == nil {
-			var extra [1]byte
-			var got int
-			got, e = gz.Read(extra[:])
-			if got != 0 || e != io.EOF {
-				e = bad()
-			} else {
-				e = nil
-			}
-		}
-		closeErr := gz.Close()
-		if e != nil {
-			return 0, 0, 0, nil, e
-		}
-		if closeErr != nil {
-			return 0, 0, 0, nil, closeErr
 		}
 	}
 	if len(body) != int(n) || crc32.Checksum(body, checksum) != order.Uint32(raw[20:]) {
@@ -207,7 +186,9 @@ func decodeSummaryDay(raw []byte) (day, from, to int64, sums []Summary, err erro
 			if e := validateShuffledSummary(body[a:a+z], enc); e != nil {
 				return 0, 0, 0, nil, e
 			}
-			shuffleSummary(body[a:a+z], enc, true)
+			if e := shuffleSummary(body[a:a+z], enc, true); e != nil {
+				return 0, 0, 0, nil, e
+			}
 		}
 		if e := decodeSummaryColumns(body[a:a+z], &s, &enc); e != nil {
 			return 0, 0, 0, nil, e

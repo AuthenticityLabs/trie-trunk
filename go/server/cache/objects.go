@@ -183,7 +183,7 @@ func (s *Store) indexObjects(b *branchStore) error {
 			if e != nil {
 				return e
 			}
-			if e = s.layout.identityFrame(raw, &frame); e != nil {
+			if e = s.layout.IdentityFrame(raw, &frame); e != nil {
 				return e
 			}
 			object := frame.Values[s.layout.Object]
@@ -219,7 +219,7 @@ func (s *Store) ObjectLocations(id Value) ([]ObjectLocation, error) {
 func (s *Store) objectLocations(id Value) ([]ObjectLocation, error) {
 	s.waitSealing()
 	if s.layout.Object >= 0 {
-		id = s.layout.identityValue(s.layout.Object, id)
+		id = s.layout.IdentityValue(s.layout.Object, id)
 	}
 	if e := s.check(); e != nil {
 		return nil, e

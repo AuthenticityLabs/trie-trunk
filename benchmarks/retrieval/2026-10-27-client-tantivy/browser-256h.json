@@ -1,0 +1,89 @@
+{
+  "ok": true,
+  "windowQueries": [
+    {
+      "name": "all",
+      "firstMs": 165.30000138282776,
+      "warmMs": 164.80001020431519
+    },
+    {
+      "name": "contains",
+      "firstMs": 691.4000039100647,
+      "warmMs": 701.800005197525
+    },
+    {
+      "name": "terms",
+      "firstMs": 159.30000019073486,
+      "warmMs": 161.70001220703125
+    },
+    {
+      "name": "phrase",
+      "firstMs": 147.00000095367432,
+      "warmMs": 152.30000567436218
+    },
+    {
+      "name": "prefix",
+      "firstMs": 154.19999980926514,
+      "warmMs": 158.2000114917755
+    },
+    {
+      "name": "fuzzy",
+      "firstMs": 154.80000019073486,
+      "warmMs": 161.80000948905945
+    },
+    {
+      "name": "duration",
+      "firstMs": 132.4999988079071,
+      "warmMs": 139.10000133514404
+    },
+    {
+      "name": "large-integer",
+      "firstMs": 106.50000023841858,
+      "warmMs": 113.70001125335693
+    },
+    {
+      "name": "mapped",
+      "firstMs": 138.7000002861023,
+      "warmMs": 146.70000433921814
+    },
+    {
+      "name": "not-null",
+      "firstMs": 151.59999775886536,
+      "warmMs": 159.10001158714294
+    },
+    {
+      "name": "float",
+      "firstMs": 142.49999952316284,
+      "warmMs": 149.40000367164612
+    },
+    {
+      "name": "finite-not-equal",
+      "firstMs": 148.9000015258789,
+      "warmMs": 157.30000853538513
+    },
+    {
+      "name": "bool",
+      "firstMs": 126.00000023841858,
+      "warmMs": 133.10000038146973
+    },
+    {
+      "name": "partial-hour",
+      "firstMs": 53.80000066757202,
+      "warmMs": 62.200005531311035
+    }
+  ],
+  "hours": 256,
+  "events": 512000,
+  "checks": 10752,
+  "negativeChecks": 5,
+  "initMs": 6.200000047683716,
+  "indexBytes": 28983847,
+  "peakWasmBytes": 2818048,
+  "queryFirstMedianMs": 0.5999999046325684,
+  "queryWarmMedianMs": 0.6000001430511475,
+  "queryWarmP95Ms": 2.700000047683716,
+  "scope": "Synthetic native-created hourly indexes; actual browser WASM + OPFS. Query times exclude transfer, verification, file writes, reader opening, UI rendering and cross-hour result merge. windowQueries sums per-hour kernel times; not end-to-end window latency.",
+  "openTotalMs": 295.6999969482422,
+  "openReadCalls": 1792,
+  "openReadBytes": 28983847
+}

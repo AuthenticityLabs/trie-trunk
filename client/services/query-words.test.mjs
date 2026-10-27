@@ -27,3 +27,12 @@ test('definition values take priority and remain safely quoted',()=>{
  const text='events.query().where(state, ==, "auth';const c=valueCompletions(text,text.length,fields,words)[0];
  assert.equal(parseQuery(apply(text,guidedCompletion(text,c)),fields).plan.filters[0].value.value,'authorized');
 });
+
+test('selecting the final word completes the literal and advances beyond its closing delimiter',()=>{
+ for(const text of ['events | search "conn"','events.query().search("conn")','events | where message == "conn']){
+  const at=text.indexOf('conn')+4;
+  const c=valueCompletions(text,at,fields,words).find(c=>c.label==='connection');
+  const result=apply(text,guidedCompletion(text,c));
+  assert.ok(result.endsWith(' '));assert.ok(parseQuery(result,fields));
+ }
+});

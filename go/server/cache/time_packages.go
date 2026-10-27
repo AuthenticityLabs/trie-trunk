@@ -136,3 +136,31 @@ func (s *Store) provisionalTail(branch ...Branch) time.Duration {
 	}
 	return 15 * time.Minute
 }
+
+// Coalesce adjacent sealed delivery windows. Storage and coverage remain hourly;
+// provisional windows are kept separate and never certify persisted history.
+func (s *Store) planNativeRanges(branch Branch, from, to time.Time) ([]PackageWindow, error) {
+	windows, err := s.PlanBranchPackages(branch, from, to)
+	if err != nil {
+		return nil, err
+	}
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	b, err := s.openBranch(branch)
+	if err != nil {
+		return nil, err
+	}
+	if err = s.flush(b); err != nil {
+		return nil, err
+	}
+	cutoff := min(b.finalizedBefore, s.config.Now().Add(-s.provisionalTail(branch)).UnixMilli())
+	var out []PackageWindow
+	for _, w := range windows {
+		if len(out) > 0 && w.To.UnixMilli() <= cutoff && out[len(out)-1].To.Equal(w.From) {
+			out[len(out)-1].To = w.To
+		} else {
+			out = append(out, w)
+		}
+	}
+	return out, nil
+}

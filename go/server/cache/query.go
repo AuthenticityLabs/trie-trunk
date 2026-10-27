@@ -81,8 +81,8 @@ func (l *Layout) equal(i int, a, b Value) bool {
 			b = Text(field.Values[n])
 		}
 	}
-	a = l.shortValue(i, a)
-	b = l.shortValue(i, b)
+	a = l.ShortValue(i, a)
+	b = l.ShortValue(i, b)
 	return a.State == b.State && bytes.Equal(a.Bytes, b.Bytes)
 }
 
@@ -150,13 +150,13 @@ func (s *Store) searchView(ctx context.Context, q Query, visit func(uint64, []by
 	scanPredicate := s.layout.Scan
 	identityOnly := true
 	for i := range wanted {
-		if !s.layout.identityField(i) {
+		if !s.layout.IdentityField(i) {
 			identityOnly = false
 			break
 		}
 	}
 	if identityOnly {
-		scanPredicate = s.layout.identityFrame
+		scanPredicate = s.layout.IdentityFrame
 	}
 	objectID, objectLookup := wanted[s.layout.Object]
 	if objectLookup {
@@ -202,7 +202,7 @@ func (s *Store) searchView(ctx context.Context, q Query, visit func(uint64, []by
 	if live {
 		var object []byte
 		if objectLookup {
-			object = s.layout.identityValue(s.layout.Object, objectID).Bytes
+			object = s.layout.IdentityValue(s.layout.Object, objectID).Bytes
 		}
 		staged = b.pendingWindow(object, q.From, q.To)
 	}

@@ -1,3 +1,6 @@
+import { nativeCacheIssue } from "../store/errors.ts";
+import { SummaryReplication } from "../summary-replication.ts";
+import { FastProjection, dayMs } from '../fast-dashboard.ts';
 import type { Selection } from "../events.ts";
 import { ViewCache } from "./view.ts";
 import { cbor } from "./cbor.ts";
@@ -24,6 +27,7 @@ export function workerService(
 ) {
   type Session = {
     views: ViewCache;
+    summaries: SummaryReplication;
     codec: Codec;
     definitions: Map<string, StoredDefinition>;
     bindings: Binding[];
@@ -34,7 +38,7 @@ export function workerService(
   const sessions = new Map<string, Promise<Session>>();
   const credentials = new Map<
     string,
-    Promise<Pick<Session, "codec" | "definitions" | "views">>
+    Promise<Pick<Session, "codec" | "definitions" | "views" | "summaries">>
   >();
   const headers = (token: string) => ({
     Accept: pilType,
@@ -61,7 +65,13 @@ export function workerService(
                 definition: cbor(m.pil) as PILDefinition,
               });
           }
-          return { codec, definitions, views: new ViewCache(fetcher) };
+          const views = new ViewCache(fetcher);
+          const summaries = new SummaryReplication(async (query, signal) => {
+            const view = await views.query(query, token, signal, codec, definitions, undefined, true);
+            if (view.result.page.length || view.batch.rows.length) throw Error('Summary collection returned events');
+            return view.result.analytics?.days.length ?? 0;
+          });
+          return { codec, definitions, views, summaries };
         });
         credentials.set(token, shared);
         shared.catch(() => credentials.delete(token));
@@ -256,16 +266,44 @@ export function workerService(
           cached.views.remember(request.view);
           return;
         }
+        if(request.kind === "prime-summaries") {
+          const cached = await session("", token, archive);
+          await cached.summaries.collect(request.service, Date.now(), request.recent, signal,
+            progress => { if (!signal.aborted) send({id,kind:"summary-progress",progress}); });
+          return;
+        }
+        if(request.kind === 'fast-dashboard') {
+          const projection=new FastProjection(request.request);
+          const cached=await session('',token,archive);
+          for(const scope of request.request.scopes) {
+            for(let from=request.request.from;from<request.request.to;from+=7*dayMs) {
+              signal.throwIfAborted();
+              const to=Math.min(request.request.to,from+7*dayMs), before=projection.count;
+              const view=await cached.views.query({tap:scope+(scope.split('/').length===2?'/*/*':'/*'),from:new Date(from).toISOString(),to:new Date(to).toISOString(),include:'summary',size:1},token,signal,cached.codec,cached.definitions,undefined,false,
+                (manifest,days)=>projection.consume(manifest,days));
+              if(!view.result.summary)throw Error('Missing summary coverage.');
+              projection.cover(view.result.summary.count,projection.count-before);
+            }
+          }
+          signal.throwIfAborted();
+          send({id,kind:'fast-dashboard',result:projection.finish()});
+          return;
+        }
         if(request.kind === "view") {
           const cached = await session("", token, archive);
-          const view = await cached.views.query(request.query, token, signal, cached.codec, cached.definitions, archive);
+          const view = await cached.views.query(request.query, token, signal, cached.codec, cached.definitions, archive, false, undefined, request.progressive ? page => {
+            signal.throwIfAborted();
+            send({id,kind:"view-page",view:page},[page.batch.bytes,page.batch.rows.buffer as ArrayBuffer]);
+          } : undefined);
           signal.throwIfAborted();
-          send({id,kind:"view",view},[view.batch.bytes,view.batch.rows.buffer as ArrayBuffer]);
+          if(request.progressive)send({id,kind:"view-summary",result:view.result,timings:view.timings});
+          else send({id,kind:"view",view},[view.batch.bytes,view.batch.rows.buffer as ArrayBuffer]);
           return;
         }
         if(request.kind==="rebase"){
           if(!archive)throw Error("Local native storage is unavailable");
-          await archive(token,{kind:"native-rebase",source:request.source});
+          await archive(token,{kind:"native-rebase",sources:request.sources});
+          const shared=credentials.get(token);if(shared)(await shared).views.resetEvents();
           return;
         }
         if (request.kind === "begin") {
@@ -628,6 +666,7 @@ export function workerService(
               send({
                 id,
                 kind: "error",
+                cacheIssue: nativeCacheIssue(error),
                 message: error instanceof Error ? error.message : String(error),
               });
           },

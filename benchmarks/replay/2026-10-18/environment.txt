@@ -1,5 +1,0 @@
-Apple M1 Max
-34359738368
-ProductName:		macOS
-ProductVersion:		27.0.1
-BuildVersion:		26A434

@@ -7,11 +7,13 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"fmt"
+	pilcodec "github.com/AuthenticityLabs/pill-packer/go/codec"
 	"github.com/quic-go/quic-go/http3"
 	"io"
 	"net"
 	"net/http"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 	"trie-trunk/go/codec"
@@ -295,10 +297,26 @@ func responsePACs(t *testing.T, l *cache.Layout, raw []byte) []*cache.PAC {
 	}
 	r := bytes.NewReader(raw[5:])
 	var out []*cache.PAC
+	var rangeLeft uint64
+	var e error
 	for {
-		tag, e := r.ReadByte()
-		if e != nil {
-			t.Fatal(e)
+		tag := byte(7)
+		if rangeLeft == 0 {
+			tag, e = r.ReadByte()
+			if e != nil {
+				t.Fatal(e)
+			}
+		}
+		if tag == 9 {
+			var h [12]byte
+			if _, e = io.ReadFull(r, h[:]); e != nil {
+				t.Fatal(e)
+			}
+			rangeLeft = binary.LittleEndian.Uint64(h[4:])
+			if rangeLeft == 0 || rangeLeft > uint64(r.Len()) {
+				t.Fatal("invalid PAC range")
+			}
+			continue
 		}
 		if tag == 255 {
 			end, e := r.ReadByte()
@@ -308,11 +326,11 @@ func responsePACs(t *testing.T, l *cache.Layout, raw []byte) []*cache.PAC {
 			return out
 		}
 		if tag == 7 {
-			h := make([]byte, cache.PACHeaderSize)
+			h := make([]byte, 4)
 			if _, e = io.ReadFull(r, h); e != nil {
 				t.Fatal(e)
 			}
-			n := binary.LittleEndian.Uint64(h[8:])
+			n := uint64(binary.LittleEndian.Uint32(h))
 			if n < uint64(len(h)) || n > cache.PACMaximum {
 				t.Fatal("PAC size")
 			}
@@ -320,6 +338,12 @@ func responsePACs(t *testing.T, l *cache.Layout, raw []byte) []*cache.PAC {
 			copy(data, h)
 			if _, e = io.ReadFull(r, data[len(h):]); e != nil {
 				t.Fatal(e)
+			}
+			if rangeLeft > 0 {
+				if n > rangeLeft {
+					t.Fatal("PAC exceeds range")
+				}
+				rangeLeft -= n
 			}
 			p, e := cache.ParsePAC(l, data, map[uint32]bool{cache.PACNative: true})
 			if e != nil {
@@ -332,7 +356,7 @@ func responsePACs(t *testing.T, l *cache.Layout, raw []byte) []*cache.PAC {
 		if widths == nil {
 			t.Fatal("unknown control", tag)
 		}
-		control := &cache.Layout{Widths: widths}
+		control := &pilcodec.Layout{Widths: widths}
 		if _, e = control.ReadFrame(r, nil); e != nil {
 			t.Fatal(e)
 		}
@@ -354,22 +378,22 @@ func viewContainsFrame(t *testing.T, l *cache.Layout, body, want []byte) bool {
 	return false
 }
 
-func TestSummaryDayNativeRoute(t *testing.T) {
+func TestSummariesNativeRoute(t *testing.T) {
 	root := shortDirectory(t)
 	serverTLS, clientTLS := credentials(t)
 	api := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/summary-day" {
+		if r.URL.Path != "/summaries" {
 			http.NotFound(w, r)
 			return
 		}
-		w.Header().Set("Content-Type", "application/vnd.trie-trunk.summary")
+		w.Header().Set("Content-Type", "application/cbor")
 		w.Write([]byte("summary packet"))
 	})
 	address, stop := start(t, Config{Root: root, Socket: filepath.Join(root, "summary.sock"), Address: "127.0.0.1:0", TLS: serverTLS, API: api})
 	defer stop()
 	transport := &http.Transport{TLSClientConfig: clientTLS, ForceAttemptHTTP2: true}
 	defer transport.CloseIdleConnections()
-	response, e := (&http.Client{Transport: transport, Timeout: 10 * time.Second}).Get("https://" + address + "/summary-day?key=test")
+	response, e := (&http.Client{Transport: transport, Timeout: 10 * time.Second}).Post("https://"+address+"/summaries", "application/json", strings.NewReader(`{"packs":[]}`))
 	if e != nil {
 		t.Fatal(e)
 	}

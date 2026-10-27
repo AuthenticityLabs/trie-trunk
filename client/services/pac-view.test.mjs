@@ -34,7 +34,7 @@ test('truncated responses do not publish cached pages or summaries',async()=>{
  assert.equal(calls[1]['Event-Known'],'');assert.equal(calls[1]['Summary-Known'],undefined);
 });
 test('PAC validates version, bounds, required extensions, prefix and member boundaries',async()=>{
- const packed=new Uint8Array(readFileSync(new URL('../../pil/tests/fixtures/pac/packed.pac',import.meta.url)));
+ const packed=new Uint8Array(readFileSync(new URL('../../../pill-packer/rust/tests/fixtures/pac/packed.pac',import.meta.url)));
  const parsed=pacHeader(packed,0);assert.equal(parsed.count,16);assert.ok(parsed.common.length);assert.equal(parsed.end,packed.length);
  const bad=packed.slice();bad[3]=1;assert.throws(()=>pacHeader(bad,0),/bounds/);
  const badCount=packed.slice();new DataView(badCount.buffer).setBigUint64(24,9999999n,true);assert.throws(()=>pacHeader(badCount,0),/count/);
@@ -137,14 +137,14 @@ test('prefix views survive cache and session restore without expanding members',
 
 test('native placement preserves source rows across pages without padding or record hydration',async()=>{
  const {pacPlacement,pacLocalRows,nativePAC}=await import('./pil/pac-native.ts');
- const raw=readFileSync(new URL('../../pil/tests/fixtures/pac/native.pac',import.meta.url));
- const source=readFileSync(new URL('../../pil/tests/fixtures/pac/native.idx',import.meta.url));
- const expected=readFileSync(new URL('../../pil/tests/fixtures/pac/local.idx',import.meta.url));
+ const raw=readFileSync(new URL('../../../pill-packer/rust/tests/fixtures/pac/native.pac',import.meta.url));
+ const source=readFileSync(new URL('../../../pill-packer/rust/tests/fixtures/pac/native.idx',import.meta.url));
+ const expected=readFileSync(new URL('../../../pill-packer/rust/tests/fixtures/pac/local.idx',import.meta.url));
  assert.throws(()=>pacHeader(raw,0),/Unsupported/);
  const header=pacHeader(raw,0,64<<20,new Set([nativePAC]));
  const place=pacPlacement(header);
  assert.equal(place.memberStart,119n);assert.equal(place.pageSize,64);assert.equal(place.firstRow,77n);
- const codec=await fresh(),handle=codec.define(readFileSync(new URL('../../pil/tests/fixtures/pac/definition.cbor',import.meta.url)));
+ const codec=await fresh(),handle=codec.define(readFileSync(new URL('../../../pill-packer/rust/tests/fixtures/pac/definition.cbor',import.meta.url)));
  codec.upload(raw);
  assert.throws(()=>codec.pac(handle,0,raw.length,header.count),/unsupported/);
  const bounds=codec.pac(handle,0,raw.length,header.count,true);
@@ -182,4 +182,21 @@ test('query predicates isolate summary/page caches and are passed intact to the 
  await cache.query({...query,query:plan},'',signal,codec,defs);
  const url=new URL(calls[1].url,'http://localhost');assert.deepEqual(JSON.parse(url.searchParams.get('query')),plan);
  assert.equal(calls[1].headers['Summary-Known'],undefined);assert.equal(calls[1].headers['Event-Known'],'');assert.equal(calls[1].headers['Bucket-Known'],undefined);
+});
+
+test('progressive worker transfers event buffers once and delivers summaries as metadata',async t=>{
+ const connect=workerService(module,async()=>reply(cold),async()=>({definitions:[]}));
+ const channel=new MessageChannel();connect(channel.port2);
+ t.after(()=>{channel.port1.postMessage({kind:'close'});channel.port1.close()});
+ const messages=await new Promise((resolve,reject)=>{
+  const list=[];channel.port1.onmessage=({data})=>{list.push(data);if(data.kind==='done')resolve(list);if(data.kind==='error')reject(Error(data.message))};
+  channel.port1.postMessage({id:1,kind:'view',token:'',query,progressive:true});
+ });
+ assert.deepEqual(messages.map(m=>m.kind),['view-page','view-summary','done']);
+ assert.equal(messages[0].view.batch.rows.length,6);
+ assert.ok(messages[0].view.batch.bytes.byteLength>0);
+ assert.equal(messages[0].view.result.summary,undefined);
+ assert.equal(messages[1].result.snapshot,messages[0].view.result.snapshot);
+ assert.equal(messages[1].result.summary.count,7);
+ assert.equal(messages[1].view,undefined);
 });

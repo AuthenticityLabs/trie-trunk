@@ -1,3 +1,4 @@
+import {NativeCacheError} from "./store/errors.ts";
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
@@ -63,8 +64,8 @@ test("explicit cache rebase goes only to the credential-scoped archive", async t
  const commands=[];
  const connect=workerService(module,async()=>{throw Error("unexpected network request");},async(token,command)=>{commands.push({token,command});return {};});
  const client=tab(connect,t);
- await client.run({kind:"rebase",source:"demo/payment/transactions.v1/write",token:"auth"});
- assert.deepEqual(commands,[{token:"auth",command:{kind:"native-rebase",source:"demo/payment/transactions.v1/write"}}]);
+ await client.run({kind:"rebase",sources:["demo/payment/transactions.v1/write"],token:"auth"});
+ assert.deepEqual(commands,[{token:"auth",command:{kind:"native-rebase",sources:["demo/payment/transactions.v1/write"]}}]);
 });
 const historyBytes = readFileSync(new URL("./fixtures/replay/history.pil", import.meta.url));
 const historyWarmBytes = readFileSync(new URL("./fixtures/replay/warm.pil", import.meta.url));
@@ -564,12 +565,14 @@ test("native-capable worker collects missing ranges, delivers unassembled pages 
  const warm=bytes(magic,bind,[4],frame([2,3],[le(binding.stream,4),cb(manifest)]),[5],frame([2,2,2,3,3],[le(binding.stream,4),le(2,1),le(0,8),Uint8Array.from(Buffer.from(state.digest,"hex")),state.bytes]),[6],frame([2],[le(binding.stream,4)]),[255,254]);
  const backend=new Backend(),store=new NativeStore(backend),sessions=new Map(),saved=new Map();
  const archive=async(token,c)=>{
+  for(const item of c.records??[])await store.record(sessions.get(c.session),item.record,item.definition);
   switch(c.kind){
    case "definitions":return {definitions:await store.definitions()};
    case "remember":return {};
    case "begin":saved.set(c.collection.id,{collection:c.collection});return {};
    case "native-begin":sessions.set(c.session,store.begin());return {};
    case "native-coverage":return {nativeCoverage:await store.coverage(c.tap)};
+   case "native-records":return {};
    case "native-record":await store.record(sessions.get(c.session),c.record,c.definition);return {};
    case "native-finish":{
     const session=sessions.get(c.session);await store.finish(session);sessions.delete(c.session);
@@ -579,6 +582,7 @@ test("native-capable worker collects missing ranges, delivers unassembled pages 
    }
    case "native-abort":sessions.delete(c.session);return {};
    case "native-dependencies":return {nativeDependencies:await store.dependencies(c.source)};
+   case "native-rows":return {nativePage:await store.records(c.source,c.from,c.to,c.rows)};
    case "native-page":return {nativePage:await store.page(c.source,c.from,c.to,c.after,c.limit)};
    case "restore":return {...saved.get(c.collection),coverage:[],cursor:"empty-legacy",definitions:[],bindings:[]};
    case "next":return {done:true};
@@ -626,15 +630,18 @@ test("native worker delivers provisional hours in memory without claiming persis
  const backend=new Backend(),store=new NativeStore(backend),sessions=new Map(),calls=[];
  const archive=async(token,c)=>{
   calls.push(c.kind);
+  for(const item of c.records??[])await store.record(sessions.get(c.session),item.record,item.definition);
   switch(c.kind){
    case "definitions":return {definitions:await store.definitions()};
    case "remember":return {};
    case "native-begin":sessions.set(c.session,store.begin());return {};
    case "native-coverage":return {nativeCoverage:await store.coverage(c.tap)};
+   case "native-records":return {};
    case "native-record":await store.record(sessions.get(c.session),c.record,c.definition);return {};
    case "native-finish":{const session=sessions.get(c.session);await store.finish(session);return {nativeSources:[...new Set(session.packages.map(p=>p.key))]};}
    case "native-abort":sessions.delete(c.session);return {};
    case "native-dependencies":return {nativeDependencies:await store.dependencies(c.source)};
+   case "native-rows":return {nativePage:await store.records(c.source,c.from,c.to,c.rows)};
    case "native-page":return {nativePage:await store.page(c.source,c.from,c.to,c.after,c.limit)};
    default:throw Error(`unexpected persistence of provisional data: ${c.kind}`);
   }
@@ -654,7 +661,7 @@ test("native worker delivers provisional hours in memory without claiming persis
  assert.equal(replies.filter(r=>r.kind==="batch").reduce((n,r)=>n+r.batch.rows.length/3,0),2);
  assert.equal(requests.length,3);
  assert.ok(!calls.includes("save")&&!calls.includes("finish")&&!calls.includes("lookup"));
- for(const source of await backend.list()){assert.deepEqual(source.index,[]);assert.deepEqual(source.population,[]);}
+ for(const source of await backend.list()){assert.equal(source.index,undefined);assert.equal(source.population,undefined);assert.equal(source.timeTrie,undefined);}
 });
 
 test('view delivery completes independently of failed durable cache storage',async t=>{
@@ -676,4 +683,80 @@ test('view delivery completes independently of failed durable cache storage',asy
  assert.deepEqual(storage,['definitions']);
  await assert.rejects(client.run({kind:'persist-view',token:'auth',definitions:view.definitions,bindings:view.bindings}),/disk quota/);
  assert.equal(view.batch.rows.length,6,'persistence failure does not remove the delivered page');
+});
+
+
+test("worker errors preserve scoped cache recovery and generation diagnostics",async t=>{
+ const issue={code:'native-cache-conflict',source:'demo/payment/transactions.v1/write',reason:'generation-fork',detail:{cachedSequence:1,incomingSequence:1}};
+ const connect=workerService(module,async()=>{throw Error('unexpected fetch')},async()=>{throw new NativeCacheError('technical conflict',issue)});
+ await assert.rejects(tab(connect,t).run({kind:'rebase',sources:[issue.source],token:'auth'}),error=>{
+  assert.deepEqual(error.messages.find(m=>m.kind==='error').cacheIssue,issue);return true;
+ });
+});
+
+test('multi-resource refresh reaches the archive as one credential-scoped command',async t=>{
+ const commands=[],sources=['demo/payment/transactions.v1/write','demo/billing/invoices.v1/read'];
+ const connect=workerService(module,async()=>{throw Error('unexpected network')},async(token,command)=>{commands.push({token,command});return {}});
+ await tab(connect,t).run({kind:'rebase',sources,token:'auth'});
+ assert.deepEqual(commands,[{token:'auth',command:{kind:'native-rebase',sources}}]);
+});
+
+test('native stream windows survive shared codec reuse at every callback and arbitrary chunk boundaries',async()=>{
+ const wire=new Uint8Array(readFileSync(new URL('./fixtures/native-ranges/ranges.pil',import.meta.url)));
+ let expected;
+ for(const width of [wire.length,97,1]){
+  const codec=new Codec(await WebAssembly.instantiate(await module)),seen=[];
+  const parser=new PILStream(codec,new Map(),()=>{codec.upload(new Uint8Array(17));},()=>{codec.upload(new Uint8Array(19));},async()=>{throw Error('expanded native events');},async r=>{
+   if(r.kind==='manifest'){const check=v=>{if(v instanceof Uint8Array)assert.equal(v.buffer.byteLength,v.byteLength,'nested metadata owns only its visible bytes');else if(v&&typeof v==='object')Object.values(v).forEach(check);};check(r.manifest);}
+   seen.push(r.kind==='pac'?{kind:r.kind,bytes:Buffer.from(r.bytes).toString('hex'),bounds:[...r.bounds]}:{kind:r.kind});
+   await Promise.resolve();codec.upload(new Uint8Array(23));
+  });
+  try{for(let at=0;at<wire.length;at+=width)await parser.feed(wire.subarray(at,at+width));parser.finish();}finally{parser.close();}
+  if(expected)assert.deepEqual(seen,expected);else expected=seen;
+ }
+});
+
+test('native reception verifies the sealed CRC and uses offsets without semantic PAC scans',async()=>{
+ const wire=new Uint8Array(readFileSync(new URL('./fixtures/native-ranges/ranges.pil',import.meta.url)));
+ const codec=new Codec(await WebAssembly.instantiate(await module)),records=[];
+ for(const name of ['scan','pac','pacStructural'])codec[name]=()=>{throw Error('semantic/member scan in native reception');};
+ let checks=0;const checked=[];const verify=codec.verifyCRC32C.bind(codec);codec.verifyCRC32C=(...a)=>{checks++;checked.push(a[0].slice());return verify(...a);};
+ const parse=async(input,output)=>{const stream=new PILStream(codec,new Map(),()=>{},()=>{},async()=>{throw Error('event expansion');},async r=>output.push(r));try{await stream.feed(input);stream.finish();}finally{stream.close();}};
+ await parse(wire,records);const packs=records.filter(r=>r.kind==='pac');assert.ok(packs.length);assert.equal(checks,packs.length);
+ assert.ok(records.filter(r=>r.kind==='pac'||r.kind==='chunk').every(r=>r.integrityVerified===true));
+ const pack=checked[0],at=Buffer.from(wire).indexOf(pack);assert.ok(at>=0);
+ // Alter gzip MTIME (valid gzip, unchanged decoded content) or a plain payload.
+ const broken=wire.slice();broken[at+(new DataView(pack.buffer).getUint32(4,true)===2?20:pack.length-1)]^=1;
+ const failed=[];await assert.rejects(parse(broken,failed),/checksum/);assert.equal(failed.some(r=>r.kind==='pac'),false);
+ const backend=new Backend(),store=new NativeStore(backend),session=store.begin(),definitions=new Map();
+ const stream=new PILStream(codec,definitions,d=>definitions.set(d.digest,d),()=>{},async()=>{throw Error('event expansion');},r=>store.record(session,r,definitions.get(r.binding.digest)));
+ try{await assert.rejects(stream.feed(broken),/checksum/);}finally{stream.close();}
+ assert.deepEqual(await store.coverage(),[],'a checksum failure cannot publish an hourly trie leaf');
+});
+
+test('contiguous native ranges decode incrementally across arbitrary network boundaries',async()=>{
+ const wire=new Uint8Array(readFileSync(new URL('./fixtures/native-ranges/multi-hour.pil',import.meta.url)));
+ let expected,wirePacks=[];
+ const parse=async(input,width)=>{
+  const codec=new Codec(await WebAssembly.instantiate(await module)),records=[];
+  wirePacks=[];const verify=codec.verifyCRC32C.bind(codec);codec.verifyCRC32C=(b,c)=>{wirePacks.push(b.slice());return verify(b,c);};
+  const stream=new PILStream(codec,new Map(),()=>{},()=>{},async()=>{throw Error('expanded events');},async r=>records.push(r));
+  try{for(let at=0;at<input.length;at+=width)await stream.feed(input.subarray(at,at+width));stream.finish();return records;}finally{stream.close();}
+ };
+ for(const width of [wire.length,31,1]){
+  const records=await parse(wire,width),packs=records.filter(r=>r.kind==='pac');
+  assert.equal(records.filter(r=>r.kind==='manifest').length,1);assert.equal(records.filter(r=>r.kind==='package-end').length,1);assert.equal(packs.length,3);
+  const got=packs.map(r=>({bytes:Buffer.from(r.bytes).toString('hex'),bounds:[...r.bounds]}));
+  if(expected)assert.deepEqual(got,expected);else expected=got;
+ }
+ const packs=(await parse(wire,wire.length)).filter(r=>r.kind==='pac');
+ const firstPack=wirePacks[0];const start=Buffer.from(wire).indexOf(firstPack),header=start-13;assert.equal(wire[header],9);
+ const length=new DataView(wire.buffer).getBigUint64(header+5,true);
+ for(const delta of [-1n,1n]){
+  const broken=wire.slice();new DataView(broken.buffer).setBigUint64(header+5,length+delta,true);
+  await assert.rejects(parse(broken,37));
+ }
+ const wrongStream=wire.slice();new DataView(wrongStream.buffer).setUint32(header+1,999,true);
+ await assert.rejects(parse(wrongStream,37),/Invalid native PAC range/);
+ await assert.rejects(parse(wire.subarray(0,start+firstPack.length),37),/before successful completion/);
 });

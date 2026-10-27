@@ -1,3 +1,4 @@
+import { summaryResponse } from './summary-pack-fixture.mjs';
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
@@ -30,16 +31,16 @@ test('daily decoder rejects corrupt, short and over-expanding packets',async()=>
 });
 test('daily cache reuses content, partitions authorization and checks manifest',async()=>{
  const ref=fixture('aligned').result.analytics.days[0],raw=bytes('aligned',ref),cache=new SummaryDayCache();let calls=0;
- const fetcher=async()=>{calls++;return new Response(raw.slice().buffer)};const signal=new AbortController().signal;
+ const fetcher=async()=>{calls++;return summaryResponse([raw])};const signal=new AbortController().signal;
  const a=await cache.load(ref,'a',fetcher,signal);assert.equal(await cache.load(ref,'a',fetcher,signal),a);assert.equal(calls,1);
  await cache.load(ref,'b',fetcher,signal);assert.equal(calls,2);
  await assert.rejects(cache.load({...ref,day:ref.day+86400000},'a',fetcher,signal),/manifest/);
- const broken=raw.slice();broken[40]^=1;await assert.rejects(new SummaryDayCache().load(ref,'',async()=>new Response(broken),signal),/identity/);
+ const broken=raw.slice();broken[40]^=1;await assert.rejects(new SummaryDayCache().load(ref,'',async()=>summaryResponse([broken]),signal),/identity/);
 });
 test('Snoot summary-only request fetches daily summaries and no event PACs',async()=>{
  const {result}=fixture('aligned'),calls=[],raw=readFileSync(new URL('aligned/view.pil',root));
  const fetcher=async(url,options)=>{calls.push(url);if(url.startsWith('/events?')){assert.match(options.headers['PIL-Features'],/daily-summaries/);return new Response(raw,{headers:{'Content-Type':'application/pil','PIL-Version':'2','Trunk-Completion':'body','Trunk-Format':'pac-view/0'}})}
-  assert.match(url,/^\/summary-day\?/);const key=new URL(url,'http://localhost').searchParams.get('key');return new Response(bytes('aligned',{key}));};
+  assert.equal(url,'/summaries');assert.equal(options.method,'POST');return summaryResponse(JSON.parse(options.body).packs.map(ref=>bytes('aligned',ref)));};
  const codec=new Codec((await WebAssembly.instantiate(readFileSync(new URL('../assets/pil.wasm',import.meta.url)))).instance);
  const cache=new ViewCache(fetcher),definitions=new Map(),query={tap:'demo/payment/transactions.v1/*',from:new Date(result.summary.from).toISOString(),to:new Date(result.summary.to).toISOString(),include:'summary',size:50};
  const first=await cache.query(query,'secret',new AbortController().signal,codec,definitions);
@@ -58,4 +59,41 @@ test('daily count columns cover a whole hour in one bucket and widen past U24',a
   assert.equal(day.hours[0].encoding[7].width,1);
   assert.deepEqual((await decodeSummaryDay(raw)).rollup,day.rollup,'decoding must not mutate the supplied packet');
  }
+});
+test('background summary priming reports unavailable persistent storage',async()=>{
+ const ref=fixture('aligned').result.analytics.days.find(r=>r.sealed);
+ assert.ok(ref);
+ await assert.rejects(new SummaryDayCache().load(ref,'',async()=>summaryResponse([bytes('aligned',ref)]),new AbortController().signal,true),/storage is unavailable/);
+});
+
+test('progressive search publishes its page before any summary fetch, then the same snapshot totals',async()=>{
+ const {result}=fixture('aligned'),raw=readFileSync(new URL('aligned/view.pil',root));
+ let published,dayFetches=0;
+ const fetcher=async (url,options)=>{
+  if(url.startsWith('/events?'))return new Response(raw,{headers:{'Content-Type':'application/pil','PIL-Version':'2','Trunk-Completion':'body','Trunk-Format':'pac-view/0'}});
+  assert.ok(published,'summary network must not delay page delivery');dayFetches++;
+  return summaryResponse(JSON.parse(options.body).packs.map(ref=>bytes('aligned',ref)));
+ };
+ const codec=new Codec((await WebAssembly.instantiate(readFileSync(new URL('../assets/pil.wasm',import.meta.url)))).instance);
+ const cache=new ViewCache(fetcher),query={tap:'demo/payment/transactions.v1/*',from:new Date(result.summary.from).toISOString(),to:new Date(result.summary.to).toISOString(),include:'summary',size:50};
+ const complete=await cache.query(query,'',new AbortController().signal,codec,new Map(),undefined,false,undefined,page=>{
+  assert.equal(dayFetches,0);assert.equal(page.result.summary,undefined);
+  published=structuredClone(page,{transfer:[page.batch.bytes,page.batch.rows.buffer]});
+ });
+ assert.equal(dayFetches,1);assert.equal(complete.result.snapshot,published.result.snapshot);
+ assert.equal(complete.result.summary.count,864);assert.equal(published.timings.summaries,0);
+});
+
+test('failed chart retrieval leaves the delivered page intact and remains retryable',async()=>{
+ const {result}=fixture('aligned'),raw=readFileSync(new URL('aligned/view.pil',root));let published,broken=true;
+ const fetcher=async (url,options)=>{
+  if(url.startsWith('/events?'))return new Response(raw,{headers:{'Content-Type':'application/pil','PIL-Version':'2','Trunk-Completion':'body','Trunk-Format':'pac-view/0'}});
+  if(broken)throw Error('offline');
+  return summaryResponse(JSON.parse(options.body).packs.map(ref=>bytes('aligned',ref)));
+ };
+ const codec=new Codec((await WebAssembly.instantiate(readFileSync(new URL('../assets/pil.wasm',import.meta.url)))).instance);
+ const cache=new ViewCache(fetcher),query={tap:'demo/payment/transactions.v1/*',from:new Date(result.summary.from).toISOString(),to:new Date(result.summary.to).toISOString(),include:'summary',size:50};
+ await assert.rejects(cache.query(query,'',new AbortController().signal,codec,new Map(),undefined,false,undefined,page=>{published=page}),/offline/);
+ assert.ok(published);assert.equal(published.result.summary,undefined);
+ broken=false;assert.equal((await cache.query(query,'',new AbortController().signal,codec,new Map())).result.summary.count,864);
 });

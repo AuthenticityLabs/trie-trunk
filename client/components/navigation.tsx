@@ -1,18 +1,19 @@
 import { For, Show, type JSX } from "solid-js";
-import { nextTheme, themeNames, type Theme } from "../services/preferences";
+import { nextTheme, themeNames, type ThemePreference } from "../services/preferences";
 import { Icon, ProfileMark, type IconName } from "./icon";
 import forward from "../assets/snoot-forward.png";
 
-export type Page = "Search" | "Dashboard" | "Alerts" | "Object History";
+export type Page = "Search" | "Dashboards" | "Alerts" | "Collections" | "Configs";
 const navigation: { title: Page; icon: IconName }[] = [
   { title: "Search", icon: "search" },
-  { title: "Object History", icon: "clock" },
-  { title: "Dashboard", icon: "dashboard" },
+  { title: "Dashboards", icon: "dashboard" },
   { title: "Alerts", icon: "bell" },
+  { title: "Collections", icon: "clock" },
+  { title: "Configs", icon: "settings" },
 ];
 
 export function Navigation(props: {
-  theme: Theme;
+  theme: ThemePreference;
   themeBusy: boolean;
   themeError: string;
   onToggleTheme: () => void;
@@ -22,6 +23,8 @@ export function Navigation(props: {
   onNavigate: (page: Page) => void;
   onHelp: () => void;
   onConnection: () => void;
+  onProfile: () => void;
+  onLogout: () => void;
   children?: JSX.Element;
 }) {
   return (
@@ -49,7 +52,7 @@ export function Navigation(props: {
         <span class="workspace-dot" />
         <span>Local Workspace</span>
       </div>
-      <div class="nav-label">EXPLORE</div>
+      <hr class="nav-divider" />
       <nav>
         <For each={navigation}>
           {(item) => (
@@ -108,14 +111,13 @@ export function Navigation(props: {
             class={`connection-dot ${props.hasToken ? "configured" : ""}`}
           />
         </button>
-        <div class="sidebar-footer">
-          <span class="avatar">
-            <ProfileMark size={24} />
-          </span>
-          <div>
-            <strong>Your Workspace</strong>
-            <small>Built for the details</small>
-          </div>
+        <div class="sidebar-account" aria-label="Demo User and Session">
+          <button class="nav-item account-profile" onClick={props.onProfile} title="Demo User" aria-label="Demo User">
+            <span class="avatar"><ProfileMark size={36}/></span><span>Demo User</span>
+          </button>
+          <button class="nav-item" onClick={props.onLogout} title="Log Out" aria-label="Log Out">
+            <Icon name="logout"/><span>Log Out</span>
+          </button>
         </div>
       </div>
     </aside>

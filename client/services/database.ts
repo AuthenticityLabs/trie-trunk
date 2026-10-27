@@ -1,4 +1,4 @@
-type Store = "indicators" | "preferences" | "notebooks" | "notebook_events";
+type Store = "preferences";
 
 export function transact<T>(
   name: Store | Store[],
@@ -7,22 +7,11 @@ export function transact<T>(
 ): Promise<T> {
   return new Promise((resolve, reject) => {
     let blocked = false;
-    const open = indexedDB.open("snoot", 3);
+    const open = indexedDB.open("snoot-profile", 1);
     open.onupgradeneeded = () => {
       const db = open.result;
-      if (!db.objectStoreNames.contains("indicators"))
-        db.createObjectStore("indicators", { keyPath: "id" });
       if (!db.objectStoreNames.contains("preferences"))
         db.createObjectStore("preferences");
-      if (!db.objectStoreNames.contains("notebooks"))
-        db.createObjectStore("notebooks", { keyPath: "id" });
-      if (!db.objectStoreNames.contains("notebook_events")) {
-        const events = db.createObjectStore("notebook_events", {
-          keyPath: ["notebook", "tap", "id"],
-        });
-        events.createIndex("notebook", "notebook");
-        events.createIndex("event", ["tap", "id"]);
-      }
     };
     open.onerror = () => reject(open.error);
     open.onblocked = () => {

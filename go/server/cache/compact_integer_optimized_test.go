@@ -182,10 +182,10 @@ func (a *fastIntegerLayout) scanMode(raw []byte, reuse *Frame, compact bool) err
 	} else {
 		reuse.Values = reuse.Values[:n]
 	}
-	if cap(reuse.ends) < n {
-		reuse.ends = make([][2]int, n)
+	if cap(reuse.Ends) < n {
+		reuse.Ends = make([][2]int, n)
 	} else {
-		reuse.ends = reuse.ends[:n]
+		reuse.Ends = reuse.Ends[:n]
 	}
 	at, bit := controlEnd, 0
 	for i, f := range a.fields {
@@ -236,7 +236,7 @@ func (a *fastIntegerLayout) scanMode(raw []byte, reuse *Frame, compact bool) err
 			if end < uint64(previous) || end > MaxFrame {
 				return fmt.Errorf("invalid end offset")
 			}
-			reuse.ends[i] = [2]int{previous, int(end)}
+			reuse.Ends[i] = [2]int{previous, int(end)}
 			previous = int(end)
 		}
 	}
@@ -245,7 +245,7 @@ func (a *fastIntegerLayout) scanMode(raw []byte, reuse *Frame, compact bool) err
 	}
 	for i, v := range reuse.Values {
 		if v.State == Offset {
-			v.Bytes = raw[at+reuse.ends[i][0] : at+reuse.ends[i][1]]
+			v.Bytes = raw[at+reuse.Ends[i][0] : at+reuse.Ends[i][1]]
 			if a.fields[i].text && !utf8.Valid(v.Bytes) {
 				return fmt.Errorf("invalid UTF-8")
 			}

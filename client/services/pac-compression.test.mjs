@@ -5,7 +5,7 @@ import {gzipSync} from 'node:zlib';
 import {expandPAC,pacHeader} from './pil/pac.ts';
 import {Codec} from './pil/wasm.ts';
 import {nativePAC} from './pil/pac-native.ts';
-const plain=new Uint8Array(readFileSync(new URL('../../pil/tests/fixtures/pac/native.pac',import.meta.url)));
+const plain=new Uint8Array(readFileSync(new URL('../../../pill-packer/rust/tests/fixtures/pac/native.pac',import.meta.url)));
 const module=WebAssembly.compile(readFileSync(new URL('../assets/pil.wasm',import.meta.url)));
 function packed(body=plain){
  const zipped=gzipSync(body),out=new Uint8Array(16+zipped.length),v=new DataView(out.buffer);

@@ -3,7 +3,6 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { Codec } from "./pil/wasm.ts";
 import { read } from "./pil/layout.ts";
-import { row } from "./store/index.ts";
 import { cb } from "./pil-fixtures.mjs";
 
 test("REF16 uses two bytes in WASM and the view, preserving absence and null", async () => {
@@ -19,14 +18,4 @@ test("REF16 uses two bytes in WASM and the view, preserving absence and null", a
   }
   codec.upload(new Uint8Array([192, 2, 0, 0, 0]));
   assert.throws(() => codec.scan(handle, 0, 5), /OFFSET/);
-});
-
-test("IndexedDB reconstructs both pointer widths without padding new references", () => {
-  for (const size of [26, 28]) {
-    const pointer = new Uint8Array(size).fill(7);
-    const packed = row({ key: ["demo", new ArrayBuffer(16)], value: { catalog: "c", pointer } });
-    assert.equal(packed.length, 16 + size);
-    assert.deepEqual(packed.subarray(16), pointer);
-  }
-  assert.throws(() => row({ key: ["demo", new ArrayBuffer(16)], value: { catalog: "c", pointer: new Uint8Array(27) } }), /pointer/);
 });

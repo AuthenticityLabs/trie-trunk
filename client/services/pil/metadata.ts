@@ -10,7 +10,22 @@ export type Mapping = {
   codes: number[][];
   native?: boolean;
 };
-export function compile(
+// Definition structure is immutable by digest. Binding/UI context is cheap and
+// remains per call; field dictionaries and schema validation are shared.
+const compiled=new Map<string,{store:Uint8Array;pil:Uint8Array;mapping:Mapping}>();
+export function compile(metadata:Metadata,tap:string,headers:string[]=[]):Mapping {
+  let cached=compiled.get(metadata.digest);
+  if(cached){
+    if(cached.store.length!==metadata.store.length||cached.pil.length!==metadata.pil.length||
+       cached.store.some((v,i)=>v!==metadata.store[i])||cached.pil.some((v,i)=>v!==metadata.pil[i]))throw Error("Immutable PIL definition changed");
+  }else{
+    cached={store:metadata.store.slice(),pil:metadata.pil.slice(),mapping:compileDefinition(metadata,"",[])};
+    if(compiled.size>=1024)compiled.delete(compiled.keys().next().value!);
+    compiled.set(metadata.digest,cached);
+  }
+  return {...cached.mapping,dictionary:{...cached.mapping.dictionary,tap,headers}};
+}
+function compileDefinition(
   metadata: Metadata,
   tap: string,
   headers: string[] = [],
@@ -156,7 +171,8 @@ export class Choices {
   fields():import('../query').QueryField[]{
     const fields=new Map<string,import('../query').QueryField>();
     for(const m of this.mappings)for(const f of m.definition.fields){
-      const prior=fields.get(f.name);fields.set(f.name,{name:f.name,type:prior&&prior.type!==f.type?'mixed':f.type,values:[...new Set([...(prior?.values??[]),...(f.values??[])])]});
+      const duration=resourceBinding(m.definition)?.roles.duration===f.name||(!m.native&&f.name==='duration');
+      const prior=fields.get(f.name);fields.set(f.name,{...(duration?{unit:'us' as const}:{}),name:f.name,type:prior&&prior.type!==f.type?'mixed':f.type,values:[...new Set([...(prior?.values??[]),...(f.values??[])])]});
     }
     return [...fields.values()].sort((a,b)=>a.name.localeCompare(b.name));
   }

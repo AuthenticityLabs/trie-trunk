@@ -1,0 +1,764 @@
+{
+  "arch": "arm64",
+  "conditions": "Native Go HTTP API delivery only. Warm uncontrolled server/OS caches, one discarded setup trial, persistent transport per run. Fresh summary/seed-pack receipts each trial, no native byte-coverage hints between packs. Includes HTTP gzip decode, summary SHA256 validation, and routing metadata parse. Excludes seed-pack application decode, browser/SharedWorker/OPFS/render. KnownMetadataMS is a separate single request with receipts, not a warm full view.",
+  "logicalCPUs": 10,
+  "origin": "https://snoot.trietrunk.com",
+  "os": "darwin",
+  "overlap": false,
+  "parallel": 4,
+  "protocol": 3,
+  "recordedAt": "2026-10-26T22:18:37.829927Z",
+  "runtime": "go1.26.4",
+  "samples": [
+    {
+      "Scenario": "all-full",
+      "Trial": 0,
+      "TotalMS": 825.898417,
+      "SearchMS": 158.194375,
+      "SummariesMS": 306.067125,
+      "PacksMS": 361.236792,
+      "KnownMetadataMS": 103.315167,
+      "Rows": 100,
+      "SummaryPackets": 460,
+      "SeedPacks": 20,
+      "PageIdentity": "c11d2faecd795117450f8ad65c70390c3eafa59be93c6a86b2fb846bfb4df326",
+      "Requests": [
+        {
+          "Stage": "search",
+          "Path": "/events",
+          "Protocol": "HTTP/3.0",
+          "HeadersMS": 152.420834,
+          "BodyMS": 155.835125,
+          "WireBodyBytes": 31742,
+          "DecodedBodyBytes": 176855
+        },
+        {
+          "Stage": "summary",
+          "Path": "/summaries",
+          "Protocol": "HTTP/3.0",
+          "HeadersMS": 101.731334,
+          "BodyMS": 303.388875,
+          "WireBodyBytes": 714978,
+          "DecodedBodyBytes": 714978
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/3.0",
+          "HeadersMS": 58.0875,
+          "BodyMS": 60.637042,
+          "WireBodyBytes": 7704,
+          "DecodedBodyBytes": 7704
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/3.0",
+          "HeadersMS": 65.850375,
+          "BodyMS": 65.891791,
+          "WireBodyBytes": 7634,
+          "DecodedBodyBytes": 7634
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/3.0",
+          "HeadersMS": 60.499625,
+          "BodyMS": 60.63025,
+          "WireBodyBytes": 7767,
+          "DecodedBodyBytes": 7767
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/3.0",
+          "HeadersMS": 63.272916,
+          "BodyMS": 63.353625,
+          "WireBodyBytes": 7733,
+          "DecodedBodyBytes": 7733
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/3.0",
+          "HeadersMS": 65.690459,
+          "BodyMS": 65.746167,
+          "WireBodyBytes": 7602,
+          "DecodedBodyBytes": 7602
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/3.0",
+          "HeadersMS": 61.939084,
+          "BodyMS": 64.834959,
+          "WireBodyBytes": 7724,
+          "DecodedBodyBytes": 7724
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/3.0",
+          "HeadersMS": 73.05975,
+          "BodyMS": 73.120917,
+          "WireBodyBytes": 7592,
+          "DecodedBodyBytes": 7592
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/3.0",
+          "HeadersMS": 63.019167,
+          "BodyMS": 63.097875,
+          "WireBodyBytes": 7727,
+          "DecodedBodyBytes": 7727
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/3.0",
+          "HeadersMS": 63.167333,
+          "BodyMS": 69.094083,
+          "WireBodyBytes": 7694,
+          "DecodedBodyBytes": 7694
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/3.0",
+          "HeadersMS": 68.099209,
+          "BodyMS": 68.170334,
+          "WireBodyBytes": 7566,
+          "DecodedBodyBytes": 7566
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/3.0",
+          "HeadersMS": 69.634333,
+          "BodyMS": 69.681,
+          "WireBodyBytes": 7919,
+          "DecodedBodyBytes": 7919
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/3.0",
+          "HeadersMS": 60.084708,
+          "BodyMS": 60.133416,
+          "WireBodyBytes": 8040,
+          "DecodedBodyBytes": 8040
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/3.0",
+          "HeadersMS": 64.899,
+          "BodyMS": 65.154209,
+          "WireBodyBytes": 8017,
+          "DecodedBodyBytes": 8017
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/3.0",
+          "HeadersMS": 59.686542,
+          "BodyMS": 60.7455,
+          "WireBodyBytes": 7895,
+          "DecodedBodyBytes": 7895
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/3.0",
+          "HeadersMS": 62.316917,
+          "BodyMS": 62.726292,
+          "WireBodyBytes": 7658,
+          "DecodedBodyBytes": 7658
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/3.0",
+          "HeadersMS": 62.014458,
+          "BodyMS": 62.214708,
+          "WireBodyBytes": 7572,
+          "DecodedBodyBytes": 7572
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/3.0",
+          "HeadersMS": 67.804458,
+          "BodyMS": 99.0495,
+          "WireBodyBytes": 7714,
+          "DecodedBodyBytes": 7714
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/3.0",
+          "HeadersMS": 101.287334,
+          "BodyMS": 101.693709,
+          "WireBodyBytes": 7689,
+          "DecodedBodyBytes": 7689
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/3.0",
+          "HeadersMS": 96.194667,
+          "BodyMS": 96.590417,
+          "WireBodyBytes": 7552,
+          "DecodedBodyBytes": 7552
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/3.0",
+          "HeadersMS": 98.576167,
+          "BodyMS": 98.857833,
+          "WireBodyBytes": 7998,
+          "DecodedBodyBytes": 7998
+        },
+        {
+          "Stage": "known-metadata",
+          "Path": "/events",
+          "Protocol": "HTTP/3.0",
+          "HeadersMS": 100.682084,
+          "BodyMS": 100.822,
+          "WireBodyBytes": 9847,
+          "DecodedBodyBytes": 39490
+        }
+      ]
+    },
+    {
+      "Scenario": "all-full",
+      "Trial": 1,
+      "TotalMS": 767.513791,
+      "SearchMS": 142.930125,
+      "SummariesMS": 313.869833,
+      "PacksMS": 310.003833,
+      "KnownMetadataMS": 105.931,
+      "Rows": 100,
+      "SummaryPackets": 460,
+      "SeedPacks": 20,
+      "PageIdentity": "c11d2faecd795117450f8ad65c70390c3eafa59be93c6a86b2fb846bfb4df326",
+      "Requests": [
+        {
+          "Stage": "search",
+          "Path": "/events",
+          "Protocol": "HTTP/3.0",
+          "HeadersMS": 135.490459,
+          "BodyMS": 137.570375,
+          "WireBodyBytes": 31741,
+          "DecodedBodyBytes": 176855
+        },
+        {
+          "Stage": "summary",
+          "Path": "/summaries",
+          "Protocol": "HTTP/3.0",
+          "HeadersMS": 111.520167,
+          "BodyMS": 310.837625,
+          "WireBodyBytes": 714978,
+          "DecodedBodyBytes": 714978
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/3.0",
+          "HeadersMS": 65.340333,
+          "BodyMS": 67.347333,
+          "WireBodyBytes": 7704,
+          "DecodedBodyBytes": 7704
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/3.0",
+          "HeadersMS": 65.083917,
+          "BodyMS": 67.538042,
+          "WireBodyBytes": 7634,
+          "DecodedBodyBytes": 7634
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/3.0",
+          "HeadersMS": 63.06125,
+          "BodyMS": 65.02325,
+          "WireBodyBytes": 7767,
+          "DecodedBodyBytes": 7767
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/3.0",
+          "HeadersMS": 62.764625,
+          "BodyMS": 62.825,
+          "WireBodyBytes": 7733,
+          "DecodedBodyBytes": 7733
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/3.0",
+          "HeadersMS": 56.6235,
+          "BodyMS": 56.784125,
+          "WireBodyBytes": 7602,
+          "DecodedBodyBytes": 7602
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/3.0",
+          "HeadersMS": 59.224708,
+          "BodyMS": 59.29375,
+          "WireBodyBytes": 7724,
+          "DecodedBodyBytes": 7724
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/3.0",
+          "HeadersMS": 61.408083,
+          "BodyMS": 63.431625,
+          "WireBodyBytes": 7592,
+          "DecodedBodyBytes": 7592
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/3.0",
+          "HeadersMS": 63.600333,
+          "BodyMS": 64.3375,
+          "WireBodyBytes": 7727,
+          "DecodedBodyBytes": 7727
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/3.0",
+          "HeadersMS": 59.243291,
+          "BodyMS": 59.277291,
+          "WireBodyBytes": 7694,
+          "DecodedBodyBytes": 7694
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/3.0",
+          "HeadersMS": 58.470875,
+          "BodyMS": 58.497334,
+          "WireBodyBytes": 7566,
+          "DecodedBodyBytes": 7566
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/3.0",
+          "HeadersMS": 61.445209,
+          "BodyMS": 62.214084,
+          "WireBodyBytes": 7919,
+          "DecodedBodyBytes": 7919
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/3.0",
+          "HeadersMS": 60.412584,
+          "BodyMS": 60.515709,
+          "WireBodyBytes": 8040,
+          "DecodedBodyBytes": 8040
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/3.0",
+          "HeadersMS": 59.963625,
+          "BodyMS": 59.991459,
+          "WireBodyBytes": 8017,
+          "DecodedBodyBytes": 8017
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/3.0",
+          "HeadersMS": 54.25375,
+          "BodyMS": 55.960625,
+          "WireBodyBytes": 7895,
+          "DecodedBodyBytes": 7895
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/3.0",
+          "HeadersMS": 59.723875,
+          "BodyMS": 59.759084,
+          "WireBodyBytes": 7658,
+          "DecodedBodyBytes": 7658
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/3.0",
+          "HeadersMS": 59.112292,
+          "BodyMS": 59.181958,
+          "WireBodyBytes": 7572,
+          "DecodedBodyBytes": 7572
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/3.0",
+          "HeadersMS": 59.205042,
+          "BodyMS": 59.221917,
+          "WireBodyBytes": 7714,
+          "DecodedBodyBytes": 7714
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/3.0",
+          "HeadersMS": 54.426917,
+          "BodyMS": 59.132917,
+          "WireBodyBytes": 7689,
+          "DecodedBodyBytes": 7689
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/3.0",
+          "HeadersMS": 57.046708,
+          "BodyMS": 57.700541,
+          "WireBodyBytes": 7552,
+          "DecodedBodyBytes": 7552
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/3.0",
+          "HeadersMS": 57.700209,
+          "BodyMS": 57.7145,
+          "WireBodyBytes": 7998,
+          "DecodedBodyBytes": 7998
+        },
+        {
+          "Stage": "known-metadata",
+          "Path": "/events",
+          "Protocol": "HTTP/3.0",
+          "HeadersMS": 105.510792,
+          "BodyMS": 105.528,
+          "WireBodyBytes": 9847,
+          "DecodedBodyBytes": 39490
+        }
+      ]
+    },
+    {
+      "Scenario": "all-full",
+      "Trial": 2,
+      "TotalMS": 784.962875,
+      "SearchMS": 120.543291,
+      "SummariesMS": 305.414625,
+      "PacksMS": 358.729584,
+      "KnownMetadataMS": 100.455375,
+      "Rows": 100,
+      "SummaryPackets": 460,
+      "SeedPacks": 20,
+      "PageIdentity": "c11d2faecd795117450f8ad65c70390c3eafa59be93c6a86b2fb846bfb4df326",
+      "Requests": [
+        {
+          "Stage": "search",
+          "Path": "/events",
+          "Protocol": "HTTP/3.0",
+          "HeadersMS": 117.587042,
+          "BodyMS": 118.595875,
+          "WireBodyBytes": 31741,
+          "DecodedBodyBytes": 176855
+        },
+        {
+          "Stage": "summary",
+          "Path": "/summaries",
+          "Protocol": "HTTP/3.0",
+          "HeadersMS": 101.35675,
+          "BodyMS": 302.217291,
+          "WireBodyBytes": 714978,
+          "DecodedBodyBytes": 714978
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/3.0",
+          "HeadersMS": 74.756,
+          "BodyMS": 75.431666,
+          "WireBodyBytes": 7704,
+          "DecodedBodyBytes": 7704
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/3.0",
+          "HeadersMS": 72.962792,
+          "BodyMS": 73.222875,
+          "WireBodyBytes": 7634,
+          "DecodedBodyBytes": 7634
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/3.0",
+          "HeadersMS": 73.261792,
+          "BodyMS": 74.053708,
+          "WireBodyBytes": 7767,
+          "DecodedBodyBytes": 7767
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/3.0",
+          "HeadersMS": 73.648375,
+          "BodyMS": 73.728125,
+          "WireBodyBytes": 7733,
+          "DecodedBodyBytes": 7733
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/3.0",
+          "HeadersMS": 59.230625,
+          "BodyMS": 63.064334,
+          "WireBodyBytes": 7602,
+          "DecodedBodyBytes": 7602
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/3.0",
+          "HeadersMS": 90.79225,
+          "BodyMS": 93.79475,
+          "WireBodyBytes": 7724,
+          "DecodedBodyBytes": 7724
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/3.0",
+          "HeadersMS": 64.087791,
+          "BodyMS": 67.438916,
+          "WireBodyBytes": 7592,
+          "DecodedBodyBytes": 7592
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/3.0",
+          "HeadersMS": 66.513333,
+          "BodyMS": 66.682291,
+          "WireBodyBytes": 7727,
+          "DecodedBodyBytes": 7727
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/3.0",
+          "HeadersMS": 59.235333,
+          "BodyMS": 59.321666,
+          "WireBodyBytes": 7694,
+          "DecodedBodyBytes": 7694
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/3.0",
+          "HeadersMS": 62.059708,
+          "BodyMS": 62.085916,
+          "WireBodyBytes": 7566,
+          "DecodedBodyBytes": 7566
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/3.0",
+          "HeadersMS": 61.760917,
+          "BodyMS": 61.817667,
+          "WireBodyBytes": 7919,
+          "DecodedBodyBytes": 7919
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/3.0",
+          "HeadersMS": 66.406167,
+          "BodyMS": 66.46475,
+          "WireBodyBytes": 8040,
+          "DecodedBodyBytes": 8040
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/3.0",
+          "HeadersMS": 60.850292,
+          "BodyMS": 60.902625,
+          "WireBodyBytes": 8017,
+          "DecodedBodyBytes": 8017
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/3.0",
+          "HeadersMS": 60.022083,
+          "BodyMS": 63.170417,
+          "WireBodyBytes": 7895,
+          "DecodedBodyBytes": 7895
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/3.0",
+          "HeadersMS": 58.816792,
+          "BodyMS": 58.871584,
+          "WireBodyBytes": 7658,
+          "DecodedBodyBytes": 7658
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/3.0",
+          "HeadersMS": 61.244709,
+          "BodyMS": 61.384667,
+          "WireBodyBytes": 7572,
+          "DecodedBodyBytes": 7572
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/3.0",
+          "HeadersMS": 57.717834,
+          "BodyMS": 57.780417,
+          "WireBodyBytes": 7714,
+          "DecodedBodyBytes": 7714
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/3.0",
+          "HeadersMS": 60.921084,
+          "BodyMS": 60.972334,
+          "WireBodyBytes": 7689,
+          "DecodedBodyBytes": 7689
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/3.0",
+          "HeadersMS": 59.5755,
+          "BodyMS": 59.622625,
+          "WireBodyBytes": 7552,
+          "DecodedBodyBytes": 7552
+        },
+        {
+          "Stage": "seed-pack",
+          "Path": "/collect",
+          "Protocol": "HTTP/3.0",
+          "HeadersMS": 62.919916,
+          "BodyMS": 63.053333,
+          "WireBodyBytes": 7998,
+          "DecodedBodyBytes": 7998
+        },
+        {
+          "Stage": "known-metadata",
+          "Path": "/events",
+          "Protocol": "HTTP/3.0",
+          "HeadersMS": 98.268584,
+          "BodyMS": 98.336,
+          "WireBodyBytes": 9852,
+          "DecodedBodyBytes": 39490
+        }
+      ]
+    }
+  ],
+  "scenarios": [
+    {
+      "Name": "all-full",
+      "Tap": "",
+      "From": "2026-09-25T00:00:00Z",
+      "To": "2026-10-26T00:00:00Z",
+      "Include": "summary,page,statistics",
+      "Query": "",
+      "Page": 100
+    },
+    {
+      "Name": "all-page",
+      "Tap": "",
+      "From": "2026-09-25T00:00:00Z",
+      "To": "2026-10-26T00:00:00Z",
+      "Include": "page",
+      "Query": "",
+      "Page": 100
+    },
+    {
+      "Name": "all-summary",
+      "Tap": "",
+      "From": "2026-09-25T00:00:00Z",
+      "To": "2026-10-26T00:00:00Z",
+      "Include": "summary",
+      "Query": "",
+      "Page": 100
+    },
+    {
+      "Name": "branch-full",
+      "Tap": "demo/payment/transactions.v1/write",
+      "From": "2026-09-25T00:00:00Z",
+      "To": "2026-10-26T00:00:00Z",
+      "Include": "summary,page,statistics",
+      "Query": "",
+      "Page": 100
+    },
+    {
+      "Name": "all-numeric",
+      "Tap": "",
+      "From": "2026-09-25T00:00:00Z",
+      "To": "2026-10-26T00:00:00Z",
+      "Include": "page",
+      "Query": "{\"filters\":[{\"field\":\"duration\",\"op\":\"\u003e\",\"value\":{\"kind\":\"number\",\"value\":\"600\"}}],\"order\":\"desc\"}",
+      "Page": 100
+    },
+    {
+      "Name": "branch-numeric",
+      "Tap": "demo/payment/transactions.v1/write",
+      "From": "2026-09-25T00:00:00Z",
+      "To": "2026-10-26T00:00:00Z",
+      "Include": "page",
+      "Query": "{\"filters\":[{\"field\":\"duration\",\"op\":\"\u003e\",\"value\":{\"kind\":\"number\",\"value\":\"600\"}}],\"order\":\"desc\"}",
+      "Page": 100
+    },
+    {
+      "Name": "all-text",
+      "Tap": "",
+      "From": "2026-09-25T00:00:00Z",
+      "To": "2026-10-26T00:00:00Z",
+      "Include": "page",
+      "Query": "{\"filters\":[],\"search\":{\"text\":\"authorized\",\"mode\":\"terms\"},\"order\":\"desc\"}",
+      "Page": 100
+    },
+    {
+      "Name": "branch-text",
+      "Tap": "demo/payment/transactions.v1/write",
+      "From": "2026-09-25T00:00:00Z",
+      "To": "2026-10-26T00:00:00Z",
+      "Include": "page",
+      "Query": "{\"filters\":[],\"search\":{\"text\":\"authorized\",\"mode\":\"terms\"},\"order\":\"desc\"}",
+      "Page": 100
+    },
+    {
+      "Name": "all-1000",
+      "Tap": "",
+      "From": "2026-09-25T00:00:00Z",
+      "To": "2026-10-26T00:00:00Z",
+      "Include": "summary,page,statistics",
+      "Query": "",
+      "Page": 1000
+    }
+  ],
+  "trials": 3
+}

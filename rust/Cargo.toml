@@ -7,7 +7,7 @@ license = "AGPL-3.0-only"
 publish = false
 
 [dependencies]
-pil-codec = { path = "../pil" }
+pil-codec = { package = "pill-packer", path = "../../pill-packer/rust" }
 sha2 = "0.10"
 base64 = "0.22.1"
 chrono = { version = "0.4.45", default-features = false, features = ["std"] }
@@ -16,7 +16,8 @@ ciborium-ll = "0.2.2"
 crc32c = "0.6.8"
 serde = { version = "1.0.228", features = ["derive"] }
 serde_json = "1.0.150"
-tantivy = "0.25"
+tantivy = "=0.25.0"
+trunk-search-core = { path = "search" }
 
 [[bin]]
 name = "trunk-search"

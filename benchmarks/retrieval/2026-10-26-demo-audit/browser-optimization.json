@@ -1,0 +1,153 @@
+{
+  "date": "2026-10-26",
+  "url": "https://snoot.trietrunk.com/",
+  "method": "Isolated headless Chrome through Chrome DevTools MCP on the server Mac; no CPU/network throttling. One cold retrieval before/after, three warm refreshes per build. Double requestAnimationFrame after row DOM exists is a render-ready proxy, not presentation timing or INP. Origin and OS caches were not flushed. No competitor comparison.",
+  "before": {
+    "warm": [
+      {
+        "wallMs": 426.7999999523163,
+        "domReadyMs": 379.5,
+        "appMs": 253.70000004768372,
+        "kind": "Search",
+        "details": "Search: 254 msSearch PerformanceMatched Events 50,000Loaded Events 100Request & Wait238 msResponse & Decode2 msSummaries0 msEvent Data0 msClient Work13 msElapsed in this tab. Request includes network and server wait. Summaries and Event Data include cache or network access. Excludes chart painting and background cache writes.",
+        "longTasks": [
+          {
+            "start": 112795.90000009537,
+            "duration": 103
+          }
+        ]
+      },
+      {
+        "wallMs": 262.7999999523163,
+        "domReadyMs": 212.60000014305115,
+        "appMs": 120.59999990463257,
+        "kind": "Search",
+        "details": "Search: 121 msSearch PerformanceMatched Events 50,000Loaded Events 100Request & Wait112 msResponse & Decode1 msSummaries0 msEvent Data0 msClient Work7 msElapsed in this tab. Request includes network and server wait. Summaries and Event Data include cache or network access. Excludes chart painting and background cache writes.",
+        "longTasks": [
+          {
+            "start": 113080.70000004768,
+            "duration": 78
+          }
+        ]
+      },
+      {
+        "wallMs": 269.10000014305115,
+        "domReadyMs": 222.90000009536743,
+        "appMs": 128.90000009536743,
+        "kind": "Search",
+        "details": "Search: 129 msSearch PerformanceMatched Events 50,000Loaded Events 100Request & Wait121 msResponse & Decode1 msSummaries0 msEvent Data0 msClient Work7 msElapsed in this tab. Request includes network and server wait. Summaries and Event Data include cache or network access. Excludes chart painting and background cache writes.",
+        "longTasks": [
+          {
+            "start": 113353.29999995232,
+            "duration": 79
+          }
+        ]
+      }
+    ],
+    "nodes": 9046,
+    "rows": 100,
+    "query": {
+      "tap": "",
+      "from": "2026-09-25T00:00:00.000Z",
+      "to": "2026-10-26T00:00:00.001Z",
+      "size": 100
+    },
+    "cold": {
+      "appMs": 9979.4,
+      "phasesRoundedMs": {
+        "request": 280,
+        "response": 1,
+        "summaries": 8660,
+        "events": 1030,
+        "client": 8
+      },
+      "note": "Cold sample captured in preceding audit; phase values rounded by UI."
+    }
+  },
+  "after": {
+    "cold": {
+      "appMs": 1319,
+      "domReadyMs": 1337.9000000953674,
+      "details": "Search: 1.32 sSearch PerformanceLoaded Events 100Request & Wait113 msResponse & Decode2 msSummaries0 msEvent Data1.20 sClient Work9 msTime until event data is ready; charts load separately. Includes network and local reads. Excludes painting and background cache writes.",
+      "wallMs": 1343.9000000953674,
+      "chartsReadyMs": 3182.5999999046326,
+      "chartMs": 3162.2000000476837,
+      "chartDetails": "Charts: 3.16 sCharts PerformanceRequest & Wait113 msResponse & Decode2 msSummaries1.85 sEvent Data1.20 sClient Work4 msTime from search start until chart data is ready. Includes network and local reads. Excludes painting and background cache writes.",
+      "nodes": 1257,
+      "rows": 8,
+      "longTasks": [],
+      "errors": []
+    },
+    "warm": [
+      {
+        "appMs": 83.59999990463257,
+        "domReadyMs": 98.20000004768372,
+        "details": "Search: 84 msSearch PerformanceLoaded Events 100Request & Wait77 msResponse & Decode1 msSummaries0 msEvent Data0 msClient Work6 msTime until event data is ready; charts load separately. Includes network and local reads. Excludes painting and background cache writes.",
+        "wallMs": 117.20000004768372,
+        "chartsReadyMs": 117.20000004768372,
+        "chartMs": 95.79999995231628,
+        "chartDetails": "Charts: 96 msCharts PerformanceRequest & Wait77 msResponse & Decode1 msSummaries0 msEvent Data0 msClient Work18 msTime from search start until chart data is ready. Includes network and local reads. Excludes painting and background cache writes.",
+        "nodes": 1257,
+        "rows": 8,
+        "longTasks": [],
+        "errors": []
+      },
+      {
+        "appMs": 148.29999995231628,
+        "domReadyMs": 157.5,
+        "details": "Search: 148 msSearch PerformanceLoaded Events 100Request & Wait141 msResponse & Decode1 msSummaries0 msEvent Data0 msClient Work6 msTime until event data is ready; charts load separately. Includes network and local reads. Excludes painting and background cache writes.",
+        "wallMs": 171.80000019073486,
+        "chartsReadyMs": 171.90000009536743,
+        "chartMs": 159.19999980926514,
+        "chartDetails": "Charts: 159 msCharts PerformanceRequest & Wait141 msResponse & Decode1 msSummaries0 msEvent Data0 msClient Work17 msTime from search start until chart data is ready. Includes network and local reads. Excludes painting and background cache writes.",
+        "nodes": 1257,
+        "rows": 8,
+        "longTasks": [],
+        "errors": []
+      },
+      {
+        "appMs": 79.79999995231628,
+        "domReadyMs": 88.20000004768372,
+        "details": "Search: 80 msSearch PerformanceLoaded Events 100Request & Wait74 msResponse & Decode1 msSummaries0 msEvent Data0 msClient Work5 msTime until event data is ready; charts load separately. Includes network and local reads. Excludes painting and background cache writes.",
+        "wallMs": 102.59999990463257,
+        "chartsReadyMs": 102.59999990463257,
+        "chartMs": 90,
+        "chartDetails": "Charts: 90 msCharts PerformanceRequest & Wait74 msResponse & Decode1 msSummaries0 msEvent Data0 msClient Work15 msTime from search start until chart data is ready. Includes network and local reads. Excludes painting and background cache writes.",
+        "nodes": 1257,
+        "rows": 8,
+        "longTasks": [],
+        "errors": []
+      }
+    ]
+  },
+  "verification": {
+    "matched": 50000,
+    "firstPageLoaded": 100,
+    "paginationLoaded": 200,
+    "desktopMountedRowsAtTop": 8,
+    "desktopMountedRowsWhileScrolling": 11,
+    "mobileViewport": 390,
+    "mobileDocumentWidth": 390,
+    "jsonExpanded": 1,
+    "jsonCollapsed": 0,
+    "alerts": 0,
+    "serviceTestsPassed": 284,
+    "typescript": "passed"
+  },
+  "sourceSHA256": {
+    "client/components/events.tsx": "bb7adfec39c23d0e11f9f4dbb6c87e8e6251b115b2305a30dcaae4f6bdcb2485",
+    "client/components/paged-results.tsx": "4fa51c3af4e3e8d761da99367bec992b42eabfc2782680ab3247d1974a21e96e",
+    "client/components/search-performance.tsx": "204193f64c278076260786be4b84baeddc96284a71300792d1b56a35a0d8b9c1",
+    "client/services/row-window.ts": "6e325c619b5b125d7a712d391d0eceffe41dd129b561aa0c5361feb71bb84cba",
+    "client/services/pil/view.ts": "acda9e70e0f861a76ea2df0ce6f4250b1156257a3a4ae767d22ae63d541a9f04",
+    "client/services/pil/client.ts": "3f7da497520ee2ac73056f096ccd70758dc15d83ab2e1a73303a18cb20eacb9d",
+    "client/services/pil/protocol.ts": "2e817e9e99fef7f903469be3a3a921dcc369a0fe61ddabfbaf74ef1867718a8b",
+    "client/services/pil/worker-runtime.ts": "b0bef9ac32c1181be8cac97dadee4e175cf3044f2e8e35d6519b7bc90c760892",
+    "client/services/pil/summaries.ts": "03cb52340dda82db99238bea32bda2889e5685c73469b34fdded34d5aa954c9b",
+    "client/services/pil/summary-storage.ts": "b0cba3d85585c0a2da3fea0b31651dfd9804440d9e2e3f9e288fa3db3f019493",
+    "client/style.css": "9c4dc19aa496e66c25ae35643920502f6183019e91b286d7bb1862028d2d784b"
+  },
+  "builtScripts": [
+    "/assets/index-BSbkKbRj.js"
+  ]
+}

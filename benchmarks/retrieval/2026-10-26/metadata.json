@@ -1,0 +1,16 @@
+{
+  "hardware": {
+    "model": "Mac13,1",
+    "processor": "Apple M1 Max",
+    "memoryBytes": 34359738368
+  },
+  "goVersion": "go version go1.26.4 darwin/arm64",
+  "serverCommand": "./trunk ingest 5410 serve 8443 --http-address 127.0.0.1:3020",
+  "serverExecutableSHA256": "07840c2060aff9a12a34e6171ea30e4fbbf8ba31756c78175330791250258971",
+  "baseCommit": "c892d35955c221ec5d14a76ffbe7f48e644a8609",
+  "workingTreeDirty": true,
+  "dataset": "Existing 50000-seed demo; five resources, five physical branches per resource; 31-calendar-day query window over roughly 30 days of event history",
+  "productionModified": false,
+  "nodeResults": "Superseded; excluded from these results. Only native Go measurements are retained here.",
+  "comparison": "API retrieval only; not browser rendering, not a competitor comparison."
+}

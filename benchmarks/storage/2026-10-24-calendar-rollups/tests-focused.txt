@@ -1,8 +1,0 @@
-=== RUN   TestDailySummaryHTTPFixture
---- PASS: TestDailySummaryHTTPFixture (22.80s)
-=== RUN   TestCalendarRollupBoundariesAndTotals
---- PASS: TestCalendarRollupBoundariesAndTotals (0.00s)
-=== RUN   TestCalendarRollupPublicationRecoveryRetention
---- PASS: TestCalendarRollupPublicationRecoveryRetention (6.28s)
-PASS
-ok  	trie-trunk/go/server/cache	29.292s

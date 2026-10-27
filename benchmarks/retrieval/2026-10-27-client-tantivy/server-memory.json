@@ -1,0 +1,25 @@
+{
+  "dataset": {
+    "events": 50000,
+    "branchIndexes": 25,
+    "diskBytes": 5532179
+  },
+  "snapshot": {
+    "serverPid": 39032,
+    "serverRSSBytes": 145080320,
+    "tantivyMappedRegions": 456,
+    "tantivyMappedBranchDirectories": 16,
+    "tantivyMappedVirtualBytes": 9469952,
+    "tantivyMappedResidentBytes": 7749632,
+    "tantivyMappedDirtyBytes": 0
+  },
+  "configuration": {
+    "writerBudgetBytes": 15000000,
+    "idleSourceCacheTarget": 16
+  },
+  "limitations": [
+    "Mapped residency is the sum of memory-map regions, not the total Tantivy heap or necessarily unique physical pages.",
+    "Server RSS includes Go, Rust, PIL buffers, stacks and other server allocations.",
+    "The per-writer budget is not a measured allocation or a process-wide limit. Live indexes have separate writers and active sources can exceed the idle cache target."
+  ]
+}

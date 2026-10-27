@@ -36,7 +36,7 @@ func TestPositionalTimeTrieNullZeroAndHourlySegments(t *testing.T) {
 	if !bytes.Equal(tree.raw[unused:unused+TimeTrieDayBytes], make([]byte, TimeTrieDayBytes)) {
 		t.Fatal("non-leap day 366 not blank")
 	}
-	if !bytes.Equal(tree.raw[TimeTrieHeader+366*TimeTrieDayBytes+365*6:], make([]byte, 6)) {
+	if !bytes.Equal(tree.raw[TimeTrieHeader+366*TimeTrieDayBytes+365*24:], make([]byte, 24)) {
 		t.Fatal("unused day is marked complete")
 	}
 	if os.Getenv("UPDATE_TIME_TRIE_FIXTURE") == "1" {

@@ -2,7 +2,7 @@ import { readTab, writeTab } from './search-session.ts';
 import { validPosition, type ScrollPosition } from './ui-position.ts';
 export type ResearchDraft={source:string;id:string;from:string;to:string};
 export type ResearchState={draft:ResearchDraft;query?:ResearchDraft;visible:number;selected?:string;position:ScrollPosition;archiveLeft?:number};
-const key=(mode:string,scope:string)=>`snoot-research:${scope}:${mode}`;
+const key=(mode:string,scope:string)=>`snoot:${mode === "Object History" ? "collections" : mode.toLowerCase()}:workspace:${scope}`;
 export function readResearch(mode:string,scope:string):ResearchState|undefined {
  const state=readTab<ResearchState>(key(mode,scope));
  const draft=(v:ResearchDraft)=>v&&['source','id','from','to'].every(k=>typeof v[k as keyof ResearchDraft]==='string');

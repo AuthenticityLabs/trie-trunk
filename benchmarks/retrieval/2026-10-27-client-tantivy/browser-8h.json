@@ -1,0 +1,1136 @@
+{
+  "ok": true,
+  "hours": 8,
+  "events": 16000,
+  "checks": 336,
+  "negativeChecks": 5,
+  "initMs": 7.799999952316284,
+  "indexBytes": 905736,
+  "peakWasmBytes": 2818048,
+  "queryFirstMedianMs": 0.5999999046325684,
+  "queryWarmMedianMs": 0.6000001430511475,
+  "queryWarmP95Ms": 2.700000047683716,
+  "metrics": [
+    {
+      "hour": 0,
+      "name": "all",
+      "nativeMs": 1.410375,
+      "firstMs": 5,
+      "warmMs": 1,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 7.3999998569488525
+    },
+    {
+      "hour": 0,
+      "name": "contains",
+      "nativeMs": 6.253083,
+      "firstMs": 8.200000047683716,
+      "warmMs": 3,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 7.3999998569488525
+    },
+    {
+      "hour": 0,
+      "name": "terms",
+      "nativeMs": 0.837208,
+      "firstMs": 1.4000000953674316,
+      "warmMs": 0.7000000476837158,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 7.3999998569488525
+    },
+    {
+      "hour": 0,
+      "name": "phrase",
+      "nativeMs": 0.788459,
+      "firstMs": 2.200000047683716,
+      "warmMs": 0.8999998569488525,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 7.3999998569488525
+    },
+    {
+      "hour": 0,
+      "name": "prefix",
+      "nativeMs": 32.082417,
+      "firstMs": 1.2000000476837158,
+      "warmMs": 0.6000001430511475,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 7.3999998569488525
+    },
+    {
+      "hour": 0,
+      "name": "fuzzy",
+      "nativeMs": 0.625333,
+      "firstMs": 1.7000000476837158,
+      "warmMs": 0.7999999523162842,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 7.3999998569488525
+    },
+    {
+      "hour": 0,
+      "name": "duration",
+      "nativeMs": 0.477041,
+      "firstMs": 2,
+      "warmMs": 0.6000001430511475,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 7.3999998569488525
+    },
+    {
+      "hour": 0,
+      "name": "large-integer",
+      "nativeMs": 0.38316700000000004,
+      "firstMs": 0.5,
+      "warmMs": 0.5,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 7.3999998569488525
+    },
+    {
+      "hour": 0,
+      "name": "mapped",
+      "nativeMs": 0.484166,
+      "firstMs": 0.7000000476837158,
+      "warmMs": 0.6000001430511475,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 7.3999998569488525
+    },
+    {
+      "hour": 0,
+      "name": "not-null",
+      "nativeMs": 0.518208,
+      "firstMs": 0.5999999046325684,
+      "warmMs": 0.7000000476837158,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 7.3999998569488525
+    },
+    {
+      "hour": 0,
+      "name": "float",
+      "nativeMs": 0.49454200000000004,
+      "firstMs": 0.8999998569488525,
+      "warmMs": 0.6000001430511475,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 7.3999998569488525
+    },
+    {
+      "hour": 0,
+      "name": "finite-not-equal",
+      "nativeMs": 0.511875,
+      "firstMs": 0.7000000476837158,
+      "warmMs": 0.6999998092651367,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 7.3999998569488525
+    },
+    {
+      "hour": 0,
+      "name": "bool",
+      "nativeMs": 0.449542,
+      "firstMs": 0.5,
+      "warmMs": 0.6000001430511475,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 7.3999998569488525
+    },
+    {
+      "hour": 0,
+      "name": "partial-hour",
+      "nativeMs": 0.182917,
+      "firstMs": 0.20000004768371582,
+      "warmMs": 0.20000004768371582,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 7.3999998569488525
+    },
+    {
+      "hour": 1,
+      "name": "all",
+      "nativeMs": 0.619958,
+      "firstMs": 0.7000000476837158,
+      "warmMs": 0.5999999046325684,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.2000000476837158
+    },
+    {
+      "hour": 1,
+      "name": "contains",
+      "nativeMs": 3.7016660000000003,
+      "firstMs": 2.799999952316284,
+      "warmMs": 2.8000001907348633,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.2000000476837158
+    },
+    {
+      "hour": 1,
+      "name": "terms",
+      "nativeMs": 0.594875,
+      "firstMs": 0.7000000476837158,
+      "warmMs": 0.7000000476837158,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.2000000476837158
+    },
+    {
+      "hour": 1,
+      "name": "phrase",
+      "nativeMs": 0.549875,
+      "firstMs": 0.6000001430511475,
+      "warmMs": 0.5999999046325684,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.2000000476837158
+    },
+    {
+      "hour": 1,
+      "name": "prefix",
+      "nativeMs": 25.071541999999997,
+      "firstMs": 0.7000000476837158,
+      "warmMs": 0.5999999046325684,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.2000000476837158
+    },
+    {
+      "hour": 1,
+      "name": "fuzzy",
+      "nativeMs": 0.503375,
+      "firstMs": 0.7000000476837158,
+      "warmMs": 0.7000000476837158,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.2000000476837158
+    },
+    {
+      "hour": 1,
+      "name": "duration",
+      "nativeMs": 0.41091700000000003,
+      "firstMs": 0.5,
+      "warmMs": 0.6000001430511475,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.2000000476837158
+    },
+    {
+      "hour": 1,
+      "name": "large-integer",
+      "nativeMs": 0.337209,
+      "firstMs": 0.39999985694885254,
+      "warmMs": 0.40000009536743164,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.2000000476837158
+    },
+    {
+      "hour": 1,
+      "name": "mapped",
+      "nativeMs": 0.426292,
+      "firstMs": 0.5,
+      "warmMs": 0.5999999046325684,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.2000000476837158
+    },
+    {
+      "hour": 1,
+      "name": "not-null",
+      "nativeMs": 0.472708,
+      "firstMs": 0.6000001430511475,
+      "warmMs": 0.6000001430511475,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.2000000476837158
+    },
+    {
+      "hour": 1,
+      "name": "float",
+      "nativeMs": 0.432666,
+      "firstMs": 0.5999999046325684,
+      "warmMs": 0.6000001430511475,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.2000000476837158
+    },
+    {
+      "hour": 1,
+      "name": "finite-not-equal",
+      "nativeMs": 0.46175,
+      "firstMs": 0.5999999046325684,
+      "warmMs": 0.6999998092651367,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.2000000476837158
+    },
+    {
+      "hour": 1,
+      "name": "bool",
+      "nativeMs": 0.395833,
+      "firstMs": 0.5,
+      "warmMs": 0.5,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.2000000476837158
+    },
+    {
+      "hour": 1,
+      "name": "partial-hour",
+      "nativeMs": 0.158375,
+      "firstMs": 0.20000004768371582,
+      "warmMs": 0.20000004768371582,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.2000000476837158
+    },
+    {
+      "hour": 2,
+      "name": "all",
+      "nativeMs": 0.622375,
+      "firstMs": 0.6999998092651367,
+      "warmMs": 0.7000000476837158,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.1000001430511475
+    },
+    {
+      "hour": 2,
+      "name": "contains",
+      "nativeMs": 3.283875,
+      "firstMs": 2.799999952316284,
+      "warmMs": 2.700000047683716,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.1000001430511475
+    },
+    {
+      "hour": 2,
+      "name": "terms",
+      "nativeMs": 0.533333,
+      "firstMs": 0.7000000476837158,
+      "warmMs": 0.6999998092651367,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.1000001430511475
+    },
+    {
+      "hour": 2,
+      "name": "phrase",
+      "nativeMs": 0.508667,
+      "firstMs": 0.5,
+      "warmMs": 0.6000001430511475,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.1000001430511475
+    },
+    {
+      "hour": 2,
+      "name": "prefix",
+      "nativeMs": 24.00625,
+      "firstMs": 0.7000000476837158,
+      "warmMs": 0.5,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.1000001430511475
+    },
+    {
+      "hour": 2,
+      "name": "fuzzy",
+      "nativeMs": 0.495083,
+      "firstMs": 0.7000000476837158,
+      "warmMs": 0.6000001430511475,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.1000001430511475
+    },
+    {
+      "hour": 2,
+      "name": "duration",
+      "nativeMs": 0.39387500000000003,
+      "firstMs": 0.5,
+      "warmMs": 0.6000001430511475,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.1000001430511475
+    },
+    {
+      "hour": 2,
+      "name": "large-integer",
+      "nativeMs": 0.328541,
+      "firstMs": 0.2999999523162842,
+      "warmMs": 0.5999999046325684,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.1000001430511475
+    },
+    {
+      "hour": 2,
+      "name": "mapped",
+      "nativeMs": 0.413042,
+      "firstMs": 0.6000001430511475,
+      "warmMs": 0.5999999046325684,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.1000001430511475
+    },
+    {
+      "hour": 2,
+      "name": "not-null",
+      "nativeMs": 0.44375000000000003,
+      "firstMs": 0.6000001430511475,
+      "warmMs": 0.6000001430511475,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.1000001430511475
+    },
+    {
+      "hour": 2,
+      "name": "float",
+      "nativeMs": 0.418083,
+      "firstMs": 0.5999999046325684,
+      "warmMs": 0.6000001430511475,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.1000001430511475
+    },
+    {
+      "hour": 2,
+      "name": "finite-not-equal",
+      "nativeMs": 0.451,
+      "firstMs": 0.5999999046325684,
+      "warmMs": 0.7000000476837158,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.1000001430511475
+    },
+    {
+      "hour": 2,
+      "name": "bool",
+      "nativeMs": 0.378209,
+      "firstMs": 0.6000001430511475,
+      "warmMs": 0.5999999046325684,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.1000001430511475
+    },
+    {
+      "hour": 2,
+      "name": "partial-hour",
+      "nativeMs": 0.155917,
+      "firstMs": 0.20000004768371582,
+      "warmMs": 0.2999999523162842,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.1000001430511475
+    },
+    {
+      "hour": 3,
+      "name": "all",
+      "nativeMs": 0.573958,
+      "firstMs": 0.5999999046325684,
+      "warmMs": 0.7000000476837158,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.2000000476837158
+    },
+    {
+      "hour": 3,
+      "name": "contains",
+      "nativeMs": 3.340166,
+      "firstMs": 2.5999999046325684,
+      "warmMs": 2.6999998092651367,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.2000000476837158
+    },
+    {
+      "hour": 3,
+      "name": "terms",
+      "nativeMs": 0.5445,
+      "firstMs": 0.7000000476837158,
+      "warmMs": 0.6000001430511475,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.2000000476837158
+    },
+    {
+      "hour": 3,
+      "name": "phrase",
+      "nativeMs": 0.504,
+      "firstMs": 0.7000000476837158,
+      "warmMs": 0.5999999046325684,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.2000000476837158
+    },
+    {
+      "hour": 3,
+      "name": "prefix",
+      "nativeMs": 23.422541000000002,
+      "firstMs": 0.6000001430511475,
+      "warmMs": 0.6999998092651367,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.2000000476837158
+    },
+    {
+      "hour": 3,
+      "name": "fuzzy",
+      "nativeMs": 0.47612499999999996,
+      "firstMs": 0.5999999046325684,
+      "warmMs": 0.7000000476837158,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.2000000476837158
+    },
+    {
+      "hour": 3,
+      "name": "duration",
+      "nativeMs": 0.40004100000000004,
+      "firstMs": 0.6000001430511475,
+      "warmMs": 0.5,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.2000000476837158
+    },
+    {
+      "hour": 3,
+      "name": "large-integer",
+      "nativeMs": 0.334125,
+      "firstMs": 0.39999985694885254,
+      "warmMs": 0.5,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.2000000476837158
+    },
+    {
+      "hour": 3,
+      "name": "mapped",
+      "nativeMs": 0.403375,
+      "firstMs": 0.5,
+      "warmMs": 0.5999999046325684,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.2000000476837158
+    },
+    {
+      "hour": 3,
+      "name": "not-null",
+      "nativeMs": 0.440375,
+      "firstMs": 0.5,
+      "warmMs": 0.7000000476837158,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.2000000476837158
+    },
+    {
+      "hour": 3,
+      "name": "float",
+      "nativeMs": 0.414084,
+      "firstMs": 0.5,
+      "warmMs": 0.5999999046325684,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.2000000476837158
+    },
+    {
+      "hour": 3,
+      "name": "finite-not-equal",
+      "nativeMs": 0.441666,
+      "firstMs": 0.6000001430511475,
+      "warmMs": 0.5999999046325684,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.2000000476837158
+    },
+    {
+      "hour": 3,
+      "name": "bool",
+      "nativeMs": 0.373875,
+      "firstMs": 0.5,
+      "warmMs": 0.5,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.2000000476837158
+    },
+    {
+      "hour": 3,
+      "name": "partial-hour",
+      "nativeMs": 0.15479099999999998,
+      "firstMs": 0.19999980926513672,
+      "warmMs": 0.20000004768371582,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.2000000476837158
+    },
+    {
+      "hour": 4,
+      "name": "all",
+      "nativeMs": 0.5902499999999999,
+      "firstMs": 0.5999999046325684,
+      "warmMs": 0.7000000476837158,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.2000000476837158
+    },
+    {
+      "hour": 4,
+      "name": "contains",
+      "nativeMs": 3.3577500000000002,
+      "firstMs": 2.799999952316284,
+      "warmMs": 2.700000047683716,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.2000000476837158
+    },
+    {
+      "hour": 4,
+      "name": "terms",
+      "nativeMs": 0.537333,
+      "firstMs": 0.6000001430511475,
+      "warmMs": 0.5999999046325684,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.2000000476837158
+    },
+    {
+      "hour": 4,
+      "name": "phrase",
+      "nativeMs": 0.49879099999999993,
+      "firstMs": 0.5999999046325684,
+      "warmMs": 0.6000001430511475,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.2000000476837158
+    },
+    {
+      "hour": 4,
+      "name": "prefix",
+      "nativeMs": 27.615833,
+      "firstMs": 0.5999999046325684,
+      "warmMs": 0.6000001430511475,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.2000000476837158
+    },
+    {
+      "hour": 4,
+      "name": "fuzzy",
+      "nativeMs": 0.5005,
+      "firstMs": 0.5999999046325684,
+      "warmMs": 0.7000000476837158,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.2000000476837158
+    },
+    {
+      "hour": 4,
+      "name": "duration",
+      "nativeMs": 0.408125,
+      "firstMs": 0.5,
+      "warmMs": 0.5,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.2000000476837158
+    },
+    {
+      "hour": 4,
+      "name": "large-integer",
+      "nativeMs": 0.33725,
+      "firstMs": 0.5,
+      "warmMs": 0.5,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.2000000476837158
+    },
+    {
+      "hour": 4,
+      "name": "mapped",
+      "nativeMs": 0.424292,
+      "firstMs": 0.6000001430511475,
+      "warmMs": 0.5999999046325684,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.2000000476837158
+    },
+    {
+      "hour": 4,
+      "name": "not-null",
+      "nativeMs": 0.44525000000000003,
+      "firstMs": 0.7000000476837158,
+      "warmMs": 0.7000000476837158,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.2000000476837158
+    },
+    {
+      "hour": 4,
+      "name": "float",
+      "nativeMs": 0.436583,
+      "firstMs": 0.7000000476837158,
+      "warmMs": 0.6000001430511475,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.2000000476837158
+    },
+    {
+      "hour": 4,
+      "name": "finite-not-equal",
+      "nativeMs": 0.442375,
+      "firstMs": 0.5999999046325684,
+      "warmMs": 0.6000001430511475,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.2000000476837158
+    },
+    {
+      "hour": 4,
+      "name": "bool",
+      "nativeMs": 0.38125000000000003,
+      "firstMs": 0.5,
+      "warmMs": 0.5,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.2000000476837158
+    },
+    {
+      "hour": 4,
+      "name": "partial-hour",
+      "nativeMs": 0.154667,
+      "firstMs": 0.3000001907348633,
+      "warmMs": 0.20000004768371582,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.2000000476837158
+    },
+    {
+      "hour": 5,
+      "name": "all",
+      "nativeMs": 0.580125,
+      "firstMs": 0.7000000476837158,
+      "warmMs": 0.7000000476837158,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.2000000476837158
+    },
+    {
+      "hour": 5,
+      "name": "contains",
+      "nativeMs": 3.324208,
+      "firstMs": 2.700000047683716,
+      "warmMs": 2.9000000953674316,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.2000000476837158
+    },
+    {
+      "hour": 5,
+      "name": "terms",
+      "nativeMs": 0.5405,
+      "firstMs": 0.6999998092651367,
+      "warmMs": 0.6000001430511475,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.2000000476837158
+    },
+    {
+      "hour": 5,
+      "name": "phrase",
+      "nativeMs": 0.5071249999999999,
+      "firstMs": 0.5,
+      "warmMs": 0.6000001430511475,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.2000000476837158
+    },
+    {
+      "hour": 5,
+      "name": "prefix",
+      "nativeMs": 24.212332999999997,
+      "firstMs": 0.5999999046325684,
+      "warmMs": 0.6000001430511475,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.2000000476837158
+    },
+    {
+      "hour": 5,
+      "name": "fuzzy",
+      "nativeMs": 0.48295899999999997,
+      "firstMs": 0.7000000476837158,
+      "warmMs": 0.5999999046325684,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.2000000476837158
+    },
+    {
+      "hour": 5,
+      "name": "duration",
+      "nativeMs": 0.402375,
+      "firstMs": 0.5,
+      "warmMs": 0.5999999046325684,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.2000000476837158
+    },
+    {
+      "hour": 5,
+      "name": "large-integer",
+      "nativeMs": 0.327084,
+      "firstMs": 0.40000009536743164,
+      "warmMs": 0.39999985694885254,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.2000000476837158
+    },
+    {
+      "hour": 5,
+      "name": "mapped",
+      "nativeMs": 0.404041,
+      "firstMs": 0.5,
+      "warmMs": 0.5999999046325684,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.2000000476837158
+    },
+    {
+      "hour": 5,
+      "name": "not-null",
+      "nativeMs": 0.44475,
+      "firstMs": 0.6000001430511475,
+      "warmMs": 0.7000000476837158,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.2000000476837158
+    },
+    {
+      "hour": 5,
+      "name": "float",
+      "nativeMs": 0.425333,
+      "firstMs": 0.5999999046325684,
+      "warmMs": 0.6000001430511475,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.2000000476837158
+    },
+    {
+      "hour": 5,
+      "name": "finite-not-equal",
+      "nativeMs": 0.43470800000000004,
+      "firstMs": 0.5,
+      "warmMs": 0.7000000476837158,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.2000000476837158
+    },
+    {
+      "hour": 5,
+      "name": "bool",
+      "nativeMs": 0.376125,
+      "firstMs": 0.39999985694885254,
+      "warmMs": 0.5,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.2000000476837158
+    },
+    {
+      "hour": 5,
+      "name": "partial-hour",
+      "nativeMs": 0.15270799999999998,
+      "firstMs": 0.19999980926513672,
+      "warmMs": 0.20000004768371582,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.2000000476837158
+    },
+    {
+      "hour": 6,
+      "name": "all",
+      "nativeMs": 0.572208,
+      "firstMs": 0.6999998092651367,
+      "warmMs": 0.7000000476837158,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.3000001907348633
+    },
+    {
+      "hour": 6,
+      "name": "contains",
+      "nativeMs": 3.298375,
+      "firstMs": 2.6999998092651367,
+      "warmMs": 2.9000000953674316,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.3000001907348633
+    },
+    {
+      "hour": 6,
+      "name": "terms",
+      "nativeMs": 0.5282079999999999,
+      "firstMs": 0.5999999046325684,
+      "warmMs": 0.6000001430511475,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.3000001907348633
+    },
+    {
+      "hour": 6,
+      "name": "phrase",
+      "nativeMs": 0.501708,
+      "firstMs": 0.6000001430511475,
+      "warmMs": 0.6000001430511475,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.3000001907348633
+    },
+    {
+      "hour": 6,
+      "name": "prefix",
+      "nativeMs": 24.601666,
+      "firstMs": 0.5999999046325684,
+      "warmMs": 0.6000001430511475,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.3000001907348633
+    },
+    {
+      "hour": 6,
+      "name": "fuzzy",
+      "nativeMs": 0.477291,
+      "firstMs": 0.7000000476837158,
+      "warmMs": 0.5,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.3000001907348633
+    },
+    {
+      "hour": 6,
+      "name": "duration",
+      "nativeMs": 0.395833,
+      "firstMs": 0.5999999046325684,
+      "warmMs": 0.6000001430511475,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.3000001907348633
+    },
+    {
+      "hour": 6,
+      "name": "large-integer",
+      "nativeMs": 0.326625,
+      "firstMs": 0.2999999523162842,
+      "warmMs": 0.40000009536743164,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.3000001907348633
+    },
+    {
+      "hour": 6,
+      "name": "mapped",
+      "nativeMs": 0.41274999999999995,
+      "firstMs": 0.6999998092651367,
+      "warmMs": 0.6000001430511475,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.3000001907348633
+    },
+    {
+      "hour": 6,
+      "name": "not-null",
+      "nativeMs": 0.454958,
+      "firstMs": 0.5999999046325684,
+      "warmMs": 0.6000001430511475,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.3000001907348633
+    },
+    {
+      "hour": 6,
+      "name": "float",
+      "nativeMs": 0.420583,
+      "firstMs": 0.5999999046325684,
+      "warmMs": 0.6000001430511475,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.3000001907348633
+    },
+    {
+      "hour": 6,
+      "name": "finite-not-equal",
+      "nativeMs": 0.447333,
+      "firstMs": 0.5,
+      "warmMs": 0.6000001430511475,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.3000001907348633
+    },
+    {
+      "hour": 6,
+      "name": "bool",
+      "nativeMs": 0.374834,
+      "firstMs": 0.5,
+      "warmMs": 0.5999999046325684,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.3000001907348633
+    },
+    {
+      "hour": 6,
+      "name": "partial-hour",
+      "nativeMs": 0.15341700000000003,
+      "firstMs": 0.20000004768371582,
+      "warmMs": 0.20000004768371582,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.3000001907348633
+    },
+    {
+      "hour": 7,
+      "name": "all",
+      "nativeMs": 0.58075,
+      "firstMs": 0.7000000476837158,
+      "warmMs": 0.6000001430511475,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.2999999523162842
+    },
+    {
+      "hour": 7,
+      "name": "contains",
+      "nativeMs": 3.31625,
+      "firstMs": 3,
+      "warmMs": 2.9000000953674316,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.2999999523162842
+    },
+    {
+      "hour": 7,
+      "name": "terms",
+      "nativeMs": 0.532042,
+      "firstMs": 0.7000000476837158,
+      "warmMs": 0.5999999046325684,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.2999999523162842
+    },
+    {
+      "hour": 7,
+      "name": "phrase",
+      "nativeMs": 0.500583,
+      "firstMs": 0.6000001430511475,
+      "warmMs": 0.5999999046325684,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.2999999523162842
+    },
+    {
+      "hour": 7,
+      "name": "prefix",
+      "nativeMs": 24.000667,
+      "firstMs": 0.6000001430511475,
+      "warmMs": 0.5999999046325684,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.2999999523162842
+    },
+    {
+      "hour": 7,
+      "name": "fuzzy",
+      "nativeMs": 0.473916,
+      "firstMs": 0.7000000476837158,
+      "warmMs": 0.7000000476837158,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.2999999523162842
+    },
+    {
+      "hour": 7,
+      "name": "duration",
+      "nativeMs": 0.412917,
+      "firstMs": 0.5,
+      "warmMs": 0.40000009536743164,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.2999999523162842
+    },
+    {
+      "hour": 7,
+      "name": "large-integer",
+      "nativeMs": 0.326833,
+      "firstMs": 0.5,
+      "warmMs": 0.5,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.2999999523162842
+    },
+    {
+      "hour": 7,
+      "name": "mapped",
+      "nativeMs": 0.434167,
+      "firstMs": 0.7000000476837158,
+      "warmMs": 0.5999999046325684,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.2999999523162842
+    },
+    {
+      "hour": 7,
+      "name": "not-null",
+      "nativeMs": 0.45045799999999997,
+      "firstMs": 0.5,
+      "warmMs": 0.7000000476837158,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.2999999523162842
+    },
+    {
+      "hour": 7,
+      "name": "float",
+      "nativeMs": 0.427167,
+      "firstMs": 0.5999999046325684,
+      "warmMs": 0.6000001430511475,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.2999999523162842
+    },
+    {
+      "hour": 7,
+      "name": "finite-not-equal",
+      "nativeMs": 0.43070800000000004,
+      "firstMs": 0.5999999046325684,
+      "warmMs": 0.5999999046325684,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.2999999523162842
+    },
+    {
+      "hour": 7,
+      "name": "bool",
+      "nativeMs": 0.37858400000000003,
+      "firstMs": 0.6000001430511475,
+      "warmMs": 0.6000001430511475,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.2999999523162842
+    },
+    {
+      "hour": 7,
+      "name": "partial-hour",
+      "nativeMs": 0.15745900000000002,
+      "firstMs": 0.09999990463256836,
+      "warmMs": 0.20000004768371582,
+      "readCalls": 0,
+      "readBytes": 0,
+      "openMs": 1.2999999523162842
+    }
+  ],
+  "scope": "Synthetic native-created hourly indexes; actual browser WASM + OPFS. Query timings exclude transfer, verification, file writes, reader opening and rendering."
+}

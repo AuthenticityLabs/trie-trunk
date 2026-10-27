@@ -143,51 +143,6 @@ const collection = (id, s = selection) => ({
   from: s.from,
   to: s.to,
 });
-const row = (i, billing = false) => {
-  const r = f.row();
-  r[18] = i >> 8;
-  r[19] = i & 255;
-  if (billing) r[3] = 1;
-  return r;
-};
-const save = (id, frames, fixture = f, tap = "test") => ({
-  kind: "save",
-  collection: id,
-  definitions: [
-    {
-      digest: fixture.digest,
-      store: [...fixture.store],
-      pil: [...fixture.pil],
-    },
-  ],
-  bindings: [{ stream: 0, digest: fixture.digest, tap }],
-  batch: {
-    bytes: [...bytes(...frames)],
-    rows: frames.flatMap((r, i) => [
-      0,
-      frames.slice(0, i).reduce((n, b) => n + b.length, 0),
-      frames.slice(0, i + 1).reduce((n, b) => n + b.length, 0),
-    ]),
-  },
-});
-async function drain(open, namespace = "test") {
-  const rows = [];
-  for (;;) {
-    const n = await cmd({ kind: "next", cursor: open.cursor }, namespace);
-    for (let i = 0; i < n.batch.rows.length; i += 3)
-      rows.push(n.batch.bytes.slice(n.batch.rows[i + 1], n.batch.rows[i + 2]));
-    if (n.done) break;
-  }
-  return rows;
-}
-function nativeFiles(inv) {
-  return Object.fromEntries(
-    Object.entries(inv).filter(
-      ([n]) =>
-        n.startsWith("/trie-trunk-v2/test/") && /log\.(tri|pop)$/.test(n),
-    ),
-  );
-}
 try {
   await page.goto(origin);
   await page.evaluate(() => {
@@ -196,184 +151,7 @@ try {
       new Worker("/harness.js", { type: "module" }),
     ];
   });
-  if(process.env.NATIVE_ONLY!=="1"){
-  await cmd({ kind: "begin", collection: collection("first") });
-  const initial = Array.from({ length: 1200 }, (_, i) => row(1200 - i));
-  await cmd(save("first", initial.slice(0, 600)));
-  await cmd(save("first", initial.slice(600)));
-  const inv = await raw("inventory");
-  assert.equal(
-    Object.keys(inv).some((k) => k.endsWith("log.idx")),
-    false,
-    JSON.stringify(inv),
-  );
-  const before = nativeFiles(inv);
-  await cmd(save("first", [row(1), row(1), row(600), row(1200)]));
-  assert.deepEqual(nativeFiles(await raw("inventory")), before);
-  await raw("reload");
-  const loaded = await drain(
-    await cmd({ kind: "restore", collection: "first" }),
-  );
-  assert.equal(loaded.length, 1200);
-  assert.deepEqual(
-    loaded.map((b) => (b[18] << 8) | b[19]),
-    Array.from({ length: 1200 }, (_, i) => i + 1),
-  );
-  assert.deepEqual(loaded[599], [...row(600)]);
-  await cmd({
-    kind: "finish",
-    collection: "first",
-    selection,
-    started: millis + 3_600_000,
-  });
-  await cmd({ kind: "begin", collection: collection("repeat") });
-  const cached = await cmd({
-    kind: "lookup",
-    collection: "repeat",
-    selection,
-    started: millis + 3_600_000,
-  });
-  assert.deepEqual(cached.gaps, []);
-  assert.equal((await drain(cached)).length, 1200);
-  const wider = {
-    ...selection,
-    from: new Date(millis - 2000).toISOString(),
-    to: new Date(millis + 2000).toISOString(),
-  };
-  const expanded = await cmd({
-    kind: "lookup",
-    collection: "repeat",
-    selection: wider,
-    started: millis + 3_600_000,
-  });
-  assert.deepEqual(expanded.gaps, [
-    { from: millis - 2000, to: millis - 1000 },
-    { from: millis + 1000, to: millis + 2000 },
-  ]);
-  await cmd({ kind: "release", cursor: expanded.cursor });
-  const recent = await cmd({
-    kind: "lookup",
-    collection: "repeat",
-    selection,
-    started: millis + 500,
-  });
-  assert.deepEqual(recent.gaps, [{ from: millis - 1000, to: millis + 1000 }]);
-  await cmd({ kind: "release", cursor: recent.cursor });
-  const filtered = { ...selection, where: ['service=="billing"'] };
-  await cmd({ kind: "begin", collection: collection("filtered", filtered) });
-  const narrow = await cmd({
-    kind: "lookup",
-    collection: "filtered",
-    selection: filtered,
-    started: millis + 3_600_000,
-  });
-  assert.deepEqual(narrow.gaps, [{ from: millis - 1000, to: millis + 1000 }]);
-  assert.equal((await drain(narrow)).length, 0);
-  await raw("fail-publication");
-  await assert.rejects(
-    cmd(save("first", [row(1201, true)])),
-    /simulated IDB abort/,
-  );
-  assert.equal(
-    (await raw("inspect", { namespace: "test" })).events.length,
-    1200,
-  );
-  await raw("reload");
-  assert.equal(
-    (await drain(await cmd({ kind: "restore", collection: "first" }))).length,
-    1200,
-  );
-  assert.deepEqual(nativeFiles(await raw("inventory")), before);
-  await Promise.all([
-    cmd(save("first", [row(1201, true)]), "test", 0),
-    cmd(save("first", [row(1201, true)]), "test", 1),
-  ]);
-  assert.equal(
-    (await raw("inspect", { namespace: "test" })).events.length,
-    1201,
-  );
-  const match = await cmd({
-    kind: "lookup",
-    collection: "filtered",
-    selection: filtered,
-    started: millis + 3_600_000,
-  });
-  assert.deepEqual(await drain(match), [[...row(1201, true)]]);
-  // UUID uniqueness spans schema versions but is scoped by tap and credential.
-  await cmd(save("first", [row(1)], fixture(43)));
-  assert.equal(
-    (await raw("inspect", { namespace: "test" })).events.length,
-    1201,
-  );
-  await cmd(save("first", [row(1)], f, "other"));
-  assert.equal(
-    (await raw("inspect", { namespace: "test" })).events.length,
-    1202,
-  );
-  await cmd(
-    { kind: "begin", collection: collection("different") },
-    "different",
-  );
-  await cmd(save("different", [row(1)]), "different");
-  assert.equal(
-    (await raw("inspect", { namespace: "different" })).events.length,
-    1,
-  );
-  assert.deepEqual(await raw("abort-transaction", { namespace: "test" }), {
-    aborted: true,
-  });
-  // Cross midnight, with two different UUID suffixes in the same millisecond.
-  const midnight = Math.floor(millis / 86400000) * 86400000;
-  const timed = (suffix, time) => {
-    const b = row(suffix);
-    for (let i = 9; i >= 4; i--) {
-      b[i] = time % 256;
-      time = Math.floor(time / 256);
-    }
-    return b;
-  };
-  const dates = [
-    timed(5, midnight + 86400001),
-    timed(3, midnight),
-    timed(1, midnight - 1),
-    timed(4, midnight + 1),
-    timed(2, midnight),
-  ];
-  const wide = {
-    ...selection,
-    from: new Date(midnight - 2).toISOString(),
-    to: new Date(midnight + 86400002).toISOString(),
-  };
-  await cmd({ kind: "begin", collection: collection("dates", wide) }, "dates");
-  await cmd(save("dates", dates), "dates");
-  const exact = {
-    ...wide,
-    from: new Date(midnight).toISOString(),
-    to: new Date(midnight + 1).toISOString(),
-  };
-  const atMidnight = await cmd(
-    {
-      kind: "lookup",
-      collection: "dates",
-      selection: exact,
-      started: millis + 864000000,
-    },
-    "dates",
-  );
-  assert.deepEqual(
-    (await drain(atMidnight, "dates")).map((b) => b[19]),
-    [2, 3],
-  );
-  console.log(
-    "PASS: cross-day insertion, same-millisecond UUID distinction, inclusive start/exclusive end",
-  );
-  console.log(
-    "PASS: 1,200 out-of-order UUIDs, exact PIL restore, overlapping dedupe, gap planning, recent-window refresh, trie equality, IDB rollback/file recovery, concurrent writers, schema/tap/credential isolation, and no browser log.idx",
-  );
-
-  }
-  // Native format-6 extents use the same actual OPFS/IDB worker and cross-tab
-  // lock, not the earlier per-event browser codec or a mock IndexedDB.
+  // Native event files and atomic trie publication, with no IndexedDB.
   const nativeWire=new Uint8Array(await readFile(root+"client/services/fixtures/native-ranges/ranges.pil"));
   const pilModule=await WebAssembly.compile(await readFile(root+"client/assets/pil.wasm"));
   const nativeDefinitions=new Map(),nativeRecords=[];
@@ -384,7 +162,7 @@ try {
   const nativeSelection={...selection,tap:nativeRecords[0].binding.tap,from:"2026-10-16T12:12:00Z",to:"2026-10-16T12:28:00Z"};
   await cmd({kind:"begin",collection:collection("native-first",nativeSelection)},"native");
   const nativeRecord=(session,record)=>({kind:"native-record",session,record,definition:nativeDefinitions.get(record.binding.digest)});
-  const nativeSizes=inv=>Object.fromEntries(Object.entries(inv).filter(([p])=>p.startsWith("/trie-trunk-v2/native/native/")));
+  const nativeSizes=inv=>Object.fromEntries(Object.entries(inv).filter(([p])=>p.startsWith("/snoot-store/native/branches/")&&!/\/(layout|branch)\./.test(p)));
   await cmd({kind:"native-begin",session:"interrupted"},"native");
   for(const record of nativeRecords.slice(0,-1))await cmd(nativeRecord("interrupted",record),"native");
   const nativeBefore=nativeSizes(await raw("inventory"));
@@ -418,7 +196,7 @@ try {
   const generationRecords=structuredClone(nativeRecords);generationRecords[0].manifest.Generation[0]^=1;rebindPAC(generationRecords);
   await cmd({kind:"native-begin",session:"metadata-abort"},"native");
   await raw("fail-native-publication");
-  await assert.rejects(cmd(nativeRecord("metadata-abort",generationRecords[0]),"native"),/simulated native IDB abort/);
+  await assert.rejects(cmd(nativeRecord("metadata-abort",generationRecords[0]),"native"),/simulated file commit failure/);
   // The original generation remains certified; the failed new one does not.
   assert.equal((await cmd({kind:"native-coverage"},"native")).nativeCoverage.length,1);
   for(const record of generationRecords)await cmd(nativeRecord("metadata-abort",record),"native");
@@ -427,13 +205,12 @@ try {
   await page.reload();
   await page.evaluate(()=>{globalThis.workers=[new Worker("/harness.js",{type:"module"}),new Worker("/harness.js",{type:"module"})];});
   const nativeRestored=await cmd({kind:"restore",collection:"native-first"},"native");
-  assert.equal(nativeRestored.nativeSelections.length,1);
-  assert.equal(nativeRestored.nativeSelections[0].source,source);
+  assert.equal(nativeRestored.done,true,"page working sets are not durable event storage");
   assert.deepEqual((await cmd(pageRequest,"native")).nativePage,nativePage);
   const nativeDB=await raw("inspect",{namespace:"native"});
-  assert.equal(nativeDB.events.length,0);assert.equal(nativeDB.members.length,0);
+  assert.ok(nativeDB.sources.length);assert.deepEqual(await page.evaluate(()=>indexedDB.databases()),[]);
   assert.equal((await cmd({kind:"definitions"},"native")).definitions.length,1);
-  console.log("PASS: native OPFS ranges + strict IDB commits, killed worker before completion, orphan-tail recovery, concurrent tabs, actual page reload, source-generation separation, exact lazy PIL population, zero per-event IDB entries");
+  console.log("PASS: native OPFS ranges + atomic trie commits, killed worker before completion, orphan-tail recovery, concurrent tabs, actual page reload, source-generation separation, exact lazy PIL population, zero IndexedDB databases");
 
   // Real OPFS pages: disjoint hours, an intervening fill and head retention.
   const importHour=async(name,session=name)=>{
@@ -535,18 +312,18 @@ try {
   await assert.rejects(cmd({kind:"native-finish",session:"delayed-old"},"generation"),/retired/);
   await assert.rejects(cmd({kind:"native-page",source:original,from:0,to:Date.now()},"generation"),/retired/);
   const inventory=await raw("inventory");
-  assert.ok(!Object.keys(inventory).some(p=>p.includes("/generation/native/"+original+"/")));
-  assert.ok(Object.keys(inventory).some(p=>p.includes("/generation/native/"+replacement+"/")));
+  assert.ok(!Object.keys(inventory).some(p=>p.includes("/generation/branches/"+original+"/")&&p.endsWith("events.sods")));
+  assert.ok(Object.keys(inventory).some(p=>p.includes("/generation/branches/"+replacement+"/")&&p.endsWith("events.sods")));
   await page.reload();
   await page.evaluate(()=>{globalThis.workers=[new Worker("/harness.js",{type:"module"}),new Worker("/harness.js",{type:"module"})];});
   const restoredGeneration=await cmd({kind:"restore",collection:"generation-first"},"generation");
-  assert.equal(restoredGeneration.nativeSelections.length,1);assert.equal(restoredGeneration.nativeSelections[0].source,replacement);
+  assert.equal(restoredGeneration.done,true);
   const replacementPage=await cmd({...pageRequest,source:replacement},"generation");
   assert.deepEqual(replacementPage.nativePage,nativePage);
   console.log("PASS: ordered retention generations, atomic working-set retirement, stale response rejection, OPFS reclamation, and replacement-only restoration after reload");
   await cmd({kind:"native-begin",session:"before-rebase"},"generation",1);
   for(const record of replacementRecords)await cmd(nativeRecord("before-rebase",record),"generation",1);
-  await cmd({kind:"native-rebase",source:sequenced.find(r=>r.kind==="manifest").binding.tap},"generation");
+  await cmd({kind:"native-rebase",sources:[sequenced.find(r=>r.kind==="manifest").binding.tap]},"generation");
   assert.equal((await cmd({kind:"native-coverage"},"generation")).nativeCoverage.length,0);
   await assert.rejects(cmd({kind:"native-finish",session:"before-rebase"},"generation",1),/cache rebased/);
   await assert.rejects(cmd({...pageRequest,source:replacement},"generation"),/retired/);
@@ -559,7 +336,7 @@ try {
   assert.deepEqual((await cmd({...pageRequest,source:rebased},"generation")).nativePage,nativePage);
   assert.deepEqual((await cmd(stateQuery,"state-pages")).nativeObjectState,updatedToken);
   const afterRebaseFiles=await raw("inventory");
-  assert.ok(!Object.keys(afterRebaseFiles).some(p=>p.includes("/generation/native/"+replacement+"/")));
+  assert.ok(!Object.keys(afterRebaseFiles).some(p=>p.includes("/generation/branches/"+replacement+"/")&&p.endsWith("events.sods")));
   console.log("PASS: explicit scoped cache rebuild, cross-worker stale response rejection, reload, server generation rollback, new local references and preserved unrelated cache");
 
 } finally {

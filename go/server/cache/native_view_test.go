@@ -39,7 +39,7 @@ func TestColdViewPlansWholePACWithoutPopulationReads(t *testing.T) {
 				t.Fatal(e)
 			}
 			source.api = &HTTP{Store: s}
-			q := QueryPlan{Filters: []QueryFilter{{"duration", ">", QueryLiteral{"number", "11.5"}}}, Order: "asc"}
+			q := QueryPlan{Filters: []QueryFilter{{"duration", ">", QueryLiteral{"duration", "11.5us"}}}, Order: "asc"}
 			if e = source.filterQuery(context.Background(), &q); e != nil {
 				t.Fatal(e)
 			}

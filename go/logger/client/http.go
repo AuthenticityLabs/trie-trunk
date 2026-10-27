@@ -93,7 +93,7 @@ func (l *Logger) serve(next Handler, options HTTPOptions) http.Handler {
 				b.mutate(func(e *Entry) {
 					if e.Error == nil {
 						e.Error = models.Normalize(ctx.Err(), e.Service)
-						e.Level = WARN
+						e.Level = ERROR
 					}
 				})
 			}
@@ -116,11 +116,7 @@ func (l *Logger) serve(next Handler, options HTTPOptions) http.Handler {
 						typ = models.SYSTEM
 					}
 					e.Error = models.New(models.UNEXPECTED).WithType(typ).WithStatus(uint16(recorder.status)).WithSource(e.Service)
-					if recorder.status >= 500 {
-						e.Level = ERROR
-					} else {
-						e.Level = WARN
-					}
+					e.Level = ERROR
 				}
 			})
 			report(b.Finish())

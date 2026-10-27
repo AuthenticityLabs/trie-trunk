@@ -13,6 +13,17 @@ import { bytes, fixture, magic, response } from "./pil-fixtures.mjs";
 const module = await WebAssembly.compile(
   readFileSync(new URL("../assets/pil.wasm", import.meta.url)),
 );
+test("compiled definitions are reused while binding context remains independent", () => {
+  const f = fixture(), first = compile(f, "first", ["one"]), second = compile(f, "second", ["two"]);
+  assert.equal(first.definition, second.definition);
+  assert.equal(first.dictionary.fields, second.dictionary.fields);
+  assert.equal(first.dictionary.tap, "first");
+  assert.deepEqual(first.dictionary.headers, ["one"]);
+  assert.equal(second.dictionary.tap, "second");
+  assert.deepEqual(second.dictionary.headers, ["two"]);
+  const changed = f.pil.slice(); changed[changed.length - 1] ^= 1;
+  assert.throws(() => compile({...f, pil: changed}, "third"), /Immutable PIL definition changed/);
+});
 async function reader(defs) {
   const codec = new Codec(await WebAssembly.instantiate(module)),
     definitions = defs ?? new Map(),

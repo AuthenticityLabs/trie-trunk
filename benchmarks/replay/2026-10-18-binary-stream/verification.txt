@@ -1,9 +1,0 @@
-PASS: 360 native-PIL/JSON-control delivery cases, 112 measured updates each, 1/10/100 subscribers.
-PASS: 48 reconnect cases, 30 measured requests each after five warmups.
-PASS: 200 native zlib/Brotli runs, 409600 immediate decode-and-byte-compare checks plus finalization.
-PASS: 36 Go gzip controls using native PIL or explicit JSON, full decompressed-byte comparisons.
-PASS: go test -race ./... -count=1 (benchmark module, local HTTP sockets permitted).
-PASS: source hashes verified for both PostgreSQL sync matrices.
-PASS: current raw-PIL fixture hashes equal the prior corrected native-PIL compression fixtures.
-No base64 or text/event-stream code remains in active benchmark Go/Rust/C source.
-End-to-end latency is uncompressed loopback HTTP/1.1, durable-before-publish; native compression measured separately.

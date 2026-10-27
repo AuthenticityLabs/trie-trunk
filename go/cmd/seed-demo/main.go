@@ -60,6 +60,10 @@ func seedWithClock(root string, count, days int, end time.Time, clock func() tim
 // Bulk footprint measurements can supply a native budget without changing the
 // application's default. Zero retains the normal Store configuration.
 func seedWithMemoryBudget(root string, count, days int, end time.Time, clock func() time.Time, nativeMemoryBytes uint64) (r report, err error) {
+	return seedWithStorageProfile(root, count, days, end, clock, nativeMemoryBytes, true)
+}
+
+func seedWithStorageProfile(root string, count, days int, end time.Time, clock func() time.Time, nativeMemoryBytes uint64, objectIndex bool) (r report, err error) {
 	if count < len(scenarios) || days < 1 || days > 3650 {
 		return r, fmt.Errorf("events must be >=5 and days must be 1..3650")
 	}
@@ -80,7 +84,7 @@ func seedWithMemoryBudget(root string, count, days int, end time.Time, clock fun
 	// lost when the coordinator later reopens the cache with its default config.
 	policy := "version = 1\ntimezone = \"America/New_York\"\n\n[defaults.replication]\nindex_period = \"1h\"\npopulation = \"lazy\"\nprovisional_tail = \"15m\"\n"
 	for _, spec := range scenarios {
-		policy += fmt.Sprintf("\n[resources.%q]\nobject_index = true\n", spec.service+"/"+spec.resource+".v1")
+		policy += fmt.Sprintf("\n[resources.%q]\nobject_index = %t\n", spec.service+"/"+spec.resource+".v1", objectIndex)
 	}
 	if e = os.MkdirAll(filepath.Join(stage, r.Cache), 0700); e != nil {
 		return r, e
@@ -93,7 +97,7 @@ func seedWithMemoryBudget(root string, count, days int, end time.Time, clock fun
 		if e != nil {
 			return r, e
 		}
-		cfg := cache.Config{Root: stage, Cache: r.Cache, Tenant: r.Tenant, Layout: l, ObjectIndex: true, Now: clock, NativeMemoryBytes: nativeMemoryBytes}
+		cfg := cache.Config{Root: stage, Cache: r.Cache, Tenant: r.Tenant, Layout: l, ObjectIndex: objectIndex, Now: clock, NativeMemoryBytes: nativeMemoryBytes}
 		store, e := cache.Open(cfg)
 		if e != nil {
 			return r, e
@@ -144,6 +148,7 @@ func seedWithMemoryBudget(root string, count, days int, end time.Time, clock fun
 				message = "Dependency timeout"
 				duration = uint64(400000 + (i*3571)%2600000)
 			} else if j%31 == 0 {
+				branch = cache.Debug
 				level = 1
 				message = "Request latency elevated"
 				duration = uint64(180000 + (i*7919)%500000)
@@ -230,6 +235,9 @@ func seedWithMemoryBudget(root string, count, days int, end time.Time, clock fun
 		return r, e
 	}
 	for _, spec := range scenarios {
+		if !objectIndex {
+			break
+		}
 		e = endpoint.History(context.Background(), spec.service+"/"+spec.resource, 1, objectID(42), start, end, func(cache.EventReference, []byte) error { return nil })
 		if e != nil {
 			endpoint.Close()

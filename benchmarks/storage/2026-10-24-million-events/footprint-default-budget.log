@@ -1,6 +1,0 @@
-=== RUN   TestDemoFootprint
-    footprint_test.go:54: durable staging capacity reached; retain the event and retry later: native buffer budget exhausted
---- FAIL: TestDemoFootprint (47.43s)
-FAIL
-FAIL	trie-trunk/go/cmd/seed-demo	47.667s
-FAIL

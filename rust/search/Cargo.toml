@@ -1,0 +1,11 @@
+[package]
+name = "trunk-search-core"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.88"
+license = "AGPL-3.0-only"
+publish = false
+
+[dependencies]
+tantivy = { version = "=0.25.0", default-features = false, features = ["lz4-compression"] }
+serde = { version = "1", features = ["derive"] }

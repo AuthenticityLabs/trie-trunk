@@ -1,3 +1,4 @@
+import { nativeCacheIssue, combineCacheErrors } from "../store/errors.ts";
 import { SummaryDayCache, mergeDailyAnalytics, type DailyAnalytics } from './summaries.ts';
 import type { Archive } from '../store/protocol.ts';
 import { collectNative } from './native-collect.ts';
@@ -63,6 +64,11 @@ export class ViewCache {
  private coverage=new ViewCoverage();
  private fetcher:typeof fetch;
  constructor(fetcher:typeof fetch=fetch){this.fetcher=fetcher}
+ resetEvents(){
+  this.nativeHours.clear();this.events.clear();this.prefixes.clear();this.tries.clear();this.bytes=0;
+  this.pages.clear();this.versions.clear();this.summaries.clear();this.persisted.clear();this.coverage=new ViewCoverage();
+ }
+
  remember(view:ViewResponse) {
   this.coverage.validate(view.result.buckets??[],view.bindings,view.result.page);
   if(view.batch.rows.length!==view.result.page.length*3)throw Error('Invalid restored page');
@@ -77,7 +83,7 @@ export class ViewCache {
   while(this.bytes>32*1024*1024){const key=this.events.keys().next().value!;this.drop(key);this.coverage.evict(key)}
   this.coverage.add(view.result.buckets??[],view.bindings,view.result.page,key=>this.events.has(key));
  }
- async query(query:ViewQuery,token:string,signal:AbortSignal,codec:Codec,definitions:Map<string,StoredDefinition>,archive?:Archive):Promise<ViewResponse>{
+ async query(query:ViewQuery,token:string,signal:AbortSignal,codec:Codec,definitions:Map<string,StoredDefinition>,archive?:Archive,background=false,projection?:(manifest:DailyAnalytics,days:import('./summaries.ts').DecodedDay[])=>void,onPage?:(view:ViewResponse)=>void):Promise<ViewResponse>{
   const started=performance.now();
   const scope=JSON.stringify([query.tap,query.from,query.to,query.query]);
   const params=new URLSearchParams({tap:query.tap,from:query.from,to:query.to,page:String(query.size),include:query.include??'summary,page,statistics'});if(query.after)params.set('after',query.after);if(query.query)params.set('query',JSON.stringify(query.query));
@@ -92,7 +98,7 @@ export class ViewCache {
   const known=this.versions.get(scope),heldSummary=known?this.summaries.get(known):undefined;
   const fetcher=this.fetcher;
   const requestStarted=performance.now();
-  const response=await fetcher(`/events?${params}`,{signal,cache:'no-store',headers:{Accept:'application/pil','PIL-Version':'2','PIL-Features':'pac-arrays,adaptive-integers,view-buckets,daily-summaries','Definition-Known':[...definitions.keys()].slice(-128).join(','),'Event-Known':knownPage.join(','),...(buckets.keys.length?{'Bucket-Known':buckets.keys.join(',')}:{} ),...(known&&heldSummary?{'Summary-Known':known}:{}),...(token?{Authorization:`Bearer ${token}`}:{})}});
+  const response=await fetcher(`/events?${params}`,{signal,cache:'no-store',headers:{Accept:'application/pil','PIL-Version':'2','PIL-Features':'pac-arrays,adaptive-integers,view-buckets,daily-summaries','Definition-Known':[...definitions.keys()].slice(-128).join(','),'Event-Known':knownPage.join(','),...(buckets.keys.length?{'Bucket-Known':buckets.keys.join(',')}:{} ),...(!background&&!projection&&known&&heldSummary?{'Summary-Known':known}:{}),...(token?{Authorization:`Bearer ${token}`}:{})}});
   const requestEnded=performance.now();
   if(response.ok&&response.headers.get('Trunk-Format')!=='pac-view/0'){await response.body?.cancel();throw Error('Server does not support paged views; update the server to search')}
   let result:ViewResult|undefined;const bindings:Binding[]=[],fresh:({stream:number}&PackedRecord)[]=[];
@@ -104,14 +110,11 @@ export class ViewCache {
   }),signal);
   const responseEnded=performance.now();
   if(!result)throw Error('Missing view metadata');const meta:ViewResult=result;
+  if((background||projection) && (meta.page.length || fresh.length))throw Error('Summary collection returned events');
   let summary=meta.summary??(meta.summaryVersion===known?heldSummary:undefined);
-  if(meta.analytics){if(!summary)throw Error('Missing summary base');const refs=meta.analytics.days,days=new Array<Awaited<ReturnType<SummaryDayCache['load']>>>(refs.length);let next=0;await Promise.all(Array.from({length:Math.min(4,refs.length)},async()=>{for(;;){const i=next++;if(i>=refs.length)return;days[i]=await this.summaryDays.load(refs[i],token,fetcher,signal)}}));summary=mergeDailyAnalytics(summary,meta.analytics,days)}
-  if(query.include!=='page'&&!summary)throw Error('Missing full-range summary');
-  if(summary){if(!Array.isArray(summary.counts)||!Array.isArray(summary.errors)||summary.counts.length!==summary.errors.length||summary.counts.length>128||![summary.from,summary.to,summary.step,summary.count,...summary.counts,...summary.errors].every(Number.isSafeInteger)||summary.step<=0||summary.to<summary.from||summary.count!==summary.counts.reduce((a,b)=>a+b,0)||summary.count<0||!['committed-snapshot','live-snapshot'].includes(summary.status)||summary.counts.some((n,i)=>n<0||summary.errors[i]<0||summary.errors[i]>n))throw Error('Invalid view summary')}
-  if(summary)validateStatistics(summary);
-  const summariesEnded=performance.now();
   const collected=this.nativeHours;
-  const nativeRecord=async(ref:ViewReference,retry=true):Promise<PackedRecord>=>{
+  const nativeRecords=async(refs:ViewReference[],retry=true):Promise<PackedRecord[]>=>{
+   const ref=refs[0];
    if(!archive||!ref.native)throw Error('Native archive required for sealed search');
    const binding=bindings.find(b=>b.stream===ref.stream)!;
    const n=ref.native;
@@ -119,6 +122,8 @@ export class ViewCache {
    const key=JSON.stringify([binding.tap,binding.digest,n.generation,n.from,n.to]);
    let pending=collected.get(key);
    if(!pending){pending=(async()=>{
+    const local=(await archive(token,{kind:'native-resolve',tap:binding.tap,digest:binding.digest,generation:n.generation,from:n.from,to:n.to})).nativeDependencies;
+    if(local)return {source:local.source.key,trie:local.trie};
     const keys=await collectNative({tap:binding.tap,from:new Date(n.from).toISOString(),to:new Date(n.to).toISOString(),token,signal,codec,definitions,archive,fetcher,definitionVersion:binding.digest});
     for(const source of keys){const deps=(await archive(token,{kind:'native-dependencies',source})).nativeDependencies!;
      if(deps.source.digest===binding.digest&&deps.source.generation===n.generation)return {source,trie:deps.trie};}
@@ -126,23 +131,59 @@ export class ViewCache {
    })();collected.set(key,pending);void pending.catch(()=>collected.delete(key));while(collected.size>32)collected.delete(collected.keys().next().value!)}
    try {
     const {source,trie}=await pending;
-    const page=(await archive(token,{kind:'native-page',source,from:n.from,to:n.to,after:ref.row===0?undefined:ref.row-1,limit:1})).nativePage!;
-    if(page.after!==ref.row||page.rows.length!==16||page.bases.length!==1)throw Error('Missing canonical search record');
-    return {bytes:page.population,common:page.common?.[0],native:{row:page.rows,base:page.bases[0],trie}};
+    const page=(await archive(token,{kind:'native-rows',source,from:n.from,to:n.to,rows:refs.map(r=>r.row)})).nativePage!;
+    if(page.after!==refs.at(-1)!.row||page.rows.length!==refs.length*16||page.bases.length!==refs.length||page.offsets.length!==refs.length*2)throw Error('Missing canonical search record');
+    return refs.map((_,i)=>({bytes:page.population.subarray(page.offsets[i*2],page.offsets[i*2+1]),common:page.common?.[i],native:{row:page.rows.subarray(i*16,(i+1)*16),base:page.bases[i],trie}}));
    } catch(error) {
     // Local retention can evict an hour after its promise was cached. Re-check
     // coverage once; a retired origin snapshot still fails explicitly.
     if(collected.get(key)===pending)collected.delete(key);
-    if(retry&&!signal.aborted)return nativeRecord(ref,false);
+    if(retry&&!signal.aborted&&!nativeCacheIssue(error))return nativeRecords(refs,false);
     throw error;
    }
   };
-  const frames:PackedRecord[]=[];let at=0,total=0;const seen=new Set<string>();
-  for(const ref of meta.page){
+  const frames=new Array<PackedRecord>(meta.page.length);let at=0,total=0;
+  const seen=new Set<string>();
+  const groups=new Map<string,{ref:ViewReference;position:number}[]>();
+  // Validate the complete page before starting I/O. Group canonical rows by
+  // source/hour, read in physical order, then restore the query's sort order.
+  for(const [position,ref] of meta.page.entries()){
    if(!/^[a-f0-9]{64}$/.test(ref.key)||seen.has(ref.key)||!Number.isSafeInteger(ref.row)||ref.row<0||!bindings.some(b=>b.stream===ref.stream)||typeof ref.cached!=='boolean'||(ref.provisional!==undefined&&typeof ref.provisional!=='boolean'))throw Error('Invalid page reference');seen.add(ref.key);
-   const record=ref.cached?{stream:ref.stream,...held.get(ref.key)}:ref.native?{stream:ref.stream,...await nativeRecord(ref)}:fresh[at++];
-   if(!record?.bytes||record.stream!==ref.stream)throw Error('Missing PAC page member');frames.push({bytes:record.bytes,common:record.common,native:record.native});total+=record.bytes.length;
+   if(!ref.cached&&ref.native){
+    const n=ref.native;
+    if(!Number.isSafeInteger(n.from)||!Number.isSafeInteger(n.to)||n.from>=n.to||!/^[a-f0-9]{32}$/.test(n.generation))throw Error('Invalid segment reference');
+    const key=JSON.stringify([ref.stream,n.generation,n.from,n.to]);
+    const group=groups.get(key)??[];group.push({ref,position});groups.set(key,group);
+   }else{
+    const record=ref.cached?{stream:ref.stream,...held.get(ref.key)}:fresh[at++];
+    if(!record?.bytes||record.stream!==ref.stream)throw Error('Missing PAC page member');
+    frames[position]={bytes:record.bytes,common:record.common,native:record.native};
+   }
   }
+  const hours=[...groups.values()];let nextHour=0;
+  const conflicts:unknown[]=[],failedResources=new Set<string>();
+  const loadHours=async()=>{
+   for(;;){
+    signal.throwIfAborted();const group=hours[nextHour++];if(!group)return;
+    const binding=bindings.find(b=>b.stream===group[0].ref.stream)!;
+    const resource=binding.tap.split('/').slice(0,3).join('/');
+    if(failedResources.has(resource))continue;
+    group.sort((a,b)=>a.ref.row-b.ref.row);
+    try{
+     const records=await nativeRecords(group.map(item=>item.ref));
+     group.forEach((item,i)=>{frames[item.position]=records[i]});
+    }catch(error){
+     if(nativeCacheIssue(error)?.code!=='native-cache-conflict')throw error;
+     conflicts.push(error);failedResources.add(resource);
+    }
+   }
+  };
+  // Downloads can overlap; archive commands still serialize file publication.
+  // Settle all workers before returning an error, so no query work is orphaned.
+  const loads=await Promise.allSettled(Array.from({length:Math.min(4,hours.length)},loadHours));
+  const failures=[...conflicts,...loads.flatMap(load=>load.status==='rejected'?[load.reason]:[])];
+  if(failures.length)throw combineCacheErrors(failures);
+  total=frames.reduce((bytes,frame)=>bytes+frame.bytes.length,0);
   const eventsEnded=performance.now();
   if(at!==fresh.length)throw Error('Unreferenced PAC member');
   this.coverage.validate(meta.buckets??[],bindings,meta.page);
@@ -153,13 +194,34 @@ export class ViewCache {
   this.pages.set(pageKey,meta.page.map(r=>r.key));
   this.pages.set(JSON.stringify([scope,query.size,meta.cursor,query.include??"summary,page,statistics"]),meta.page.map(r=>r.key));
   while(this.pages.size>32)this.pages.delete(this.pages.keys().next().value!);
-  if(summary){this.summaries.set(meta.summaryVersion,summary);this.versions.set(scope,meta.summaryVersion)}
-  while(this.summaries.size>32)this.summaries.delete(this.summaries.keys().next().value!);
-  while(this.versions.size>32)this.versions.delete(this.versions.keys().next().value!);
   const data=new Uint8Array(total),rows=new Uint32Array(frames.length*3);at=0;
   frames.forEach(({bytes},i)=>{data.set(bytes,at);rows.set([meta.page[i].stream,at,at+bytes.length],i*3);at+=bytes.length});
   const used=[...new Set(bindings.map(b=>b.digest))].map(digest=>{const {store,pil}=definitions.get(digest)!;return {digest,store,pil}});
-  const timings:ViewTimings={request:requestEnded-requestStarted,response:responseEnded-requestEnded,summaries:summariesEnded-responseEnded,events:eventsEnded-summariesEnded,client:requestStarted-started+performance.now()-eventsEnded};
-  return {timings,result:{...meta,summary,coverage:this.coverage.status(query.tap,Date.parse(query.from),Date.parse(query.to))},definitions:used,bindings,batch:{bytes:data.buffer,rows,common:frames.map(f=>f.common)},native:frames.map(f=>f.native)};
+  const pageTimings:ViewTimings={request:requestEnded-requestStarted,response:responseEnded-requestEnded,summaries:0,events:eventsEnded-responseEnded,client:requestStarted-started+performance.now()-eventsEnded};
+  const view:ViewResponse={timings:pageTimings,result:{...meta,summary:undefined,coverage:this.coverage.status(query.tap,Date.parse(query.from),Date.parse(query.to))},definitions:used,bindings,batch:{bytes:data.buffer,rows,common:frames.map(f=>f.common)},native:frames.map(f=>f.native)};
+  // Publish a validated page from this exact snapshot before fetching chart data.
+  // The receiver may transfer the batch buffers; only metadata is used below.
+  signal.throwIfAborted();
+  onPage?.(view);
+  signal.throwIfAborted();
+  const summariesStarted=performance.now();
+  if(meta.analytics){
+   if(!summary)throw Error('Missing summary base');
+   const refs=meta.analytics.days;
+   const days=await this.summaryDays.loadMany(refs,token,fetcher,signal,background);
+   summary=mergeDailyAnalytics(summary,meta.analytics,days);
+   projection?.(meta.analytics,days);
+  }
+  if(query.include!=='page'&&!summary)throw Error('Missing full-range summary');
+  if(summary){if(!Array.isArray(summary.counts)||!Array.isArray(summary.errors)||summary.counts.length!==summary.errors.length||summary.counts.length>128||![summary.from,summary.to,summary.step,summary.count,...summary.counts,...summary.errors].every(Number.isSafeInteger)||summary.step<=0||summary.to<summary.from||summary.count!==summary.counts.reduce((a,b)=>a+b,0)||summary.count<0||!['committed-snapshot','live-snapshot'].includes(summary.status)||summary.counts.some((n,i)=>n<0||summary.errors[i]<0||summary.errors[i]>n))throw Error('Invalid view summary')}
+  if(summary)validateStatistics(summary);
+
+  signal.throwIfAborted();
+  if(summary){this.summaries.set(meta.summaryVersion,summary);this.versions.set(scope,meta.summaryVersion)}
+  while(this.summaries.size>32)this.summaries.delete(this.summaries.keys().next().value!);
+  while(this.versions.size>32)this.versions.delete(this.versions.keys().next().value!);
+  view.result={...view.result,summary};
+  view.timings={...pageTimings,summaries:performance.now()-summariesStarted};
+  return view;
  }
 }

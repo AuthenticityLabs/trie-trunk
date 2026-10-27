@@ -77,7 +77,7 @@ func TestPACStatePreservationAndExtensions(t *testing.T) {
 			broken := *p
 			broken.Members = append([][]byte(nil), p.Members...)
 			broken.Members[0] = frames[0]
-			raw, _ := broken.marshal()
+			raw, _ := broken.Marshal()
 			if _, err = ParsePAC(l, raw, nil); err == nil {
 				t.Fatal("common override accepted")
 			}
@@ -103,7 +103,7 @@ func TestPACGzipReuseAndFixture(t *testing.T) {
 	var spliced bytes.Buffer
 	splice := NewGzipPACWriter(&spliced)
 	for i := 0; i < 2; i++ {
-		if e = splice.append(sealed); e != nil {
+		if e = splice.Append(sealed); e != nil {
 			t.Fatal(e)
 		}
 	}
@@ -200,7 +200,7 @@ func TestPACEmptySingleAndCommonNull(t *testing.T) {
 		t.Fatal(err)
 	}
 	var prefix Frame
-	if err = l.scanPlain(p.Common, &prefix); err != nil {
+	if err = l.ScanPlain(p.Common, &prefix); err != nil {
 		t.Fatal(err)
 	}
 	if prefix.Values[5].State != Null {

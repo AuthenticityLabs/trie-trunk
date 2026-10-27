@@ -94,7 +94,7 @@ func (p *Endpoint) registration(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(404)
 			return
 		}
-		if proposed.integers != nil && !hasAdaptive(r) {
+		if proposed.Adaptive() && !hasAdaptive(r) {
 			http.Error(w, "adaptive-integers feature required", 426)
 			return
 		}
@@ -110,7 +110,7 @@ func (p *Endpoint) registration(w http.ResponseWriter, r *http.Request) {
 	}
 	preferred := api.Store.layout
 	definitionHeaders(w.Header(), preferred)
-	if preferred.integers != nil && !hasAdaptive(r) {
+	if preferred.Adaptive() && !hasAdaptive(r) {
 		http.Error(w, "adaptive-integers feature required", 426)
 		return
 	}

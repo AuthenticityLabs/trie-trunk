@@ -11,20 +11,7 @@ mod native;
 mod query;
 use lifecycle::run;
 
-#[derive(Default)]
-#[cfg_attr(test, derive(Deserialize))]
-#[cfg_attr(test, serde(default))]
-struct Cell {
-    k: usize,
-    t: Vec<String>,
-    c: Vec<String>,
-    e: Vec<String>,
-    state: u64,
-    u: Vec<u64>,
-    i: Vec<i64>,
-    f: Vec<f64>,
-    b: Vec<bool>,
-}
+use trunk_search_core::{Cell, Filter};
 #[derive(Default)]
 #[cfg_attr(test, derive(Deserialize))]
 struct Doc {
@@ -34,14 +21,6 @@ struct Doc {
     source_row: u64,
     row: u64,
     cells: Vec<Cell>,
-}
-#[derive(Default)]
-struct Filter {
-    code: Option<u64>,
-    k: usize,
-    kind: String,
-    op: String,
-    value: String,
 }
 #[derive(Default)]
 struct Request {

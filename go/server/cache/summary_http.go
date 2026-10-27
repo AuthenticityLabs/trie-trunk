@@ -3,11 +3,7 @@ package cache
 import (
 	"encoding/hex"
 	"fmt"
-	"io"
-	"net/http"
-	"os"
 	"sort"
-	"strconv"
 )
 
 type ViewSummaryDay struct {
@@ -50,81 +46,6 @@ func (s *Store) rememberSummaryExport(raw []byte) string {
 		delete(s.summaryExports, old)
 	}
 	return key
-}
-func (h *HTTP) summaryDayHTTP(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		w.Header().Set("Allow", "GET")
-		http.Error(w, "GET required", 405)
-		return
-	}
-	q := r.URL.Query()
-	if len(q) != 3 || len(q["key"]) != 1 || len(q["source"]) != 1 || len(q["definition"]) != 1 {
-		http.Error(w, "invalid summary reference", 400)
-		return
-	}
-	key := q.Get("key")
-	if len(key) != 64 {
-		http.Error(w, "invalid summary key", 400)
-		return
-	}
-	if _, e := hex.DecodeString(key); e != nil {
-		http.Error(w, "invalid summary key", 400)
-		return
-	}
-	apis := h.sources
-	if len(apis) == 0 {
-		apis = []*HTTP{h}
-	}
-	for _, api := range apis {
-		if fmtDigestNative(api.Store.layout.Digest) != q.Get("definition") {
-			continue
-		}
-		branches, e := api.branch(q.Get("source"))
-		if e != nil || len(branches) != 1 {
-			continue
-		}
-		s := api.Store
-		s.mu.Lock()
-		b, e := s.openBranch(branches[0])
-		if e != nil {
-			s.mu.Unlock()
-			http.Error(w, e.Error(), 500)
-			return
-		}
-		for _, loc := range b.summaryDays {
-			if loc.Key != key {
-				continue
-			}
-			// Pin the immutable inode across retention/repacking. No packet-sized
-			// Go buffer and no summary decompression are needed for delivery.
-			file, e := os.Open(b.sum.Name())
-			s.mu.Unlock()
-			if e != nil {
-				http.Error(w, e.Error(), 500)
-				return
-			}
-			defer file.Close()
-			w.Header().Set("Content-Type", "application/vnd.trie-trunk.summary")
-			w.Header().Set("Cache-Control", "private, no-store")
-			w.Header().Set("ETag", `"`+key+`"`)
-			w.Header().Set("Content-Length", strconv.FormatUint(loc.Length, 10))
-			_, _ = io.Copy(w, io.NewSectionReader(file, int64(loc.Offset), int64(loc.Length)))
-			return
-		}
-		raw := s.summaryExports[key]
-		s.mu.Unlock()
-		if raw == nil {
-			http.Error(w, "summary snapshot expired; retry search", 409)
-			return
-		}
-		w.Header().Set("Content-Type", "application/vnd.trie-trunk.summary")
-		w.Header().Set("Cache-Control", "private, no-store")
-		w.Header().Set("ETag", `"`+key+`"`)
-		w.Header().Set("Content-Length", strconv.Itoa(len(raw)))
-		w.Write(raw)
-		return
-	}
-	http.NotFound(w, r)
 }
 
 // Produce complete-day replicas for the five-minute-aligned interior. Exact

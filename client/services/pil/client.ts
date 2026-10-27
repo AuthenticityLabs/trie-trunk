@@ -1,3 +1,4 @@
+import { restoreCacheError } from "../store/errors.ts";
 import { viewEvents } from "./view-events.ts";
 import type { ViewResponse, ViewQuery, ViewResult } from "./view.ts";
 import type { Collection } from "../store/protocol.ts";
@@ -16,6 +17,18 @@ const requests = new Map<
   number,
   { receive: (reply: Reply) => void; fail: (error: Error) => void }
 >();
+// Close this tab's transport, not other subscribers on the shared worker.
+export function disconnectClient() {
+  transport?.postMessage({ kind: 'close' });
+  transport?.close();
+  transport = undefined;
+  if (owner && 'terminate' in owner) owner.terminate();
+  owner = undefined;
+  fileWorker?.terminate();
+  fileWorker = undefined;
+  for (const job of [...requests.values()]) job.fail(new DOMException('Workspace closed', 'AbortError'));
+  requests.clear();
+}
 function port(): MessagePort {
   if (transport) return transport;
   if (typeof SharedWorker !== "undefined") {
@@ -67,10 +80,12 @@ function port(): MessagePort {
 }
 function request(
   command:
+    | { kind:"fast-dashboard"; request:import('../fast-dashboard.ts').FastRequest; token:string }
+    | { kind:"prime-summaries"; service:string; recent:boolean; token:string }
     | { kind:"persist-view"; definitions:Metadata[]; bindings:Binding[]; token:string }
     | { kind:"remember-view"; view:ViewResponse; token:string }
-    | { kind:"view"; query:ViewQuery; token:string }
-    | { kind:"rebase"; source:string; token:string }
+    | { kind:"view"; query:ViewQuery; token:string; progressive?:boolean }
+    | { kind:"rebase"; sources:string[]; token:string }
     | { kind: "schemas"; tap: string; token: string }
     | { kind: "history"; query: HistoryQuery; token: string }
     | {
@@ -103,7 +118,7 @@ function request(
       receive(reply) {
         try {
           if (reply.kind === "error") {
-            finish(Error(reply.message));
+            finish(restoreCacheError(reply.message,reply.cacheIssue));
             return;
           }
           if (reply.kind === "done") {
@@ -160,6 +175,7 @@ export async function streamEvents(
 }
 async function receiveEvents(
   command:
+    | { kind:"prime-summaries"; service:string; recent:boolean; token:string }
     | { kind: "history"; query: HistoryQuery; token: string }
     | {
         kind: "events";
@@ -255,7 +271,10 @@ export function beginCollection(
   return request({ kind: "begin", collection, token }, signal, () => {});
 }
 export function rebaseCollection(source:string,token:string,signal:AbortSignal){
-  return request({kind:"rebase",source,token},signal,()=>{});
+  return rebaseCollections([source],token,signal);
+}
+export function rebaseCollections(sources:string[],token:string,signal:AbortSignal){
+  return request({kind:"rebase",sources,token},signal,()=>{});
 }
 export function restoreCollection(
   token: string,
@@ -278,11 +297,16 @@ export function restoreCollection(
 }
 
 /** A bounded PIL page is not evidence of complete native replication coverage. */
-export async function loadView(query:ViewQuery,token:string,signal:AbortSignal):Promise<{result:ViewResult;events:LogEvent[];view:ViewResponse}> {
-  let output:{result:ViewResult;events:LogEvent[];view:ViewResponse}|undefined;
-  await request({kind:"view",query,token},signal,reply=>{
-    if(reply.kind!=="view")return;
-    output={result:reply.view.result,events:viewEvents(reply.view),view:reply.view};
+type LoadedView = {result:ViewResult;events:LogEvent[];view:ViewResponse};
+export async function loadView(query:ViewQuery,token:string,signal:AbortSignal,onPage?:(page:LoadedView)=>void):Promise<LoadedView> {
+  let output:LoadedView|undefined;
+  await request({kind:"view",query,token,progressive:!!onPage},signal,reply=>{
+    if(reply.kind==="view"||reply.kind==="view-page") {
+      output={result:reply.view.result,events:viewEvents(reply.view),view:reply.view};
+      if(reply.kind==="view-page")onPage?.(output);
+    } else if(reply.kind==="view-summary"&&output) {
+      output={...output,result:reply.result,view:{...output.view,result:reply.result,timings:reply.timings}};
+    }
   });
   if(!output)throw Error("Missing event page");
   return output;
@@ -295,4 +319,17 @@ export function rememberView(view:ViewResponse,token:string,signal:AbortSignal) 
 /** Durable hour promotion is separate from delivering a visible search page. */
 export function persistView(view:ViewResponse,token:string,signal:AbortSignal) {
   return request({kind:"persist-view",definitions:view.definitions,bindings:view.bindings,token},signal,()=>{});
+}
+
+export function primeSummaries(service:string, recent:boolean, token:string, signal:AbortSignal, onProgress:(progress:import('../summary-replication.ts').SummaryProgress)=>void) {
+  return request({kind:'prime-summaries',service,recent,token},signal,reply=>{
+    if(reply.kind==='summary-progress')onProgress(reply.progress);
+  });
+}
+
+export async function loadFastDashboard(query:import('../fast-dashboard.ts').FastRequest,token:string,signal:AbortSignal) {
+  let result:import('../fast-dashboard.ts').FastResult|undefined;
+  await request({kind:'fast-dashboard',request:query,token},signal,reply=>{if(reply.kind==='fast-dashboard')result=reply.result});
+  if(!result)throw Error('Missing dashboard summaries.');
+  return result;
 }

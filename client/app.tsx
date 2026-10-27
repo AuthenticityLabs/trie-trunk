@@ -1,8 +1,10 @@
+import { restoreWorkspace, type TabState } from './services/search-workspace';
+import { SummarySubscriptions } from "./components/summary-subscriptions";
 import { SearchPerformance } from './components/search-performance';
 import { QueryEditor } from './components/query-editor';
 import { parseQuery, type QueryField } from './services/query';
-import { capturePosition, resolvePosition, validPosition, type ScrollPosition } from './services/ui-position';
-import { readTab, writeTab } from "./services/search-session";
+import { capturePosition, resolvePosition, type ScrollPosition } from './services/ui-position';
+import { readTab, writeTab, clearTabWorkspace } from "./services/search-session";
 import { ViewInsights } from "./components/view-insights";
 import { AlertCenter } from "./components/alerts";
 import { PagedResults, type PagedViewState } from "./components/paged-results";
@@ -20,12 +22,12 @@ import {
   lazy,
   untrack,
 } from "solid-js";
-import { beginCollection, restoreCollection, rebaseCollection } from "./services/pil/client";
+import { beginCollection, restoreCollection, rebaseCollection, disconnectClient } from "./services/pil/client";
 import wordmark from "./assets/snoot-wordmark.png";
 import { Coverage, type Interval } from "./services/coverage";
 import { ExpansionDialog } from "./components/expansion";
 import { Events } from "./components/events";
-import { Icon, ProfileMark } from "./components/icon";
+import { Icon } from "./components/icon";
 import { Navigation, type Page } from "./components/navigation";
 import { Settings, type Panel } from "./components/settings";
 import {
@@ -43,7 +45,8 @@ import {
   defaultTheme,
   nextTheme,
   themeColors,
-  type Theme,
+  resolveTheme,
+  type ThemePreference,
 } from "./services/preferences";
 import {
   compileIndicator,
@@ -78,6 +81,8 @@ import {
 import { expandEvent, jsonText } from "./services/dictionary";
 
 const Calendar = lazy(() => import("./components/calendar"));
+const Configurations = lazy(() => import("./components/configurations"));
+const DashboardWorkspace = lazy(() => import("./components/dashboard-workspace"));
 const DashboardMetrics = lazy(() => import("./components/dashboard"));
 const Research = lazy(() => import("./components/research"));
 const HistoryDialog = lazy(() => import("./components/research").then(module=>({default:module.HistoryDialog})));
@@ -92,26 +97,31 @@ type Status =
   | "ended"
   | "stopped"
   | "error";
-type TabState = {
- queryText?:string; version:1; page:Page; collapsed:boolean; tap:string; range:string; from:string; to:string;
- localParameters:Parameters; localTap:string; localFrom:string; localTo:string;
- query?:ViewQuery; pageSize:number; scroll:number; positions?:Partial<Record<Page,ScrollPosition>>;
-};
-function savedTab():TabState|undefined {
- const state=readTab<TabState>('snoot-tab-v1');
- if(!state||state.version!==1||!['Search','Dashboard','Alerts','Object History'].includes(state.page)||
-  (state.queryText!==undefined&&typeof state.queryText!=='string')||
-  !Number.isFinite(state.scroll)||state.scroll<0||typeof state.collapsed!=='boolean'||
-  (state.positions&&Object.values(state.positions).some(p=>!validPosition(p)))||
-  !Number.isInteger(state.pageSize)||state.pageSize<1||state.pageSize>1000||
-  !['tap','range','from','to','localTap','localFrom','localTo'].every(k=>typeof state[k as keyof TabState]==='string')||
-  !state.localParameters||Object.values(state.localParameters).some(v=>typeof v!=='string')||
-  (state.query&&(!Number.isFinite(Date.parse(state.query.from))||!Number.isFinite(Date.parse(state.query.to))||typeof state.query.tap!=='string')))return;
- return state;
-}
 export default function App() {
-  const saved=savedTab();
-  const [theme, setTheme] = createSignal<Theme>(defaultTheme);
+  const [signedOut, setSignedOut] = createSignal(readTab<boolean>('snoot-signed-out') === true);
+  const leave = () => {
+    setSignedOut(true);
+    disconnectClient();
+    clearTabWorkspace();
+    writeTab('snoot-signed-out', true);
+  };
+  const resume = () => {
+    clearTabWorkspace();
+    writeTab('snoot-signed-out', false);
+    setSignedOut(false);
+  };
+  return <Show when={!signedOut()} fallback={<main class="signed-out"><img class="content-wordmark" src={wordmark} alt="snoot"/><h1>Logged Out of This Tab</h1><button class="button" onClick={resume}>Open Workspace</button></main>}><Workspace onLogout={leave}/></Show>;
+}
+
+function Workspace(props: {onLogout: () => void}) {
+  const saved=restoreWorkspace(readTab('snoot:workspace'));
+  const [themePreference, setThemePreference] = createSignal<ThemePreference>(defaultTheme);
+  const systemAppearance = matchMedia('(prefers-color-scheme: dark)');
+  const [systemDark, setSystemDark] = createSignal(systemAppearance.matches);
+  const appearanceChanged = (event: MediaQueryListEvent) => setSystemDark(event.matches);
+  systemAppearance.addEventListener('change', appearanceChanged);
+  onCleanup(() => systemAppearance.removeEventListener('change', appearanceChanged));
+  const theme = createMemo(() => resolveTheme(themePreference(), systemDark()));
   const [themeBusy, setThemeBusy] = createSignal(false);
   const [themeError, setThemeError] = createSignal("");
   let themeChanged = false;
@@ -123,11 +133,10 @@ export default function App() {
     );
   });
 
-  async function toggleTheme() {
+  async function chooseTheme(next: ThemePreference) {
     if (themeBusy()) return;
     themeChanged = true;
-    const next = nextTheme(theme());
-    setTheme(next);
+    setThemePreference(next);
     setThemeBusy(true);
     setThemeError("");
     try {
@@ -155,6 +164,7 @@ export default function App() {
   }>();
   let activePredicate: Predicate | undefined;
   const [page, setPage] = createSignal<Page>(saved?.page ?? "Search");
+  const [searchView, setSearchView] = createSignal<'events'|'charts'>(saved?.searchView ?? 'events');
   const [drawer, setDrawer] = createSignal(false);
   const [collapsed, setCollapsed] = createSignal(saved?.collapsed ?? false);
   const [modal, setModal] = createSignal<Panel>();
@@ -175,6 +185,10 @@ export default function App() {
   const [choices, setChoices] = createSignal<Choices>({});
   const [schemaError, setSchemaError] = createSignal("");
   const [schemaLoading, setSchemaLoading] = createSignal(false);
+  const queryValid = createMemo(() => {
+    try { parseQuery(queryText(), queryFields()); return true; }
+    catch { return false; }
+  });
   const [localParameters, setLocalParameters] = createSignal<Parameters>(saved?.localParameters ?? {});
   const [localChoices, setLocalChoices] = createSignal<Choices>({});
   const [localTap, setLocalTap] = createSignal(saved?.localTap ?? "");
@@ -303,7 +317,7 @@ export default function App() {
     // must also not overwrite a theme the user has already chosen.
     void loadTheme().then(
       (saved) => {
-        if (!disposed && !themeChanged) setTheme(saved);
+        if (!disposed && !themeChanged) setThemePreference(saved);
       },
       () => {
         if (!disposed && !themeChanged)
@@ -371,7 +385,7 @@ export default function App() {
     onCleanup(() => abort.abort());
   });
 
-  async function restore(tokenValue: string) {
+  async function restore(tokenValue: string, restoreWindow = false) {
     setPagedQuery(undefined);
     stop();
     const current = ++generation,
@@ -399,7 +413,7 @@ export default function App() {
     refresh();
     let last: string | undefined;
     try {
-      last = sessionStorage.getItem("snoot-collection") ?? undefined;
+      last = sessionStorage.getItem("snoot:search:collection") ?? undefined;
     } catch {}
     try {
       await restoreCollection(
@@ -416,10 +430,12 @@ export default function App() {
           collectionId = saved.id;
           setHasCollected(true);
           setActiveSelection(saved.selection);
-          setTap(resourceScope(saved.selection.tap));
-          setRange(saved.range);
-          setFrom(saved.from);
-          setTo(saved.to);
+          if(restoreWindow){
+            setTap(resourceScope(saved.selection.tap));
+            setRange(saved.range);
+            setFrom(saved.from);
+            setTo(saved.to);
+          }
           setCollectionDraft(
             saved.selection.where.length ? "" : JSON.stringify([
               saved.selection.tap,
@@ -445,7 +461,7 @@ export default function App() {
             });
           setCovered(coverage.intervals());
           try {
-            sessionStorage.setItem("snoot-collection", saved.id);
+            sessionStorage.setItem("snoot:search:collection", saved.id);
           } catch {}
         },
       );
@@ -468,25 +484,28 @@ export default function App() {
   createEffect(() => {
     const credential = token();
     if(initialRestore&&saved?.query){initialRestore=false;return;}
+    const restoreWindow=initialRestore&&!saved;
     initialRestore=false;
-    untrack(() => void restore(credential));
+    untrack(() => void restore(credential,restoreWindow));
   });
 
+  let pageScroll!:HTMLDivElement;
+  let pageContent!:HTMLDivElement;
   let tabState:TabState;
   const positions:Partial<Record<Page,ScrollPosition>>={...saved?.positions};
   if(saved&&!positions[saved.page])positions[saved.page]={top:saved.scroll,left:0};
   let scrollPending=false;
   let stopScrollRestore=()=>{};
-  const saveTab=()=>{if(tabState)writeTab('snoot-tab-v1',{...tabState,positions,scroll:positions[page()]?.top??0})};
+  const saveTab=()=>{if(tabState)writeTab('snoot:workspace',{...tabState,positions,scroll:positions[page()]?.top??0})};
   const captureScroll=()=>{
-    const el=document.scrollingElement;
+    const el=pageScroll;
     if(el&&!scrollPending)positions[page()]=capturePosition(el);
     saveTab();
   };
   createEffect(()=>{
     tabState={queryText:queryText(),version:1,page:page(),collapsed:collapsed(),tap:tap(),range:range(),from:from(),to:to(),
       localParameters:localParameters(),localTap:localTap(),localFrom:localFrom(),localTo:localTo(),
-      query:pagedQuery(),pageSize:pageSize(),scroll:positions[page()]?.top??0};
+      searchView:searchView(),query:pagedQuery(),pageSize:pageSize(),scroll:positions[page()]?.top??0};
     saveTab();
   });
   onMount(()=>{
@@ -494,8 +513,8 @@ export default function App() {
     let timer:ReturnType<typeof setTimeout>|undefined;
     const scroll=()=>{clearTimeout(timer);timer=setTimeout(captureScroll,150)};
     const flush=()=>{clearTimeout(timer);captureScroll()};
-    addEventListener('scroll',scroll,{passive:true});addEventListener('pagehide',flush);
-    onCleanup(()=>{clearTimeout(timer);removeEventListener('scroll',scroll);removeEventListener('pagehide',flush)});
+    pageScroll.addEventListener('scroll',scroll,{passive:true});addEventListener('pagehide',flush);
+    onCleanup(()=>{clearTimeout(timer);pageScroll.removeEventListener('scroll',scroll);removeEventListener('pagehide',flush)});
   });
   createEffect(()=>{
     const current=page();
@@ -505,15 +524,16 @@ export default function App() {
     const stop=()=>{cancelAnimationFrame(frame);observer.disconnect();clearTimeout(timeout);scrollPending=false;
       removeEventListener('wheel',stop);removeEventListener('touchstart',stop);removeEventListener('keydown',stop)};
     const restore=()=>{cancelAnimationFrame(frame);frame=requestAnimationFrame(()=>{
-      const el=document.scrollingElement;if(!el)return;
-      if((current==='Search'||current==='Dashboard')&&pagedQuery()&&!pagedView().result)return;
+      const el=pageScroll;if(!el)return;
+      if(current==='Search'&&pagedQuery()&&!pagedView().result)return;
       // Lazy pages and restored search rows must render before clamping the position.
       const position=resolvePosition(target,el);
-      window.scrollTo(position.left,position.top);
+      el.scrollTo(position.left,position.top);
       if(el.scrollHeight-el.clientHeight>=position.top&&Math.abs(el.scrollTop-position.top)<2)stop();
     })};
     const observer=new ResizeObserver(restore);
-    observer.observe(document.body);
+    observer.observe(pageContent);
+    observer.observe(pageScroll);
     const timeout=setTimeout(stop,5000);
     addEventListener('wheel',stop,{passive:true});addEventListener('touchstart',stop,{passive:true});addEventListener('keydown',stop);
     stopScrollRestore=stop;restore();onCleanup(stop);
@@ -594,7 +614,7 @@ export default function App() {
     coverage=new Coverage();setCovered([]);collectionId=undefined;
     setSelected(undefined);setRevealed(undefined);setHasCollected(false);setActiveSelection(undefined);setCollectionDraft("");
     setError("");setStatus("idle");refresh();
-    try{sessionStorage.removeItem("snoot-collection");}catch{}
+    try{sessionStorage.removeItem("snoot:search:collection");}catch{}
   }
 
   function selection(follow: boolean): Selection {
@@ -711,7 +731,7 @@ export default function App() {
       );
       if (current !== generation) return;
       try {
-        sessionStorage.setItem("snoot-collection", collectionId);
+        sessionStorage.setItem("snoot:search:collection", collectionId);
       } catch {}
       void navigator.storage?.persist?.().catch(() => false);
       await append(request, current, abort);
@@ -885,6 +905,7 @@ export default function App() {
   }
 
   function revealEvent(event: LogEvent) {
+    setSearchView("events");
     setSelected(undefined);
     setRevealed({ event });
     navigate("Search");
@@ -973,16 +994,18 @@ export default function App() {
         />
       </Show>
       <Navigation
-        theme={theme()}
+        theme={themePreference()}
         themeBusy={themeBusy()}
         themeError={themeError()}
-        onToggleTheme={() => void toggleTheme()}
+        onToggleTheme={() => void chooseTheme(nextTheme(themePreference()))}
         page={page()}
         count={pagedQuery()?pagedView().result?.summary?.count??0:collected()}
         hasToken={Boolean(token())}
         onNavigate={navigate}
         onHelp={() => openModal("help")}
         onConnection={() => openModal("connection")}
+        onProfile={() => openModal("profile")}
+        onLogout={props.onLogout}
       >
         <Show when={pagedQuery() ? (pagedView().result?.summary?.count??0)>0 && !!pagedView().result?.summary?.statistics : records().length>0}>
           <div class="rankings-column" aria-label="Operation Rankings">
@@ -1031,22 +1054,19 @@ export default function App() {
             <span class="sr-only"> — {page()}</span>
           </h1>
           <div class="topbar-right">
-            <span class="topbar-caption">Your events, in focus.</span>
-            <button class="guide-button" onClick={() => openModal("help")}>
+            <button class="guide-button" aria-label="Quick Guide" onClick={() => openModal("help")}>
               <Icon name="help" size={16} />
               <span>Quick Guide</span>
             </button>
-            <button
-              class="profile-button"
-              onClick={() => openModal("connection")}
-              aria-label="Connection Settings"
-            >
-              <ProfileMark size={24} />
-            </button>
+            <div class="theme-selector" role="group" aria-label="Appearance">
+              <For each={['light', 'dark', 'auto'] as const}>{choice => <button type="button" aria-pressed={themePreference() === choice} disabled={themeBusy()} onClick={() => void chooseTheme(choice)}>{choice === 'light' ? 'Light' : choice === 'dark' ? 'Dark' : 'Auto'}</button>}</For>
+            </div>
           </div>
         </header>
 
-        <div class="page-content">
+        <SummarySubscriptions token={token()} sources={taps()} loading={tapsLoading()}/>
+        <div class="page-scroll" ref={pageScroll}>
+        <div class="page-content" ref={pageContent}>
           {/* Preserve the current page and snapshot across navigation. */}
           <div style={{display:page() === "Search"?"contents":"none"}}>
             <form
@@ -1055,6 +1075,7 @@ export default function App() {
               aria-label="Search Events"
               onSubmit={(event) => {
                 event.preventDefault();
+                event.currentTarget.querySelector<HTMLTextAreaElement>('#snoot-query')?.blur();
                 void submitSearch();
               }}
             >
@@ -1065,11 +1086,10 @@ export default function App() {
                   </span>
                   <strong>Search</strong>
                 </div>
-                <span class="scope-count" aria-live="polite">
-                  <span data-matched-count><strong>{pagedQuery()?(pagedView().result?.summary?.count.toLocaleString()??"—"):records().length.toLocaleString()}</strong> matched</span>
-                  {" · "}
-                  <span data-collected-count><strong>{(pagedQuery()?pagedView().loaded:collected()).toLocaleString()}</strong> {pagedQuery()?"loaded":"collected"}</span>
-                  <Show when={pagedQuery() && pagedView().timing}>{" · "}<SearchPerformance timing={pagedView().timing} /></Show>
+                <span class="scope-count">
+                  <Show when={pagedQuery() && pagedView().timing}>
+                    <SearchPerformance timing={pagedView().timing} matched={pagedView().result?.summary?.count} loaded={pagedView().loaded} />
+                  </Show>
                 </span>
               </div>
               <Sources value={tap()} catalog={taps()} loading={tapsLoading()} onChange={setTap} />
@@ -1132,7 +1152,7 @@ export default function App() {
                   <button class="text-button" type="button" onClick={() => void collect()}
                     title="Check the server for new events and missing ranges">Refresh</button>
                 </Show>
-                <button class="button primary" type="submit" disabled={searching()}>
+                <button class="button primary" type="submit" disabled={searching() || schemaLoading() || !queryValid()}>
                   <Icon name="search" size={16} />
                   {searching() ? "Searching…" : "Search"}
                 </button>
@@ -1180,7 +1200,21 @@ export default function App() {
               </div>
             </Show>
 
-            <Show when={pagedQuery()} keyed>{query=><PagedResults query={query} token={token()} pageSize={query.size} active={page()==="Search"}
+            <div class="view-tabs search-view-tabs" role="tablist" aria-label="Search Results" onKeyDown={event => {
+              const choices = ['events', 'charts'] as const;
+              const next = event.key === 'Home' ? 'events' : event.key === 'End' ? 'charts'
+                : ['ArrowLeft', 'ArrowRight'].includes(event.key) ? choices[searchView() === 'events' ? 1 : 0] : undefined;
+              if (!next) return;
+              event.preventDefault(); setSearchView(next);
+              document.getElementById(`search-${next}-tab`)?.focus();
+            }}>
+              <For each={['events', 'charts'] as const}>{view => <button type="button" role="tab"
+                id={`search-${view}-tab`} aria-controls={`search-${view}-panel`} aria-selected={searchView() === view}
+                tabIndex={searchView() === view ? 0 : -1} classList={{active: searchView() === view}}
+                onClick={() => setSearchView(view)}>{view === 'events' ? 'Events' : 'Charts'}</button>}</For>
+            </div>
+            <div id="search-events-panel" role="tabpanel" aria-labelledby="search-events-tab" hidden={searchView() !== 'events'}>
+            <Show when={pagedQuery()} keyed>{query=><PagedResults query={query} token={token()} pageSize={query.size} active={page()==="Search"&&searchView()==="events"}
               matchers={matchers()} onIndicator={setIndicatorField} indicatorsLoading={indicatorsLoading()}
               collections={collections()} onObjectHistory={openObjectHistory}
               onState={setPagedView} />}</Show>
@@ -1268,7 +1302,7 @@ export default function App() {
                                 ? error()
                                   ? "Let’s get you connected"
                                   : "No events in this window"
-                                : "Every event tells a story"}
+                                : "Snoot through logs with search..."}
                         </h3>
                         <p>
                           {activeSearch() && collected()
@@ -1312,6 +1346,7 @@ export default function App() {
                         setSelected(selected() === event ? undefined : event)
                       }
                       annotations={annotations()}
+                        active={page()==="Search"&&searchView()==="events"}
                       onIndicator={setIndicatorField}
                       indicatorsLoading={indicatorsLoading()}
                       reveal={revealed()}
@@ -1365,41 +1400,10 @@ export default function App() {
                 />
               </aside>
             </div></Show>
-          </div>
-
-          <Show when={page() === "Object History" ? "Object History" as const : undefined} keyed>
-            {mode=><Research mode={mode} token={token()} sources={collections()} initialSource={tap()} pageSize={pageSize()} onIndicator={setIndicatorField} indicatorsLoading={indicatorsLoading()}/>}
-          </Show>
-          <Show when={page() === "Dashboard"}>
-            <div class="page-intro">
-              <div>
-                <span class="eyebrow">THE BIGGER PICTURE</span>
-                <h2>Signal Overview</h2>
-                <p>{pagedQuery()?"Summaries across the complete search window.":"A quick look at the matched subset of your working set."}</p>
-              </div>
-              <button
-                class="button secondary"
-                onClick={() => navigate("Search")}
-              >
-                <Icon name="search" size={16} />
-                Back to Search
-              </button>
             </div>
+            <Show when={page() === "Search" && searchView() === "charts"}>
+              <div id="search-charts-panel" role="tabpanel" aria-labelledby="search-charts-tab">
             <Show when={pagedQuery()} fallback={<>
-            <div class="notice search-notice">
-              <span class="notice-icon">
-                <Icon name="activity" size={17} />
-              </span>
-              <div>
-                <strong>Your current result set, at a glance.</strong>
-                <p>
-                  These summaries cover {records().length.toLocaleString()}{" "}
-                  matched events out of {collected().toLocaleString()}{" "}
-                  collected. Search to explore this working set or Collect to
-                  replace it.
-                </p>
-              </div>
-            </div>
             <div class="dashboard-layout">
               <div class="dashboard-main">
                 <Activity
@@ -1437,7 +1441,7 @@ export default function App() {
             </>}>
               <Show when={pagedView().error}><div class="notice error-notice" role="alert">{pagedView().error}</div></Show>
               <Show when={pagedView().result?.summary} fallback={<p role="status">{pagedView().busy?"Loading search summary…":"No search summary available."}</p>}>
-                {s=><div class="dashboard-layout" data-paged-dashboard>
+                {s=><div class="dashboard-layout" data-search-charts>
                   <section class="card activity-card">
                     <div class="results-toolbar"><strong>Event Activity</strong><span>{s().count.toLocaleString()} matched</span><SearchPerformance timing={pagedView().timing} /></div>
                     <Histogram counts={s().counts} errors={s().errors} first={s().from} last={s().from+s().step*s().counts.length} count={s().count}
@@ -1448,8 +1452,19 @@ export default function App() {
                 </div>}
               </Show>
             </Show>
+              </div>
+            </Show>
+          </div>
+
+          <Show when={page() === "Collections"}>
+            <div class="page-intro"><div><h2>Collections</h2></div></div>
+            <Research mode="Object History" token={token()} sources={collections()} initialSource={tap()} pageSize={pageSize()} onIndicator={setIndicatorField} indicatorsLoading={indicatorsLoading()}/>
+          </Show>
+          <Show when={page() === "Dashboards"}>
+            <DashboardWorkspace token={token()} sources={taps()} loading={tapsLoading()} catalogError={tapError()}/>
           </Show>
 
+          <Show when={page() === "Configs"}><Configurations theme={theme()} token={token()}/></Show>
           <Show when={page() === "Alerts"}>
             <AlertCenter token={token()} lostEvents={()=><Research mode="Lost Events" token={token()} sources={taps()} initialSource={tap()} pageSize={pageSize()} onIndicator={setIndicatorField} indicatorsLoading={indicatorsLoading()}/>}>
             <div class="page-intro">
@@ -1484,6 +1499,7 @@ export default function App() {
             </span>
             <span>snoot · powered by trie-trunk</span>
           </footer>
+        </div>
         </div>
       </main>
 

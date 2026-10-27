@@ -1,0 +1,176 @@
+{
+  "scope": "Initial /events API response only; excludes follow-up summary/seed-pack collection, client decoding, OPFS writes, and rendering",
+  "window": {
+    "from": "2026-09-01T00:00:00Z",
+    "to": "2026-10-28T00:00:00Z"
+  },
+  "page": 100,
+  "include": "summary,page,statistics",
+  "method": "One persistent HTTP/1.1 connection per transport, six sequential requests; warm median excludes first request. Groups are sequential, so small differences between local paths are not an isolated transport-overhead measurement.",
+  "results": [
+    {
+      "transport": "Unix Socket",
+      "first": {
+        "ttfb_ms": 64.17,
+        "total_ms": 66.64,
+        "bytes": 176826
+      },
+      "warm_median_ms": 74.6,
+      "samples": [
+        {
+          "ttfb_ms": 64.17,
+          "total_ms": 66.64,
+          "bytes": 176826
+        },
+        {
+          "ttfb_ms": 55.78,
+          "total_ms": 57.33,
+          "bytes": 176826
+        },
+        {
+          "ttfb_ms": 86.02,
+          "total_ms": 87.97,
+          "bytes": 176826
+        },
+        {
+          "ttfb_ms": 75.08,
+          "total_ms": 78.38,
+          "bytes": 176826
+        },
+        {
+          "ttfb_ms": 65.67,
+          "total_ms": 74.6,
+          "bytes": 176826
+        },
+        {
+          "ttfb_ms": 50.36,
+          "total_ms": 51.34,
+          "bytes": 176826
+        }
+      ]
+    },
+    {
+      "transport": "Desktop Bridge \u2192 Socket",
+      "first": {
+        "ttfb_ms": 124.09,
+        "total_ms": 126.08,
+        "bytes": 176826
+      },
+      "warm_median_ms": 66.43,
+      "samples": [
+        {
+          "ttfb_ms": 124.09,
+          "total_ms": 126.08,
+          "bytes": 176826
+        },
+        {
+          "ttfb_ms": 62.57,
+          "total_ms": 63.35,
+          "bytes": 176826
+        },
+        {
+          "ttfb_ms": 64.41,
+          "total_ms": 66.43,
+          "bytes": 176826
+        },
+        {
+          "ttfb_ms": 75.47,
+          "total_ms": 76.9,
+          "bytes": 176826
+        },
+        {
+          "ttfb_ms": 59.34,
+          "total_ms": 60.58,
+          "bytes": 176826
+        },
+        {
+          "ttfb_ms": 105.3,
+          "total_ms": 106.7,
+          "bytes": 176826
+        }
+      ]
+    },
+    {
+      "transport": "Local HTTP",
+      "first": {
+        "ttfb_ms": 81.51,
+        "total_ms": 81.82,
+        "bytes": 176826
+      },
+      "warm_median_ms": 60.03,
+      "samples": [
+        {
+          "ttfb_ms": 81.51,
+          "total_ms": 81.82,
+          "bytes": 176826
+        },
+        {
+          "ttfb_ms": 82.47,
+          "total_ms": 82.87,
+          "bytes": 176826
+        },
+        {
+          "ttfb_ms": 57.3,
+          "total_ms": 57.59,
+          "bytes": 176826
+        },
+        {
+          "ttfb_ms": 58.46,
+          "total_ms": 58.81,
+          "bytes": 176826
+        },
+        {
+          "ttfb_ms": 74.29,
+          "total_ms": 74.53,
+          "bytes": 176826
+        },
+        {
+          "ttfb_ms": 59.73,
+          "total_ms": 60.03,
+          "bytes": 176826
+        }
+      ]
+    },
+    {
+      "transport": "Public HTTPS",
+      "first": {
+        "ttfb_ms": 184.13,
+        "total_ms": 197.01,
+        "bytes": 176826
+      },
+      "warm_median_ms": 153.07,
+      "samples": [
+        {
+          "ttfb_ms": 184.13,
+          "total_ms": 197.01,
+          "bytes": 176826
+        },
+        {
+          "ttfb_ms": 147.32,
+          "total_ms": 153.07,
+          "bytes": 176826
+        },
+        {
+          "ttfb_ms": 130.4,
+          "total_ms": 144.1,
+          "bytes": 176826
+        },
+        {
+          "ttfb_ms": 159.2,
+          "total_ms": 161.87,
+          "bytes": 176826
+        },
+        {
+          "ttfb_ms": 206.22,
+          "total_ms": 208.02,
+          "bytes": 176826
+        },
+        {
+          "ttfb_ms": 127.85,
+          "total_ms": 131.19,
+          "bytes": 176826
+        }
+      ]
+    }
+  ]
+}

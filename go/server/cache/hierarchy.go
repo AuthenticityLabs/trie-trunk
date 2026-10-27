@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/pelletier/go-toml/v2"
 )
@@ -26,6 +27,11 @@ func readScope(path string, parent Policy, branch bool) (Policy, bool, error) {
 	if err != nil {
 		return parent, false, err
 	}
+	return resolveScope(raw, path, parent, branch)
+}
+
+func resolveScope(raw []byte, path string, parent Policy, branch bool) (Policy, bool, error) {
+	var err error
 	if len(raw) > 1<<20 {
 		return parent, false, fmt.Errorf("%s: configuration too large", path)
 	}
@@ -74,20 +80,8 @@ func readScope(path string, parent Policy, branch bool) (Policy, bool, error) {
 }
 
 func (s *Store) hierarchicalPolicy(c Configuration, key string) (Policy, map[Branch]Policy, error) {
-	p, _, err := readScope(filepath.Join(filepath.Dir(s.config.Root), "trunk.cfg"), Policy{}, false)
-	if err != nil {
-		return Policy{}, nil, err
-	}
-	p = mergePolicy(p, c.Defaults)
-	// registry.cfg remains accepted; an optional cache.cfg has nearer precedence.
-	for _, path := range []string{filepath.Join(s.root, "cache.cfg"), filepath.Join(s.root, s.layout.Definition.Resource.Service, "service.cfg")} {
-		p, _, err = readScope(path, p, false)
-		if err != nil {
-			return Policy{}, nil, err
-		}
-	}
-	p = mergePolicy(p, c.Resources[key])
-	p, _, err = readScope(filepath.Join(s.collection, "resource.cfg"), p, false)
+	n := s.layout.Definition.Resource
+	p, err := configuredScope(s.config.Root, []string{s.config.Cache, n.Service, key[strings.LastIndex(key, "/")+1:]}, c)
 	if err != nil {
 		return Policy{}, nil, err
 	}
@@ -109,4 +103,40 @@ func (s *Store) policyFor(branch Branch) Policy {
 		return p
 	}
 	return s.policy
+}
+
+// Shared by the runtime and configuration editor so displayed inheritance follows
+// precisely the same registry and filesystem precedence as ingestion.
+func configuredScope(root string, scope []string, c Configuration) (Policy, error) {
+	p, _, err := readScope(filepath.Join(filepath.Dir(root), "trunk.cfg"), Policy{}, false)
+	if err != nil || len(scope) == 0 {
+		return p, err
+	}
+	p = mergePolicy(p, c.Defaults)
+	for depth := 1; depth <= len(scope); depth++ {
+		if depth == 3 {
+			p = mergePolicy(p, c.Resources[scope[1]+"/"+scope[2]])
+		}
+		p, _, err = readScope(configurationPath(root, scope[:depth]), p, depth == 4)
+		if err != nil {
+			return p, err
+		}
+	}
+	return p, nil
+}
+
+// Callers must verify scope against the physical catalog before resolving paths.
+func configurationPath(root string, scope []string) string {
+	switch len(scope) {
+	case 0:
+		return filepath.Join(filepath.Dir(root), "trunk.cfg")
+	case 1:
+		return filepath.Join(root, scope[0], "cache.cfg")
+	case 2:
+		return filepath.Join(root, scope[0], scope[1], "service.cfg")
+	case 3:
+		return filepath.Join(root, scope[0], scope[1], scope[2], "resource.cfg")
+	default:
+		return filepath.Join(root, scope[0], scope[1], scope[2], scope[3]+".cfg")
+	}
 }

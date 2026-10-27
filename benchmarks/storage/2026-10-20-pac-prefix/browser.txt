@@ -1,2 +1,0 @@
-Spliced gzip: firstsecond and two complete PACs; Browser: chromium 155.0.8059.85 concatenated gzip probe: first
-PAC browser passed: scroll appends rows, retains expansion and summaries, retries continuation, refresh reuses cache; no full collect

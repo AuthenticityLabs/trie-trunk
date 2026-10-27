@@ -1,3 +1,4 @@
+import {NativeCacheError,nativeCacheIssue} from "./store/errors.ts";
 const objectUUID=n=>`00000000-0000-7000-8000-${n.toString(16).padStart(12,'0')}`;
 const objectBytes=n=>Uint8Array.from(Buffer.from(objectUUID(n).replaceAll('-',''),'hex'));
 import {indexUUID} from './pil/pac-native.ts';
@@ -6,7 +7,7 @@ import {pacPlacement,pacLocalRows,nativePAC} from "./pil/pac-native.ts";
 import {test} from "node:test";
 import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
-import {NativeStore,missing,resolve} from "./store/native.ts";
+import {NativeStore,missing,resolve,committedRanges} from "./store/native.ts";
 import {Codec} from "./pil/wasm.ts";
 import {PILStream} from "./pil/stream.ts";
 import {NativeTrie,NativeEvent} from "./pil/native-event.ts";
@@ -220,7 +221,7 @@ test("Go paged state protocol crosses WASM and commits exact object tokens acros
   for(let i=0;i<bytes.length;i+=173)await stream.feed(bytes.subarray(i,i+173));
   stream.finish();await store.finish(session);
  }finally{stream.close();}
- const [source]=await b.list();assert.equal(source.packages.length,2);assert.equal(source.state.pages.length,2);
+ const [source]=await b.list();assert.ok(source.timeTrie);assert.equal(source.state.pages.length,2);
  const state=await store.objectState({source:source.tap,id:objectUUID(42)});
  assert.equal(state.sequence,1200);assert.equal(state.token.slice(-16),"2b00000000000000");
  assert.equal(source.files.state.blobs.length,2); // second hour reuses the same snapshot
@@ -264,7 +265,7 @@ test("interleaved responses reload shared metadata and retain both commits",asyn
  const f=await fixture(),b=new Backend(),a=new NativeStore(b),other=new NativeStore(b),sa=a.begin(),sb=other.begin();
  for(const r of f.records){await a.record(sa,r,f.definitions.get(r.binding.digest));await other.record(sb,r,f.definitions.get(r.binding.digest));}
  await a.finish(sa);await other.finish(sb);
- const [source]=await b.list();assert.equal(source.files.index.end,(1<<20)+8);assert.equal(source.packages.length,1);
+ const [source]=await b.list();assert.equal(source.files.index.end,(1<<20)+8);assert.equal(source.contexts.length,1);
 });
 test("same generation conflicting bytes reject; new generation isolates references",async()=>{
  const f=await fixture(),b=new Backend(),s=new NativeStore(b),session=s.begin();
@@ -332,7 +333,7 @@ test("Record starts cross sparse page boundaries with a retained header",async()
  const expected=await store.page(source.key,from,to);
  assert.equal(source.contexts.length,1);
  assert.equal(source.contexts[0].placement.firstRow,1n);
- const tail=source.index.at(-1).End,raw=await store.read(source.key,"index",{Start:0,End:tail*16});
+ const tail=committedRanges(source).index.at(-1).End,raw=await store.read(source.key,"index",{Start:0,End:tail*16});
  const header=new DataView(raw.buffer,raw.byteOffset,16);
  assert.equal(header.getBigInt64(4,true),source.contexts[0].placement.from);
  assert.equal(header.getUint8(12),2);
@@ -348,7 +349,6 @@ test("Record starts cross sparse page boundaries with a retained header",async()
   {Start:start,End:size,local:8+2*size-16},
   {Start:size,End:start+raw.length,local:8},
  ]};
- source.index=source.index.map(r=>({Start:r.Start+shift,End:r.End+shift}));
  source.retiredRows=shift;
  source.contexts[0].placement.firstRow+=BigInt(shift);
  await backend.put([source]);
@@ -363,7 +363,7 @@ test("known-empty packages and provisional status survive reload without inventi
  records[0].manifest.Index=[];records[0].manifest.Population=[];records[0].manifest.IndexBases=[];records[0].manifest.Provisional=true;delete records[0].manifest.TimeTrie;
  const backend=new Backend(),store=new NativeStore(backend),session=store.begin();
  await ingest(store,session,f,records);await store.finish(session);
- const [source]=await backend.list();assert.equal(source.packages[0].Provisional,true);
+ const [source]=await backend.list();assert.equal(source.timeTrie,undefined);assert.deepEqual(committedRanges(source),{index:[],sods:[]});
  const reloaded=new NativeStore(backend),page=await reloaded.page(source.key,Date.UTC(2026,9,16,12),Date.UTC(2026,9,16,13));
  assert.equal(page.rows.length,0);assert.equal(page.done,true);assert.equal((await reloaded.coverage()).length,1);
 });
@@ -374,6 +374,7 @@ test("native collector performs one GET and commits coverage only after wire suc
  const archive=async(token,command)=>{
   calls.push(command.kind);
   if(command.kind==="native-begin")sessions.set(command.session,store.begin());
+  for(const item of command.records??[])await store.record(sessions.get(command.session),item.record,item.definition);
   if(command.kind==="native-record")await store.record(sessions.get(command.session),command.record,command.definition);
   if(command.kind==="native-finish"){
    if(compactBeforeFinish>0){compactBeforeFinish--;await store.compactState((await backend.list())[0].key,true);}
@@ -393,6 +394,7 @@ test("native collector performs one GET and commits coverage only after wire suc
  await assert.rejects(collectNative(options),/completion/);
  assert.equal(requests,1);assert.equal(calls.at(-1),"native-abort");assert.deepEqual(await store.coverage(),[]);
  truncated=false;const sources=await collectNative(options);
+ assert.ok(!calls.includes("native-record"));assert.ok(!calls.includes("native-records"),"small responses travel with finish as one bounded batch");
  assert.equal(requests,2);assert.equal(sources.length,1);assert.equal(calls.at(-1),"native-finish");assert.equal((await store.coverage()).length,1);assert.equal(sessions.size,0);
  assert.equal((await new NativeStore(backend).definitions()).length,1);
  compactBeforeFinish=1;
@@ -401,7 +403,7 @@ test("native collector performs one GET and commits coverage only after wire suc
  await assert.rejects(collectNative(options),/state compacted/);assert.equal(requests,6);assert.equal(sessions.size,0);
 });
 
-test("persisted hourly manifests own only identity bytes, never the network backing buffer",async()=>{
+test("committed sources retain a time trie without package manifests or redundant coverage",async()=>{
  const f=await fixture(),backend=new Backend(),store=new NativeStore(backend),session=store.begin();
  const records=f.records.map(record=>{
   if(record.kind!=="manifest")return record;
@@ -413,11 +415,9 @@ test("persisted hourly manifests own only identity bytes, never the network back
   return {...record,manifest:m};
  });
  await ingest(store,session,f,records);await store.finish(session);
- for(const source of await backend.list())for(const m of source.packages){
-  for(const key of ["Definition","Generation","StateEpoch"]){
-   if(!(m[key] instanceof Uint8Array))continue;
-   assert.equal(m[key].buffer.byteLength,m[key].byteLength,key+" retained response bytes");
-  }
+ for(const source of await backend.list()){
+  assert.equal(source.packages,undefined);assert.equal(source.index,undefined);assert.equal(source.population,undefined);
+  assert.equal(source.timeTrie.buffer.byteLength,source.timeTrie.byteLength);
  }
  const restored=new NativeStore(backend);assert((await restored.coverage()).length>0);
 });
@@ -442,4 +442,75 @@ test("positional completeness publishes atomically and distinguishes empty from 
  const source=(await other.list())[0];
  assert.deepEqual(await target.missingTime(source.key,m.From*1000,m.To*1000),[]);
  assert.equal((await target.missingTime(source.key,m.To*1000,(m.To+3600)*1000)).length,1);
+});
+
+
+test("equal generation sequence conflicts carry evidence and scoped recovery keeps other resources",async()=>{
+ const f=await fixture(),backend=new Backend(),store=new NativeStore(backend);
+ const original=generationRecords(f,1),first=store.begin();await ingest(store,first,f,original);await store.finish(first);
+ const [old]=await backend.list();
+ const elsewhere=structuredClone(original);for(const r of elsewhere)r.binding.tap="test/payment/transactions.v1/write";
+ const other=store.begin();await ingest(store,other,f,elsewhere);await store.finish(other);
+ const fresh=generationRecords(f,1,1),conflict=store.begin();await ingest(store,conflict,f,fresh);
+ await assert.rejects(store.finish(conflict),error=>{
+  const issue=nativeCacheIssue(error);assert.equal(issue.code,'native-cache-conflict');assert.equal(issue.source,old.tap);
+  assert.equal(issue.reason,'generation-fork');assert.equal(issue.detail.cachedSequence,1);assert.equal(issue.detail.incomingSequence,1);
+  assert.notEqual(issue.detail.cachedGeneration,issue.detail.incomingGeneration);return true;
+ });
+ assert.equal((await backend.get(old.key)).retiredBy,undefined,'failed collection damaged published cache');
+ await store.rebase(old.tap);const retry=store.begin(await store.serial());await ingest(store,retry,f,fresh);await store.finish(retry);
+ const active=(await backend.list()).filter(s=>!s.retiredBy&&s.state);
+ assert.equal(active.length,2);assert.ok(active.some(s=>s.tap==='test/payment/transactions.v1/write'));
+ assert.notEqual(active.find(s=>s.tap===old.tap).key,old.key);
+});
+
+test("collector retries publication races once but never loops or resets a conflicting cache",async()=>{
+ const codec=new Codec(await WebAssembly.instantiate(wasm));
+ for(const code of ['native-cache-race','native-cache-conflict']){
+  let requests=0,aborts=0,finishes=0;
+  const issue={code,source:'demo/payment/transactions.v1/write',reason:'injected'};
+  const options={tap:issue.source,from:'2026-10-16T12:00:00Z',to:'2026-10-16T13:00:00Z',token:'',signal:new AbortController().signal,codec,definitions:new Map(),
+   archive:async(_,c)=>{assert.notEqual(c.kind,'native-rebase');if(c.kind==='native-abort')aborts++;if(c.kind==='native-finish'){finishes++;throw new NativeCacheError('injected',issue)}return {};},
+   fetcher:async()=>{requests++;return new Response(wire,{headers:{'Content-Type':'application/pil','PIL-Version':'2','Definition-Version':'a'.repeat(64),'Trunk-Format':'native-pac/0','Trunk-Completion':'body'}})}};
+  await assert.rejects(collectNative(options),e=>nativeCacheIssue(e)?.code===code);
+  assert.equal(requests,code==='native-cache-race'?2:1);assert.equal(aborts,requests);assert.equal(finishes,requests);
+ }
+});
+
+test('batch cache refresh commits every scope atomically and preserves healthy resources',async()=>{
+ const f=await fixture(),backend=new Backend(),store=new NativeStore(backend);
+ const sources=['demo/payment/transactions.v1/write','test/payment/transactions.v1/write','else/payment/transactions.v1/write'];
+ for(const source of sources){
+  const records=generationRecords(f,1);for(const r of records)r.binding.tap=source;
+  const session=store.begin();await ingest(store,session,f,records);await store.finish(session);
+ }
+ const before=await backend.list(),pending=store.begin();
+ const targets=[sources[0],sources[1],sources[0].replace('/write','/read')];
+ await assert.rejects(store.rebaseMany([...targets,'invalid']),/source|Source|collection|Collection/);
+ assert.equal(await store.serial(),0);assert.equal((await store.coverage()).length,3);
+ backend.fail=true;await assert.rejects(store.rebaseMany(targets),/crash/);
+ assert.equal(await store.serial(),0);assert.equal((await store.coverage()).length,3);
+ assert.equal(await store.rebaseMany(targets),2);assert.equal(await store.serial(),1);
+ assert.deepEqual((await backend.control()).scopes,{'demo/payment/transactions.v1':1,'test/payment/transactions.v1':1});
+ assert.equal((await store.coverage()).length,1);
+ assert.deepEqual(await backend.get(before.find(s=>s.tap===sources[2]).key),before.find(s=>s.tap===sources[2]));
+ await assert.rejects(ingest(store,pending,f),/cache rebased/);
+ for(const source of sources.slice(0,2)){
+  const records=generationRecords(f,1,1);for(const r of records)r.binding.tap=source;
+  const session=store.begin(await store.serial());await ingest(store,session,f,records);await store.finish(session);
+ }
+ assert.equal((await store.coverage()).length,3);
+});
+
+test('range collection publishes every confirmed zero hour after durable data writes',async()=>{
+ const raw=new Uint8Array(readFileSync(new URL('./fixtures/native-ranges/multi-hour.pil',import.meta.url)));
+ const backend=new Backend(),store=new NativeStore(backend),session=store.begin(),definitions=new Map();
+ const stream=new PILStream(new Codec(await WebAssembly.instantiate(wasm)),definitions,d=>definitions.set(d.digest,d),()=>{},async()=>{throw Error('expanded')},r=>store.record(session,r,definitions.get(r.binding.digest)));
+ try{await stream.feed(raw);stream.finish();}finally{stream.close();}
+ assert.deepEqual(await store.coverage(),[],'received metadata is not committed coverage');
+ await store.finish(session);
+ const [source]=await backend.list();const from=Date.parse('2026-10-01T00:00:00Z'),to=from+6*3600000;
+ const {missingHours}=await import('./store/time-trie.ts');
+ assert.deepEqual(missingHours(source.timeTrie,from,to),[],'including the three zero-event hours');
+ assert.equal(missingHours(source.timeTrie,to,to+3600000).length,1,'unreceived hour stays blank');
 });

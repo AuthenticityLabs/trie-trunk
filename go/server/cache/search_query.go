@@ -26,6 +26,7 @@ func indexedFilters(l *Layout, q *QueryPlan) []searchFilter {
 			out = append(out, searchFilter{K: k, Kind: "p", Op: "==", Value: v})
 			continue
 		}
+		f.Value = durationQueryValue(l, k, f.Value)
 		field := l.Definition.Fields[k]
 		kind := searchKind(field.Type, len(field.Values) > 0)
 		v := f.Value.Value

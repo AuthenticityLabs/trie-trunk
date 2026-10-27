@@ -6,9 +6,7 @@ use std::sync::{
     atomic::{AtomicBool, Ordering},
 };
 
-mod collector;
 mod registry;
-pub(super) use collector::CancelCollector;
 use registry::execute;
 
 #[repr(C)]

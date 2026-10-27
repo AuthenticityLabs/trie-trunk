@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"compress/gzip"
 	"encoding/json"
+	pil "github.com/AuthenticityLabs/pill-packer/go/codec"
 	"io"
 	"net/http/httptest"
 	"net/url"
@@ -28,7 +29,7 @@ func decodeView(t *testing.T, l *Layout, raw []byte) (d viewDecoded) {
 		t.Fatalf("invalid response: %q", raw)
 	}
 	r := bytes.NewReader(raw[5:])
-	control := &Layout{Widths: []int{0}, Definition: Definition{Fields: []Field{{Name: "metadata", Type: "BYTES"}}}}
+	control := &pil.Layout{Widths: []int{0}, Definition: pil.Definition{Fields: []Field{{Name: "metadata", Type: "BYTES"}}}}
 	for {
 		tag, e := r.ReadByte()
 		if e != nil {
@@ -37,7 +38,7 @@ func decodeView(t *testing.T, l *Layout, raw []byte) (d viewDecoded) {
 		switch tag {
 		case 1:
 			d.definitions++
-			_, e = (&Layout{Widths: []int{0, 0, 0}}).ReadFrame(r, nil)
+			_, e = (&pil.Layout{Widths: []int{0, 0, 0}}).ReadFrame(r, nil)
 		case 2:
 			cl := nativeControl("U32", "BYTES", "STRING")
 			var raw []byte

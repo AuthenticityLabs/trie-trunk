@@ -131,7 +131,7 @@ func (r *nativeIngress) allocate(n int) (nativeInput, error) {
 }
 func (r *nativeIngress) read(l *Layout, input io.Reader) (nativeInput, error) {
 	r.partial = 0
-	raw, err := l.readFrameBuffer(input, nil, true, r.resize)
+	raw, err := l.ReadFrameBuffer(input, nil, true, r.resize)
 	if err != nil {
 		return nativeInput{}, err
 	}

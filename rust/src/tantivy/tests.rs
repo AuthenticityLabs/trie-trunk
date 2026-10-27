@@ -7,6 +7,32 @@ fn cell(k: usize, texts: &[&str]) -> Cell {
     }
 }
 #[test]
+fn multiword_prefix_keeps_all_expansions_without_unbounded_allocation() -> Result<()> {
+    let mut r = Request {
+        binding: "multiword-prefix".into(),
+        fields: vec!["s".into()],
+        ranges: vec![(0, 120)],
+        tail: 120,
+        text: "payment token".into(),
+        mode: "prefix".into(),
+        ..Default::default()
+    };
+    let mut h = Handle::open(&r, true)?;
+    let docs: Vec<_> = (0..120)
+        .map(|row| Doc {
+            source_row: row,
+            row,
+            cells: vec![cell(0, &[&format!("payment token{row:03}")])],
+            ..Default::default()
+        })
+        .collect();
+    h.append(&docs, 120, true)?;
+    assert_eq!(h.search(&r)?, (0..120).collect::<Vec<_>>());
+    r.text = "payment absent".into();
+    assert!(h.search(&r)?.is_empty());
+    Ok(())
+}
+#[test]
 fn prefix_does_not_silently_truncate_matching_terms() -> Result<()> {
     let r = Request {
         binding: "prefix".into(),

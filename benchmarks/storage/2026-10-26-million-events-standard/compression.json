@@ -1,0 +1,33 @@
+{
+  "events": 1000000,
+  "go": "go1.26.4",
+  "hourly_packets": 18021,
+  "levels": [
+    {
+      "definition_bytes": 4368,
+      "gzip_level": 1,
+      "jsonl_hourly_bytes": 37085671,
+      "standalone_pac_bytes": 19977883
+    },
+    {
+      "definition_bytes": 4368,
+      "gzip_level": 6,
+      "jsonl_hourly_bytes": 31359563,
+      "standalone_pac_bytes": 17981597
+    },
+    {
+      "definition_bytes": 4368,
+      "gzip_level": 9,
+      "jsonl_hourly_bytes": 29672031,
+      "standalone_pac_bytes": 17930606
+    }
+  ],
+  "notes": [
+    "Identical exported records, grouped by resource, branch and UTC hour; Go compress/gzip for both formats.",
+    "Standalone PACs retain full UUIDs and every payload field; routing in PACSource; timestamps verified against UUIDs. Definitions counted once; no external index needed for decoding.",
+    "Every PAC member resolved and checked byte-for-byte against its full input frame. PAC compression framing included. JSON uses newline-delimited objects; no pretty-printing."
+  ],
+  "plain_pac_bytes": 56413284,
+  "source_bytes": 427750135,
+  "source_sha256": "28a2c5504bd9a93e49d55776161834a029224ce348889302d6c005265af23680"
+}

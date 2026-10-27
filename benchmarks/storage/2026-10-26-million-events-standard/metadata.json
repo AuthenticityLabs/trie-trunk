@@ -1,0 +1,24 @@
+{
+  "measured_on": "2026-10-26",
+  "cpu": "Apple M1 Max",
+  "os": "macOS 27.0.1",
+  "go": "go1.26.4",
+  "base_commit": "c892d35955c221ec5d14a76ffbe7f48e644a8609",
+  "working_tree_changes": true,
+  "source_jsonl_sha256": "28a2c5504bd9a93e49d55776161834a029224ce348889302d6c005265af23680",
+  "audited_source_sha256": {
+    "go/cmd/seed-demo/main.go": "8d9e16180f61b1d2b61d742e190d35325473fac996a7bb8d08b8801f5bb65a30",
+    "go/cmd/seed-demo/footprint_test.go": "57ec3ecb8bf97041c56aeb63ade6976633f1d0970b265e035af0822d7091bd64",
+    "go/cmd/seed-demo/compression_test.go": "177ab2c5a81bc698c123352e118f270fd7dd25bd2b8c56879b13e35b0b6affc7",
+    "go/cmd/seed-demo/compression_timing_test.go": "2b0dfa825cf53cc419a373218af0ee49d717d9e00728fb5095bf31c91b414620",
+    "go/server/cache/pac_storage.go": "9817ad506890681dda2fb9aedcb7c8df6ca5059a87ce9370c6d0930049bec1a2"
+  },
+  "validation": [
+    "All 1,000,000 events read back; UUID uniqueness checked",
+    "Every standalone PAC member resolved byte-for-byte",
+    "Every timed gzip result decoded and checked byte-for-byte",
+    "Cache regression suite passed",
+    "Demo generator regression suite passed"
+  ],
+  "timing_scope": "Compression/decompression only; excludes JSON serialization, PIL packing, schema parsing, disk access and rendering"
+}

@@ -1,11 +1,9 @@
 // Test-only dedicated worker. Never imported by the application.
-import wasmURL from "../../assets/trunk-store.wasm?url";
 import { createArchive } from "./runtime.ts";
-import { EventIndex } from "./index.ts";
+import { nativeBackend } from "./native-files.ts";
 import { nativeFiles } from "./native-files.ts";
 import { directory, handle, write, entries } from "./files.ts";
-const module = fetch(wasmURL).then((r) => WebAssembly.compileStreaming(r));
-let execute = createArchive(module);
+let execute = createArchive();
 let queue = Promise.resolve();
 self.onmessage = ({ data }) => {
   queue = queue.then(async () => {
@@ -14,7 +12,7 @@ self.onmessage = ({ data }) => {
         "trie-trunk-files-v1",
         async () => {
           if (data.kind === "reload") {
-            execute = createArchive(module);
+            execute = createArchive();
             return {};
           }
           if (data.kind === "seed") {
@@ -50,72 +48,23 @@ self.onmessage = ({ data }) => {
             await visit(await navigator.storage.getDirectory(), "");
             return result;
           }
-          if (data.kind === "inspect") {
-            const db = await EventIndex.open(data.namespace);
-            try {
-              return {
-                events: await db.all("events"),
-                files: await db.all("files"),
-                collections: await db.all("collections"),
-                members: await db.all("members"),
-              };
-            } finally {
-              db.close();
-            }
+          if(data.kind==='inspect'||data.kind==='compact-native-state'){
+            const root=await directory(await navigator.storage.getDirectory(),'snoot-store',data.namespace);
+            if(data.kind==='inspect')return {sources:await nativeBackend(root).list()};
+            const start=performance.now(),compacted=await nativeFiles(root).compactState(data.source,true);
+            return {compacted,elapsedMs:performance.now()-start};
           }
-          if(data.kind==="compact-native-state"){
-            const db=await EventIndex.open(data.namespace);
-            try{
-              const root=await directory(await navigator.storage.getDirectory(),"trie-trunk-v2",data.namespace);
-              const start=performance.now();
-              const compacted=await nativeFiles(root,db).compactState(data.source,true);
-              return {compacted,elapsedMs:performance.now()-start};
-            }finally{db.close();}
-          }
-          if (data.kind === "fail-publication") {
-            const publish = EventIndex.prototype.publish;
-            EventIndex.prototype.publish = function (
-              records,
-              ends,
-              collection,
-              members,
-            ) {
-              if (records.length) {
-                EventIndex.prototype.publish = publish;
-                return Promise.reject(
-                  Error("simulated IDB abort after file flush"),
-                );
+          if(data.kind==='fail-native-publication'){
+            const original=FileSystemFileHandle.prototype.createWritable;
+            FileSystemFileHandle.prototype.createWritable=async function(options){
+              const writer=await original.call(this,options);
+              if(this.name==='commit.cbor'){
+                FileSystemFileHandle.prototype.createWritable=original;
+                writer.close=async()=>{await writer.abort();throw Error('simulated file commit failure');};
               }
-              return publish.call(this, records, ends, collection, members);
+              return writer;
             };
             return {};
-          }
-          if(data.kind==="fail-native-publication"){
-            const transaction=EventIndex.prototype.transaction;
-            EventIndex.prototype.transaction=function(this:EventIndex,names,mode,action){
-              if(mode==="readwrite"&&names.length===1&&names[0]==="state"){
-                EventIndex.prototype.transaction=transaction;
-                return Promise.reject(Error("simulated native IDB abort after file flush"));
-              }
-              return transaction.call(this,names,mode,action) as ReturnType<typeof transaction>;
-            } as typeof transaction;
-            return {};
-          }
-          if (data.kind === "abort-transaction") {
-            const db = await EventIndex.open(data.namespace);
-            try {
-              await db.transaction(["state"], "readwrite", (tx) => {
-                tx.objectStore("state").put(true, "aborted");
-                tx.abort();
-                return () => {};
-              });
-            } catch {
-              return {
-                aborted: (await db.get("state", "aborted")) === undefined,
-              };
-            } finally {
-              db.close();
-            }
           }
           return execute(data.namespace, data.command);
         },

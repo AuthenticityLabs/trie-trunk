@@ -108,8 +108,8 @@ func TestCompressedStoreRecoveryAndDelivery(t *testing.T) {
 		t.Fatal("compressed ingress changed logical event")
 	}
 	b := s.branches[Write]
-	if b.runs[0].PAC.Gzip {
-		t.Fatal("write PAC compressed")
+	if !b.runs[0].PAC.Gzip {
+		t.Fatal("non-collection write PAC was not compressed")
 	}
 	population, e := readBytes(b.pop, b.runs[0].PopStart, b.runs[0].PopEnd)
 	if e != nil {

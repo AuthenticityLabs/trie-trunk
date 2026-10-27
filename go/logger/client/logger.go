@@ -207,11 +207,9 @@ func (b *Builder) recordError(err error) *models.Error {
 		e.Error = failure
 		if e.Error != nil {
 			e.Error = e.Error.LimitText(b.state.logger.config.MaxTextBytes)
-			if e.Error.Status() >= 500 {
-				e.Level = ERROR
-			} else {
-				e.Level = WARN
-			}
+			// A failed outcome is an error even when the caller caused it.
+			// Warnings are supplemental diagnostics, never failed completions.
+			e.Level = ERROR
 			if b.state.logger.config.Diagnostics {
 				e.Diagnostic = codec.LimitText(err.Error(), b.state.logger.config.MaxTextBytes)
 			}
@@ -313,7 +311,7 @@ func (b *Builder) Finish() error {
 				branch := s.logger.pilPlan.accessFor(&e)
 				if e.Error != nil || e.HttpStatus >= 400 || e.Level == ERROR {
 					branch = "error"
-				} else if e.Level == DEBUG {
+				} else if e.Level == DEBUG || e.Level == WARN {
 					branch = "debug"
 				} else if e.Level == TRACE {
 					branch = "trace"

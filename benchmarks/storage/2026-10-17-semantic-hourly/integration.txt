@@ -1,2 +1,0 @@
-ok  	trie-trunk/go/cmd/trunk	0.683s
-ok  	trie-trunk/go/server/serve	3.664s

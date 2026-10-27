@@ -1,8 +1,8 @@
 package cache
 
 import (
-	"compress/gzip"
 	"fmt"
+	pilcodec "github.com/AuthenticityLabs/pill-packer/go/codec"
 	"io"
 	"net/http"
 	"strings"
@@ -17,7 +17,7 @@ func ingressReader(r *http.Request) (io.Reader, func(), error) {
 	case "", "identity":
 		return r.Body, func() {}, nil
 	case "gzip":
-		z, err := gzip.NewReader(r.Body)
+		z, err := pilcodec.GzipReader(r.Body)
 		if err != nil {
 			return nil, nil, fmt.Errorf("invalid gzip request: %w", err)
 		}

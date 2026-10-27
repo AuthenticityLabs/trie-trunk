@@ -1,0 +1,1481 @@
+{
+  "environment": {
+    "agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+    "hardwareConcurrency": 10,
+    "viewport": {
+      "width": 390,
+      "height": 844
+    }
+  },
+  "baseline": {
+    "decode": [
+      {
+        "decodeMs": 57.700000047683716,
+        "hours": 721,
+        "events": 6232,
+        "payloadBytes": 476087
+      },
+      {
+        "decodeMs": 46.200000047683716,
+        "hours": 721,
+        "events": 6232,
+        "payloadBytes": 476087
+      },
+      {
+        "decodeMs": 46.5,
+        "hours": 721,
+        "events": 6232,
+        "payloadBytes": 476087
+      }
+    ],
+    "writer": {
+      "elapsedMs": 10865,
+      "archiveMs": 10725.500000476837,
+      "commands": {
+        "native-begin": 1,
+        "native-coverage": 2,
+        "native-records": 14,
+        "native-finish": 1,
+        "native-page": 1
+      },
+      "io": {
+        "opens": 2890,
+        "writes": 5773,
+        "writeBytes": 421855,
+        "reads": 0,
+        "readBytes": 0,
+        "flushes": 2889,
+        "metadataCommits": 15,
+        "metadataBytes": 2484887
+      },
+      "sources": 1,
+      "coverageRows": 6232,
+      "sampleRows": 10
+    }
+  },
+  "batched": {
+    "elapsedMs": 1598.7000000476837,
+    "archiveMs": 1449.5,
+    "commands": {
+      "native-begin": 1,
+      "native-coverage": 2,
+      "native-finish": 1,
+      "native-page": 1
+    },
+    "io": {
+      "opens": 5,
+      "writes": 2889,
+      "writeBytes": 410319,
+      "reads": 0,
+      "readBytes": 0,
+      "flushes": 5,
+      "metadataCommits": 1,
+      "metadataBytes": 389240
+    },
+    "codec": {
+      "uploadMs": 115.19999933242798,
+      "uploadedBytes": 5640139727,
+      "uploads": 4405,
+      "scanMs": 3.8999996185302734,
+      "pacMs": 1.700000286102295,
+      "pacs": 721,
+      "inflateMs": 0,
+      "inflates": 0
+    },
+    "sources": 1,
+    "coverageRows": 6232,
+    "sampleRows": 10
+  },
+  "bounded": {
+    "decode": {
+      "decodeMs": 72.70000004768372,
+      "hours": 721,
+      "events": 6232,
+      "payloadBytes": 476087,
+      "codec": {
+        "uploadMs": 2.200000286102295,
+        "uploadedBytes": 12235261,
+        "uploads": 3696,
+        "scanMs": 5.899999380111694,
+        "pacMs": 2.90000057220459,
+        "pacs": 721,
+        "inflateMs": 0,
+        "inflates": 0
+      }
+    },
+    "write": {
+      "elapsedMs": 1221,
+      "archiveMs": 1196.3000001907349,
+      "commands": {
+        "native-begin": 1,
+        "native-coverage": 2,
+        "native-finish": 1,
+        "native-page": 1
+      },
+      "io": {
+        "opens": 5,
+        "writes": 2889,
+        "writeBytes": 410319,
+        "reads": 0,
+        "readBytes": 0,
+        "flushes": 5,
+        "metadataCommits": 1,
+        "metadataBytes": 389240
+      },
+      "codec": {
+        "uploadMs": 1.6000006198883057,
+        "uploadedBytes": 12566445,
+        "uploads": 3684,
+        "scanMs": 3.5,
+        "pacMs": 1.2999999523162842,
+        "pacs": 721,
+        "inflateMs": 0,
+        "inflates": 0
+      },
+      "sources": 1,
+      "coverageRows": 6232,
+      "sampleRows": 10
+    }
+  },
+  "sparseStages": [
+    {
+      "elapsedMs": 893.1999998092651,
+      "archiveMs": 856.7999999523163,
+      "commands": {
+        "native-begin": 1,
+        "native-coverage": 1,
+        "native-finish": 1
+      },
+      "io": {
+        "opens": 5,
+        "writes": 1447,
+        "writeBytes": 398783,
+        "reads": 0,
+        "readBytes": 0,
+        "flushes": 5,
+        "metadataCommits": 1,
+        "metadataBytes": 389240
+      },
+      "stages": {
+        "record": {
+          "ms": 592.0000004768372,
+          "calls": 3675
+        },
+        "range": {
+          "ms": 262.6999981403351,
+          "calls": 1442
+        },
+        "pac": {
+          "ms": 302.09999775886536,
+          "calls": 721
+        },
+        "finish": {
+          "ms": 199.5,
+          "calls": 1
+        }
+      },
+      "codec": {
+        "uploadMs": 2.5999999046325684,
+        "uploadedBytes": 12566445,
+        "uploads": 3684,
+        "scanMs": 4.000000238418579,
+        "pacMs": 2.9000000953674316,
+        "pacs": 721,
+        "inflateMs": 0,
+        "inflates": 0
+      },
+      "sources": 1,
+      "coverageRows": 6232,
+      "sampleRows": 10
+    },
+    {
+      "elapsedMs": 849.9000000953674,
+      "archiveMs": 831.5000002384186,
+      "commands": {
+        "native-begin": 1,
+        "native-coverage": 1,
+        "native-finish": 1
+      },
+      "io": {
+        "opens": 5,
+        "writes": 1447,
+        "writeBytes": 398783,
+        "reads": 0,
+        "readBytes": 0,
+        "flushes": 5,
+        "metadataCommits": 1,
+        "metadataBytes": 389240
+      },
+      "stages": {
+        "record": {
+          "ms": 568.9000000953674,
+          "calls": 3675
+        },
+        "range": {
+          "ms": 248.99999952316284,
+          "calls": 1442
+        },
+        "pac": {
+          "ms": 283.1999988555908,
+          "calls": 721
+        },
+        "finish": {
+          "ms": 196.90000009536743,
+          "calls": 1
+        }
+      },
+      "codec": {
+        "uploadMs": 1.5,
+        "uploadedBytes": 12566445,
+        "uploads": 3684,
+        "scanMs": 3.9000000953674316,
+        "pacMs": 2.9000000953674316,
+        "pacs": 721,
+        "inflateMs": 0,
+        "inflates": 0
+      },
+      "sources": 1,
+      "coverageRows": 6232,
+      "sampleRows": 10
+    },
+    {
+      "elapsedMs": 839,
+      "archiveMs": 816.2000000476837,
+      "commands": {
+        "native-begin": 1,
+        "native-coverage": 1,
+        "native-finish": 1
+      },
+      "io": {
+        "opens": 5,
+        "writes": 1447,
+        "writeBytes": 398783,
+        "reads": 0,
+        "readBytes": 0,
+        "flushes": 5,
+        "metadataCommits": 1,
+        "metadataBytes": 389240
+      },
+      "stages": {
+        "record": {
+          "ms": 557.2000002861023,
+          "calls": 3675
+        },
+        "range": {
+          "ms": 255.50000071525574,
+          "calls": 1442
+        },
+        "pac": {
+          "ms": 276.1000008583069,
+          "calls": 721
+        },
+        "finish": {
+          "ms": 198.90000009536743,
+          "calls": 1
+        }
+      },
+      "codec": {
+        "uploadMs": 1.6000001430511475,
+        "uploadedBytes": 12566445,
+        "uploads": 3684,
+        "scanMs": 2.299999713897705,
+        "pacMs": 2.299999713897705,
+        "pacs": 721,
+        "inflateMs": 0,
+        "inflates": 0
+      },
+      "sources": 1,
+      "coverageRows": 6232,
+      "sampleRows": 10
+    }
+  ],
+  "sparseFinal": [
+    {
+      "decode": {
+        "decodeMs": 75.29999995231628,
+        "hours": 721,
+        "events": 6232,
+        "payloadBytes": 476087,
+        "codec": {
+          "uploadMs": 1.799999713897705,
+          "uploadedBytes": 12235261,
+          "uploads": 3696,
+          "scanMs": 4.499999284744263,
+          "pacMs": 2.6000008583068848,
+          "pacs": 721,
+          "inflateMs": 0,
+          "inflates": 0
+        }
+      },
+      "write": {
+        "elapsedMs": 786.7999999523163,
+        "archiveMs": 759,
+        "commands": {
+          "native-begin": 1,
+          "native-coverage": 1,
+          "native-finish": 1
+        },
+        "io": {
+          "opens": 5,
+          "writes": 1447,
+          "writeBytes": 398783,
+          "reads": 0,
+          "readBytes": 0,
+          "flushes": 5,
+          "metadataCommits": 1,
+          "metadataBytes": 389181
+        },
+        "stages": {
+          "record": {
+            "ms": 665.6000006198883,
+            "calls": 3675
+          },
+          "range": {
+            "ms": 294.2999999523163,
+            "calls": 1442
+          },
+          "pac": {
+            "ms": 340.4999990463257,
+            "calls": 721
+          },
+          "finish": {
+            "ms": 24.59999990463257,
+            "calls": 1
+          }
+        },
+        "codec": {
+          "uploadMs": 1.2999999523162842,
+          "uploadedBytes": 12566445,
+          "uploads": 3684,
+          "scanMs": 3.000000476837158,
+          "pacMs": 1.5000007152557373,
+          "pacs": 721,
+          "inflateMs": 0,
+          "inflates": 0
+        },
+        "sources": 1,
+        "coverageRows": 6232,
+        "sampleRows": 10
+      }
+    },
+    {
+      "decode": {
+        "decodeMs": 47.299999952316284,
+        "hours": 721,
+        "events": 6232,
+        "payloadBytes": 476087,
+        "codec": {
+          "uploadMs": 0.9000003337860107,
+          "uploadedBytes": 12235261,
+          "uploads": 3696,
+          "scanMs": 4.499999761581421,
+          "pacMs": 2.8000011444091797,
+          "pacs": 721,
+          "inflateMs": 0,
+          "inflates": 0
+        }
+      },
+      "write": {
+        "elapsedMs": 673.5,
+        "archiveMs": 658,
+        "commands": {
+          "native-begin": 1,
+          "native-coverage": 1,
+          "native-finish": 1
+        },
+        "io": {
+          "opens": 5,
+          "writes": 1447,
+          "writeBytes": 398783,
+          "reads": 0,
+          "readBytes": 0,
+          "flushes": 5,
+          "metadataCommits": 1,
+          "metadataBytes": 389181
+        },
+        "stages": {
+          "record": {
+            "ms": 568.3999996185303,
+            "calls": 3675
+          },
+          "range": {
+            "ms": 246.89999914169312,
+            "calls": 1442
+          },
+          "pac": {
+            "ms": 281.2999987602234,
+            "calls": 721
+          },
+          "finish": {
+            "ms": 23,
+            "calls": 1
+          }
+        },
+        "codec": {
+          "uploadMs": 1.1999998092651367,
+          "uploadedBytes": 12566445,
+          "uploads": 3684,
+          "scanMs": 3.6999998092651367,
+          "pacMs": 1.6000001430511475,
+          "pacs": 721,
+          "inflateMs": 0,
+          "inflates": 0
+        },
+        "sources": 1,
+        "coverageRows": 6232,
+        "sampleRows": 10
+      }
+    },
+    {
+      "decode": {
+        "decodeMs": 45.700000047683716,
+        "hours": 721,
+        "events": 6232,
+        "payloadBytes": 476087,
+        "codec": {
+          "uploadMs": 1.499999761581421,
+          "uploadedBytes": 12235261,
+          "uploads": 3696,
+          "scanMs": 2.9999992847442627,
+          "pacMs": 2,
+          "pacs": 721,
+          "inflateMs": 0,
+          "inflates": 0
+        }
+      },
+      "write": {
+        "elapsedMs": 659.9000000953674,
+        "archiveMs": 635.5999999046326,
+        "commands": {
+          "native-begin": 1,
+          "native-coverage": 1,
+          "native-finish": 1
+        },
+        "io": {
+          "opens": 5,
+          "writes": 1447,
+          "writeBytes": 398783,
+          "reads": 0,
+          "readBytes": 0,
+          "flushes": 5,
+          "metadataCommits": 1,
+          "metadataBytes": 389181
+        },
+        "stages": {
+          "record": {
+            "ms": 555.3000004291534,
+            "calls": 3675
+          },
+          "range": {
+            "ms": 254.59999990463257,
+            "calls": 1442
+          },
+          "pac": {
+            "ms": 273.2999999523163,
+            "calls": 721
+          },
+          "finish": {
+            "ms": 21.90000009536743,
+            "calls": 1
+          }
+        },
+        "codec": {
+          "uploadMs": 1.2999999523162842,
+          "uploadedBytes": 12566445,
+          "uploads": 3684,
+          "scanMs": 2.59999942779541,
+          "pacMs": 2.299999952316284,
+          "pacs": 721,
+          "inflateMs": 0,
+          "inflates": 0
+        },
+        "sources": 1,
+        "coverageRows": 6232,
+        "sampleRows": 10
+      }
+    }
+  ],
+  "denseBeforeNestedFix": [
+    {
+      "decode": {
+        "decodeMs": 181.79999995231628,
+        "hours": 256,
+        "events": 1048576,
+        "payloadBytes": 19997232,
+        "codec": {
+          "uploadMs": 3.9000000953674316,
+          "uploadedBytes": 104803041,
+          "uploads": 3874,
+          "scanMs": 1.8999998569488525,
+          "pacMs": 75.19999814033508,
+          "pacs": 256,
+          "inflateMs": 61.49999952316284,
+          "inflates": 256
+        }
+      },
+      "write": {
+        "elapsedMs": 2143.800000190735,
+        "archiveMs": 1972.2999999523163,
+        "commands": {
+          "native-begin": 1,
+          "native-coverage": 1,
+          "native-records": 11,
+          "native-finish": 1
+        },
+        "io": {
+          "opens": 27,
+          "writes": 574,
+          "writeBytes": 36706083,
+          "reads": 0,
+          "readBytes": 0,
+          "flushes": 27,
+          "metadataCommits": 12,
+          "metadataBytes": 810701
+        },
+        "stages": {
+          "record": {
+            "ms": 1818.4999997615814,
+            "calls": 1281
+          },
+          "range": {
+            "ms": 208.8000009059906,
+            "calls": 512
+          },
+          "pac": {
+            "ms": 367.30000019073486,
+            "calls": 256
+          },
+          "finish": {
+            "ms": 7.599999904632568,
+            "calls": 1
+          }
+        },
+        "codec": {
+          "uploadMs": 2.599998950958252,
+          "uploadedBytes": 94439157,
+          "uploads": 2825,
+          "scanMs": 1.6000008583068848,
+          "pacMs": 68.2000002861023,
+          "pacs": 256,
+          "inflateMs": 54.50000023841858,
+          "inflates": 256
+        },
+        "sources": 1,
+        "coverageRows": 1048576,
+        "sampleRows": 10
+      }
+    },
+    {
+      "decode": {
+        "decodeMs": 178.5,
+        "hours": 256,
+        "events": 1048576,
+        "payloadBytes": 19997232,
+        "codec": {
+          "uploadMs": 3.40000057220459,
+          "uploadedBytes": 104803041,
+          "uploads": 3874,
+          "scanMs": 2.200000047683716,
+          "pacMs": 73.00000095367432,
+          "pacs": 256,
+          "inflateMs": 60.59999895095825,
+          "inflates": 256
+        }
+      },
+      "write": {
+        "elapsedMs": 1983.2000000476837,
+        "archiveMs": 1815.5000004768372,
+        "commands": {
+          "native-begin": 1,
+          "native-coverage": 1,
+          "native-records": 11,
+          "native-finish": 1
+        },
+        "io": {
+          "opens": 27,
+          "writes": 574,
+          "writeBytes": 36706083,
+          "reads": 0,
+          "readBytes": 0,
+          "flushes": 27,
+          "metadataCommits": 12,
+          "metadataBytes": 810701
+        },
+        "stages": {
+          "record": {
+            "ms": 1676.7999999523163,
+            "calls": 1281
+          },
+          "range": {
+            "ms": 200.59999990463257,
+            "calls": 512
+          },
+          "pac": {
+            "ms": 448.800000667572,
+            "calls": 256
+          },
+          "finish": {
+            "ms": 5.700000047683716,
+            "calls": 1
+          }
+        },
+        "codec": {
+          "uploadMs": 3.0999999046325684,
+          "uploadedBytes": 94439157,
+          "uploads": 2825,
+          "scanMs": 1.3000001907348633,
+          "pacMs": 67.29999732971191,
+          "pacs": 256,
+          "inflateMs": 55.40000009536743,
+          "inflates": 256
+        },
+        "sources": 1,
+        "coverageRows": 1048576,
+        "sampleRows": 10
+      }
+    },
+    {
+      "decode": {
+        "decodeMs": 161.5,
+        "hours": 256,
+        "events": 1048576,
+        "payloadBytes": 19997232,
+        "codec": {
+          "uploadMs": 3.1999993324279785,
+          "uploadedBytes": 104803041,
+          "uploads": 3874,
+          "scanMs": 1.5000007152557373,
+          "pacMs": 67.29999852180481,
+          "pacs": 256,
+          "inflateMs": 55.49999952316284,
+          "inflates": 256
+        }
+      },
+      "write": {
+        "elapsedMs": 1871,
+        "archiveMs": 1703.9000000953674,
+        "commands": {
+          "native-begin": 1,
+          "native-coverage": 1,
+          "native-records": 11,
+          "native-finish": 1
+        },
+        "io": {
+          "opens": 27,
+          "writes": 574,
+          "writeBytes": 36706083,
+          "reads": 0,
+          "readBytes": 0,
+          "flushes": 27,
+          "metadataCommits": 12,
+          "metadataBytes": 810701
+        },
+        "stages": {
+          "record": {
+            "ms": 1560.699999332428,
+            "calls": 1281
+          },
+          "range": {
+            "ms": 192.50000190734863,
+            "calls": 512
+          },
+          "pac": {
+            "ms": 340.50000262260437,
+            "calls": 256
+          },
+          "finish": {
+            "ms": 5,
+            "calls": 1
+          }
+        },
+        "codec": {
+          "uploadMs": 3.200000047683716,
+          "uploadedBytes": 94439157,
+          "uploads": 2825,
+          "scanMs": 1.7000000476837158,
+          "pacMs": 67.70000004768372,
+          "pacs": 256,
+          "inflateMs": 57.09999942779541,
+          "inflates": 256
+        },
+        "sources": 1,
+        "coverageRows": 1048576,
+        "sampleRows": 10
+      }
+    }
+  ],
+  "denseFinal": [
+    {
+      "decode": {
+        "decodeMs": 174.20000004768372,
+        "hours": 256,
+        "events": 1048576,
+        "payloadBytes": 19997232,
+        "codec": {
+          "uploadMs": 3.09999942779541,
+          "uploadedBytes": 104803041,
+          "uploads": 3874,
+          "scanMs": 1.4000003337860107,
+          "pacMs": 73.40000200271606,
+          "pacs": 256,
+          "inflateMs": 57.29999780654907,
+          "inflates": 256
+        }
+      },
+      "write": {
+        "elapsedMs": 710.0999999046326,
+        "archiveMs": 535.400000333786,
+        "commands": {
+          "native-begin": 1,
+          "native-coverage": 1,
+          "native-records": 11,
+          "native-finish": 1
+        },
+        "io": {
+          "opens": 27,
+          "writes": 574,
+          "writeBytes": 36706083,
+          "reads": 0,
+          "readBytes": 0,
+          "flushes": 27,
+          "metadataCommits": 12,
+          "metadataBytes": 810701
+        },
+        "stages": {
+          "clone:other": {
+            "ms": 4.699999570846558,
+            "calls": 1551
+          },
+          "checksum": {
+            "ms": 19.6999990940094,
+            "calls": 1284
+          },
+          "clone:manifest": {
+            "ms": 4.199999809265137,
+            "calls": 256
+          },
+          "record:manifest": {
+            "ms": 12.800000429153442,
+            "calls": 256
+          },
+          "record:chunk:trie": {
+            "ms": 0.7999999523162842,
+            "calls": 1
+          },
+          "record:chunk:state": {
+            "ms": 7.799999475479126,
+            "calls": 256
+          },
+          "record:chunk:index": {
+            "ms": 12.599999189376831,
+            "calls": 256
+          },
+          "range": {
+            "ms": 176.30000042915344,
+            "calls": 512
+          },
+          "pac": {
+            "ms": 327.0000009536743,
+            "calls": 256
+          },
+          "record:pac": {
+            "ms": 365.90000104904175,
+            "calls": 256
+          },
+          "record:package-end": {
+            "ms": 1.799999475479126,
+            "calls": 256
+          },
+          "clone:source": {
+            "ms": 12.299999952316284,
+            "calls": 27
+          },
+          "finish": {
+            "ms": 6.299999952316284,
+            "calls": 1
+          }
+        },
+        "codec": {
+          "uploadMs": 4.799999237060547,
+          "uploadedBytes": 94439157,
+          "uploads": 2825,
+          "scanMs": 1.5999994277954102,
+          "pacMs": 69.79999923706055,
+          "pacs": 256,
+          "inflateMs": 53.8000009059906,
+          "inflates": 256
+        },
+        "sources": 1,
+        "coverageRows": 1048576,
+        "sampleRows": 10
+      }
+    },
+    {
+      "decode": {
+        "decodeMs": 169.29999995231628,
+        "hours": 256,
+        "events": 1048576,
+        "payloadBytes": 19997232,
+        "codec": {
+          "uploadMs": 3.799999952316284,
+          "uploadedBytes": 104803041,
+          "uploads": 3874,
+          "scanMs": 1.499999761581421,
+          "pacMs": 67.8999993801117,
+          "pacs": 256,
+          "inflateMs": 54.799999952316284,
+          "inflates": 256
+        }
+      },
+      "write": {
+        "elapsedMs": 664.7000000476837,
+        "archiveMs": 495.400000333786,
+        "commands": {
+          "native-begin": 1,
+          "native-coverage": 1,
+          "native-records": 11,
+          "native-finish": 1
+        },
+        "io": {
+          "opens": 27,
+          "writes": 574,
+          "writeBytes": 36706083,
+          "reads": 0,
+          "readBytes": 0,
+          "flushes": 27,
+          "metadataCommits": 12,
+          "metadataBytes": 810701
+        },
+        "stages": {
+          "clone:other": {
+            "ms": 3.6000003814697266,
+            "calls": 1551
+          },
+          "checksum": {
+            "ms": 20.100001096725464,
+            "calls": 1284
+          },
+          "clone:manifest": {
+            "ms": 4.000000238418579,
+            "calls": 256
+          },
+          "record:manifest": {
+            "ms": 12.200000286102295,
+            "calls": 256
+          },
+          "record:chunk:trie": {
+            "ms": 0.5999999046325684,
+            "calls": 1
+          },
+          "record:chunk:state": {
+            "ms": 5.699998617172241,
+            "calls": 256
+          },
+          "record:chunk:index": {
+            "ms": 13.699999809265137,
+            "calls": 256
+          },
+          "range": {
+            "ms": 170.40000081062317,
+            "calls": 512
+          },
+          "pac": {
+            "ms": 300.1000020503998,
+            "calls": 256
+          },
+          "record:pac": {
+            "ms": 337.70000195503235,
+            "calls": 256
+          },
+          "record:package-end": {
+            "ms": 1.1999995708465576,
+            "calls": 256
+          },
+          "clone:source": {
+            "ms": 12.000000476837158,
+            "calls": 27
+          },
+          "finish": {
+            "ms": 5,
+            "calls": 1
+          }
+        },
+        "codec": {
+          "uploadMs": 4.199999570846558,
+          "uploadedBytes": 94439157,
+          "uploads": 2825,
+          "scanMs": 1.8000001907348633,
+          "pacMs": 67.60000109672546,
+          "pacs": 256,
+          "inflateMs": 55.6999990940094,
+          "inflates": 256
+        },
+        "sources": 1,
+        "coverageRows": 1048576,
+        "sampleRows": 10
+      }
+    },
+    {
+      "decode": {
+        "decodeMs": 165.20000004768372,
+        "hours": 256,
+        "events": 1048576,
+        "payloadBytes": 19997232,
+        "codec": {
+          "uploadMs": 2.8999996185302734,
+          "uploadedBytes": 104803041,
+          "uploads": 3874,
+          "scanMs": 1.6999998092651367,
+          "pacMs": 67.60000109672546,
+          "pacs": 256,
+          "inflateMs": 56.69999933242798,
+          "inflates": 256
+        }
+      },
+      "write": {
+        "elapsedMs": 660.7000000476837,
+        "archiveMs": 492.40000009536743,
+        "commands": {
+          "native-begin": 1,
+          "native-coverage": 1,
+          "native-records": 11,
+          "native-finish": 1
+        },
+        "io": {
+          "opens": 27,
+          "writes": 574,
+          "writeBytes": 36706083,
+          "reads": 0,
+          "readBytes": 0,
+          "flushes": 27,
+          "metadataCommits": 12,
+          "metadataBytes": 810701
+        },
+        "stages": {
+          "clone:other": {
+            "ms": 4.499999523162842,
+            "calls": 1551
+          },
+          "checksum": {
+            "ms": 17.999998331069946,
+            "calls": 1284
+          },
+          "clone:manifest": {
+            "ms": 3.5,
+            "calls": 256
+          },
+          "record:manifest": {
+            "ms": 11.89999771118164,
+            "calls": 256
+          },
+          "record:chunk:trie": {
+            "ms": 0.7999999523162842,
+            "calls": 1
+          },
+          "record:chunk:state": {
+            "ms": 7.100000619888306,
+            "calls": 256
+          },
+          "record:chunk:index": {
+            "ms": 12.299998998641968,
+            "calls": 256
+          },
+          "range": {
+            "ms": 170,
+            "calls": 512
+          },
+          "pac": {
+            "ms": 298.50000262260437,
+            "calls": 256
+          },
+          "record:pac": {
+            "ms": 335.50000262260437,
+            "calls": 256
+          },
+          "record:package-end": {
+            "ms": 1.2000000476837158,
+            "calls": 256
+          },
+          "clone:source": {
+            "ms": 11.399999856948853,
+            "calls": 27
+          },
+          "finish": {
+            "ms": 4.200000047683716,
+            "calls": 1
+          }
+        },
+        "codec": {
+          "uploadMs": 3.6999995708465576,
+          "uploadedBytes": 94439157,
+          "uploads": 2825,
+          "scanMs": 2,
+          "pacMs": 69.60000014305115,
+          "pacs": 256,
+          "inflateMs": 54.90000104904175,
+          "inflates": 256
+        },
+        "sources": 1,
+        "coverageRows": 1048576,
+        "sampleRows": 10
+      }
+    }
+  ],
+  "denseIPC": [
+    {
+      "mode": "production-worker-port",
+      "namespace": "aac41d6df5f9f4812e31839d853599c3e30130bea67d4f16e446c9033a83d70d",
+      "elapsedMs": 784.3999998569489,
+      "archiveMs": 584.4999997615814,
+      "commands": {
+        "native-begin": 1,
+        "native-coverage": 1,
+        "native-records": 11,
+        "native-finish": 1
+      },
+      "stages": {
+        "checksum": {
+          "ms": 11.499999761581421,
+          "calls": 514
+        }
+      },
+      "codec": {
+        "uploadMs": 5.5,
+        "uploadedBytes": 94439157,
+        "uploads": 2825,
+        "scanMs": 2.4000000953674316,
+        "pacMs": 70.39999914169312,
+        "pacs": 256,
+        "inflateMs": 55.30000114440918,
+        "inflates": 256
+      },
+      "sources": 1,
+      "coverageRows": 1048576,
+      "sampleRows": 10
+    },
+    {
+      "mode": "production-worker-port",
+      "namespace": "aac41d6df5f9f4812e31839d853599c3e30130bea67d4f16e446c9033a83d70d",
+      "elapsedMs": 704.7999999523163,
+      "archiveMs": 530.7000000476837,
+      "commands": {
+        "native-begin": 1,
+        "native-coverage": 1,
+        "native-records": 11,
+        "native-finish": 1
+      },
+      "stages": {
+        "checksum": {
+          "ms": 10.100001573562622,
+          "calls": 514
+        }
+      },
+      "codec": {
+        "uploadMs": 4.400000095367432,
+        "uploadedBytes": 94439157,
+        "uploads": 2825,
+        "scanMs": 1.7000000476837158,
+        "pacMs": 68.39999890327454,
+        "pacs": 256,
+        "inflateMs": 54.999998569488525,
+        "inflates": 256
+      },
+      "sources": 1,
+      "coverageRows": 1048576,
+      "sampleRows": 10
+    },
+    {
+      "mode": "production-worker-port",
+      "namespace": "aac41d6df5f9f4812e31839d853599c3e30130bea67d4f16e446c9033a83d70d",
+      "elapsedMs": 705.9000000953674,
+      "archiveMs": 532.6000001430511,
+      "commands": {
+        "native-begin": 1,
+        "native-coverage": 1,
+        "native-records": 11,
+        "native-finish": 1
+      },
+      "stages": {
+        "checksum": {
+          "ms": 10.599999904632568,
+          "calls": 514
+        }
+      },
+      "codec": {
+        "uploadMs": 5.3000006675720215,
+        "uploadedBytes": 94439157,
+        "uploads": 2825,
+        "scanMs": 1.799999475479126,
+        "pacMs": 67.80000114440918,
+        "pacs": 256,
+        "inflateMs": 54.799999475479126,
+        "inflates": 256
+      },
+      "sources": 1,
+      "coverageRows": 1048576,
+      "sampleRows": 10
+    }
+  ],
+  "denseVerified": {
+    "mode": "production-worker-port",
+    "namespace": "aac41d6df5f9f4812e31839d853599c3e30130bea67d4f16e446c9033a83d70d",
+    "elapsedMs": 720.4000000953674,
+    "archiveMs": 533.1000003814697,
+    "commands": {
+      "native-begin": 1,
+      "native-coverage": 1,
+      "native-records": 11,
+      "native-finish": 1
+    },
+    "stages": {
+      "checksum": {
+        "ms": 12,
+        "calls": 514
+      }
+    },
+    "codec": {
+      "uploadMs": 4.7999982833862305,
+      "uploadedBytes": 94439157,
+      "uploads": 2825,
+      "scanMs": 1.5,
+      "pacMs": 71.0999972820282,
+      "pacs": 256,
+      "inflateMs": 56.09999966621399,
+      "inflates": 256
+    },
+    "sources": 1,
+    "coverageRows": 1048576,
+    "sampleRows": 10,
+    "verifiedHours": 256,
+    "verifiedEvents": 1048576
+  },
+  "method": {
+    "baseline": "One cold sparse run before this optimization pass; three decoder trials.",
+    "optimized": "Three cold OPFS runs per workload; pre-fetched response in worker memory; new WASM instance per run. Download, module compilation, verification, and UI render excluded.",
+    "scope": "Sparse = 721 hours / 6,232 live demo events. Dense = 256 hours / 1,048,576 synthetic events sealed by server using pill-packer. Full-text indexing and ingress excluded from fixture preparation.",
+    "instrumentation": "Nested stage timings overlap; do not sum them. Sparse early archiveMs includes post-timing readback, corrected in dense runs. Early command counts also include post-timing verification. Final IPC mode uses production storage worker and MessagePort; file I/O counts measured separately in same-worker mode.",
+    "validation": "Full dense byte-for-byte readback: payloads, first 12 identity bytes of every index row, and all event boundaries. Committed coverage agrees with 1,048,576 rows.",
+    "warm": "Earlier denseWarm is forced re-delivery ignoring server coverage, not normal warm-cache search."
+  },
+  "sparseFinalOwned": [
+    {
+      "mode": "instrumented-same-worker",
+      "namespace": "benchmark-hour-blocks",
+      "elapsedMs": 527,
+      "archiveMs": 453.9999997615814,
+      "commands": {
+        "native-begin": 1,
+        "native-coverage": 1,
+        "native-finish": 1
+      },
+      "io": {
+        "opens": 5,
+        "writes": 1447,
+        "writeBytes": 398783,
+        "reads": 0,
+        "readBytes": 0,
+        "flushes": 5,
+        "metadataCommits": 1,
+        "metadataBytes": 389181
+      },
+      "stages": {
+        "clone:other": {
+          "ms": 8.799999475479126,
+          "calls": 4422
+        },
+        "checksum": {
+          "ms": 15.19999885559082,
+          "calls": 3678
+        },
+        "clone:manifest": {
+          "ms": 9.800001859664917,
+          "calls": 744
+        },
+        "record:manifest": {
+          "ms": 25.60000228881836,
+          "calls": 744
+        },
+        "record:chunk:trie": {
+          "ms": 1.3999998569488525,
+          "calls": 1
+        },
+        "record:chunk:state": {
+          "ms": 23.199997901916504,
+          "calls": 744
+        },
+        "record:package-end": {
+          "ms": 3.8000001907348633,
+          "calls": 744
+        },
+        "record:chunk:index": {
+          "ms": 6.299999237060547,
+          "calls": 721
+        },
+        "range": {
+          "ms": 295.599999666214,
+          "calls": 1442
+        },
+        "pac": {
+          "ms": 322.10000133514404,
+          "calls": 721
+        },
+        "record:pac": {
+          "ms": 325.30000042915344,
+          "calls": 721
+        },
+        "finish": {
+          "ms": 22,
+          "calls": 1
+        },
+        "clone:source": {
+          "ms": 6.800000190734863,
+          "calls": 4
+        }
+      },
+      "codec": {
+        "uploadMs": 2.299999475479126,
+        "uploadedBytes": 12566445,
+        "uploads": 3684,
+        "scanMs": 3.7999989986419678,
+        "pacMs": 2.9000000953674316,
+        "pacs": 721,
+        "inflateMs": 0,
+        "inflates": 0
+      },
+      "sources": 1,
+      "coverageRows": 6232,
+      "sampleRows": 10,
+      "verifiedHours": 0,
+      "verifiedEvents": 0
+    },
+    {
+      "mode": "instrumented-same-worker",
+      "namespace": "benchmark-hour-blocks",
+      "elapsedMs": 465.7999999523163,
+      "archiveMs": 414.19999980926514,
+      "commands": {
+        "native-begin": 1,
+        "native-coverage": 1,
+        "native-finish": 1
+      },
+      "io": {
+        "opens": 5,
+        "writes": 1447,
+        "writeBytes": 398783,
+        "reads": 0,
+        "readBytes": 0,
+        "flushes": 5,
+        "metadataCommits": 1,
+        "metadataBytes": 389181
+      },
+      "stages": {
+        "clone:other": {
+          "ms": 8.199998140335083,
+          "calls": 4422
+        },
+        "checksum": {
+          "ms": 12.900001049041748,
+          "calls": 3678
+        },
+        "clone:manifest": {
+          "ms": 8.5,
+          "calls": 744
+        },
+        "record:manifest": {
+          "ms": 25.499999523162842,
+          "calls": 744
+        },
+        "record:chunk:trie": {
+          "ms": 0.9000000953674316,
+          "calls": 1
+        },
+        "record:chunk:state": {
+          "ms": 19.699997901916504,
+          "calls": 744
+        },
+        "record:package-end": {
+          "ms": 3.1999998092651367,
+          "calls": 744
+        },
+        "record:chunk:index": {
+          "ms": 7.000000476837158,
+          "calls": 721
+        },
+        "range": {
+          "ms": 271.7000005245209,
+          "calls": 1442
+        },
+        "pac": {
+          "ms": 295.70000171661377,
+          "calls": 721
+        },
+        "record:pac": {
+          "ms": 297.3000018596649,
+          "calls": 721
+        },
+        "finish": {
+          "ms": 21.299999952316284,
+          "calls": 1
+        },
+        "clone:source": {
+          "ms": 6.799999713897705,
+          "calls": 4
+        }
+      },
+      "codec": {
+        "uploadMs": 1,
+        "uploadedBytes": 12566445,
+        "uploads": 3684,
+        "scanMs": 2.8000006675720215,
+        "pacMs": 1.9000005722045898,
+        "pacs": 721,
+        "inflateMs": 0,
+        "inflates": 0
+      },
+      "sources": 1,
+      "coverageRows": 6232,
+      "sampleRows": 10,
+      "verifiedHours": 0,
+      "verifiedEvents": 0
+    },
+    {
+      "mode": "instrumented-same-worker",
+      "namespace": "benchmark-hour-blocks",
+      "elapsedMs": 464.5,
+      "archiveMs": 414.19999980926514,
+      "commands": {
+        "native-begin": 1,
+        "native-coverage": 1,
+        "native-finish": 1
+      },
+      "io": {
+        "opens": 5,
+        "writes": 1447,
+        "writeBytes": 398783,
+        "reads": 0,
+        "readBytes": 0,
+        "flushes": 5,
+        "metadataCommits": 1,
+        "metadataBytes": 389181
+      },
+      "stages": {
+        "clone:other": {
+          "ms": 6.799999713897705,
+          "calls": 4422
+        },
+        "checksum": {
+          "ms": 13.000000476837158,
+          "calls": 3678
+        },
+        "clone:manifest": {
+          "ms": 9.999999046325684,
+          "calls": 744
+        },
+        "record:manifest": {
+          "ms": 27.29999852180481,
+          "calls": 744
+        },
+        "record:chunk:trie": {
+          "ms": 0.8999998569488525,
+          "calls": 1
+        },
+        "record:chunk:state": {
+          "ms": 20.899998426437378,
+          "calls": 744
+        },
+        "record:package-end": {
+          "ms": 2.799999952316284,
+          "calls": 744
+        },
+        "record:chunk:index": {
+          "ms": 7,
+          "calls": 721
+        },
+        "range": {
+          "ms": 277.9000053405762,
+          "calls": 1442
+        },
+        "pac": {
+          "ms": 294.0000035762787,
+          "calls": 721
+        },
+        "record:pac": {
+          "ms": 295.5000033378601,
+          "calls": 721
+        },
+        "finish": {
+          "ms": 22.700000047683716,
+          "calls": 1
+        },
+        "clone:source": {
+          "ms": 8.5,
+          "calls": 4
+        }
+      },
+      "codec": {
+        "uploadMs": 1.1000003814697266,
+        "uploadedBytes": 12566445,
+        "uploads": 3684,
+        "scanMs": 3.200000047683716,
+        "pacMs": 1.900000810623169,
+        "pacs": 721,
+        "inflateMs": 0,
+        "inflates": 0
+      },
+      "sources": 1,
+      "coverageRows": 6232,
+      "sampleRows": 10,
+      "verifiedHours": 0,
+      "verifiedEvents": 0
+    }
+  ],
+  "sparseIPC": {
+    "mode": "production-worker-port",
+    "namespace": "aac41d6df5f9f4812e31839d853599c3e30130bea67d4f16e446c9033a83d70d",
+    "elapsedMs": 478.2999999523163,
+    "archiveMs": 428.2999999523163,
+    "commands": {
+      "native-begin": 1,
+      "native-coverage": 1,
+      "native-finish": 1
+    },
+    "stages": {
+      "checksum": {
+        "ms": 5.800000429153442,
+        "calls": 1467
+      }
+    },
+    "codec": {
+      "uploadMs": 0.8000001907348633,
+      "uploadedBytes": 12566445,
+      "uploads": 3684,
+      "scanMs": 3,
+      "pacMs": 1.9999990463256836,
+      "pacs": 721,
+      "inflateMs": 0,
+      "inflates": 0
+    },
+    "sources": 1,
+    "coverageRows": 6232,
+    "sampleRows": 10,
+    "verifiedHours": 721,
+    "verifiedEvents": 6232
+  },
+  "codec_wasm_sha256": "97a45f832c0d3333663690fc35ffeb43723f220cc53c88c750c8cdccdd28063a",
+  "dense_fixture_sha256": "fcb596f97a5fd471276334caa3c2fb502032c24f840aef537fea9e630d1987e5",
+  "dense_fixture": {
+    "tap": "demo/payment/transactions.v1/error",
+    "from": "2026-09-01T00:00:00Z",
+    "to": "2026-09-11T16:00:00Z",
+    "headers": {
+      "Content-Type": "application/pil",
+      "PIL-Version": "2",
+      "Trunk-Format": "native-pac/0",
+      "Trunk-Completion": "body",
+      "Definition-Version": "d134a19136bd9591f4f3943d78d805e3885fe3185b86ad71fdb3016758cda288"
+    },
+    "hours": 256,
+    "events": 1048576,
+    "wireBytes": 22303400
+  }
+}

@@ -1,12 +1,7 @@
-import wasmURL from "../../assets/trunk-store.wasm?url";
+import { nativeCacheIssue } from "./errors.ts";
 import { createArchive } from "./runtime.ts";
 import type { Command } from "./protocol.ts";
-const modulePromise = fetch(wasmURL).then((r) => {
-  if (!r.ok) throw Error("Could not load local store codec");
-  return WebAssembly.compileStreaming(r);
-});
-modulePromise.catch(() => {});
-const execute = createArchive(modulePromise);
+const execute = createArchive();
 let queue = Promise.resolve();
 globalThis.onmessage = (event: MessageEvent) => {
   if (event.data?.kind !== "connect" || !event.ports[0]) return;
@@ -27,7 +22,7 @@ globalThis.onmessage = (event: MessageEvent) => {
         const namespace = [...new Uint8Array(hash)]
           .map((n) => n.toString(16).padStart(2, "0"))
           .join("");
-        // Keep the old lock name: migration must also exclude older bundles.
+        // Serialize file publication across tabs.
         const reply = await navigator.locks.request("trie-trunk-files-v1", () =>
           execute(namespace, data.command),
         );
@@ -40,6 +35,7 @@ globalThis.onmessage = (event: MessageEvent) => {
       } catch (error) {
         port.postMessage({
           id: data.id,
+          cacheIssue: nativeCacheIssue(error),
           error: `Local event store: ${error instanceof Error ? error.message : String(error)}`,
         });
       }

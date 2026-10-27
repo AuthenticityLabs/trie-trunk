@@ -57,7 +57,7 @@ func (s *Store) rememberLive(b *branchStore, p pending, row uint64, staged bool)
 	var revision collectionRevision
 	if b.branch == Write && s.config.ObjectIndex && s.layout.Object >= 0 {
 		var f Frame
-		if e := s.layout.identityFrame(p.frame, &f); e != nil {
+		if e := s.layout.IdentityFrame(p.frame, &f); e != nil {
 			return e
 		}
 		if f.Values[s.layout.Revision].State != Absent {

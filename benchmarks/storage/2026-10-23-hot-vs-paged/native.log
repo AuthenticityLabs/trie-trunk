@@ -1,6 +1,0 @@
-   Compiling trunk-uuid-index v0.0.0 (/Users/Shared/code/applications/trie-trunk/rust/uuid-index)
-    Finished `release` profile [optimized] target(s) in 0.59s
-     Running `rust/uuid-index/target/release/examples/hot_vs_paged`
-storage objects=100000 revisions=1 hash_allocated_bytes=6973960 hash_allocations=100001 hash_capacity=114688 paged_current_directory_bytes=45872 paged_file_bytes=10305536 durable_build_ms=1963.074
-storage objects=100000 revisions=9 hash_allocated_bytes=13373960 hash_allocations=100001 hash_capacity=114688 paged_current_directory_bytes=140848 paged_file_bytes=15564800 durable_build_ms=17402.154
-storage objects=1000000 revisions=1 hash_allocated_bytes=101983240 hash_allocations=1000001 hash_capacity=1835008 paged_current_directory_bytes=468936 paged_file_bytes=56717312 durable_build_ms=32139.740

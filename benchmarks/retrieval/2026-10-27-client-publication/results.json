@@ -1,0 +1,54 @@
+{
+  "environment": "Chrome on Mac, isolated origin context, mobile viewport emulation; not iPhone Safari",
+  "url": "https://snoot.trietrunk.com",
+  "query": {
+    "from": "2026-09-25T00:00:00.000Z",
+    "to": "2026-10-26T00:00:00.001Z",
+    "size": 100,
+    "order": "asc",
+    "matched": 50000
+  },
+  "method": "Single observed run per condition. Cold event cache cleared in isolated context only; summary and HTTP caches retained. Warm is a document reload. Timings reported by search instrumentation, not render timings.",
+  "before_ms": {
+    "cold": {
+      "request": 127,
+      "response": 3,
+      "events": 2140,
+      "client": 16,
+      "search_total": 2280
+    },
+    "warm": {
+      "request": 119,
+      "response": 2,
+      "events": 1740,
+      "client": 32,
+      "search_total": 1900
+    }
+  },
+  "after_ms": {
+    "cold": {
+      "request": 124,
+      "response": 4,
+      "events": 773,
+      "client": 76,
+      "search_total": 976
+    },
+    "warm": {
+      "request": 96,
+      "response": 1,
+      "events": 146,
+      "client": 29,
+      "search_total": 272
+    }
+  },
+  "changes": [
+    "Bounded record batches with one commit after a small response completes",
+    "Lease-scoped metadata reads instead of repeated reopening of unchanged snapshots",
+    "Committed time-trie lookup before issuing collection GET"
+  ],
+  "limitations": [
+    "Not a controlled Rust/Go server performance comparison",
+    "Not the exact filtered query in user screenshot",
+    "Single samples, not percentile claims"
+  ]
+}

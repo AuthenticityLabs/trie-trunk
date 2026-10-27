@@ -2,8 +2,8 @@ package cache
 
 import (
 	"fmt"
+	pil "github.com/AuthenticityLabs/pill-packer/go/codec"
 	"math"
-	"math/bits"
 )
 
 // One fixed stride per numeric column. Daily chunks share these descriptors;
@@ -12,56 +12,12 @@ const summaryNumericColumns = 9
 const summaryEncodingSize = summaryNumericColumns * 9
 const summaryRollupSize = 6 * 8
 
-type summaryNumber struct {
-	Width int
-	Base  uint64
-}
+type summaryNumber = pil.UnsignedEncoding
 type summaryEncoding [summaryNumericColumns]summaryNumber
 
-func summaryValueWidth(v uint64) int { return max(1, (bits.Len64(v)+7)/8) }
-func summaryPut(raw []byte, v uint64, c summaryNumber) {
-	v -= c.Base
-	switch c.Width {
-	case 1:
-		raw[0] = byte(v)
-	case 2:
-		order.PutUint16(raw, uint16(v))
-	case 3:
-		raw[0], raw[1], raw[2] = byte(v), byte(v>>8), byte(v>>16)
-	case 4:
-		order.PutUint32(raw, uint32(v))
-	case 8:
-		order.PutUint64(raw, v)
-	default:
-		for i := 0; i < c.Width; i++ {
-			raw[i] = byte(v)
-			v >>= 8
-		}
-	}
-}
-func summaryGet(raw []byte, c summaryNumber) (uint64, error) {
-	var v uint64
-	switch c.Width {
-	case 1:
-		v = uint64(raw[0])
-	case 2:
-		v = uint64(order.Uint16(raw))
-	case 3:
-		v = uint64(raw[0]) | uint64(raw[1])<<8 | uint64(raw[2])<<16
-	case 4:
-		v = uint64(order.Uint32(raw))
-	case 8:
-		v = order.Uint64(raw)
-	default:
-		for i := c.Width - 1; i >= 0; i-- {
-			v = v<<8 | uint64(raw[i])
-		}
-	}
-	if v > math.MaxUint64-c.Base {
-		return 0, fmt.Errorf("summary base overflow")
-	}
-	return c.Base + v, nil
-}
+func summaryValueWidth(v uint64) int                         { return pil.UnsignedWidth(v) }
+func summaryPut(raw []byte, v uint64, c summaryNumber)       { pil.PutUnsigned(raw, v, c) }
+func summaryGet(raw []byte, c summaryNumber) (uint64, error) { return pil.GetUnsigned(raw, c) }
 
 func (e summaryEncoding) put(raw []byte) {
 	for i, c := range e {
@@ -172,34 +128,16 @@ func putSummaryTotals(raw []byte, a Aggregate, errors uint64) {
 // Byte shuffle keeps each numeric column's equal-significance bytes together
 // for gzip. It is reversed once on packet decode, before exposing fixed-stride
 // columns. It does not reorder rows or introduce predecessor dependencies.
-func shuffleSummary(raw []byte, enc summaryEncoding, reverse bool) {
+func shuffleSummary(raw []byte, enc summaryEncoding, reverse bool) error {
+	if len(raw) < 116 {
+		return fmt.Errorf("short summary columns")
+	}
 	n, m, p := int(order.Uint32(raw[32:])), int(order.Uint32(raw[36:])), int(order.Uint32(raw[40:]))
 	at := 116 + n*2
-	var scratch []byte
+	spans := make([]pil.ColumnSpan, 0, summaryNumericColumns)
 	column := func(count, width int) {
-		length := count * width
-		if count > 1 && width > 1 {
-			if cap(scratch) < length {
-				scratch = make([]byte, length)
-			} else {
-				scratch = scratch[:length]
-			}
-			copy(scratch, raw[at:at+length])
-			if reverse {
-				for b := 0; b < width; b++ {
-					for i := 0; i < count; i++ {
-						raw[at+i*width+b] = scratch[b*count+i]
-					}
-				}
-			} else {
-				for b := 0; b < width; b++ {
-					for i := 0; i < count; i++ {
-						raw[at+b*count+i] = scratch[i*width+b]
-					}
-				}
-			}
-		}
-		at += length
+		spans = append(spans, pil.ColumnSpan{Offset: at, Count: count, Width: width})
+		at += count * width
 	}
 	for k := 0; k < 5; k++ {
 		column(n, enc[k].Width)
@@ -210,6 +148,7 @@ func shuffleSummary(raw []byte, enc summaryEncoding, reverse bool) {
 	at += m * 8
 	column(p, enc[7].Width)
 	column(p, enc[8].Width)
+	return pil.ShuffleColumns(raw, spans, reverse)
 }
 
 func validateShuffledSummary(raw []byte, enc summaryEncoding) error {

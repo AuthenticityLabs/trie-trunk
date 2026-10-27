@@ -1,8 +1,11 @@
 import { ErrorBoundary } from "solid-js";
 import { render } from "solid-js/web";
 import App from "./app";
+import { clearObsoleteStorage } from "./services/storage-cleanup";
 import "./style.css";
 
+async function start() {
+await clearObsoleteStorage();
 render(
   () => (
     <ErrorBoundary
@@ -21,3 +24,8 @@ render(
   ),
   document.getElementById("root")!,
 );
+
+}
+void start().catch(error => {
+ const root=document.getElementById("root")!;root.textContent=error instanceof Error?error.message:String(error);
+});

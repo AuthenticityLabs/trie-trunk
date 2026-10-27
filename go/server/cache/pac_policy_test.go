@@ -44,6 +44,43 @@ func TestPACCompressionPolicy(t *testing.T) {
 	}
 }
 
+func TestWriteCompressionFollowsCollectionIndex(t *testing.T) {
+	for _, indexed := range []bool{false, true} {
+		t.Run(fmt.Sprintf("collections=%t", indexed), func(t *testing.T) {
+			l := testLayout(t, false)
+			at := time.Date(2026, 10, 19, 12, 0, 0, 0, time.UTC)
+			cfg := Config{Root: t.TempDir(), Cache: "demo", Tenant: "test", Layout: l,
+				ObjectIndex: indexed, Now: func() time.Time { return at.Add(3 * time.Hour) }}
+			s, err := Open(cfg)
+			if err != nil {
+				t.Fatal(err)
+			}
+			t.Cleanup(func() { s.Close() })
+			for n := uint32(1); n <= 64; n++ {
+				if _, err := s.Append(Write, testFrame(t, l, at.Add(time.Duration(n)*time.Second), n, false)); err != nil {
+					t.Fatal(err)
+				}
+			}
+			if err := s.Flush(); err != nil {
+				t.Fatal(err)
+			}
+			if s.branches[Write].runs[0].PAC.Gzip == indexed {
+				t.Fatalf("compressed=%t with collections=%t", s.branches[Write].runs[0].PAC.Gzip, indexed)
+			}
+			if err := s.Close(); err != nil {
+				t.Fatal(err)
+			}
+			s, err = Open(cfg)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if got := len(collect(t, s, Write, at, at.Add(time.Hour))); got != 64 {
+				t.Fatalf("recovered %d writes", got)
+			}
+		})
+	}
+}
+
 func TestPACCompressionReloadAndStoredBytes(t *testing.T) {
 	l := testLayout(t, false)
 	at := time.Date(2026, 10, 19, 12, 0, 0, 0, time.UTC)
@@ -116,8 +153,8 @@ func TestPACCompressionReloadAndStoredBytes(t *testing.T) {
 	if err := s.Flush(); err != nil {
 		t.Fatal(err)
 	}
-	if s.branches[Write].runs[0].PAC.Gzip {
-		t.Fatal("compression policy must not compress write storage")
+	if !s.branches[Write].runs[0].PAC.Gzip {
+		t.Fatal("writes without collection indexing should use compression")
 	}
 	if err := s.Close(); err != nil {
 		t.Fatal(err)

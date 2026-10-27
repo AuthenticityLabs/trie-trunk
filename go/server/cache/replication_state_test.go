@@ -90,8 +90,8 @@ func TestNativeStatePagesHTTP(t *testing.T) {
 			unchanged++
 		}
 	}
-	if pages != 3 || unchanged != 1 {
-		t.Fatal("later package repeated state", pages, unchanged)
+	if pages != 2 || unchanged != 0 {
+		t.Fatal("merged delivery repeated state", pages, unchanged)
 	}
 	if dir := os.Getenv("PIL_STATE_FIXTURE_DIR"); dir != "" {
 		if err := os.MkdirAll(dir, 0755); err != nil {
