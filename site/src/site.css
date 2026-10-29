@@ -384,3 +384,5 @@ h1{font-size:43px;font-weight:500;letter-spacing:-1.7px;line-height:1.15}h2{font
  .document-body>section:not(.trunk-intro):not(.snoot-intro){padding-block:30px;scroll-margin-top:150px}
  .home-definition{grid-template-columns:1fr;gap:22px}.home-definition>.section-heading{margin-bottom:0}
 }
+
+.pil-copy{font-size:15px;color:var(--muted);line-height:1.8;margin-top:22px}

@@ -33,6 +33,8 @@ await cp(join(here,'assets'),join(out,'assets'),{recursive:true});
 for(const name of ['snoot-forward.png','snoot-wordmark.png'])
  await cp(join(here,'../client/assets',name),join(out,'assets/brand',name));
 await cp(join(here,'../../pill-packer/schemas/definition.cddl'),join(out,'definition.cddl'));
+await cp(join(here,'../../pill-packer/schemas/pil.rx'),join(out,'pil.rx'));
+await cp(join(here,'../../pill-packer/rust/examples/nested_objects.cddl'),join(out,'purchase.cddl'));
 const pillReadme=await readFile(join(here,'../../pill-packer/README.md'),'utf8');
 const formatReference=pillReadme.split('## Current Format Reference\n')[1]?.split('\n## License\n')[0];
 if(!formatReference)throw new Error('Pill Packer README is missing its Format Reference');
