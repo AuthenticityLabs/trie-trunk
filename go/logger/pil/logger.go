@@ -290,6 +290,7 @@ func (w *Logger) WriteValues(ctx context.Context, values []Value) error {
 // Definition negotiation remains collection-scoped; errors need not pollute the
 // configured successful-operation branch.
 func (w *Logger) WriteValuesTo(ctx context.Context, branch string, values []Value) error {
+	values = w.source.ProducerValues(values)
 	if w.config.BatchMilliseconds > 0 {
 		if _, err := cache.ParseBranch(branch); err != nil {
 			return err

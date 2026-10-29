@@ -6,7 +6,6 @@ import { GridComponent, TooltipComponent, AriaComponent } from 'echarts/componen
 import { SVGRenderer } from 'echarts/renderers';
 import { dayMs, fastDashboard, panelGroups, chartCSV, chartValue, sparklinePath, trendAngle, type FastResult, type Metric, type PanelDefinition } from '../services/fast-dashboard';
 import { loadFastDashboard } from '../services/pil/client';
-import type { SeedResource } from '../services/dashboard-subscriptions';
 
 use([LineChart, BarChart, GridComponent, TooltipComponent, AriaComponent, SVGRenderer]);
 const number = (v: number | null, unit:PanelDefinition['view']['unit'] = 'count') => v === null ? '—' : chartValue(v,unit)!.toLocaleString(undefined,{maximumFractionDigits:unit==='count'?0:2})+(unit==='percent'?'%':unit==='ms'?' ms':'');
@@ -14,16 +13,15 @@ const names: Record<Metric,string> = { events:'Events',errors:'Errors',errorRate
 const units = (metric: Metric) => metric==='average'||metric==='p95'?'ms':metric==='errorRate'?'percent':'count';
 const date = (time: number) => new Date(time).toLocaleDateString(undefined,{timeZone:'UTC',month:'short',day:'numeric'});
 
-export default function FastDashboard(props:{token:string;services:string[];resources:SeedResource[];revision:string}) {
-  const [period,setPeriod]=createSignal<string>(fastDashboard.time.preset),[resource,setResource]=createSignal(''),[refresh,setRefresh]=createSignal(0);
+export default function FastDashboard(props:{token:string;services:string[];revision:string}) {
+  const [period,setPeriod]=createSignal<string>(fastDashboard.time.preset),[refresh,setRefresh]=createSignal(0);
   const [result,setResult]=createSignal<FastResult>(),[loading,setLoading]=createSignal(false),[error,setError]=createSignal('');
-  createEffect(()=>{if(resource()&&!props.resources.some(r=>r.id===resource()))setResource('')});
-  const selection=createMemo(()=>JSON.stringify([props.token,[...props.services].sort(),resource(),period(),props.revision,refresh()]));
+  const selection=createMemo(()=>JSON.stringify([props.token,[...props.services].sort(),period(),props.revision,refresh()]));
   createEffect(()=>{
     selection();
     const controller=new AbortController(),to=Math.floor(Date.now()/dayMs)*dayMs;
     const from=period()==='ytd'?Date.UTC(new Date(to).getUTCFullYear(),0,1):to-Number(period().slice(0,-1))*dayMs;
-    const scopes=resource()?[resource()]:[...props.services];
+    const scopes=[...props.services];
     setResult(undefined);setError('');setLoading(true);
     if(!scopes.length||from===to){setLoading(false);return;}
     void loadFastDashboard({scopes,from,to},props.token,controller.signal).then(value=>{if(!controller.signal.aborted)setResult(value)},cause=>{if(!controller.signal.aborted)setError(cause instanceof Error?cause.message:String(cause))}).finally(()=>{if(!controller.signal.aborted)setLoading(false)});
@@ -32,7 +30,6 @@ export default function FastDashboard(props:{token:string;services:string[];reso
   return <section class="fast-dashboard" aria-label="Fast Dashboard">
     <div class="fast-toolbar">
       <div role="tablist" aria-label="Dashboard Mode" class="fast-tabs"><button role="tab" id="fast-dashboard-tab" aria-controls="fast-dashboard-panel" aria-selected="true">Fast</button><button role="tab" aria-selected="false" disabled title="Event-based analysis is coming next">Deep</button></div>
-      <label>Resource<select value={resource()} onChange={e=>setResource(e.currentTarget.value)}><option value="">All Resources</option><For each={props.resources}>{r=><option value={r.id}>{r.service} / {r.resource}</option>}</For></select></label>
       <label>Time Window<select value={period()} onChange={e=>setPeriod(e.currentTarget.value)}><option value="7d">Last 7 Days</option><option value="30d">Last 30 Days</option><option value="ytd">Year to Date</option></select></label>
       <button class="button secondary" disabled={loading()} onClick={()=>setRefresh(n=>n+1)}>Refresh</button>
     </div>
@@ -42,7 +39,7 @@ export default function FastDashboard(props:{token:string;services:string[];reso
       <Show when={result()}>{data=><>
         <div class="fast-range"><span>{date(data().from)} – {date(data().to-1)} · Complete UTC Days</span><span>Precomputed Summaries</span></div>
         <Show when={data().matched!==data().totals.events}><div class="notice" role="status">{number(data().totals.events)} of {number(data().matched)} Events Summarized · Charts Cover Summarized Events</div></Show>
-        <Show when={data().totals.events>0} fallback={<div class="card fast-empty"><h3>No Summary Data in This Window</h3><p>Choose another time window or resource.</p></div>}>
+        <Show when={data().totals.events>0} fallback={<div class="card fast-empty"><h3>No Summary Data in This Window</h3><p>Choose another time window or select a service in Data Seeds.</p></div>}>
           <div class="fast-grid"><For each={fastDashboard.panels}>{panel=><FastPanel panel={panel} data={data()}/>}</For></div>
         </Show>
       </>}</Show>
@@ -82,17 +79,20 @@ function Sparkline(props:{values:(number|null)[];label?:string;description?:stri
   const path=createMemo(()=>sparklinePath(props.values));
   return <svg class="fast-sparkline" viewBox="0 0 100 28" role="img" aria-label={props.label??'Event Volume Trend'}><title>{props.description??props.label??'Event Volume Trend'}</title><path d={path()} fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>;
 }
-function FastChart(props:{option:EChartsCoreOption;title:string}) {
+export function FastChart(props:{option:EChartsCoreOption;title:string}) {
   let element!:HTMLDivElement;
   onMount(()=>{
     const chart=init(element,undefined,{renderer:'svg'});
-    const [theme,setTheme]=createSignal(0);
-    const observer=new MutationObserver(()=>setTheme(n=>n+1));observer.observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
-    createEffect(()=>{theme();const css=getComputedStyle(element),text=css.getPropertyValue('--text-secondary').trim()||'#626860',color=css.getPropertyValue('--chart-blue').trim()||'#52769c',line=css.getPropertyValue('--border').trim()||'#ddd';
+    const [revision,setRevision]=createSignal(0);
+    const observer=new MutationObserver(()=>setRevision(n=>n+1));observer.observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+    createEffect(()=>{revision();const css=getComputedStyle(element),text=css.getPropertyValue('--text-secondary').trim()||'#626860',color=css.getPropertyValue('--chart-blue').trim()||'#52769c',line=css.getPropertyValue('--border').trim()||'#ddd';
       const option=props.option as any;
-      chart.setOption({...option,animation:false,color:[color],textStyle:{color:text,fontFamily:'inherit'},aria:{enabled:true,label:{description:props.title}},xAxis:{...option.xAxis,axisLabel:{color:text,...option.xAxis?.axisLabel},axisLine:{lineStyle:{color:line}},splitLine:{lineStyle:{color:line}}},yAxis:{...option.yAxis,axisLabel:{color:text,...option.yAxis?.axisLabel},splitLine:{lineStyle:{color:line}}}},{notMerge:true});
+      const axisSpace=option.yAxis?.type==='category'?(option.yAxis.axisLabel?.width??140)+64:64;
+      const labelSpace=option.xAxis?.type==='time'?88:72;
+      const splitNumber=Math.max(2,Math.min(8,Math.floor((element.clientWidth-axisSpace)/labelSpace)));
+      chart.setOption({...option,animation:false,color:[color],textStyle:{color:text,fontFamily:css.fontFamily},aria:{enabled:true,label:{description:props.title}},xAxis:{...option.xAxis,splitNumber,axisLabel:{color:text,...option.xAxis?.axisLabel,hideOverlap:true,margin:10},axisLine:{lineStyle:{color:line}},splitLine:{lineStyle:{color:line}}},yAxis:{...option.yAxis,axisLabel:{color:text,...option.yAxis?.axisLabel},splitLine:{lineStyle:{color:line}}}},{notMerge:true});
     });
-    const resize=new ResizeObserver(()=>chart.resize());resize.observe(element);
+    const resize=new ResizeObserver(()=>{chart.resize();setRevision(n=>n+1)});resize.observe(element);
     onCleanup(()=>{observer.disconnect();resize.disconnect();chart.dispose()});
   });
   return <div ref={element} class="fast-chart" role="img" aria-label={props.title}/>;

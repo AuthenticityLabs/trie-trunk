@@ -70,7 +70,7 @@ func TestRegistrationBeforeWriteAndRecovery(t *testing.T) {
 		t.Fatal("PIL changed during transport")
 	}
 	// Server restart retains its immutable map and staged bytes. Warm negotiation
-	// sends no definition body; replaying the same event remains idempotent.
+	// sends no definition body. Repeated ingress receives another provisional ordinal.
 	if e = endpoint.Close(); e != nil {
 		t.Fatal(e)
 	}
@@ -100,11 +100,15 @@ func TestRegistrationBeforeWriteAndRecovery(t *testing.T) {
 	count := 0
 	if e = s.SearchLive(ctx, cache.Query{Branch: cache.Write, From: now.Add(-time.Hour), To: now.Add(time.Hour)}, func(b []byte) error {
 		count++
-		if !bytes.Equal(b, raw) {
-			t.Fatal("storage changed PIL")
+		var got cache.Frame
+		if e := l.Scan(b, &got); e != nil {
+			t.Fatal(e)
+		}
+		if !bytes.Equal(got.Values[l.Event].Bytes[:6], id[:6]) || !bytes.Equal(got.Values[1].Bytes, []byte{1}) || len(got.Values[l.Record].Bytes) != 3 {
+			t.Fatal("storage changed user fields or event time", got.Values)
 		}
 		return nil
-	}); e != nil || count != 1 {
+	}); e != nil || count != 2 {
 		t.Fatal(count, e)
 	}
 }

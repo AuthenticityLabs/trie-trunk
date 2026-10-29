@@ -88,7 +88,11 @@ func TestSummaryDurationDefinitionWidths(t *testing.T) {
 		if e = old.Scan(testFrame(t, old, at, 1, false), &f); e != nil {
 			t.Fatal(e)
 		}
-		f.Values[l.Duration] = Uint(42, l.Widths[l.Duration])
+		value := uint64(42)
+		if typ == "U24" {
+			value = 1<<24 - 1
+		}
+		f.Values[l.Duration] = Uint(value, l.Widths[l.Duration])
 		raw, e := l.Encode(nil, f.Values)
 		if e != nil {
 			t.Fatal(e)
@@ -100,7 +104,7 @@ func TestSummaryDurationDefinitionWidths(t *testing.T) {
 			t.Fatal(e)
 		}
 		sum := s.branches[Write].summaries[0]
-		if sum.DurationWidth != byte(l.Widths[l.Duration]) || sum.Columns.Sum[0] != 42 {
+		if sum.DurationWidth != byte(l.Widths[l.Duration]) || sum.Columns.Sum[0] != value {
 			t.Fatal(sum)
 		}
 		encoded, e := encodeSummary(sum)

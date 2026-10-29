@@ -64,16 +64,17 @@ const messaging = `
 <section class="seed-section seed-first"><p class="project-line">Compatibility & Interoperability</p><h2>Keep the Definition Across Platforms</h2><p class="seed-lead">Data seeds carry the values. A transport binding supplies the definition, delivery identity, and acknowledgement contract.</p>
  <div class="seed-format-strip"><span>Producer</span><span aria-hidden="true">→</span><span>Definition + Data Seeds</span><span aria-hidden="true">→</span><span>Consumer</span></div>
  <div class="seed-transport-list">
- ${row('HTTP · Available', 'The Trie-Trunk logger negotiates definitions and delivers batches to ingress. A successful call requires a staging acknowledgement. See the <a href="/logger">Logger integration</a>.')}
+ ${row('HTTP · Available', 'The Trie-Trunk logger negotiates definitions and delivers batches to ingress. A successful call requires a staging acknowledgement. See the <a href="/hidden#logger">Logger integration</a>.')}
  ${row('Brokers · Proposed Bindings', 'Kafka, AMQP, and JMS are candidates for adapters that carry seed payloads and definition references. Each binding must specify partition or ordering keys, retries, acknowledgements, and replay behavior; these adapters are not implemented yet.')}
  ${row('Existing JSON Producers', 'A bridge can map source fields into an accepted data definition before encoding. Mapping and validation must be explicit; a binary payload alone does not make mismatched schemas compatible.')}
  </div>
 </section>
-<section class="seed-section"><h2>A Shared Codec Boundary</h2><p class="seed-lead">Pill Packer provides the portable PIL and PAC implementation for Rust, with initial JavaScript/WASM and Go reader bindings. Transport and delivery policy remain with the integration.</p><div class="actions"><a class="button" href="/PIL#libraries">Pill Packer Libraries ↗</a><a class="text-link" href="/logger">Connect a Producer ↗</a></div></section>`;
+<section class="seed-section"><h2>A Shared Codec Boundary</h2><p class="seed-lead">Pill Packer provides the portable PIL and PAC implementation for Rust, with initial JavaScript/WASM and Go reader bindings. Transport and delivery policy remain with the integration.</p><div class="actions"><a class="button" href="/PIL#libraries">Pill Packer Libraries ↗</a><a class="text-link" href="/hidden#logger">Connect a Producer ↗</a></div></section>`;
 
-const contents = {Overview: overview, Definitions: definitions, Collections: collections, Messaging: messaging};
-export const seedPages = Object.fromEntries(tabs.map(tab => [path(tab), {
+export const seedContents = {Overview: overview, Definitions: definitions, Collections: collections, Messaging: messaging};
+const contents = seedContents;
+export const seedPages = lifecycle => Object.fromEntries(tabs.map(tab => [path(tab), {
  title: `Seeds${tab === 'Overview' ? '' : ` / ${tab}`} — Trie-Trunk`,
  description: tab === 'Overview' ? 'Compare expanded JSON with compact seed packs, then explore data definitions, collections, and interoperability.' : `Data seeds: ${tab.toLowerCase()} built around shared definitions and portable PIL encoding.`,
- body: `<div class="wrap seeds-document"><header class="seeds-heading"><h1>Seeds</h1><p>Defined data. Compact changes. Shared understanding.</p></header><nav class="seed-tabs" aria-label="Seeds Sections">${tabs.map(label => `<a href="/${path(label)}" ${label === tab ? 'aria-current="page"' : ''}>${label}</a>`).join('')}</nav>${contents[tab]}<aside class="seed-spec-link"><p>Data seeds and seed packs are Trie-Trunk’s implementation of <a href="/PIL">PIL and PIL PACs</a>.</p><a class="text-link" href="/PIL">Specification & Pill Packer Libraries ↗</a></aside></div>`
+ body: `<div class="wrap seeds-document"><header class="seeds-heading"><h1>Seeds</h1><p>Defined data. Compact changes. Shared understanding.</p></header><nav class="seed-tabs" aria-label="Seeds Sections">${tabs.map(label => `<a href="/${path(label)}" ${label === tab ? 'aria-current="page"' : ''}>${label}</a>`).join('')}</nav>${tab === 'Overview' ? lifecycle : ''}${contents[tab]}<aside class="seed-spec-link"><p>Data seeds and seed packs are Trie-Trunk’s implementation of <a href="/PIL">PIL and PIL PACs</a>.</p><a class="text-link" href="/PIL">Specification & Pill Packer Libraries ↗</a></aside></div>`
 }]));

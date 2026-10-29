@@ -3,6 +3,7 @@ import { render } from "solid-js/web";
 import App from "./app";
 import { clearObsoleteStorage } from "./services/storage-cleanup";
 import "./style.css";
+import "../shared/select-controls.css";
 
 async function start() {
 await clearObsoleteStorage();

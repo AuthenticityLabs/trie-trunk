@@ -66,15 +66,7 @@ const tree = `<svg class="taxonomy-tree" viewBox="0 0 420 650" role="img" aria-l
  <g class="tree-continuations"><path d="M151 147V112M173 252L191 218M326 223V189M350 430L365 400"/></g>
 </svg>`;
 
-export const taxonomy = `<section class="wrap trie-explorer" id="tries">
- <div class="section-heading"><h2>Tries</h2><p>Explore the hierarchy, time indexing, and shared event states.</p></div>
- <div class="trie-tabs" role="tablist" aria-label="Trie Views">
-  <button id="trie-tab-taxonomy" type="button" role="tab" data-trie-tab="taxonomy-panel" aria-controls="taxonomy-panel" aria-selected="true">Taxonomy</button>
-  <button id="trie-tab-time" type="button" role="tab" data-trie-tab="time-trie" aria-controls="time-trie" aria-selected="false" tabindex="-1">Time</button>
-  <button id="trie-tab-state" type="button" role="tab" data-trie-tab="event-state-trie" aria-controls="event-state-trie" aria-selected="false" tabindex="-1">State</button>
- </div>
-<section class="taxonomy trie-panel" id="taxonomy-panel" role="tabpanel" aria-labelledby="trie-tab-taxonomy" tabindex="0">
- <div class="section-heading"><h3>Trie Trunk Taxonomy</h3><p>Caches in the trunk.<br>Services branch out.</p></div>
+export const taxonomyDiagram = `
  <div class="taxonomy-layout">
   <figure class="taxonomy-figure">${tree}<figcaption>Example paths · One cache expanded</figcaption></figure>
   <div class="taxonomy-guide">
@@ -82,16 +74,16 @@ export const taxonomy = `<section class="wrap trie-explorer" id="tries">
    <ol>${tiers.map(([name,copy],i)=>`<li><button type="button" data-taxonomy-tier="${i}" aria-pressed="${i===1}"><span class="taxonomy-number">0${i+1}</span><span><strong>${name}</strong><span>${copy}</span></span></button></li>`).join('')}</ol>
    <p class="taxonomy-mobile-copy" aria-live="polite">${tiers[1][1]}</p>
   </div>
- </div>
- <div class="taxonomy-path"><span class="mono-label">An Event’s Place</span><code>Trunk <span>›</span> prod <span>›</span> payment <span>›</span> transactions <span>›</span> info <span>›</span> write</code></div>
-</section>
-<section class="taxonomy trie-indexing trie-panel" id="time-trie" role="tabpanel" aria-labelledby="trie-tab-time" tabindex="0" hidden>
- <div class="section-heading"><h3>Time Trie Indexing</h3></div>
+ </div>`;
+export const taxonomyBreadcrumb = `<code>Trunk <span>›</span> prod <span>›</span> payment <span>›</span> transactions <span>›</span> info <span>›</span> write</code>`;
+export const taxonomyIllustration = `${taxonomyDiagram}
+ <div class="taxonomy-path"><span class="mono-label">An Event’s Place</span>${taxonomyBreadcrumb}</div>`;
+
+export const timeTrieContent = `
  <div class="trie-copy"><p>The time trie offers 5-byte event addressing, supporting as much as 16 million events per hour across a rolling 7-year depth of history. And that maximal sizing is viable for every unique storage branch.</p>
- <p>Reach an hour in O(1), then locate a time boundary within its time sorted event index via binary search in O(log n), where n is the number of events in that hour.</p></div>
-</section>
-<section class="taxonomy trie-indexing trie-panel" id="event-state-trie" role="tabpanel" aria-labelledby="trie-tab-state" tabindex="0" hidden>
- <div class="section-heading"><h3>Event State Trie</h3></div>
+ <p>Reach an hour in O(1), then locate a time boundary within its time sorted event index via binary search in O(log n), where n is the number of events in that hour.</p></div>`;
+
+export const stateTrieContent = `
  <div class="trie-copy"><p>The event state trie combines selected low-cardinality fields—those with relatively few distinct values—into shared field/value paths. Common prefixes are stored once, and a two-byte reference identifies a node and the values along its path. Events with the same combination reuse that reference, reducing repetition and providing compact signatures for analytics.</p>
  <p>The event object stays flat. For <code>product-orders</code>, the <code>product: "premiere"</code> node branches into <code>type: "new_service"</code> (<code>C3</code>) and <code>type: "termination"</code> (<code>C7</code>). Group completed orders by these signatures to see service cancellations rise as new-service sales fall.</p></div>
  <figure class="state-example" aria-label="Shared Product Paths, Flat Events, and Order Trends">
@@ -131,6 +123,25 @@ export const taxonomy = `<section class="wrap trie-explorer" id="tries">
    <p>Group by <code>completed_at</code>, when the sale or cancellation was finalized. Count each completed transaction once, including those scheduled for future fulfillment.</p>
   </div>
   <figcaption id="state-example-caption">Schematic state representations and illustrative counts. C3 and C7 are local to this resource’s bound trie. Two bytes encode the shared-value reference; total storage also includes the trie and each event’s remaining fields.</figcaption>
- </figure>
+ </figure>`;
+
+export const taxonomy = `<section class="wrap trie-explorer" id="tries">
+ <div class="section-heading"><h2>Tries</h2><p>Explore the hierarchy, time indexing, and shared event states.</p></div>
+ <div class="trie-tabs" role="tablist" aria-label="Trie Views">
+  <button id="trie-tab-taxonomy" type="button" role="tab" data-trie-tab="taxonomy-panel" aria-controls="taxonomy-panel" aria-selected="true">Taxonomy</button>
+  <button id="trie-tab-time" type="button" role="tab" data-trie-tab="time-trie" aria-controls="time-trie" aria-selected="false" tabindex="-1">Time</button>
+  <button id="trie-tab-state" type="button" role="tab" data-trie-tab="event-state-trie" aria-controls="event-state-trie" aria-selected="false" tabindex="-1">State</button>
+ </div>
+<section class="taxonomy trie-panel" id="taxonomy-panel" role="tabpanel" aria-labelledby="trie-tab-taxonomy" tabindex="0">
+ <div class="section-heading"><h3>Trie Trunk Taxonomy</h3><p>Caches in the trunk.<br>Services branch out.</p></div>
+ ${taxonomyIllustration}
+</section>
+<section class="taxonomy trie-indexing trie-panel" id="time-trie" role="tabpanel" aria-labelledby="trie-tab-time" tabindex="0" hidden>
+ <div class="section-heading"><h3>Time Trie Indexing</h3></div>
+ ${timeTrieContent}
+</section>
+<section class="taxonomy trie-indexing trie-panel" id="event-state-trie" role="tabpanel" aria-labelledby="trie-tab-state" tabindex="0" hidden>
+ <div class="section-heading"><h3>Event State Trie</h3></div>
+ ${stateTrieContent}
 </section>
 </section>`;

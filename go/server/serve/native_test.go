@@ -49,6 +49,19 @@ func TestObjectHistoryHTTP2HTTP3AndSocket(t *testing.T) {
 	if err = s.Close(); err != nil {
 		t.Fatal(err)
 	}
+	// Sealing retains timestamp + ordinal, rather than ingress UUID entropy.
+	storedID := id
+	clear(storedID[6:])
+	storedID[6], storedID[8] = 0x70, 0x80
+	expected := make([]cache.Value, len(l.Definition.Fields))
+	expected[l.Event] = cache.Value{State: cache.Direct, Bytes: storedID[:]}
+	expected[l.Object] = cache.Value{State: cache.Direct, Bytes: id[:]}
+	expected[2], expected[l.Revision] = cache.Text("active"), cache.Uint(1, 2)
+	expected[l.Record], expected[l.Leaf] = cache.Uint(0, 3), cache.Uint(0, 2)
+	raw, err = l.Encode(nil, expected)
+	if err != nil {
+		t.Fatal(err)
+	}
 	p, err := cache.OpenEndpoint(cfg)
 	if err != nil {
 		t.Fatal(err)
@@ -267,7 +280,7 @@ func TestPILLoggerRegistrationTransports(t *testing.T) {
 			body, e := io.ReadAll(response.Body)
 			response.Body.Close()
 			// Negotiated HTTP compression is removed at ingress. Collection
-			// returns the original logical PIL inside its live PAC.
+			// retains user values and event time inside its live PAC.
 			if e != nil || response.StatusCode != 200 || !viewContainsFrame(t, l, body, raw) {
 				t.Fatal("HTTP-compressed ingress round trip", e, response.StatusCode)
 			}
@@ -370,7 +383,25 @@ func viewContainsFrame(t *testing.T, l *cache.Layout, body, want []byte) bool {
 			if e != nil {
 				t.Fatal(e)
 			}
-			if bytes.Equal(raw, want) {
+			var got, input cache.Frame
+			if e = l.Scan(raw, &got); e != nil {
+				t.Fatal(e)
+			}
+			if e = l.Scan(want, &input); e != nil {
+				t.Fatal(e)
+			}
+			matches := bytes.Equal(got.Values[l.Time].Bytes, input.Values[l.Time].Bytes)
+			for i, v := range input.Values {
+				if i == l.Event || i == l.Record || i == l.Time || i == l.Leaf {
+					continue
+				}
+				matches = matches && v.State == got.Values[i].State && bytes.Equal(v.Bytes, got.Values[i].Bytes)
+			}
+			if matches {
+				id, ordinal := got.Values[l.Event].Bytes, got.Values[l.Record].Bytes
+				if len(id) != 16 || len(ordinal) != 3 || !bytes.Equal(id[:6], input.Values[l.Event].Bytes[:6]) || id[6] != 0x70 || id[8] != 0x80 || id[13] != ordinal[2] || id[14] != ordinal[1] || id[15] != ordinal[0] {
+					t.Fatal("invalid replicated ordinal identity")
+				}
 				return true
 			}
 		}

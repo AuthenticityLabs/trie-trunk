@@ -1,0 +1,47 @@
+/* A marketing composition of the real Snoot panels, separate from the app slice. */
+:root[data-preview=marketing]{background:var(--canvas)}
+:root[data-preview=marketing] body,:root[data-preview=marketing] #root{height:100%;overflow:hidden;background:transparent}
+:root[data-preview=marketing][data-theme=light]{--canvas:#fafafa;--surface:#fff;--panel:#fff;--panel-subtle:#f4f4f4;--text:#252525;--text-strong:#252525;--text-secondary:#747474;--text-muted:#747474;--border:#e3e3e3;--border-strong:#ccc;--line:#e3e3e3;--chart-blue:#7598b5}
+.marketing-chart-stage{position:relative;height:100%;isolation:isolate;mask-image:linear-gradient(90deg,transparent,#000 6%,#000 88%,transparent),linear-gradient(180deg,#000,#000 82%,transparent);mask-composite:intersect}
+.marketing-chart-stage::before{content:'';position:absolute;inset:60px 10% 0 8%;background:radial-gradient(ellipse at 50% 45%,color-mix(in srgb,var(--chart-blue) 7%,transparent),transparent 68%);pointer-events:none}
+.marketing-chart-stage .fast-dashboard{height:100%}
+.marketing-chart-stage .fast-tabs,.marketing-chart-stage .fast-range,.marketing-chart-stage .notice,.marketing-chart-stage .fast-definition{display:none}
+.marketing-chart-stage .fast-toolbar{--select-height:34px;position:absolute;left:10%;top:2px;z-index:8;margin:0;gap:12px;flex-wrap:nowrap}
+.marketing-chart-stage .fast-toolbar label{font-size:10px;gap:5px}
+.marketing-chart-stage .fast-toolbar select{font-size:11px;min-height:34px;max-width:200px;padding:6px 9px;background:var(--surface);border-color:var(--border)}
+.marketing-chart-stage .fast-toolbar .button{font-size:11px;min-height:34px;padding:6px 11px}
+.marketing-chart-stage .fast-grid{display:block;position:absolute;inset:0;pointer-events:none}
+.marketing-chart-stage .fast-panel{display:none;position:absolute;grid-column:auto!important;pointer-events:auto;border-radius:13px;background:var(--surface);box-shadow:0 18px 55px #00000012,0 3px 8px #00000006;padding:20px}
+:root[data-theme=trunk] .marketing-chart-stage .fast-panel{box-shadow:0 20px 60px #00000035,0 3px 12px #00000020;background:var(--surface)}
+.marketing-chart-stage .fast-panel-heading{flex:0 0 auto;margin-bottom:14px}
+.marketing-chart-stage .fast-panel h4{font-size:13px;letter-spacing:-.1px}
+.marketing-chart-stage .fast-chart{flex:1;min-height:0;height:auto}
+.marketing-chart-stage [data-preview-panel=activity]{display:flex;flex-direction:column;left:8%;top:112px;width:60%;height:245px;z-index:3;transform:rotate(-.6deg)}
+.marketing-chart-stage [data-preview-panel=duration-trend]{display:flex;flex-direction:column;left:56%;top:202px;width:37%;height:286px;z-index:4;transform:rotate(1deg);--chart-blue:#a092b5}
+.marketing-chart-stage [data-preview-panel=top]{display:flex;flex-direction:column;left:65%;top:22px;width:32%;height:190px;z-index:2;transform:rotate(-1.5deg);opacity:.62;pointer-events:none;--chart-blue:#b98273}
+.marketing-chart-stage [data-preview-panel=bottom]{display:flex;flex-direction:column;left:4%;top:335px;width:35%;height:158px;z-index:4;transform:rotate(.75deg);--chart-blue:#b5a071}
+.marketing-chart-stage .marketing-scatter .fast-panel-heading{display:block;margin-bottom:4px}
+.marketing-scatter .fast-panel-heading p{margin:4px 0 0;font-size:10px;line-height:1.4;color:var(--text-secondary)}
+.marketing-chart-stage .marketing-gauge .fast-panel-heading{display:block;margin-bottom:0}
+.marketing-gauge .fast-panel-heading p{margin:4px 0 0;font-size:10px;line-height:1.4;color:var(--text-secondary)}
+.gauge-scale-label{flex:0 0 auto;text-align:center;font-size:9px;line-height:1.4;color:var(--text-secondary)}
+.marketing-chart-stage .fast-panel.marketing-gauge{z-index:5}
+:root[data-theme=trunk] .marketing-chart-stage [data-preview-panel=duration-trend]{--chart-blue:#b3a2c8}
+:root[data-theme=trunk] .marketing-chart-stage [data-preview-panel=top]{--chart-blue:#cc9588}
+:root[data-theme=trunk] .marketing-chart-stage [data-preview-panel=bottom]{--chart-blue:#c2ad7e}
+.marketing-chart-stage .fast-load{margin:100px 10%;position:absolute}
+.marketing-chart-stage .error-notice{display:block;position:absolute;left:10%;right:10%;top:70px;z-index:9}
+.marketing-sample-label{position:absolute;left:10%;top:78px;font-size:9px;color:var(--text-muted,var(--muted));z-index:8;pointer-events:none}
+@media(max-width:760px){
+ .marketing-chart-stage{mask-image:linear-gradient(90deg,transparent,#000 4%,#000 93%,transparent),linear-gradient(180deg,#000,#000 83%,transparent)}
+ .marketing-chart-stage .fast-toolbar{left:16px;right:16px;gap:8px}
+ .marketing-chart-stage .fast-toolbar label{flex:1;min-width:0}
+ .marketing-chart-stage .fast-toolbar select{width:100%;max-width:none;font-size:10px;padding-inline:7px}
+ .marketing-chart-stage .fast-toolbar .button{font-size:10px;padding-inline:9px}
+ .marketing-chart-stage .fast-panel{padding:16px}
+ .marketing-chart-stage [data-preview-panel=activity]{left:3%;top:108px;width:89%;height:232px;transform:rotate(-.5deg)}
+ .marketing-chart-stage [data-preview-panel=duration-trend]{left:28%;top:302px;width:76%;height:268px;transform:rotate(1deg)}
+ .marketing-chart-stage [data-preview-panel=top]{left:50%;top:68px;width:67%;height:164px;transform:rotate(-1.2deg);opacity:.5}
+ .marketing-chart-stage [data-preview-panel=bottom]{left:3%;top:401px;width:76%;height:180px;transform:rotate(.6deg)}
+ .marketing-sample-label{left:16px;top:78px}
+}

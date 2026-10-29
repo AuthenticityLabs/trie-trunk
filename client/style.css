@@ -16,6 +16,8 @@
   --green-dark: #336a37;
   --line: #eeefea;
   --surface: #f8f7f5;
+  --level-info-text: #788995;
+  --level-info-background: #eef1f3;
 }
 
 /* Match the Trie-Trunk website's dark palette; retain semantic status colors. */
@@ -54,6 +56,8 @@
   --error-border: #735044;
   --info-text: #adc6ef;
   --info-background: #2b3a4c;
+  --level-info-text: #aebac3;
+  --level-info-background: #30363a;
   --chart-green: #aaa;
   --chart-error: #df8978;
   --chart-warning: #d8b969;
@@ -105,6 +109,8 @@
   --error-border: #735044;
   --info-text: #adc6ef;
   --info-background: #2b3a4c;
+  --level-info-text: #aebac3;
+  --level-info-background: #30363a;
   --chart-green: #8bb671;
   --chart-error: #df8978;
   --chart-warning: #d8b969;
@@ -858,8 +864,8 @@ nav {
   color: var(--text-secondary, #929887);
 }
 .level-info {
-  background: var(--positive-background, #edf4e9);
-  color: var(--positive-text, #71935d);
+  background: var(--level-info-background);
+  color: var(--level-info-text);
 }
 .level-warn,
 .level-warning {
@@ -2901,3 +2907,6 @@ nav {
 .storage-type { display:inline-block; color:var(--text-secondary, #888); border:1px solid var(--line); border-radius:5px; padding:1px 6px; font-size:.85em; font-weight:400; }
 
 .query-comparison { display: inline-flex; align-items: center; gap: .5rem; color: var(--muted); font-size: .85rem; white-space: nowrap; }
+
+.chart-axis{flex-wrap:wrap;column-gap:12px;row-gap:4px}
+.chart-axis>span{max-width:100%;overflow-wrap:anywhere}

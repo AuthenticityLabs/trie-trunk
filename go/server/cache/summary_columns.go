@@ -14,7 +14,7 @@ const sumBucketMS int64 = 300000
 
 func validateSummary(s Summary) (int, error) {
 	c := s.Columns
-	if s.DurationWidth != 0 && s.DurationWidth != 1 && s.DurationWidth != 2 && s.DurationWidth != 4 && s.DurationWidth != 8 {
+	if s.DurationWidth != 0 && s.DurationWidth != 1 && s.DurationWidth != 2 && s.DurationWidth != 3 && s.DurationWidth != 4 && s.DurationWidth != 8 {
 		return 0, fmt.Errorf("invalid duration Definition width")
 	}
 
@@ -25,7 +25,7 @@ func validateSummary(s Summary) (int, error) {
 	var typeErr error
 	if s.DurationWidth > 0 {
 		summaryNumbers(s, func(k int, v uint64) {
-			if (k == 3 || k == 4 || k == 7) && summaryValueWidth(v) > int(s.DurationWidth) {
+			if (k == 3 || k == 4 || k == 7) && s.DurationWidth < 8 && v >= uint64(1)<<(8*s.DurationWidth) {
 				typeErr = fmt.Errorf("duration exceeds Definition width")
 			}
 		})

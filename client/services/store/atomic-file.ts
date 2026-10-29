@@ -33,4 +33,3 @@ export async function atomicFile(dir:FileSystemDirectoryHandle,name:string,bytes
  }
  return atomicReplace(dir,name,bytes.length,[{at:0,bytes}]);
 }
-

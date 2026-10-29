@@ -1,0 +1,30 @@
+/* Flat native selects, shared by Snoot and the public website. */
+:root{--select-arrow-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 14 14'%3E%3Cpath d='m3.5 5.25 3.5 3.5 3.5-3.5' fill='none' stroke='%23747474' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")}
+:root:is([data-theme=dark],[data-theme=trunk]){--select-arrow-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 14 14'%3E%3Cpath d='m3.5 5.25 3.5 3.5 3.5-3.5' fill='none' stroke='%23aaaaaa' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")}
+select{box-sizing:border-box;max-width:100%;padding:7px 10px;border:1px solid var(--border,var(--line,#ccc));border-radius:6px;background-color:var(--panel,var(--surface,#fff));color:inherit;cursor:pointer}
+:root select:not([multiple]):not([size]),:root select:not([multiple])[size="1"]{
+ appearance:none;
+ -webkit-appearance:none;
+ min-height:var(--select-height,36px);
+ line-height:normal;
+ padding-inline-end:30px;
+ background-image:var(--select-arrow-image);
+ background-repeat:no-repeat;
+ background-size:14px 14px;
+ background-position:right 9px center;
+ box-shadow:none;
+ text-shadow:none;
+ text-overflow:ellipsis;
+}
+:root button{appearance:none;-webkit-appearance:none;text-shadow:none}
+.control{--select-height:31px}
+.fast-toolbar{--select-height:44px}
+.fast-toolbar .button{min-height:var(--select-height,44px);box-shadow:none;background-image:none}
+.calendar-navigation{--select-height:28px}
+.form-label>select{width:100%;font-size:12px;--select-height:38px}
+.form-label>input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=hidden]){min-height:38px}
+.subscription-fields{--select-height:44px}
+.quota-node-picker,.configuration-field-control{--select-height:38px}
+@media(forced-colors:active){
+ :root select:not([multiple]):not([size]),:root select:not([multiple])[size="1"]{appearance:auto;-webkit-appearance:auto;background-image:none}
+}

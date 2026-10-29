@@ -1,0 +1,23 @@
+@font-face{font-family:'DM Sans';font-weight:400;src:url(../assets/fonts/dm-sans-400-normal.ttf)}
+@font-face{font-family:'DM Sans';font-weight:500;src:url(../assets/fonts/dm-sans-500-normal.ttf)}
+@font-face{font-family:'DM Sans';font-weight:600;src:url(../assets/fonts/dm-sans-600-normal.ttf)}
+@font-face{font-family:'DM Sans';font-weight:700;src:url(../assets/fonts/dm-sans-700-normal.ttf)}
+/* The host clips this normal-size workspace. No scaling or replacement UI. */
+body{padding:0;background:transparent}
+.workspace{margin:0;max-width:none;height:100%;box-shadow:none}
+.sidebar nav .nav-item[title="Collections"],.sidebar nav .nav-item[title="Configs"]{display:none}
+.sidebar-note{display:none}
+.preview-page-badge{font-size:11px;color:var(--text-muted);white-space:nowrap}
+.preview-query-card .query-composer{max-width:100%}
+
+/* The homepage embeds the app's complete Fast Dashboard at its natural height. */
+:root[data-preview=dashboard],:root[data-preview=dashboard] body,:root[data-preview=dashboard] #root{height:auto;overflow:visible}
+:root[data-preview=dashboard] body{padding:0}
+@media(min-width:761px){:root[data-preview=dashboard] .fast-panel,:root[data-preview=dashboard] .fast-panel:last-child{grid-column:span var(--panel-span)}}
+:root[data-preview=dashboard][data-theme=light]{--canvas:#fafafa;--surface:#fff;--panel:#fff;--panel-subtle:#f4f4f4;--text:#252525;--text-strong:#252525;--text-secondary:#747474;--text-muted:#747474;--border:#e3e3e3;--border-strong:#ccc;--line:#e3e3e3;--chart-blue:#7598b5}
+:root[data-preview=dashboard] .fast-panel:nth-child(6){--chart-blue:#a092b5}
+:root[data-preview=dashboard] .fast-panel:nth-child(7){--chart-blue:#75a49a}
+:root[data-preview=dashboard] .fast-panel:nth-child(8){--chart-blue:#b5a071}
+:root[data-preview=dashboard][data-theme=trunk] .fast-panel:nth-child(6){--chart-blue:#b3a2c8}
+:root[data-preview=dashboard][data-theme=trunk] .fast-panel:nth-child(7){--chart-blue:#83b4a8}
+:root[data-preview=dashboard][data-theme=trunk] .fast-panel:nth-child(8){--chart-blue:#c2ad7e}

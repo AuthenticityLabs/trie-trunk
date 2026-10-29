@@ -2,7 +2,7 @@ import {createServer} from 'node:http';
 import {readFile,stat} from 'node:fs/promises';
 import {resolve,extname,sep,dirname} from 'node:path';
 import {fileURLToPath} from 'node:url';
-import {homeRedirects} from './src/routes.mjs';
+import {redirects} from './src/routes.mjs';
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'dist');
 const types={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.svg':'image/svg+xml','.png':'image/png','.jpg':'image/jpeg','.webp':'image/webp','.woff2':'font/woff2','.ttf':'font/ttf','.cddl':'text/plain; charset=utf-8','.xml':'application/xml','.txt':'text/plain'};
 createServer(async(req,res)=>{
@@ -10,7 +10,8 @@ createServer(async(req,res)=>{
   if(!['GET','HEAD'].includes(req.method)){res.writeHead(405,{Allow:'GET, HEAD'});return res.end()}
   const url=new URL(req.url,'http://localhost');
   const path=decodeURIComponent(url.pathname);
-  if(homeRedirects.includes(path)){res.writeHead(301,{Location:`/${url.search}`});return res.end()}
+  const redirect=redirects.find(({from})=>from===path);
+  if(redirect){const target=new URL(redirect.to,'http://localhost');target.search=url.search;res.writeHead(redirect.status,{Location:`${target.pathname}${target.search}${target.hash}`});return res.end()}
   let file=resolve(root,`.${path}`);
   if(file!==root&&!file.startsWith(root+sep)){res.writeHead(404);return res.end()}
   if((await stat(file)).isDirectory())file=resolve(file,'index.html');

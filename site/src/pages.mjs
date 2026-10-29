@@ -4,6 +4,9 @@ import {taxonomy} from './taxonomy.mjs';
 import {storage,mb,kb} from './measurements.mjs';
 import {seedPages} from './seeds.mjs';
 import {pagePath} from './routes.mjs';
+import {landing} from './landing.mjs';
+import {previousSnootPreview} from './archived-snoot-preview.mjs';
+import {homepageCharts as archivedHomepageCharts} from './archived-homepage-charts.mjs';
 
 export const github = 'https://github.com/AuthenticityLabs/trie-trunk';
 const source = path => `${github}/blob/main/${path}`;
@@ -46,7 +49,7 @@ export const stages = [
  },
  {
   name:'Stalks', file:'In Memory', location:'Client / Analytics', action:'Analytic Engine', acronym:'STALKS · Sparse Telemetry Analytic Lineage Kolumns',
-  copy:'Stalks use precomputed columnar summaries for event counts, errors, and duration statistics in the browser. Collected summaries can be reused across time views without loading every data seed.',
+  copy:'Stalks use precomputed (and realtime) columnar datasets for event counts, errors, and duration statistics in the browser. Collected summaries can be reused across time views without loading every data seed.',
   foot:'Planned Lineage: definition-declared relationships connecting resources, such as payments and invoices, through identity and time.',
   scene:`<div class="scene-route"><span>5-Minute Columnar Summaries</span><span>In Memory</span></div><div class="column-demo">${[['Period','10:00','10:05','10:10','10:15'],['Count','84','107','92','116'],['Errors','2','0','1','3']].map(col=>`<div><strong>${col[0]}</strong>${col.slice(1).map(v=>`<span>${v}</span>`).join('')}</div>`).join('')}</div><div class="scene-note">Illustrative values · summaries travel independently of event detail.</div>`,
  }
@@ -116,19 +119,19 @@ const definition = (pil = false) => `
 const snootIntro = `
 <section class="wrap snoot-intro"><div class="snoot-portrait"><img src="/assets/brand/snoot-forward.png" alt="Front-Facing Snoot Anteater" width="1254" height="1254" loading="lazy"/></div><div><img class="snoot-wordmark" src="/assets/brand/snoot-wordmark.png" alt="Snoot" width="1280" height="426" loading="lazy"/><h2>Search & Investigation</h2><p>Search the journal, inspect a change, and look at the pattern. Snoot brings the detail and the summaries into the same research session.</p><div class="actions"><a class="button" href="https://snoot.trietrunk.com">Open Snoot ${arrow}</a><a class="text-link" href="/snoot">About Snoot ${arrow}</a></div></div></section>`;
 
-const trunk = `
+const archivedTrunk = `
 <div class="trunk-document wrap">
  <aside class="document-rail" aria-label="On This Page">
   <a class="brand main-brand" href="/" aria-label="Trie-Trunk Home">${brand}</a>
   <p>A time-series database.<br>Typed events.<br>Local analytics.</p>
-  <nav aria-label="Page Sections"><a href="#lifecycle">Lifecycle</a><a href="#tries">Tries</a><a href="#search">Search</a><a href="#storage">Storage</a><a href="#retention">Retention</a><a href="#analytics">Analytics</a><a href="#definitions">Definitions</a></nav>
+  <nav aria-label="Page Sections"><a href="#tries">Tries</a><a href="#storage">Storage</a><a href="#retention">Retention</a><a href="#analytics">Analytics</a><a href="#definitions">Definitions</a></nav>
   <a class="rail-launch" href="https://snoot.trietrunk.com">Open Snoot ${arrow}</a>
   <small>Open Source / Version Zero</small>
  </aside>
- <div class="document-body"><section class="trunk-intro"><h1><span class="trunk-headline">Hierarchical Time-Series</span><span class="trunk-promise">Minimal Footprint<br>at Lightning Speeds.</span></h1><p>Typed events. Tiny indexes. Precomputed columnar analytics. All within a <a href="#storage">70% smaller storage footprint</a> than expanded JSONL in our million-event benchmark.</p></section>${lifecycle}${taxonomy}${questions}${performance}${retention}${summaries}${definition()}${snootIntro}</div>
+ <div class="document-body"><section class="trunk-intro"><h1><span class="trunk-headline">Hierarchical Time-Series</span><span class="trunk-promise">Minimal Footprint<br>at Lightning Speeds.</span></h1><p>Typed events. Tiny indexes. Precomputed columnar analytics. All within a <a href="#storage">70% smaller storage footprint</a> than expanded JSONL in our million-event benchmark.</p></section>${taxonomy}${performance}${retention}${summaries}${definition()}${snootIntro}</div>
 </div>`;
 
-const snoot = `
+const archivedSnoot = `
 <section class="wrap snoot-hero"><div><img class="snoot-wordmark" src="/assets/brand/snoot-wordmark.png" alt="Snoot" width="1280" height="426"/><h1>Snoot through Logs with ease!</h1><p class="intro">Dig into your logs, follow object changes, and explore patterns across time.</p><a class="button" href="https://snoot.trietrunk.com">Try It Out ${arrow}</a></div><img class="snoot-hero-portrait" src="/assets/brand/snoot-forward.png" alt="Front-Facing Snoot Anteater" width="1254" height="1254"/></section>
 <section class="wrap query-section"><div class="section-heading"><h2>Query Syntax</h2><p>Pipeline and builder syntax share one query model.<br>Definitions guide field and value completion.</p></div><div class="query-example"><div class="example-title"><div class="syntax-toggle" role="tablist" aria-label="Query Syntax"><button id="syntax-pipeline" type="button" role="tab" data-syntax="pipeline" aria-selected="true" aria-controls="query-pipeline">Pipeline</button><button id="syntax-builder" type="button" role="tab" data-syntax="builder" aria-selected="false" aria-controls="query-builder" tabindex="-1">Builder</button></div><small>Illustrative Query</small></div><pre id="query-builder" role="tabpanel" aria-labelledby="syntax-builder" tabindex="0" hidden><code>events.query()
   .where(level, ==, error)
@@ -174,22 +177,27 @@ return logger.WriteFrames(ctx, frames...)</code></pre></div><p class="section-no
 <div class="question-row"><div>${icon('check')}<h3>Handle Failures</h3></div><p>Observe delivery errors and retain event identities for retries. A successful call requires the server’s staging acknowledgement; queueing alone is not success.</p><code>event_id → Delivery Identity</code></div></section>
 <section class="wrap product-notes"><h2>Requests & Object Changes</h2><div><p>The request-scoped logger supplies a fluent builder, HTTP middleware, durations, and checkpoints through <code>client.NewPIL</code>. A request completion does not imply a committed object mutation.</p><p>Use the generic PIL logger for explicit object changes. Define object identity and revision roles when collection replay is enabled. Omitted fields remain absent; null remains an explicit value.</p><p>Definitions can allow <code>@fields</code> for extensions. Compatible newer Definitions can promote these values into typed fields without renaming them.</p><a class="text-link" href="${source('README.md#logger')}">Request Logger Reference ${arrow}</a></div></section>`;
 
+const originalSeeds = seedPages(lifecycle);
+const archivedSeeds = Object.entries(originalSeeds).map(([name,page])=>{
+ const id=name==='seeds'?'seeds-overview':name.replace('/','-');
+ const body=page.body.replace(/href="\/seeds(\/[^"#]+)?"/g,(_,suffix)=>`href="#${suffix?`seeds-${suffix.slice(1)}`:'seeds-overview'}"`);
+ return `<div class="archive-group archive-seeds" id="${id}"><p class="wrap archive-label">Seeds / ${name==='seeds'?'Overview':name.split('/')[1]}</p>${body}</div>`;
+}).join('');
+const archiveIndex=[['storage','Storage'],['retention','Retention'],['analytics','Analytics'],['definitions','Definitions'],['tries','Tries'],['time-trie','Time Trie'],['event-state-trie','State Trie'],['archived-snoot','Snoot'],['archived-snoot-preview','Previous Snoot Preview'],['archived-homepage-charts','Previous Homepage Charts'],['archived-homepage-dashboard','Previous Homepage Dashboard'],['seeds-overview','Seeds Overview'],['seeds-definitions','Seeds Definitions'],['seeds-collections','Seeds Collections'],['seeds-messaging','Seeds Messaging'],['logger','Logger']];
 export const pages = {
- trunk:{title:'Trie-Trunk — Time-Series Database',description:'An open-source time-series database for typed events, temporal search, and precomputed columnar summaries. Collect data locally for browser analytics.',body:trunk},
- ...seedPages,
- snoot:{title:'Snoot — Search the Event Journal',description:'Research Trie-Trunk events with time windows, text queries, object history, and analytic views.',body:snoot},
+ trunk:{title:'Trie-Trunk — Time-Series Database',description:'An open-source time-series database for typed events, temporal search, and precomputed columnar summaries. Collect data locally for browser analytics.',landing:true,body:landing(lifecycle,brand)},
  PIL:{title:'PIL — Positional Interchange Layout',description:'Definition-driven binary records for full objects, partial changes, dictionaries, and PAC containers. Portable Pill Packer libraries for Rust, JavaScript/WASM, and Go.',body:pil},
- logger:{title:'Logger — Typed PIL Events',description:'Negotiate Definitions, emit typed PIL events, and batch application logs and object changes into Trie-Trunk.',body:logger}
+ hidden:{title:'Hidden — Archived Content',description:'Content set aside from the public navigation for later review and reintegration.',hidden:true,body:`<aside class="wrap archive-heading"><h1>Hidden</h1><p>Original pages and sections, preserved for later reintegration.</p><nav class="archive-index" aria-label="Archived Sections">${archiveIndex.map(([id,name])=>`<a class="text-link" href="#${id}">${name}</a>`).join('')}</nav></aside><div class="archive-group" id="archived-trunk"><p class="wrap archive-label">Trunk / Previous Page</p>${archivedTrunk}</div><div class="archive-group" id="archived-snoot"><p class="wrap archive-label">Snoot / Previous Page</p>${archivedSnoot}</div><section class="wrap archive-group" id="archived-snoot-preview"><p class="archive-label">Snoot / Previous Preview</p>${previousSnootPreview}</section><section class="wrap archive-group" id="archived-homepage-charts"><p class="archive-label">Trunk / Previous Homepage Charts</p>${archivedHomepageCharts}</section><section class="wrap archive-group" id="archived-homepage-dashboard"><p class="archive-label">Trunk / Previous Full Dashboard Embed</p><a class="text-link" href="/snoot-preview/?view=dashboard">Open the Full Dashboard With Sample Data ↗</a></section>${archivedSeeds}<div class="archive-group" id="logger"><p class="wrap archive-label">Logger / Previous Page</p>${logger}</div>`}
 };
 const attribute = value => value.replaceAll('&','&amp;').replaceAll('"','&quot;').replaceAll('<','&lt;');
-const navigation = ['trunk','seeds','logger','snoot'];
+const navigation = ['trunk','snoot','seeds'];
 export function render(name,css,js) {
  const p=pages[name], canonical=`https://trietrunk.com${pagePath(name)}`;
  const title=attribute(p.title), description=attribute(p.description);
  const shareImage='https://trietrunk.com/assets/brand/trie-trunk-gray.jpg';
  return `<!doctype html><html lang="en"><head>
  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
- <title>${title}</title><meta name="description" content="${description}">
+ <title>${title}</title><meta name="description" content="${description}">${p.hidden?'<meta name="robots" content="noindex, nofollow">':''}
  <meta name="color-scheme" content="light dark"><meta name="theme-color" content="#fafafa">
  <script>try{const p=localStorage.getItem('trietrunk.theme');const mode=['light','dark'].includes(p)?p:'auto';const dark=mode==='dark'||mode==='auto'&&matchMedia('(prefers-color-scheme: dark)').matches;document.documentElement.dataset.theme=dark?'dark':'light';document.documentElement.dataset.themePreference=mode;document.querySelector('meta[name="theme-color"]').content=dark?'#181818':'#fafafa';}catch{document.documentElement.dataset.theme=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';}</script>
  <meta property="og:type" content="website"><meta property="og:site_name" content="Trie-Trunk">
@@ -200,7 +208,7 @@ export function render(name,css,js) {
  <meta name="twitter:card" content="summary"><meta name="twitter:title" content="${title}"><meta name="twitter:description" content="${description}"><meta name="twitter:image" content="${shareImage}"><meta name="twitter:image:alt" content="Trie-Trunk grayscale tree and wordmark">
  <link rel="canonical" href="${canonical}"><link rel="icon" href="/assets/brand/trie-trunk-transparent.png" type="image/png">
  <link rel="stylesheet" href="/assets/${css}"><script src="/assets/${js}" type="module"></script>
- </head><body data-page="${name}"><a class="skip-link" href="#main">Skip to Content</a>
- <header class="site-header wrap"><a class="brand header-brand" href="/" aria-label="Trie-Trunk Home">${brand}</a><nav aria-label="Main Navigation">${navigation.map(n=>`<a href="${pagePath(n)}" ${n===name?'aria-current="page"':(n==='seeds' && (name.startsWith('seeds/') || name==='PIL'))?'aria-current="location"':''}>${n[0].toUpperCase()+n.slice(1)}</a>`).join('')}<a href="${github}">GitHub ${arrow}</a></nav><div class="theme-picker" role="group" aria-label="Color Theme">${['light','dark','auto'].map(mode=>`<button type="button" data-theme-choice="${mode}" aria-pressed="false" title="${mode==='auto'?'Follow System Theme':mode==='dark'?'Dark Mode':'Light Mode'}">${mode[0].toUpperCase()+mode.slice(1)}</button>`).join('')}</div></header>
- <main id="main">${p.body}</main><footer class="wrap site-footer"><div><a href="${source('README.md#licensing')}">Licensing</a><a href="${source('README.md#architecture')}">Architecture</a><a href="${github}">GitHub ${arrow}</a></div><p>Authenticity Labs · Version Zero</p></footer></body></html>`;
+ </head><body data-page="${name}"${p.landing?' class="landing-site"':''}><a class="skip-link" href="#main">Skip to Content</a>
+ <header class="site-header wrap"><a class="brand header-brand" href="/" aria-label="Trie-Trunk Home">${brand}</a><nav aria-label="Main Navigation">${navigation.map(n=>`<a href="${p.landing?`#${n}`:`/#${n}`}" data-page-link="${n}" ${n===name?'aria-current="page"':(n==='seeds' && (name.startsWith('seeds/') || name==='PIL'))?'aria-current="location"':''}>${n[0].toUpperCase()+n.slice(1)}</a>`).join('')}<a href="${github}">GitHub ${arrow}</a></nav><div class="theme-picker" role="group" aria-label="Color Theme">${['light','dark','auto'].map(mode=>`<button type="button" data-theme-choice="${mode}" aria-pressed="false" title="${mode==='auto'?'Follow System Theme':mode==='dark'?'Dark Mode':'Light Mode'}">${mode[0].toUpperCase()+mode.slice(1)}</button>`).join('')}</div></header>
+ <main id="main">${p.body}</main>${p.landing?'':`<footer class="wrap site-footer"><div><a href="${source('README.md#licensing')}">Licensing</a><a href="${source('README.md#architecture')}">Architecture</a><a href="${github}">GitHub ${arrow}</a></div><p>Authenticity Labs · Version Zero</p></footer>`}</body></html>`;
 }

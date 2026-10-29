@@ -46,8 +46,12 @@ func TestCacheCLI(t *testing.T) {
 	if e = invoke("search", nil, "--from", "1970-01-01T00:00:00Z", "--to", "2050-01-01T00:00:00Z"); e != nil {
 		t.Fatal(e)
 	}
-	if !bytes.Equal(output.Bytes(), frame) {
-		t.Fatal("CLI PIL round trip differs")
+	var got cache.Frame
+	if e = l.Scan(output.Bytes(), &got); e != nil {
+		t.Fatal(e)
+	}
+	if !bytes.Equal(got.Values[l.Event].Bytes[:6], id[:6]) || !bytes.Equal(got.Values[1].Bytes, []byte("authorized")) || !bytes.Equal(got.Values[l.Record].Bytes, []byte{0, 0, 0}) || len(got.Values[l.Leaf].Bytes) != 2 {
+		t.Fatal("CLI changed time, user fields, or ordinal addressing", got.Values)
 	}
 	// Administrative promotion is durable and is separate from registration.
 	d.Version++

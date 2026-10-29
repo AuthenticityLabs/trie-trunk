@@ -81,7 +81,7 @@ export default function DashboardWorkspace(props: {
       <div class="dashboard-subscription-content">
         <div class="subscription-scope"><h3>{serviceTitle(state().service.split('/')[1] ?? '')}</h3><span>{visible().length} {visible().length === 1 ? 'Service' : 'Services'}</span></div>
         <Show when={visible().length} fallback={<div class="card subscription-empty"><Icon name="activity" size={32}/><h3>Plant Your First Seed</h3><p>Subscribe to a service to follow its Data Seeds.</p><button class="button primary" disabled={!ready() || busy()} onClick={() => setAdding(true)}>Plant Seed</button></div>}>
-          <FastDashboard token={props.token} services={visible().map(s=>s.service)} resources={catalog().filter(s=>visible().some(v=>v.service===s.id)).flatMap(s=>s.resources)} revision={visible().map(s=>`${s.service}:${collectionStatus()[s.service]?.state==='ready'}`).join(',')}/>
+          <FastDashboard token={props.token} services={visible().map(s=>s.service)} revision={visible().map(s=>`${s.service}:${collectionStatus()[s.service]?.state==='ready'}`).join(',')}/>
           <details class="dashboard-subscription-details"><summary>Subscriptions</summary>
           <div class="subscription-cards"><For each={visible()}>{subscription => {
             const parts = subscription.service.split('/');

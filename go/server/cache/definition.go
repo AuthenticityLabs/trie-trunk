@@ -273,10 +273,15 @@ func ParseDefinition(raw []byte) (*Layout, error) {
 
 // Existing positional producers supply user columns; Seed-owned columns are
 // appended by the compiled binding and populated from the original UUID.
-func (l *Layout) Encode(dst []byte, values []Value) ([]byte, error) {
+func (l *Layout) ProducerValues(values []Value) []Value {
 	if len(values) == len(l.Definition.Fields)-3 && l.Record == len(values) && l.Time == len(values)+1 && l.Leaf == len(values)+2 {
-		values = append(append([]Value(nil), values...), Value{}, Value{}, Value{})
+		return append(append([]Value(nil), values...), Value{}, Value{}, Value{})
 	}
+	return values
+}
+
+func (l *Layout) Encode(dst []byte, values []Value) ([]byte, error) {
+	values = l.ProducerValues(values)
 	if len(values) == len(l.Definition.Fields) && values[l.Event].State != Absent && values[l.Event].State != Null {
 		id, err := eventID(values[l.Event])
 		if err != nil {
