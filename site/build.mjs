@@ -36,7 +36,6 @@ await cp(join(here,'assets'),join(out,'assets'),{recursive:true});
 for(const name of ['snoot-forward.png','snoot-wordmark.png'])
  await cp(join(here,'../client/assets',name),join(out,'assets/brand',name));
 await cp(join(here,'../../pill-packer/schemas/definition.cddl'),join(out,'definition.cddl'));
-await cp(join(here,'../../pill-packer/schemas/pil.rx'),join(out,'pil.rx'));
 await cp(join(here,'../../pill-packer/rust/examples/nested_objects.cddl'),join(out,'purchase.cddl'));
 const pillReadme=await readFile(join(here,'../../pill-packer/README.md'),'utf8');
 const formatReference=pillReadme.split('## PIL Specification\n')[1]?.split(/\n## /)[0];
@@ -50,7 +49,6 @@ const record=fill(example,[Uint8Array.of(42,0),Uint8Array.of(220,5,0,0),Uint8Arr
 if(Buffer.from(record).toString('hex')!==layoutHex.replaceAll(' ','').toLowerCase())throw new Error('PIL layout example disagrees with codec');
 const examplePack=pack(example,[record],{packing:{commonValues:false}});
 await writeFile(join(out,'pil-example.json'),JSON.stringify(layoutDefinition,null,2)+'\n');
-await writeFile(join(out,'pil-example.rx'),example.bytes);
 await writeFile(join(out,'pil-example.pil'),record);
 await writeFile(join(out,'pil-example.pac'),examplePack.bytes);
 await writeFile(join(out,'pil-example.compressed.pac'),compress(examplePack,{algorithm:'gzip',level:6}).bytes);
