@@ -253,7 +253,7 @@ func (m *Manager) install(s *schema, data []byte) error {
 	if e := s.checkDirectory(m.config.Root, m.config.Tap); e != nil {
 		return e
 	}
-	if e := installNamedMap(s.directory(m.config.Root, m.config.Tap), s.filename("map"), data); e != nil {
+	if e := installNamedMap(s.directory(m.config.Root, m.config.Tap), s.filename("rx"), data); e != nil {
 		return m.fail(e)
 	}
 	m.schemas[rev.Digest] = s
@@ -463,12 +463,12 @@ func scanPartition(p *partition, s *schema, visit func(codec.Record) error) erro
 		if e != nil {
 			return e
 		}
-		pop, e := p.readPopRun(rows)
+		pods, e := p.readPodsRun(rows)
 		if e != nil {
 			return e
 		}
 		for _, r := range rows {
-			fields, e := codec.Decode(pop[r.Start-rows[0].Start:r.End-rows[0].Start], codec.CBOR)
+			fields, e := codec.Decode(pods[r.Start-rows[0].Start:r.End-rows[0].Start], codec.PIL)
 			if e != nil {
 				return e
 			}

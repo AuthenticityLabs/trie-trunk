@@ -9,27 +9,27 @@ import (
 )
 
 // Every event row has the same width, independently of object identity types.
-// Object/revision values and their presence states remain in the PIL population.
+// Object/revision values and their presence states remain in the PIL payload.
 type RowLayout struct{ Width, End int }
 
-func (l *Layout) RowLayout() RowLayout { return RowLayout{Width: IndexRowSize, End: 12} }
+func (l *Layout) RowLayout() RowLayout { return RowLayout{Width: IndexRowSize, End: 0} }
 
 // The fixed row selects a directory entry without decoding the PAC. The returned
 // extent is the complete encoded block, not an address inside compressed bytes.
-func (b *branchStore) populationRange(number uint64, r RowLayout) (uint64, uint64, error) {
+func (b *branchStore) podsRange(number uint64, r RowLayout) (uint64, uint64, error) {
 	if number < b.baseRows || number >= b.tail() {
-		return 0, 0, fmt.Errorf("population row outside committed index")
+		return 0, 0, fmt.Errorf("payload row outside committed index")
 	}
 	i := b.runIndex(number)
 	if i == len(b.runs) || number < b.runs[i].Start {
-		return 0, 0, fmt.Errorf("row outside population segment")
+		return 0, 0, fmt.Errorf("row outside payload segment")
 	}
 	run := b.runs[i]
 	leaf, ok := b.time.leaf(run.PAC.Placement.From)
 	if !ok { // The commit journal is authoritative while a new hour is being sealed.
-		return run.PopStart, run.PopEnd, nil
+		return run.PodsStart, run.PodsEnd, nil
 	}
-	return storedSegmentRange(b.pop, b.popRetired, leaf.Pods)
+	return storedSegmentRange(b.pods, b.podsRetired, leaf.Pods)
 
 }
 
@@ -65,28 +65,28 @@ func eventID(v Value) ([16]byte, error) {
 }
 
 type RowRange struct {
-	Start uint64  `cbor:"0,keyasint" json:"start"`
-	End   *uint64 `cbor:"1,keyasint" json:"end"`
+	Start uint64  `pil:"0" json:"start"`
+	End   *uint64 `pil:"1" json:"end"`
 }
 type Period struct {
-	Year     int `cbor:"0,keyasint" json:"year"`
-	Day      int `cbor:"1,keyasint" json:"day"`
+	Year     int `pil:"0" json:"year"`
+	Day      int `pil:"1" json:"day"`
 	From, To int64
 	Ranges   []RowRange
 	Packages map[int][]*Period // local hour; repeated DST hours have distinct bounds
 }
 type Run struct {
-	Start      uint64            `cbor:"0,keyasint"`
-	End        uint64            `cbor:"1,keyasint"`
-	PopStart   uint64            `cbor:"2,keyasint"`
-	PopEnd     uint64            `cbor:"3,keyasint"`
-	MinMS      int64             `cbor:"4,keyasint"`
-	MaxMS      int64             `cbor:"5,keyasint"`
-	IndexCRC   uint32            `cbor:"6,keyasint"`
-	PopCRC     uint32            `cbor:"7,keyasint"`
-	TrieSize   int               `cbor:"8,keyasint"`
-	References map[uint16]uint64 `cbor:"10,keyasint,omitempty"`
-	PAC        *StoredPAC        `cbor:"9,keyasint"`
+	Start      uint64            `pil:"0"`
+	End        uint64            `pil:"1"`
+	PodsStart  uint64            `pil:"2"`
+	PodsEnd    uint64            `pil:"3"`
+	MinMS      int64             `pil:"4"`
+	MaxMS      int64             `pil:"5"`
+	IndexCRC   uint32            `pil:"6"`
+	PodsCRC    uint32            `pil:"7"`
+	TrieSize   int               `pil:"8"`
+	References map[uint16]uint64 `pil:"10,omitempty"`
+	PAC        *StoredPAC        `pil:"9"`
 }
 
 func (r RowRange) end(tail uint64) uint64 {
@@ -163,29 +163,18 @@ func (b *branchStore) row(n uint64) []byte {
 func (b *branchStore) runIndex(n uint64) int {
 	return sort.Search(len(b.runs), func(i int) bool { return b.runs[i].End > n })
 }
+func (b *branchStore) rowLeaf(n uint64) uint16 { return order.Uint16(b.row(n)[4:6]) }
 func (b *branchStore) rowTime(n uint64) int64 {
-	return b.runs[b.runIndex(n)].PAC.Placement.From + indexDelta(b.row(n))
+	return indexTime(b.row(n), b.runs[b.runIndex(n)].PAC.Placement.From)
 }
-func (b *branchStore) rowID(n uint64) []byte {
-	id := unpackIndexID(b.row(n), b.runs[b.runIndex(n)].PAC.Placement.From)
-	return id[:]
-}
-
-// This transient assembly identity is a full UUID, not an on-disk index row.
-// Only payload assembly needs a full UUID. Time searches compare the packed delta.
-func (b *branchStore) assemblyRow(n uint64) []byte {
-	out := make([]byte, 16)
-	copy(out, b.rowID(n))
-	// Shared references, when enabled, are carried in PIL.
-	return out
-}
-func (b *branchStore) memberLength(n uint64) uint32 {
-	run := b.runs[b.runIndex(n)]
-	end := run.PAC.Placement.MemberBytes
-	if n+1 < run.End {
-		end = uint64(order.Uint32(b.row(n + 1)[12:]))
+func (b *branchStore) rowID(n uint64) ([]byte, error) { var c recordContext; return c.identity(b, n) }
+func (b *branchStore) assemblyRow(n uint64) []byte    { return timeKey(b.rowTime(n)) }
+func (b *branchStore) memberLength(n uint64) (uint32, error) {
+	var r podsReader
+	if _, err := r.read(b, n, b.layout.RowLayout()); err != nil {
+		return 0, err
 	}
-	return uint32(end - uint64(order.Uint32(b.row(n)[12:])))
+	return uint32(len(r.pac.Members[n-r.context.segment(b, n).Start])), nil
 }
 func (b *branchStore) lower(start, end uint64, ms int64) uint64 {
 	if start == end {
@@ -203,10 +192,9 @@ func (b *branchStore) lower(start, end uint64, ms int64) uint64 {
 		end = min(end, b.runs[i].End)
 	}
 	base := b.runs[i].PAC.Placement.From
-	delta := ms - base
 	for start < end {
 		mid := start + (end-start)/2
-		if indexDelta(b.row(mid)) < delta {
+		if indexTime(b.row(mid), base) < ms {
 			start = mid + 1
 		} else {
 			end = mid

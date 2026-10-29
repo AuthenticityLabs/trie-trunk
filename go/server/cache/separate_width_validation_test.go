@@ -109,7 +109,7 @@ func TestSeparateWidthMixedCrossing(t *testing.T) {
 	if !bytes.Equal(raw[p.mask:p.mask+2], []byte{0x45, 0}) {
 		t.Fatalf("selectors %x", raw)
 	}
-	fixed, err := p.reference.base.Encode(nil, values)
+	fixed, err := p.reference.base.Layout.Encode(nil, values)
 	if err != nil || !bytes.Equal(raw[:p.mask], fixed[:p.mask]) {
 		t.Fatal("mask changed", err)
 	}

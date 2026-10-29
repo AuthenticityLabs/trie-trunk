@@ -83,7 +83,7 @@ func TestSemanticCollectionRestartAndPolicy(t *testing.T) {
 	appendAt(at.Add(2*time.Hour), 4)
 	appendAt(noon, 2)
 	appendAt(at.AddDate(0, 0, 1), 3)
-	request := CollectionRequest{Branch: Write, At: at, IndexPeriod: "12h", PopulationFrom: at, PopulationTo: noon}
+	request := CollectionRequest{Branch: Write, At: at, IndexPeriod: "12h", DataFrom: at, DataTo: noon}
 	var manifest Manifest
 	var chunks []NativeChunk
 	pull := func() {
@@ -98,7 +98,7 @@ func TestSemanticCollectionRestartAndPolicy(t *testing.T) {
 	if !reflect.DeepEqual(manifest.Index, []Span{{1, 2}, {3, 4}}) || manifest.Provisional || !manifest.To.Equal(noon) {
 		t.Fatalf("initial %+v", manifest)
 	}
-	request.Have = Coverage{Definition: manifest.Definition, Generation: manifest.Generation, Index: manifest.Index, Population: manifest.Population, TrieNodes: manifest.TrieNodes}
+	request.Have = Coverage{Definition: manifest.Definition, Generation: manifest.Generation, Index: manifest.Index, MemberRanges: manifest.MemberRanges, TrieNodes: manifest.TrieNodes}
 	pull()
 	for _, c := range chunks {
 		if c.Kind == "index" || c.Kind == "pac" {
@@ -142,13 +142,13 @@ func TestSemanticCollectionRestartAndPolicy(t *testing.T) {
 		t.Fatal("stale plan accepted")
 	}
 	request.IndexPeriod = "6h"
-	request.PopulationTo = time.Date(2026, 11, 1, 6, 0, 0, 0, loc)
+	request.DataTo = time.Date(2026, 11, 1, 6, 0, 0, 0, loc)
 	pull()
 	if !reflect.DeepEqual(before.Index, manifest.Index) || manifest.IndexPeriod != "6h" {
 		t.Fatalf("resized %+v", manifest)
 	}
 	// Earlier 12-hour source-row coverage is reusable after resizing.
-	request.Have = Coverage{Definition: before.Definition, Generation: before.Generation, Index: before.Index, Population: before.Population, TrieNodes: before.TrieNodes}
+	request.Have = Coverage{Definition: before.Definition, Generation: before.Generation, Index: before.Index, MemberRanges: before.MemberRanges, TrieNodes: before.TrieNodes}
 	pull()
 	for _, c := range chunks {
 		if c.Kind == "index" || c.Kind == "pac" {
@@ -156,8 +156,8 @@ func TestSemanticCollectionRestartAndPolicy(t *testing.T) {
 		}
 	}
 	request.At = at.AddDate(0, 0, -1)
-	request.PopulationFrom = time.Time{}
-	request.PopulationTo = time.Time{}
+	request.DataFrom = time.Time{}
+	request.DataTo = time.Time{}
 	pull()
 	if len(manifest.Index) != 0 || manifest.Checkpoint == 0 {
 		t.Fatal("known empty package")
@@ -210,6 +210,7 @@ func TestSemanticCandidatesMatchScan(t *testing.T) {
 			}
 			b.rows = append(b.rows, row...)
 			run.End++
+			run.PAC.Placement.MemberStart = 4 + 4*(run.End-run.Start)
 			run.MaxMS = at.UnixMilli()
 			copy(b.row(run.Start-1), indexHeader(hour, run.End-run.Start))
 		}

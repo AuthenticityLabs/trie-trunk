@@ -393,7 +393,7 @@ fn run(case: &str, objects: usize) {
         let mut sync: Vec<_> = runs.iter().map(|r| r.flush_ms).collect();
         assembly.sort_by(f64::total_cmp);
         sync.sort_by(f64::total_cmp);
-        let mut result = runs.pop().unwrap();
+        let mut result = runs.pods().unwrap();
         result.assembly_ms = assembly[1];
         result.flush_ms = sync[1];
         result

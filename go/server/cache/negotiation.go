@@ -15,7 +15,7 @@ import (
 
 func definitionHeaders(h http.Header, l *Layout) {
 	h.Set("PIL-Version", "2")
-	h.Set("PIL-Features", "adaptive-integers,"+CompressionFeature+","+HTTPCompressionFeature)
+	h.Set("PIL-Features", "adaptive-integers,"+HTTPCompressionFeature)
 	h.Set("Definition-Version", fmt.Sprintf("%x", l.Digest))
 	h.Set("Definition-Identity", l.Definition.Identity)
 	h.Set("Definition-Revision", fmt.Sprint(l.Definition.Version))
@@ -51,8 +51,8 @@ func (p *Endpoint) registration(w http.ResponseWriter, r *http.Request) {
 		_ = controller.SetReadDeadline(time.Now().Add(5 * time.Minute))
 		defer controller.SetReadDeadline(time.Time{})
 		kind, _, _ := mime.ParseMediaType(r.Header.Get("Content-Type"))
-		if kind != "application/cbor" {
-			http.Error(w, "definition map requires application/cbor", 415)
+		if kind != "application/pil" {
+			http.Error(w, "definition map requires application/pil", 415)
 			return
 		}
 		raw, e := io.ReadAll(http.MaxBytesReader(w, r.Body, MaxFrame))
@@ -127,7 +127,7 @@ func (p *Endpoint) registration(w http.ResponseWriter, r *http.Request) {
 	}
 	if digest == fmt.Sprintf("%x", preferred.Digest) {
 		if r.Method == "GET" {
-			w.Header().Set("Content-Type", "application/cbor")
+			w.Header().Set("Content-Type", "application/pil")
 			_, _ = w.Write(preferred.Bytes)
 			return
 		}
@@ -138,7 +138,7 @@ func (p *Endpoint) registration(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "acknowledgement must identify preferred definition", 409)
 		return
 	}
-	path := filepath.Join(api.Store.collection, "producer-"+digest+".map")
+	path := filepath.Join(api.Store.collection, "producer-"+digest+".rx")
 	if proposed == nil {
 		raw, e := os.ReadFile(path)
 		if os.IsNotExist(e) {
@@ -169,7 +169,7 @@ func (p *Endpoint) registration(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(200)
 		return
 	}
-	w.Header().Set("Content-Type", "application/cbor")
+	w.Header().Set("Content-Type", "application/pil")
 	_, _ = w.Write(preferred.Bytes)
 }
 func hasAdaptive(r *http.Request) bool {

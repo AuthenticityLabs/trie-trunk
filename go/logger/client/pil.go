@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/fxamacker/cbor/v2"
+	pilcodec "github.com/AuthenticityLabs/pill-packer/go/codec"
 	"trie-trunk/go/codec"
 	Keys "trie-trunk/go/logger/client/keys"
 	"trie-trunk/go/logger/pil"
@@ -49,10 +49,10 @@ var pilLogFields = []pil.Field{
 	{Name: "client_id", Type: "STRING"}, {Name: "duration", Type: "U64"},
 	{Name: "http_method", Type: "STRING"}, {Name: "http_status", Type: "U16"},
 	{Name: "response_bytes", Type: "U64"}, {Name: "message", Type: "STRING"},
-	{Name: "error", Type: "CBOR"}, {Name: "checkpoints", Type: "CBOR"},
+	{Name: "error", Type: "OBJECT"}, {Name: "checkpoints", Type: "OBJECT"},
 	{Name: "uri", Type: "STRING"}, {Name: "client_ip", Type: "STRING"},
 	{Name: "diagnostic", Type: "STRING"}, {Name: "dropped", Type: "U64"},
-	{Name: "@fields", Type: "CBOR"},
+	{Name: "@fields", Type: "OBJECT"},
 	{Name: "access", Type: "STRING", Values: []string{"read", "write"}},
 }
 
@@ -99,7 +99,7 @@ func BuildPILDefinition(binding pil.Binding, dictionary *codec.Dictionary, adapt
 
 // NewPIL registers the caller's definition before returning a request logger.
 // It preserves the builder and HTTP middleware lifecycle but writes positional
-// values directly into the negotiated PIL encoder. NewStream is legacy CBOR.
+// values directly into the negotiated PIL encoder. NewStream writes framed dictionary PIL.
 func NewPIL(ctx context.Context, transport pil.Config, config Config) (*Logger, error) {
 	if transport.Branch != "read" && transport.Branch != "write" {
 		return nil, fmt.Errorf("request logger requires read or write access in the transport routing configuration")
@@ -202,8 +202,6 @@ func (p *pilEntryPlan) accessFor(e *Entry) string {
 	return p.access
 }
 
-var pilCBOR, _ = cbor.CoreDetEncOptions().EncMode()
-
 func (p *pilEntryPlan) values(e *Entry) ([]pil.Value, error) {
 	values := p.scratch
 	clear(values)
@@ -264,9 +262,9 @@ func (p *pilEntryPlan) values(e *Entry) ([]pil.Value, error) {
 		put(slotDropped, pil.Value{State: pil.Direct, Bytes: p.numeric[18:26]})
 	}
 	if e.Error != nil {
-		// Complex values are independent, named CBOR items, never legacy numeric-key
+		// Complex values are independent, named PIL objects, never legacy numeric-key
 		// objects requiring an out-of-band logger dictionary to interpret them.
-		raw, err := pilCBOR.Marshal(codec.Expand(e.Error.Record(), models.BuildSchema(), p.dictionary))
+		raw, err := pilcodec.MarshalObject(codec.Expand(e.Error.Record(), models.BuildSchema(), p.dictionary))
 		if err != nil {
 			return nil, err
 		}
@@ -286,7 +284,7 @@ func (p *pilEntryPlan) values(e *Entry) ([]pil.Value, error) {
 			}
 			items[i] = checkpoint{label, c.Duration.Microseconds(), c.Count}
 		}
-		raw, err := pilCBOR.Marshal(items)
+		raw, err := pilcodec.MarshalObject(items)
 		if err != nil {
 			return nil, err
 		}
@@ -299,11 +297,11 @@ func (p *pilEntryPlan) values(e *Entry) ([]pil.Value, error) {
 			if p.owned[name] {
 				return nil, fmt.Errorf("extension shadows logger field %s", name)
 			}
-			raw, err := v.MarshalCBOR()
+			raw, err := pilcodec.MarshalObject(v)
 			if err != nil {
 				return nil, err
 			}
-			values[i], err = p.layout.ValueFromCBOR(i, raw)
+			values[i], err = p.layout.ValueFromObject(i, raw)
 			if err != nil {
 				return nil, fmt.Errorf("field %s: %w", name, err)
 			}
@@ -315,7 +313,7 @@ func (p *pilEntryPlan) values(e *Entry) ([]pil.Value, error) {
 		}
 	}
 	if len(extras) > 0 {
-		raw, err := pilCBOR.Marshal(extras)
+		raw, err := pilcodec.MarshalObject(extras)
 		if err != nil {
 			return nil, err
 		}

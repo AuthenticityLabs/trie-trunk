@@ -138,12 +138,15 @@ func PACLocalRows(p *PAC, place PACPlacement, rows []byte) ([]byte, error) {
 	if expected.Rows != place.Rows || expected.MemberBytes != place.MemberBytes || uint64(len(rows)) != place.Rows*IndexRowSize {
 		return nil, fmt.Errorf("PAC index/placement mismatch")
 	}
-	var start uint64
-	for i, m := range p.Members {
-		if start > math.MaxUint32 || order.Uint32(rows[i*IndexRowSize+12:]) != uint32(start) {
-			return nil, fmt.Errorf("PAC member start mismatch")
-		}
-		start += uint64(len(m))
+	if p.AddressBytes != 4 {
+		return nil, fmt.Errorf("native PAC requires U32 directory")
 	}
+	for i := range p.Members {
+		ms := indexTime(rows[i*IndexRowSize:], place.From)
+		if ms < place.From || ms >= place.To {
+			return nil, fmt.Errorf("PAC row time outside hour")
+		}
+	}
+
 	return append([]byte(nil), rows...), nil
 }

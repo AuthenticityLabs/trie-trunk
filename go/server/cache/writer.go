@@ -2,10 +2,9 @@ package cache
 
 // Validate and durably stage ingress; sealing assigns canonical row positions.
 import (
-	"bytes"
 	"errors"
 	"fmt"
-	"trie-trunk/go/codec"
+	"time"
 )
 
 // Row IDs are assigned only after the three-cycle finalization boundary.
@@ -20,7 +19,7 @@ func (s *Store) Append(branch Branch, raw []byte) (bool, error) {
 }
 
 // AppendBatch acknowledges a durable prefix with one swap sync. The returned
-// count includes idempotent duplicates, and stops before the first rejection.
+// count covers accepted receipts and stops before the first rejection.
 func (s *Store) AppendBatch(branch Branch, frames [][]byte) (count int, err error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -85,7 +84,11 @@ func (s *Store) appendOwned(branch Branch, raw []byte, sync bool, input *nativeB
 		}
 	}
 	if identity.State == Absent {
-		generated, e := codec.NewUUIDv7(s.config.Now())
+		ms := s.config.Now().UnixMilli()
+		if v := s.scratch.Values[s.layout.Time]; v.State == Direct {
+			ms = int64(unsigned(v.Bytes))
+		}
+		generated, e := seedKey(ms, 0)
 		if e != nil {
 			return false, e
 		}
@@ -103,14 +106,36 @@ func (s *Store) appendOwned(branch Branch, raw []byte, sync bool, input *nativeB
 	if e != nil {
 		return false, s.fail(e)
 	}
-	if old := b.live.get(id[:], true, s.config.Now()); old != nil {
-		if s.layout.sameEvent(old, raw) {
-			return true, nil
-		}
-		return false, fmt.Errorf("conflicting event_id")
+	if s.capacityClosed {
+		return false, ErrIndexCapacity
 	}
-	if duplicate, e := s.committedDuplicate(b, id, raw); duplicate || e != nil {
-		return duplicate, e
+	ms := eventTime(id[:])
+	if ms < b.ingressBoundary() {
+		return false, s.rejectLate(b, id, raw)
+	}
+	hour, _ := semanticBounds(time.UnixMilli(ms), 1, s.location)
+	ordinal := b.provisionalRecords[hour.UnixMilli()]
+	if ordinal >= maxHourRecords {
+		return false, ErrIndexCapacity
+	}
+	id, e = seedKey(ms, ordinal)
+	if e != nil {
+		return false, e
+	}
+	s.scratch.Values[s.layout.Event] = Value{Direct, id[:]}
+	s.scratch.Values[s.layout.Record] = Uint(uint64(ordinal), 3)
+	s.scratch.Values[s.layout.Time] = Uint(uint64(ms), 8)
+	s.scratch.Values[s.layout.Leaf] = Value{}
+	if e = s.stripBlindEventID(s.scratch.Values); e != nil {
+		return false, s.rejectInput(branch, original, "invalid_pil", e)
+	}
+	raw, e = s.layout.Encode(nil, s.scratch.Values)
+	if e != nil {
+		return false, e
+	}
+	input = nil
+	if e = s.layout.Scan(raw, &s.scratch); e != nil {
+		return false, e
 	}
 	if branch == Write && s.config.ObjectIndex {
 		if _, e := s.checkCollectionWrite(b, s.scratch.Values); e != nil {
@@ -123,9 +148,6 @@ func (s *Store) appendOwned(branch Branch, raw []byte, sync bool, input *nativeB
 	}
 	if s.capacityClosed {
 		return false, ErrIndexCapacity
-	}
-	if eventTime(id[:]) < b.ingressBoundary() || len(b.rows) > 0 && bytes.Compare(id[:], b.rowID(b.tail()-1)) <= 0 {
-		return false, s.rejectLate(b, id, raw)
 	}
 	if s.capacityClosed || b.tail()+uint64(b.live.count(0)+1)*(1+IndexHeaderSlots) > s.indexCapacity() {
 		return false, ErrIndexCapacity
@@ -153,33 +175,6 @@ func (s *Store) appendOwned(branch Branch, raw []byte, sync bool, input *nativeB
 	copyFrame := owned
 	if e = s.rememberPendingValues(b, pending{id, copyFrame}, s.scratch.Values); e != nil {
 		return false, s.fail(e)
-	}
-	return false, nil
-}
-
-func (s *Store) committedDuplicate(b *branchStore, id [16]byte, raw []byte) (bool, error) {
-	for _, run := range b.runs {
-		ms := eventTime(id[:])
-		if ms < run.MinMS || ms > run.MaxMS {
-			continue
-		}
-		at := b.lower(run.Start, run.End, ms)
-		for at < run.End {
-			if b.rowTime(at) != ms {
-				break
-			}
-			if bytes.Equal(b.rowID(at), id[:]) {
-				full, e := s.frame(b, at, nil)
-				if e != nil {
-					return false, e
-				}
-				if s.layout.sameEvent(full, raw) {
-					return true, nil
-				}
-				return false, fmt.Errorf("conflicting event_id")
-			}
-			at++
-		}
 	}
 	return false, nil
 }

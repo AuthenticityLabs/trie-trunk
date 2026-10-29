@@ -133,5 +133,5 @@ func decodeRecordFrame(frame []byte) (codec.Record, error) {
 	if err != nil {
 		return nil, err
 	}
-	return codec.Decode(payload, codec.CBOR)
+	return codec.Decode(payload, codec.PIL)
 }

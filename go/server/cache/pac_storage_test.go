@@ -41,7 +41,7 @@ func TestStoredHourlyPACRecoveryAndDelivery(t *testing.T) {
 	}
 	var cursor uint64
 	for n, run := range b.runs {
-		if run.PAC == nil || !run.PAC.Gzip || run.PAC.Placement.MemberStart != cursor+4 ||
+		if run.PAC == nil || !run.PAC.Gzip || run.PAC.Placement.MemberStart != cursor+4+4*(run.End-run.Start) ||
 			run.PAC.Placement.Block != uint32(n) {
 			t.Fatal("invalid block directory")
 		}
@@ -66,7 +66,7 @@ func TestStoredHourlyPACRecoveryAndDelivery(t *testing.T) {
 		func(c NativeChunk) error {
 			if c.Kind == "pac" {
 				run := s.branches[Error].runs[c.PAC.Placement.Block]
-				disk, e := readBytes(s.branches[Error].pop, run.PopStart, run.PopEnd)
+				disk, e := readBytes(s.branches[Error].pods, run.PodsStart, run.PodsEnd)
 				if e != nil {
 					return e
 				}
@@ -188,8 +188,8 @@ func TestHourlyPACWaitsForClosingGrace(t *testing.T) {
 	if len(s.branches[Write].rows) != 3*IndexRowSize {
 		t.Fatal("sealed hour missing late event")
 	}
-	if !s.branches[Write].runs[0].PAC.Gzip {
-		t.Fatal("writes without collection indexing were not compressed")
+	if s.branches[Write].runs[0].PAC.Gzip {
+		t.Fatal("write packs must remain uncompressed")
 	}
 }
 
@@ -214,7 +214,7 @@ func TestPACRetirementPreservesReferencesAndCompressedBytes(t *testing.T) {
 	b := s.branches[Error]
 	source := b.generation
 	run := b.runs[2]
-	before, e := readBytes(b.pop, run.PopStart, run.PopEnd)
+	before, e := readBytes(b.pods, run.PodsStart, run.PodsEnd)
 	if e != nil {
 		t.Fatal(e)
 	}
@@ -228,7 +228,7 @@ func TestPACRetirementPreservesReferencesAndCompressedBytes(t *testing.T) {
 	if b.generation != source || b.baseRows != 4 || b.blockBase != 2 || b.tail() != 6 {
 		t.Fatal("retirement changed reference identity")
 	}
-	after, e := readBytes(b.pop, run.PopStart-b.popRetired, run.PopEnd-b.popRetired)
+	after, e := readBytes(b.pods, run.PodsStart-b.podsRetired, run.PodsEnd-b.podsRetired)
 	if e != nil {
 		t.Fatal(e)
 	}

@@ -1,0 +1,89 @@
+[
+  {
+    "cwd": "/Users/jason/recovered-work/2026-10-27/trie-trunk/go",
+    "argv": [
+      "go",
+      "test",
+      "./server/cache",
+      "-run",
+      "^$",
+      "-bench",
+      "^(BenchmarkIndexMemberWindow|BenchmarkIndexHour|BenchmarkRecordReference|BenchmarkPACWorkloads|BenchmarkPACValidation|BenchmarkSummaryDayPACTransition)$",
+      "-benchmem",
+      "-benchtime=300ms",
+      "-count=5"
+    ],
+    "stdout_and_stderr": "go-current.txt",
+    "exit_code": 0
+  },
+  {
+    "cwd": "/Users/jason/recovered-work/2026-10-27/trie-trunk/go",
+    "argv": [
+      "go",
+      "test",
+      "./server/cache",
+      "-run",
+      "^(TestPACStatePreservationAndExtensions|TestPACEmptySingleAndCommonNull|TestIndexUUIDRoundTripAndOrdering|TestIndexLowerAcrossMergedHourSegments|TestDailySummaryCodec)$"
+    ],
+    "started_at_utc": "2026-10-28T01:41:59.288347+00:00",
+    "stdout": "go-current-checks.txt",
+    "stderr": "go-current-checks.stderr.txt",
+    "exit_code": 1
+  },
+  {
+    "cwd": "/Users/jason/recovered-work/2026-10-27/trie-trunk/go",
+    "argv": [
+      "go",
+      "test",
+      "./server/cache",
+      "-run",
+      "^(TestPACStatePreservationAndExtensions|TestPACEmptySingleAndCommonNull|TestIndexUUIDRoundTripAndOrdering|TestIndexLowerAcrossMergedHourSegments)$"
+    ],
+    "started_at_utc": "2026-10-28T01:42:30.468402+00:00",
+    "stdout": "go-current-pac-index-checks.txt",
+    "stderr": "go-current-pac-index-checks.stderr.txt",
+    "exit_code": 0
+  },
+  {
+    "cwd": "/Users/jason/recovered-work/2026-10-27/pill-packer",
+    "argv": [
+      "cargo",
+      "bench",
+      "--locked",
+      "--manifest-path",
+      "rust/Cargo.toml",
+      "--bench",
+      "codecs",
+      "--",
+      "--ref-bits",
+      "16",
+      "--max",
+      "10000"
+    ],
+    "started_at_utc": "2026-10-28T01:42:31.378802+00:00",
+    "stdout": "rust-codecs-ref16.txt",
+    "stderr": "rust-codecs-ref16.stderr.txt",
+    "exit_code": 0
+  },
+  {
+    "cwd": "/Users/jason/recovered-work/2026-10-27/pill-packer",
+    "argv": [
+      "cargo",
+      "bench",
+      "--locked",
+      "--manifest-path",
+      "rust/Cargo.toml",
+      "--bench",
+      "codecs",
+      "--",
+      "--ref-bits",
+      "32",
+      "--max",
+      "10000"
+    ],
+    "started_at_utc": "2026-10-28T01:42:43.642808+00:00",
+    "stdout": "rust-codecs-ref32.txt",
+    "stderr": "rust-codecs-ref32.stderr.txt",
+    "exit_code": 0
+  }
+]

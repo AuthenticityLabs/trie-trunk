@@ -20,7 +20,7 @@ import (
 	"trie-trunk/go/server/store"
 )
 
-func TestSearchRendersIndexThenLineageThenPopulation(t *testing.T) {
+func TestSearchRendersIndexThenLineageThenPayload(t *testing.T) {
 	c, rev, data, now := fixture(t)
 	m := mustOpen(t, c, rev, data)
 	ids := []string{
@@ -111,7 +111,7 @@ func appendSearchRecord(t *testing.T, m *store.Manager, rev codec.Revision, at t
 	for k, v := range extra {
 		r[k] = v
 	}
-	b, err := codec.MarshalCompact(r, codec.CBOR)
+	b, err := codec.MarshalCompact(r, codec.PIL)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -266,7 +266,7 @@ func TestSearchPartialTailAndCorruption(t *testing.T) {
 			case "partial_trie", "bad_trie":
 				path = filepath.Join(version, "log.tri")
 			default:
-				path = filepath.Join(day, "log.pop")
+				path = filepath.Join(day, "log.pods")
 			}
 			if damage == "missing_pop" {
 				if err := os.Remove(path); err != nil {

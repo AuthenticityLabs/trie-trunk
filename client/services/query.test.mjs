@@ -141,3 +141,19 @@ test('duration-role queries default to milliseconds and preserve explicit units'
  const next=input.slice(0,completion.from)+completion.insert;
  assert.ok(completeQuery(next,next.length,typed).some(c=>c.label==='where'));
 });
+
+test('Boolean precedence, grouping, and negation survive both syntax representations',async()=>{
+ const {formatQuery}=await import('./query.ts');
+ const ast=parseQuery('events | where state == pending OR duration > 5 AND NOT synthetic == true XOR duration < 2',fields);
+ assert.equal(ast.plan.predicate.kind,'or');assert.equal(ast.plan.predicate.right.kind,'xor');assert.equal(ast.plan.predicate.right.left.kind,'and');
+ for(const syntax of ['builder','pipeline'])assert.deepEqual(parseQuery(formatQuery(ast,syntax),fields),ast);
+ for(const bad of ['events | where state == pending OR','events | where (duration > 5','events | where NOT','events | where duration > 1 XAND duration < 2'])assert.throws(()=>parseQuery(bad,fields));
+ assert.throws(()=>parseQuery('events | where '+Array(33).fill('duration > 1').join(' OR '),fields),/At most 32/);
+});
+
+test('Boolean operands offer definition fields and mapped values',()=>{
+ for(const prefix of ['events | where duration > 1 AND ', 'events | where NOT ', 'events | where duration > 1 OR (']){
+  assert.ok(completeQuery(prefix,prefix.length,fields).some(c=>c.label==='state'),prefix);
+ }
+ const text='events | where duration > 1 OR state == pe';assert.equal(completeQuery(text,text.length,fields)[0].label,'pending');
+});

@@ -101,7 +101,7 @@ func TestNativeHTTPInterop(t *testing.T) {
 		if e = writeBind(&fixture, 0, l.Digest, h.tap(Write)); e != nil {
 			t.Fatal(e)
 		}
-		if e = writeEvent(&fixture, l, 0, frame, false); e != nil {
+		if e = writeEvent(&fixture, 0, frame); e != nil {
 			t.Fatal(e)
 		}
 		fixture.Write([]byte{255, 254})
@@ -109,7 +109,7 @@ func TestNativeHTTPInterop(t *testing.T) {
 		if e = os.MkdirAll(dir, 0755); e != nil {
 			t.Fatal(e)
 		}
-		for n, b := range map[string][]byte{"definition.cbor": l.Bytes, "collect.pil": raw, "frame.pil": frame} {
+		for n, b := range map[string][]byte{"definition.rx": l.Bytes, "collect.pil": raw, "frame.pil": frame} {
 			if e = os.WriteFile(filepath.Join(dir, n), b, 0644); e != nil {
 				t.Fatal(e)
 			}
@@ -146,7 +146,7 @@ func TestPILIngressStagingAndReceiverStubs(t *testing.T) {
 		return w
 	}
 	for _, kind := range []string{"application/jsonl", "application/x-ndjson", "text/plain", "application/syslog"} {
-		if w := request(kind, []byte("not parsed")); w.Code != 501 {
+		if w := request(kind, []byte("not parsed")); w.Code != 415 {
 			t.Fatal(kind, w.Code, w.Body.String())
 		}
 	}
@@ -216,7 +216,7 @@ func TestPILIngressLargeFrameAndFragmentedBody(t *testing.T) {
 	}); err != nil {
 		t.Fatal(err)
 	}
-	if len(rows) != 2 || !bytes.Equal(rows[0], first) || !bytes.Equal(rows[1], second) {
+	if len(rows) != 2 || !sameSeedData(t, l, rows[0], first) || !sameSeedData(t, l, rows[1], second) {
 		t.Fatal("large or trailing sparse frame changed during ingress")
 	}
 }

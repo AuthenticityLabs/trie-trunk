@@ -303,5 +303,5 @@ func TestMeasureInteger16(t *testing.T) {
 	for _, v := range variants {
 		sizes[v.name] = v.size
 	}
-	saveMeasurement(t, map[string]any{"events": n, "profile": profile, "shape": shape, "definition": d, "population_bytes": sizes, "eligible16_values": present, "shortened16_values": shorts, "codec": timings, "allocations_per_record": allocs, "batch_rows": rows, "records_per_timing_sample": batch * repeats, "samples": 2 * len(jobs), "all_records_validated": true, "exact_one_byte_saving_verified": true, "go": runtime.Version(), "platform": runtime.GOOS + "/" + runtime.GOARCH, "scope": "test-only mask16 extension; cached definition; in-memory codec; no indices, IPC, storage I/O, or network"})
+	saveMeasurement(t, map[string]any{"events": n, "profile": profile, "shape": shape, "definition": d, "payload_bytes": sizes, "eligible16_values": present, "shortened16_values": shorts, "codec": timings, "allocations_per_record": allocs, "batch_rows": rows, "records_per_timing_sample": batch * repeats, "samples": 2 * len(jobs), "all_records_validated": true, "exact_one_byte_saving_verified": true, "go": runtime.Version(), "platform": runtime.GOOS + "/" + runtime.GOARCH, "scope": "test-only mask16 extension; cached definition; in-memory codec; no indices, IPC, storage I/O, or network"})
 }

@@ -19,7 +19,7 @@ func searchKind(t string, mapped bool) string {
 		return "e"
 	case t == "BOOL":
 		return "b"
-	case t == "CBOR":
+	case t == "OBJECT":
 		return "j"
 	case strings.HasPrefix(t, "TIMESTAMP_") || strings.HasPrefix(t, "I"):
 		return "i"

@@ -7,7 +7,7 @@ import (
 )
 
 func TestProjectionCompatibilityAndSparseValues(t *testing.T) {
-	d := Definition{Identity: "payment/transactions", Version: 1 << 20, PIL: 1, AdaptiveIntegers: "16", Fields: []Field{{Name: "event_id", Type: "UUID"}, {Name: "amount", Type: "I32"}, {Name: "@fields", Type: "CBOR"}}, Resource: Binding{Format: Format, Service: "payment", Resource: "transactions", Major: 1, Timezone: "UTC", Roles: Roles{Event: "event_id"}}}
+	d := Definition{Identity: "payment/transactions", Version: 1 << 20, PIL: 1, AdaptiveIntegers: "16", Fields: []Field{{Name: "event_id", Type: "UUID"}, {Name: "amount", Type: "I32"}, {Name: "@fields", Type: "OBJECT"}}, Resource: Binding{Format: Format, Service: "payment", Resource: "transactions", Major: 1, Timezone: "UTC", Roles: Roles{Event: "event_id"}}}
 	source, e := Compile(d)
 	if e != nil {
 		t.Fatal(e)
@@ -16,7 +16,7 @@ func TestProjectionCompatibilityAndSparseValues(t *testing.T) {
 	d.Resource.Minor++
 	d.PIL = 0
 	d.AdaptiveIntegers = ""
-	d.Fields = []Field{{Name: "amount", Type: "I32"}, {Name: "event_id", Type: "UUID"}, {Name: "samples", Type: "ARRAY<U16>"}, {Name: "@fields", Type: "CBOR"}}
+	d.Fields = []Field{{Name: "amount", Type: "I32"}, {Name: "event_id", Type: "UUID"}, {Name: "samples", Type: "ARRAY<U16>"}, {Name: "@fields", Type: "OBJECT"}}
 	target, e := Compile(d)
 	if e != nil {
 		t.Fatal(e)
@@ -26,7 +26,7 @@ func TestProjectionCompatibilityAndSparseValues(t *testing.T) {
 		t.Fatal(e)
 	}
 	// An adaptive signed byte must become a signed fixed-width value, not 255.
-	mapped, e := p.Values([]Value{{State: Absent}, {State: Direct, Bytes: []byte{255}}, {State: Offset, Bytes: []byte{0xa1, 0x67, 's', 'a', 'm', 'p', 'l', 'e', 's', 0x82, 1, 2}}})
+	mapped, e := p.Values([]Value{{State: Absent}, {State: Direct, Bytes: []byte{255}}, {State: Offset, Bytes: mustObject(t, map[string]any{"samples": []uint16{1, 2}})}, {}, {}, {}})
 	if e != nil {
 		t.Fatal(e)
 	}
@@ -56,11 +56,11 @@ func TestProjectionCompatibilityAndSparseValues(t *testing.T) {
 }
 
 func TestExtensionPreservesEmptyBytesAndNonfiniteFloat(t *testing.T) {
-	b, e := fieldCBOR(Field{Type: "BYTES"}, Value{State: Offset})
-	if e != nil || !bytes.Equal(b, []byte{0x40}) {
+	b, e := fieldObject(Field{Type: "BYTES"}, Value{State: Offset})
+	if e != nil || !bytes.Equal(b, mustObject(t, []byte{})) {
 		t.Fatal("empty bytes became null", b, e)
 	}
-	b, e = fieldCBOR(Field{Type: "F64"}, Value{State: Direct, Bytes: []byte{0, 0, 0, 0, 0, 0, 0xf0, 0x7f}})
+	b, e = fieldObject(Field{Type: "F64"}, Value{State: Direct, Bytes: []byte{0, 0, 0, 0, 0, 0, 0xf0, 0x7f}})
 	if e != nil {
 		t.Fatal(e)
 	}
@@ -68,4 +68,13 @@ func TestExtensionPreservesEmptyBytesAndNonfiniteFloat(t *testing.T) {
 	if e = decoder.Unmarshal(b, &value); e != nil || !math.IsInf(value, 1) {
 		t.Fatal("infinity changed type", b, e)
 	}
+}
+
+func mustObject(t *testing.T, v any) []byte {
+	t.Helper()
+	b, err := encoder.Marshal(v)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return b
 }

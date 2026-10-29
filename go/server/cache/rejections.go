@@ -165,7 +165,7 @@ func (s *Store) rejectInput(branch Branch, raw []byte, reason string, cause erro
 }
 
 // Expanded only for explicit audit inspection. Stored/transmitted source bytes
-// remain intact, including sparse fields and exact integer/CBOR representations.
+// remain intact, including sparse fields and exact integer/PIL representations.
 func (l *Layout) inspect(raw []byte) (map[string]any, error) {
 	var f Frame
 	if e := l.Scan(raw, &f); e != nil {
@@ -197,7 +197,7 @@ func inspectValue(kind string, b []byte) any {
 		return fmt.Sprintf("%x-%x-%x-%x-%x", b[:4], b[4:6], b[6:8], b[8:10], b[10:])
 	case "BOOL":
 		return b[0] != 0
-	case "U8", "U16", "U32", "U64", "REF16":
+	case "U8", "U16", "U24", "U32", "U64", "REF16":
 		return unsigned(b)
 	case "I8", "I16", "I32", "I64", "TIMESTAMP_MS", "TIMESTAMP_US", "TIMESTAMP_NS":
 		n := unsigned(b)
@@ -216,15 +216,15 @@ func inspectValue(kind string, b []byte) any {
 			return fmt.Sprint(f)
 		}
 		return f
-	case "CBOR":
+	case "OBJECT":
 		var value any
 		if decoder.Unmarshal(b, &value) == nil {
-			value = jsonCBOR(value)
+			value = jsonObject(value)
 			if _, e := json.Marshal(value); e == nil {
 				return value
 			}
 		}
-		return map[string]any{"cbor_base64": b}
+		return map[string]any{"pil_base64": b}
 	}
 	if strings.HasPrefix(kind, "ARRAY<") {
 		element := kind[6 : len(kind)-1]
@@ -252,10 +252,10 @@ func inspectValue(kind string, b []byte) any {
 	return b
 }
 
-// Convert named CBOR maps recursively only at the explicit JSON inspection edge.
-// Maps with non-string keys retain the lossless CBOR fallback instead of
+// Convert named PIL maps recursively only at the explicit JSON inspection edge.
+// Maps with non-string keys retain the lossless PIL fallback instead of
 // coercing keys and potentially losing distinctions.
-func jsonCBOR(value any) any {
+func jsonObject(value any) any {
 	switch v := value.(type) {
 	case map[any]any:
 		out := make(map[string]any, len(v))
@@ -264,13 +264,13 @@ func jsonCBOR(value any) any {
 			if !ok {
 				return value
 			}
-			out[name] = jsonCBOR(x)
+			out[name] = jsonObject(x)
 		}
 		return out
 	case []any:
 		out := make([]any, len(v))
 		for i, x := range v {
-			out[i] = jsonCBOR(x)
+			out[i] = jsonObject(x)
 		}
 		return out
 	default:

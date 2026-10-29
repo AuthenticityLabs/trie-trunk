@@ -12,7 +12,7 @@ import (
 
 func (p *partition) watermark() int64 {
 	if p.schema.modern() {
-		return p.popEnd
+		return p.podsEnd
 	}
 	return p.indexEnd
 }

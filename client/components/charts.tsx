@@ -48,6 +48,7 @@ export function TimeBrush(props: {
 }
 
 export function Histogram(props: {
+  label?:string;
   counts: number[];
   errors: number[];
   first: number;
@@ -69,7 +70,7 @@ export function Histogram(props: {
     xDomain={[0, props.counts.length]}
     yDomain={[0, Math.max(1, ...props.counts)]}
     bleed={{ top: 0, bottom: 0, left: 0, right: 0 }}
-    ariaLabel={`${props.count.toLocaleString()} matched events. Drag a time range to search it. Calendar controls also select the time window.`}
+    ariaLabel={`${props.count.toLocaleString()} ${props.label??'matched events'}. Drag a time range to search it. Calendar controls also select the time window.`}
   >
     <VisStackedBar
       x={(i: number) => i + 0.5}

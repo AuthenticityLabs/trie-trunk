@@ -1,38 +1,103 @@
 {
   "result": {
     "analytics": {
+      "rollups": [
+        {
+          "source": "demo/payment/transactions.v1/read",
+          "definition": "f71e182f4fab8afb3ed385822885cdeb2c71a9dff2cb6876ddca5fb58b1e72f4",
+          "generation": "89943eec7903e5263fba4c79e1036fbe",
+          "buckets": [
+            {
+              "resolution": "month",
+              "from": 1790812800000,
+              "to": 1793491200000,
+              "coveredFrom": 1792454400000,
+              "coveredTo": 1792540800000,
+              "statisticsComplete": true,
+              "count": "288",
+              "durationCount": "192",
+              "sum": "29760",
+              "min": "12",
+              "max": "298",
+              "errors": "0"
+            }
+          ]
+        },
+        {
+          "source": "demo/payment/transactions.v1/write",
+          "definition": "f71e182f4fab8afb3ed385822885cdeb2c71a9dff2cb6876ddca5fb58b1e72f4",
+          "generation": "e5e459b752a0b9a34a8df683ecb5574c",
+          "buckets": [
+            {
+              "resolution": "month",
+              "from": 1790812800000,
+              "to": 1793491200000,
+              "coveredFrom": 1792454400000,
+              "coveredTo": 1792540800000,
+              "statisticsComplete": true,
+              "count": "288",
+              "durationCount": "192",
+              "sum": "29760",
+              "min": "12",
+              "max": "298",
+              "errors": "0"
+            }
+          ]
+        },
+        {
+          "source": "demo/payment/transactions.v1/error",
+          "definition": "f71e182f4fab8afb3ed385822885cdeb2c71a9dff2cb6876ddca5fb58b1e72f4",
+          "generation": "25bbfc3371f70caa34a438091c2b61d5",
+          "buckets": [
+            {
+              "resolution": "month",
+              "from": 1790812800000,
+              "to": 1793491200000,
+              "coveredFrom": 1792454400000,
+              "coveredTo": 1792540800000,
+              "statisticsComplete": true,
+              "count": "288",
+              "durationCount": "192",
+              "sum": "29760",
+              "min": "12",
+              "max": "298",
+              "errors": "288"
+            }
+          ]
+        }
+      ],
       "from": 1792454400000,
       "to": 1792540800000,
       "days": [
         {
-          "key": "9b79080e1c3fe67406af98d67eae9f90d2a5bf73ed51e2b8d2a57075a33e7bf6",
+          "key": "68bd75d2082380d3504f00ea277371b43468334a665e0d501d2dc26f30c49feb",
           "source": "demo/payment/transactions.v1/read",
-          "definition": "d134a19136bd9591f4f3943d78d805e3885fe3185b86ad71fdb3016758cda288",
-          "generation": "2df2381a52bd2d75e0d9a3cb6654bfe5",
+          "definition": "f71e182f4fab8afb3ed385822885cdeb2c71a9dff2cb6876ddca5fb58b1e72f4",
+          "generation": "89943eec7903e5263fba4c79e1036fbe",
           "day": 1792454400000,
           "sealed": true
         },
         {
-          "key": "9b79080e1c3fe67406af98d67eae9f90d2a5bf73ed51e2b8d2a57075a33e7bf6",
+          "key": "68bd75d2082380d3504f00ea277371b43468334a665e0d501d2dc26f30c49feb",
           "source": "demo/payment/transactions.v1/write",
-          "definition": "d134a19136bd9591f4f3943d78d805e3885fe3185b86ad71fdb3016758cda288",
-          "generation": "6d35311b5eff8bf08aaa5bf763ff8862",
+          "definition": "f71e182f4fab8afb3ed385822885cdeb2c71a9dff2cb6876ddca5fb58b1e72f4",
+          "generation": "e5e459b752a0b9a34a8df683ecb5574c",
           "day": 1792454400000,
           "sealed": true
         },
         {
-          "key": "459095af2fc9d4fde5351caa02f4349b85bb979dd9963f234698e9dd5bd985ee",
+          "key": "59b481c99f5d3b57ba0d282771de1a3b5094eb85e146a7124367e2a38a351fdc",
           "source": "demo/payment/transactions.v1/error",
-          "definition": "d134a19136bd9591f4f3943d78d805e3885fe3185b86ad71fdb3016758cda288",
-          "generation": "63d4cd752b8b9ff287ee4103b8544458",
+          "definition": "f71e182f4fab8afb3ed385822885cdeb2c71a9dff2cb6876ddca5fb58b1e72f4",
+          "generation": "25bbfc3371f70caa34a438091c2b61d5",
           "day": 1792454400000,
           "sealed": true
         }
       ]
     },
-    "cursor": "IQd4or_cPcUVBuK1Sa4RtXYUHLsljk77iuoHv2UWYmV7IlF1ZXJ5IjoiIiwiU2NvcGUiOiJkZW1vL3BheW1lbnQvdHJhbnNhY3Rpb25zLnYxLyoiLCJGcm9tIjoiMjAyNi0xMC0yMFQwMDowMDowMFoiLCJUbyI6IjIwMjYtMTAtMjFUMDA6MDA6MDBaIiwiRXhwaXJlcyI6MTc5Mjg3MzEzNSwiU291cmNlcyI6W3siUmV0aXJlZCI6MCwiRGVmaW5pdGlvbiI6ImQxMzRhMTkxMzZiZDk1OTFmNGYzOTQzZDc4ZDgwNWUzODg1ZmUzMTg1Yjg2YWQ3MWZkYjMwMTY3NThjZGEyODgiLCJHZW5lcmF0aW9uIjoiMmRmMjM4MWE1MmJkMmQ3NWUwZDlhM2NiNjY1NGJmZTUiLCJCcmFuY2giOjAsIlRhaWwiOjMxMiwiRmluYWxpemVkIjoxNzkyNTQwODAwMDAwfSx7IlJldGlyZWQiOjAsIkRlZmluaXRpb24iOiJkMTM0YTE5MTM2YmQ5NTkxZjRmMzk0M2Q3OGQ4MDVlMzg4NWZlMzE4NWI4NmFkNzFmZGIzMDE2NzU4Y2RhMjg4IiwiR2VuZXJhdGlvbiI6IjZkMzUzMTFiNWVmZjhiZjA4YWFhNWJmNzYzZmY4ODYyIiwiQnJhbmNoIjoxLCJUYWlsIjozMTIsIkZpbmFsaXplZCI6MTc5MjU0MDgwMDAwMH0seyJSZXRpcmVkIjowLCJEZWZpbml0aW9uIjoiZDEzNGExOTEzNmJkOTU5MWY0ZjM5NDNkNzhkODA1ZTM4ODVmZTMxODViODZhZDcxZmRiMzAxNjc1OGNkYTI4OCIsIkdlbmVyYXRpb24iOiI2M2Q0Y2Q3NTJiOGI5ZmYyODdlZTQxMDNiODU0NDQ1OCIsIkJyYW5jaCI6MiwiVGFpbCI6MzEyLCJGaW5hbGl6ZWQiOjE3OTI1NDA4MDAwMDB9LHsiUmV0aXJlZCI6MCwiRGVmaW5pdGlvbiI6ImQxMzRhMTkxMzZiZDk1OTFmNGYzOTQzZDc4ZDgwNWUzODg1ZmUzMTg1Yjg2YWQ3MWZkYjMwMTY3NThjZGEyODgiLCJHZW5lcmF0aW9uIjoiNDM2MjI3NmU2YWM0MWRkNzc5YzA0NTgxNWMyOGQ3YmMiLCJCcmFuY2giOjMsIlRhaWwiOjAsIkZpbmFsaXplZCI6MTc5MjU0MDgwMDAwMH0seyJSZXRpcmVkIjowLCJEZWZpbml0aW9uIjoiZDEzNGExOTEzNmJkOTU5MWY0ZjM5NDNkNzhkODA1ZTM4ODVmZTMxODViODZhZDcxZmRiMzAxNjc1OGNkYTI4OCIsIkdlbmVyYXRpb24iOiJhNzhiMDBlZjFhMWU1ODY0OTE2Y2ExNjkyNmY0ZDBmNyIsIkJyYW5jaCI6NCwiVGFpbCI6MCwiRmluYWxpemVkIjoxNzkyNTQwODAwMDAwfV0sIkxhc3RJRCI6IiIsIkxhc3RTb3VyY2UiOjAsIkxhc3RSb3ciOjB9",
-    "snapshot": "e7140caf86f34aa84839f1cfb20364f9fc4b0ed7f1b99dc57c87ba6a1a075763",
-    "summaryVersion": "e7140caf86f34aa84839f1cfb20364f9fc4b0ed7f1b99dc57c87ba6a1a075763",
+    "cursor": "tkELpBu7DG9qA6DDjj7weotJWY9xit4dLH8hBtytWad7IlF1ZXJ5IjoiIiwiU2NvcGUiOiJkZW1vL3BheW1lbnQvdHJhbnNhY3Rpb25zLnYxLyoiLCJGcm9tIjoiMjAyNi0xMC0yMFQwMDowMDowMFoiLCJUbyI6IjIwMjYtMTAtMjFUMDA6MDA6MDBaIiwiRXhwaXJlcyI6MTc5MzI1NTM5MiwiU291cmNlcyI6W3siUmV0aXJlZCI6MCwiRGVmaW5pdGlvbiI6ImY3MWUxODJmNGZhYjhhZmIzZWQzODU4MjI4ODVjZGViMmM3MWE5ZGZmMmNiNjg3NmRkY2E1ZmI1OGIxZTcyZjQiLCJHZW5lcmF0aW9uIjoiODk5NDNlZWM3OTAzZTUyNjNmYmE0Yzc5ZTEwMzZmYmUiLCJCcmFuY2giOjAsIlRhaWwiOjMxMiwiRmluYWxpemVkIjoxNzkyNTQwODAwMDAwfSx7IlJldGlyZWQiOjAsIkRlZmluaXRpb24iOiJmNzFlMTgyZjRmYWI4YWZiM2VkMzg1ODIyODg1Y2RlYjJjNzFhOWRmZjJjYjY4NzZkZGNhNWZiNThiMWU3MmY0IiwiR2VuZXJhdGlvbiI6ImU1ZTQ1OWI3NTJhMGI5YTM0YThkZjY4M2VjYjU1NzRjIiwiQnJhbmNoIjoxLCJUYWlsIjozMTIsIkZpbmFsaXplZCI6MTc5MjU0MDgwMDAwMH0seyJSZXRpcmVkIjowLCJEZWZpbml0aW9uIjoiZjcxZTE4MmY0ZmFiOGFmYjNlZDM4NTgyMjg4NWNkZWIyYzcxYTlkZmYyY2I2ODc2ZGRjYTVmYjU4YjFlNzJmNCIsIkdlbmVyYXRpb24iOiIyNWJiZmMzMzcxZjcwY2FhMzRhNDM4MDkxYzJiNjFkNSIsIkJyYW5jaCI6MiwiVGFpbCI6MzEyLCJGaW5hbGl6ZWQiOjE3OTI1NDA4MDAwMDB9XSwiTGFzdElEIjoiIiwiTGFzdFNvdXJjZSI6MCwiTGFzdFJvdyI6MH0",
+    "snapshot": "601644d2c845c09211242baf358203a1396bd1b53b4987fdb14a912c71b0138c",
+    "summaryVersion": "3a8c7edd510ee559c228fa376ae3694c065c363b99a653f015fa7075b694eb24",
     "summary": {
       "statistics": {
         "complete": true,

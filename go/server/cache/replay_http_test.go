@@ -133,12 +133,12 @@ func TestReplayHTTPMinorHistoryAndInvalidation(t *testing.T) {
 		t.Fatal(w.Code, w.Body.String())
 	}
 	frames, digests := decodeHistory(t, w.Body.Bytes())
-	if len(frames) != 2 || !bytes.Equal(frames[0], frame1) || !bytes.Equal(frames[1], frame2) || digests[0] != base.Digest || digests[1] != next.Digest {
+	if len(frames) != 2 || !sameSeedData(t, base, frames[0], frame1) || !sameSeedData(t, next, frames[1], frame2) || digests[0] != base.Digest || digests[1] != next.Digest {
 		t.Fatal("historical definition or frame changed")
 	}
 	observed := w.Header().Get("Trunk-State")
 	warm := replayRequest(p, path, fmt.Sprintf("%x,%x", base.Digest, next.Digest))
-	if warm.Code != 200 || warm.Body.Len() >= w.Body.Len() || !bytes.Contains(warm.Body.Bytes(), frame1) || !bytes.Contains(warm.Body.Bytes(), frame2) {
+	if warm.Code != 200 || warm.Body.Len() >= w.Body.Len() || !bytes.Contains(warm.Body.Bytes(), frames[0]) || !bytes.Contains(warm.Body.Bytes(), frames[1]) {
 		t.Fatal("known maps were not reused", warm.Code)
 	}
 	if dir := os.Getenv("PIL_HISTORY_FIXTURE_DIR"); dir != "" {
@@ -329,7 +329,7 @@ func TestHistorySnapshotAllowsWriterRetentionAndClose(t *testing.T) {
 	if e = <-done; e != nil {
 		t.Fatal(e)
 	}
-	if len(frames) != 2 || !bytes.Equal(frames[0], expected[0]) || !bytes.Equal(frames[1], expected[1]) {
+	if len(frames) != 2 || !sameSeedData(t, l, frames[0], expected[0]) || !sameSeedData(t, l, frames[1], expected[1]) {
 		t.Fatal("snapshot changed")
 	}
 }

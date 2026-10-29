@@ -14,9 +14,9 @@ type statePage struct {
 	Epoch                [16]byte
 	Sequence, Collection uint64
 	Objects              []stateEntry
-	Paged                bool `cbor:",omitempty"`
-	Final                bool `cbor:",omitempty"`
-	Unchanged            bool `cbor:",omitempty"`
+	Paged                bool `pil:",omitempty"`
+	Final                bool `pil:",omitempty"`
+	Unchanged            bool `pil:",omitempty"`
 }
 type stateTransfer struct{ statePage }
 

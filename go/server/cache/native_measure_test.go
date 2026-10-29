@@ -90,7 +90,7 @@ func TestMeasureNativeStorage(t *testing.T) {
 		if q.name == "all" {
 			continue
 		}
-		request := CollectionRequest{Branch: Write, Day: q.from, PopulationFrom: q.from, PopulationTo: q.to}
+		request := CollectionRequest{Branch: Write, Day: q.from, DataFrom: q.from, DataTo: q.to}
 		var m Manifest
 		for _, cached := range []bool{false, true} {
 			key := q.name + "_initial"
@@ -107,13 +107,13 @@ func TestMeasureNativeStorage(t *testing.T) {
 			}); err != nil {
 				t.Fatal(err)
 			}
-			if cached && (bytes[key]["index"] != 0 || bytes[key]["population"] != 0) {
+			if cached && (bytes[key]["index"] != 0 || bytes[key]["sods"] != 0) {
 				t.Fatal("duplicate native transfer")
 			}
 			native[key] = timed(t, 9, func() error {
 				return s.Collect(context.Background(), request, func(Manifest) error { return nil }, func(NativeChunk) error { return nil })
 			})
-			request.Have = Coverage{Definition: m.Definition, Generation: m.Generation, Index: m.Index, Population: m.Population, TrieNodes: m.TrieNodes}
+			request.Have = Coverage{Definition: m.Definition, Generation: m.Generation, Index: m.Index, MemberRanges: m.MemberRanges, TrieNodes: m.TrieNodes}
 		}
 	}
 	saveMeasurement(t, map[string]any{"events": n, "sparse": sparse, "format": Format, "fixture_sha256": hash, "go": runtime.Version(), "platform": runtime.GOOS + "/" + runtime.GOARCH,

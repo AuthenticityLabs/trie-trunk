@@ -92,7 +92,7 @@ func TestDictionaryStreamPreservesReferencesAndCatalogScope(t *testing.T) {
 			fields[key] = row[i+1]
 		}
 		if !reflect.DeepEqual(keys, []int{8, 3, 14, 2, 12, 21, 22}) {
-			t.Fatal("index, lineage, population order", keys)
+			t.Fatal("index, lineage, payload order", keys)
 		}
 		if fields[3] != float64(5) || fields[2] != float64(1) || fields[12] != float64(2234) {
 			t.Fatal("numeric values expanded", fields)

@@ -16,7 +16,7 @@ var (
 	ErrSchemaAck    = errors.New("log writer acknowledged a different schema")
 )
 
-// Writer is an io.Writer for complete, already-encoded CBOR records. It has no
+// Writer is an io.Writer for complete, already-encoded PIL records. It has no
 // queue, background goroutine, reconnect loop or replay buffer. It serializes
 // connection changes and record writes under one lock.
 type Writer struct {

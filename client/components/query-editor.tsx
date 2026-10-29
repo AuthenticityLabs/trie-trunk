@@ -143,7 +143,7 @@ export function QueryEditor(props:{value:string;onInput:(value:string)=>void;fie
    autocomplete="off" autocapitalize="off" autocorrect="off" enterkeyhint="search" spellcheck={false} rows={Math.min(7,Math.max(3,props.value.split('\n').length+1))} value={props.value} placeholder={syntax()==='builder'?'events.query()\n  .where(…)':'events\n  | where …'}
    onInput={e=>{const value=e.currentTarget.value,position=e.currentTarget.selectionStart;props.onInput(value);setCaret(position);setActive(-1);setTyped(true);setMenuOpen(true);positionFlyover(true)}} onClick={()=>{refresh();setTyped(false);setMenuOpen(true);positionFlyover(true)}} onFocus={()=>{setFocused(true);refresh();setMenuOpen(true);positionFlyover(true)}} onBlur={()=>{setFocused(false);setMenuOpen(false);setAnchored(false)}}
    onCompositionStart={()=>setComposing(true)} onCompositionEnd={()=>{setComposing(false);refresh();setTyped(true);setMenuOpen(true)}}
-   onKeyUp={e=>{if(input?.selectionStart!==caret()){refresh();setFocused(true)}}}
+   onKeyUp={()=>{if(input?.selectionStart!==caret()){refresh();setFocused(true)}}}
    onKeyDown={e=>{
     if(e.isComposing||composing())return;
     if(e.key==='Escape'){setMenuOpen(false);setActive(-1);e.preventDefault();return}

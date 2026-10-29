@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/fxamacker/cbor/v2"
+	pil "github.com/AuthenticityLabs/pill-packer/go/codec"
 )
 
 func TestSummarySearchValidationAndAuthorization(t *testing.T) {
@@ -33,7 +33,7 @@ func TestSummarySearchValidationAndAuthorization(t *testing.T) {
 		if w.Code != tc.status {
 			t.Fatalf("%+v: %d %s", tc, w.Code, w.Body.String())
 		}
-		if w.Code == 200 && !bytes.Equal(w.Body.Bytes(), []byte{0x80}) {
+		if w.Code == 200 && !bytes.Equal(w.Body.Bytes(), []byte{0xc0, 2, 0, 0, 0}) {
 			t.Fatal("empty array", w.Body.Bytes())
 		}
 	}
@@ -45,22 +45,30 @@ func TestSummarySearchValidationAndAuthorization(t *testing.T) {
 	if w := requestSummaryPacks(t, h, make([]summaryPackQuery, summaryBatchLimit+1)); w.Code != 400 {
 		t.Fatal("unbounded request", w.Code)
 	}
-	if w := requestSummaryPacks(t, h, []summaryPackQuery{ref}); w.Code != 409 || w.Header().Get("Content-Type") == "application/cbor" {
+	if w := requestSummaryPacks(t, h, []summaryPackQuery{ref}); w.Code != 409 || w.Header().Get("Content-Type") == "application/pil" {
 		t.Fatal("missing pack must fail before array publication", w.Code)
 	}
 }
 
 func TestSummaryArrayEncoding(t *testing.T) {
-	// Verify the wire framing with an independent CBOR implementation.
 	for _, n := range []int{0, 1, 23, 24, 255, 256, 1024} {
-		var b bytes.Buffer
-		b.Write(summaryArrayHead(4, uint64(n)))
+		array := extended(nil, uint64(n))
 		for i := 0; i < n; i++ {
-			b.Write(summaryArrayHead(2, 32))
-			b.Write(make([]byte, 32))
+			array = extended(array, uint64((i+1)*32))
 		}
-		var packs [][]byte
-		if err := cbor.Unmarshal(b.Bytes(), &packs); err != nil || len(packs) != n {
+		wire := extended([]byte{0xc0}, uint64(len(array)+n*32))
+		wire = append(wire, array...)
+		wire = append(wire, make([]byte, n*32)...)
+		l, err := pil.Compile(pil.Definition{Fields: []pil.Field{{Name: "packs", Type: "ARRAY<BYTES>"}}})
+		if err != nil {
+			t.Fatal(err)
+		}
+		var f pil.Frame
+		if err = l.Scan(wire, &f); err != nil {
+			t.Fatal(n, err)
+		}
+		values, err := pil.FieldValue(l.Definition.Fields[0], f.Values[0])
+		if err != nil || len(values.([]any)) != n {
 			t.Fatal(n, err)
 		}
 	}

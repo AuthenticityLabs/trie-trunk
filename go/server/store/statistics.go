@@ -19,7 +19,7 @@ const hourMillis int64 = 3_600_000
 type trieStatistics struct {
 	ranges    map[int64][2]int64
 	hours     map[int64]map[uint32]uint64
-	through   map[string]uint64 // Population end, stable across index compaction/reopen.
+	through   map[string]uint64 // MemberRanges end, stable across index compaction/reopen.
 	dirty     bool
 	published time.Time
 }
@@ -115,7 +115,7 @@ func entropy(counts map[uint64]uint64, total uint64) float64 {
 }
 
 // Only the partial boundary hours are reread. Complete hours use accumulated
-// leaf frequencies; neither path reconstructs events or reads population values.
+// leaf frequencies; neither path reconstructs events or reads payload values.
 func (m *Manager) partialHour(s *schema, start, end time.Time) (map[uint32]uint64, error) {
 	counts := map[uint32]uint64{}
 	for _, sc := range m.known[s.revision.Digest] {

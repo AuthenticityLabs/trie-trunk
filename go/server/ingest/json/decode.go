@@ -145,5 +145,5 @@ func encodeJSON(line []byte) ([]byte, error) {
 		duration = n
 		delete(fields, "duration")
 	}
-	return codec.MarshalCompact(codec.Record{jsonId: id, jsonDuration: duration, jsonFields: fields}, codec.CBOR)
+	return codec.MarshalCompact(codec.Record{jsonId: id, jsonDuration: duration, jsonFields: fields}, codec.PIL)
 }

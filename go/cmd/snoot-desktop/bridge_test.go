@@ -171,3 +171,37 @@ func TestBridgeWebSocket(t *testing.T) {
 		t.Fatal("websocket binary changed", err)
 	}
 }
+
+func TestBridgeBootstrapAndCatalogReplicationRoutes(t *testing.T) {
+	calls := 0
+	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		calls++
+		w.Header().Set("Content-Type", "application/pil")
+		io.WriteString(w, r.URL.RequestURI())
+	}))
+	defer upstream.Close()
+	target, _ := url.Parse(upstream.URL)
+	b := newBridge("127.0.0.1:34185", "test-secret", fstest.MapFS{"assets/local.tri": {Data: []byte("local")}}, target, http.DefaultTransport, "HTTP")
+	for _, route := range []string{"/trunk", "/trunk/demo/payment", "/collections/demo/payment/transactions.v1", "/demo/payment/transactions.v1/0/resource.rx", "/demo/payment/transactions.v1/0/read.tri?begin=2600100&end=2600123", "/demo/payment/transactions.v1/0/read.sum", "/demo/payment/transactions.v1/0/read.idx", "/demo/payment/transactions.v1/0/read.tvy", "/demo/payment/transactions.v1/0/read.pods?page=100"} {
+		t.Run(route, func(t *testing.T) {
+			w := httptest.NewRecorder()
+			b.ServeHTTP(w, authorized(route))
+			if w.Code != 200 || w.Body.String() != route {
+				t.Fatalf("route %s: %d %s", route, w.Code, w.Body.String())
+			}
+		})
+	}
+	count := calls
+	w := httptest.NewRecorder()
+	b.ServeHTTP(w, authorized("/assets/local.tri"))
+	if w.Code != 200 || w.Body.String() != "local" || calls != count {
+		t.Fatal("bundled asset was proxied")
+	}
+	r := authorized("/trunk")
+	r.Header.Del("Cookie")
+	w = httptest.NewRecorder()
+	b.ServeHTTP(w, r)
+	if w.Code != 403 || calls != count {
+		t.Fatal("unauthorized bootstrap reached upstream")
+	}
+}

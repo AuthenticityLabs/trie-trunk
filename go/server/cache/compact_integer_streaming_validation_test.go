@@ -19,7 +19,7 @@ func TestCompactIntegerStreamingEquivalence(t *testing.T) {
 		if compact {
 			return stream.encode(dst, values)
 		}
-		return ref.base.Encode(dst, values)
+		return ref.base.Layout.Encode(dst, values)
 	}
 	rng := rand.New(rand.NewPCG(17, 31))
 	var f, g Frame
@@ -46,7 +46,7 @@ func TestCompactIntegerStreamingEquivalence(t *testing.T) {
 			if compact {
 				want, e = ref.encode(nil, values)
 			} else {
-				want, e = ref.base.Encode(nil, values)
+				want, e = ref.base.Layout.Encode(nil, values)
 			}
 			if e != nil {
 				t.Fatal(e)
@@ -97,7 +97,7 @@ func FuzzCompactIntegerStreaming(f *testing.F) {
 		if compact {
 			return stream.encode(dst, values)
 		}
-		return ref.base.Encode(dst, values)
+		return ref.base.Layout.Encode(dst, values)
 	}
 	for _, values := range [][]Value{{{}, {}, {}, {}, {}}, {{}, Uint(^uint64(128), 8), Uint(400, 4), Text("seed"), Uint(1, 1)}} {
 		raw, e := ref.encode(nil, values)

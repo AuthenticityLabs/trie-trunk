@@ -21,7 +21,7 @@ func TestTimebaseTransitBoundaries(t *testing.T) {
 			t.Fatal(err)
 		}
 		compact, err := p.transform(nil, absolute, base, false)
-		if err != nil || len(absolute)-len(compact) != 6 {
+		if err != nil || len(absolute)-len(compact) != 10 {
 			t.Fatal("compact", err)
 		}
 		restored, err := p.transform(nil, compact, base, true)

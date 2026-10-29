@@ -127,7 +127,7 @@ func (m *Manager) writeRegistry() error {
 		if err != nil {
 			return err
 		}
-		o.Definitions = append(o.Definitions, RegisteredDefinition{s.revision.Version & minorMask, hex.EncodeToString(s.revision.Digest[:]), filepath.ToSlash(filepath.Join(rel, "events.map"))})
+		o.Definitions = append(o.Definitions, RegisteredDefinition{s.revision.Version & minorMask, hex.EncodeToString(s.revision.Digest[:]), filepath.ToSlash(filepath.Join(rel, "events.rx"))})
 	}
 	for _, o := range groups {
 		sort.Slice(o.Definitions, func(i, j int) bool { return o.Definitions[i].Minor < o.Definitions[j].Minor })

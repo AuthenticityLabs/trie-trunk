@@ -1,8 +1,9 @@
+import {decodeObject as cbor} from "./pil/control.ts";
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { StoreCodec } from "./store/wasm.ts";
-import { fixture, bytes, frame, le, cb, extended } from "./pil-fixtures.mjs";
+import { fixture, bytes, frame, le, pilObject, extended } from "./pil-fixtures.mjs";
 const module = await WebAssembly.compile(
   await readFile(new URL("../assets/trunk-store.wasm", import.meta.url)),
 );
@@ -63,14 +64,14 @@ test("PIL → native files → PIL retains sparse dictionary codes and field byt
   assert.equal(at.length, 42);
   assert.deepEqual(c.get(id, at), f.row());
   assert.equal(Buffer.from(files[0].data.subarray(0, 4)).toString(), "TTRI");
-  assert.equal(files[0].data.length, 38);
-  assert.equal(files[0].data[22], 2);
-  assert.equal(files[0].data[37], 5);
+  assert.equal(files[0].data.length, 58);
+  assert.equal(cbor(files[0].data.subarray(22,33)),2);
+  assert.equal(cbor(files[0].data.subarray(47,58)),5);
   const pointer = new DataView(at.buffer);
   assert.equal(pointer.getUint16(16), 2);
   assert.equal(pointer.getBigUint64(18), 16n);
   assert.equal(pointer.getBigUint64(34), 8n);
-  assert.equal(files[1].data[16], 0xa3);
+  assert.equal(typeof cbor(files[1].data.subarray(16)),"object");
   assert.equal(files.length, 2); // no index file in the browser kernel
   const reopened = await setup(files);
   assert.deepEqual(reopened.c.get(reopened.id, at), f.row());
@@ -95,7 +96,7 @@ test("legacy U32 IndexedDB pointers remain readable beside new REF16 pointers", 
   assert.deepEqual(reopened.c.get(reopened.id, legacy), row(1));
   assert.deepEqual(reopened.c.get(reopened.id, current), row(1));
 });
-test("host committed ends recover orphan population and trie appends", async () => {
+test("host committed ends recover orphan payload and trie appends", async () => {
   const { c, id, files } = await setup();
   const [ref] = put(c, id, row(1));
   const ends = files.map((f) => f.getSize());
@@ -105,14 +106,14 @@ test("host committed ends recover orphan population and trie appends", async () 
   assert.deepEqual(next.c.get(next.id, ref), row(1));
   assert.equal(put(next.c, next.id, row(2)).length, 1);
 });
-test("population corruption is checked when its block is read", async () => {
+test("payload corruption is checked when its block is read", async () => {
   const { c, id, files } = await setup();
   const [ref] = put(c, id, row(1));
   files[1].data[files[1].data.length - 1] ^= 1;
   const next = await setup(files);
   assert.throws(() => next.c.get(next.id, ref), /checksum/);
 });
-test("refresh observes another writer's trie and population appends", async () => {
+test("refresh observes another writer's trie and payload appends", async () => {
   const first = await setup();
   put(first.c, first.id, row(1));
   const second = await setup(first.files);
@@ -120,7 +121,7 @@ test("refresh observes another writer's trie and population appends", async () =
   first.c.refresh(first.id);
   assert.deepEqual(first.c.get(first.id, ref), row(2));
 });
-test("fallback, null, absence, literal strings, empty lineage and nested CBOR survive storage", async () => {
+test("fallback, null, absence, literal strings, empty lineage and nested PIL objects survive storage", async () => {
   const { c, id } = await setup();
   const b = frame(
     [0, 3, 2, 1, 0, 3, 3, 3],
@@ -130,9 +131,9 @@ test("fallback, null, absence, literal strings, empty lineage and nested CBOR su
       f.uuid,
       [],
       [],
-      cb({ 0: null, 8: [1, "λ"] }),
+      pilObject({ 0: null, 8: [1, "λ"] }),
       extended(0),
-      cb({ 3: 99, 55: cb("bytes") }),
+      pilObject({ 3: 99, 55: pilObject("bytes") }),
     ],
   );
   const [at] = put(c, id, b);
@@ -160,7 +161,7 @@ test("CRC32C agrees with native Castagnoli check vector", async () => {
   const c = await StoreCodec.create(module);
   assert.equal(c.checksum(new TextEncoder().encode("123456789")), 0xe3069283);
 });
-test("failed population writes leave old pointers recoverable", async () => {
+test("failed payload writes leave old pointers recoverable", async () => {
   const { c, id, files } = await setup();
   const [ref] = put(c, id, row(1)),
     ends = files.map((f) => f.getSize());
@@ -174,13 +175,13 @@ test("failed population writes leave old pointers recoverable", async () => {
   const next = await setup(files);
   assert.deepEqual(next.c.get(next.id, ref), row(1));
 });
-test("external pointers cannot underflow a population block", async () => {
+test("external pointers cannot underflow a payload block", async () => {
   const { c, id } = await setup();
   const [ref] = put(c, id, row(1));
   new DataView(ref.buffer).setBigUint64(18, 0n);
-  assert.throws(() => c.get(id, ref), /population range/);
+  assert.throws(() => c.get(id, ref), /payload range/);
 });
-test("restoration reads population once per run, not once per event", async () => {
+test("restoration reads payload once per run, not once per event", async () => {
   const { c, id, files } = await setup();
   const refs = put(c, id, ...Array.from({ length: 100 }, (_, i) => row(i + 1)));
   let reads = 0;
@@ -192,17 +193,17 @@ test("restoration reads population once per run, not once per event", async () =
     };
   }
   for (const at of refs) c.get(id, at);
-  assert.equal(reads, 2); // one block header + one population block; no file index
+  assert.equal(reads, 2); // one block header + one payload block; no file index
 });
 
-test("REF16 reaches 65535 and spills new paths into population without losing values", async () => {
+test("REF16 reaches 65535 and spills new paths into payload without losing values", async () => {
   const { c, files } = await setup();
   const blocks = [files[0].data];
   const node = (parent, key, value) => {
-    const payload = new Uint8Array(6 + cb(value).length);
+    const payload = new Uint8Array(6 + pilObject(value).length);
     const v = new DataView(payload.buffer);
     v.setUint32(0, parent); v.setUint16(4, key);
-    payload.set(cb(value), 6);
+    payload.set(pilObject(value), 6);
     const block = new Uint8Array(8 + payload.length);
     const header = new DataView(block.buffer);
     header.setUint32(0, payload.length); header.setUint32(4, c.checksum(payload));

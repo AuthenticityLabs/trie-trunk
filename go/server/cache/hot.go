@@ -1,6 +1,9 @@
 package cache
 
-import "time"
+import (
+	"fmt"
+	"time"
+)
 
 const HotWindow = 24 * time.Hour
 
@@ -11,7 +14,7 @@ const ProvisionalRow = ^uint64(0)
 // scans still use the sequential reader outside this window.
 func (s *Store) warmHot(b *branchStore) error {
 	now := s.config.Now()
-	var reader populationReader
+	var reader podsReader
 	a := frameAssembler{layout: s.layout, trie: &s.trie}
 	for _, run := range b.runs {
 		if run.MaxMS < now.Add(-HotWindow).UnixMilli() {
@@ -24,15 +27,20 @@ func (s *Store) warmHot(b *branchStore) error {
 			if e != nil {
 				return e
 			}
-			full, e := a.assemble(idx, raw, nil)
+			full, e := a.assemble(idx, raw, nil, b.rowLeaf(row))
 			if e != nil {
 				return e
 			}
 			var id [16]byte
-			copy(id[:], idx[:16])
+			identity, err := s.layout.seedIdentity(raw, b.rowTime(row))
+			if err != nil {
+				return err
+			}
+			copy(id[:], identity)
+			size := len(full)
 			full, e = b.own(s, id, full, nil)
 			if e != nil {
-				return e
+				return fmt.Errorf("restore resident row %d, %d bytes, memory %+v: %w", row, size, s.memory.stats(), e)
 			}
 			if e = s.rememberSealed(b, id, full, row); e != nil {
 				return e

@@ -3,14 +3,14 @@ package ingest
 import (
 	"errors"
 
-	"trie-trunk/go/server/ingest/cbor"
 	"trie-trunk/go/server/ingest/json"
+	"trie-trunk/go/server/ingest/pil"
 	"trie-trunk/go/server/store"
 )
 
 type tap struct {
 	store *store.Manager
-	cbor  cbor.Handler
+	pil   pil.Handler
 	json  json.Handler
 }
 
@@ -35,7 +35,7 @@ func (h *Handler) openTap(name string) (*tap, error) {
 	}
 	t := &tap{
 		store: m,
-		cbor:  cbor.Handler{Store: m, Timeout: h.config.StreamTimeout, OnError: h.config.OnError},
+		pil:   pil.Handler{Store: m, Timeout: h.config.StreamTimeout, OnError: h.config.OnError},
 		json:  json.Handler{Store: m, Timeout: h.config.StreamTimeout, OnError: h.config.OnError},
 	}
 	h.taps[name] = t

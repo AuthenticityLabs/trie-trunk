@@ -1,3 +1,4 @@
+import {zonedTimestamp} from '../services/time-zone';
 import {
   DatePicker,
   parseDate,
@@ -11,6 +12,7 @@ import { Icon } from "./icon";
 
 export default function Calendar(props: {
   scope: "Collect" | "Search";
+  timeZone?:string;
   from: string;
   to: string;
   coverage?: readonly Interval[];
@@ -18,7 +20,7 @@ export default function Calendar(props: {
   onExpand?: (window: TimeWindow, cancel: () => void) => void;
   onClose: () => void;
 }) {
-  const initial = dateWindow(props.from, props.to);
+  const initial = dateWindow(props.from, props.to,Date.now(),props.timeZone);
   const [dates, setDates] = createSignal<DateValue[]>(
     initial.dates.map((date) => parseDate(date)),
   );
@@ -27,7 +29,7 @@ export default function Calendar(props: {
   const narrow = matchMedia("(max-width: 680px)");
   const [months, setMonths] = createSignal(narrow.matches ? 1 : 2);
   const [error, setError] = createSignal("");
-  const today = parseDate(new Date().toISOString().slice(0, 10));
+  const today = parseDate(zonedTimestamp(Date.now(),props.timeZone).slice(0,10));
   let dialog!: HTMLDialogElement;
 
   onMount(() => {
@@ -56,11 +58,11 @@ export default function Calendar(props: {
       const days = value.map((date) => date.toString());
       if (days.length === 1)
         props.onExpand?.(
-          timeWindow([days[0], days[0]], startTime(), endTime()),
+          timeWindow([days[0], days[0]], startTime(), endTime(),Date.now(),props.timeZone),
           cancel,
         );
       else if (days.length === 2)
-        props.onChange(timeWindow(days, startTime(), endTime()), true, cancel);
+        props.onChange(timeWindow(days, startTime(), endTime(),Date.now(),props.timeZone), true, cancel);
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : String(cause));
     }
@@ -74,7 +76,7 @@ export default function Calendar(props: {
       const window = timeWindow(
         dates().map((date) => date.toString()),
         startTime(),
-        endTime(),
+        endTime(),Date.now(),props.timeZone,
       );
       setError("");
       props.onChange(window, false, () => setTime(previous));
@@ -134,7 +136,7 @@ export default function Calendar(props: {
           min={parseDate("1970-01-01")}
           max={today}
           locale="en-CA"
-          timeZone="UTC"
+          timeZone={props.timeZone??'UTC'}
           fixedWeeks
           outsideDaySelectable={false}
           format={(date) => date.toString()}
@@ -149,12 +151,12 @@ export default function Calendar(props: {
         >
           <DatePicker.Control class="calendar-inputs">
             <div>
-              <span class="calendar-input-label">From · UTC</span>
+              <span class="calendar-input-label">From · {props.timeZone??'UTC'}</span>
               <DatePicker.Input index={0} aria-label="Calendar from date" />
               <input
                 type="time"
                 step="0.001"
-                aria-label="Calendar from time UTC"
+                aria-label={`Calendar From Time ${props.timeZone??'UTC'}`}
                 value={startTime()}
                 onChange={(event) =>
                   changeTime("start", event.currentTarget.value)
@@ -162,12 +164,12 @@ export default function Calendar(props: {
               />
             </div>
             <div>
-              <span class="calendar-input-label">Through · UTC</span>
+              <span class="calendar-input-label">Through · {props.timeZone??'UTC'}</span>
               <DatePicker.Input index={1} aria-label="Calendar through date" />
               <input
                 type="time"
                 step="0.001"
-                aria-label="Calendar through time UTC"
+                aria-label={`Calendar Through Time ${props.timeZone??'UTC'}`}
                 value={endTime()}
                 onChange={(event) =>
                   changeTime("end", event.currentTarget.value)
@@ -212,7 +214,7 @@ export default function Calendar(props: {
                                 {api().format(month().visibleRange.start, {
                                   month: "long",
                                   year: "numeric",
-                                  timeZone: "UTC",
+                                  timeZone: props.timeZone??'UTC',
                                 })}
                               </h3>
                               <DatePicker.Table id={`month-${offset}`}>
@@ -236,7 +238,7 @@ export default function Calendar(props: {
                                             const collected = () =>
                                               dayCoverage(
                                                 day().toString(),
-                                                props.coverage ?? [],
+                                                props.coverage ?? [],props.timeZone,
                                               );
                                             return (
                                               <DatePicker.TableCell

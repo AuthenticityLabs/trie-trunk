@@ -418,7 +418,7 @@ export function OperationRanking(props: {
                   </div>
                   <Show when={props.kind === "latency"}>
                     <small class="ranking-samples">
-                      p95 · {row.samples.toLocaleString()}{" "}
+                      {row.statistic === "average" ? "Average" : "P95"} · {row.samples.toLocaleString()}{" "}
                       {row.samples === 1 ? "sample" : "samples"}
                     </small>
                   </Show>
@@ -444,7 +444,7 @@ export function OperationRanking(props: {
       </Show>
       <p class="ranking-scope">
         Matched events ·{" "}
-        {props.kind === "errors" ? "error count" : "p95 duration"}
+        {props.kind === "errors" ? "error count" : props.rows.some(row => row.statistic === "average") ? "average duration" : "p95 duration"}
       </p>
     </section>
   );

@@ -13,22 +13,16 @@ import {
 } from "../services/dictionary";
 import { ScrollEnd } from "./scroll-end";
 import { objectHistoryTarget, type ObjectHistoryTarget } from '../services/replay';
+import { diagnosticTargets, type DiagnosticTarget } from '../services/diagnostics';
 import {
   eventFields,
   type Annotations,
   type EventField,
 } from "../services/indicators";
 
-const clock = new Intl.DateTimeFormat("en-GB", {
-  hour: "2-digit",
-  minute: "2-digit",
-  second: "2-digit",
-  fractionalSecondDigits: 3,
-  timeZone: "UTC",
-});
-
-export function eventTime(event: LogEvent): string {
-  return clock.format(event.millis);
+const clocks=new Map<string,Intl.DateTimeFormat>();
+export function eventTime(event:LogEvent,zone='UTC'):string {
+ let clock=clocks.get(zone);if(!clock){clock=new Intl.DateTimeFormat('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit',fractionalSecondDigits:3,timeZone:zone});clocks.set(zone,clock)}return clock.format(event.millis);
 }
 
 export function FieldTag(props: {
@@ -74,6 +68,7 @@ export function FieldTag(props: {
 }
 
 export function Events(props: {
+ timeZone?:string;
   revision: number;
   events: LogEvent[];
   selected: LogEvent | undefined;
@@ -91,6 +86,9 @@ export function Events(props: {
   onPosition?: (position:ScrollPosition) => void;
   collections?: readonly string[];
   onObjectHistory?: (target:ObjectHistoryTarget)=>void;
+  diagnosticSources?: readonly string[];
+  diagnosticWindow?: {from:string;to:string};
+  onDiagnostic?: (target:DiagnosticTarget)=>void;
 }) {
   const [visibleCount, setVisibleCount] = createSignal(props.pageSize);
   const [notebook, setNotebook] = createSignal<{
@@ -180,10 +178,10 @@ export function Events(props: {
           <thead>
             <tr>
               <th class="expand-cell">
-                <span class="sr-only">Expand</span>
+                <span class="sr-only">Event actions</span>
               </th>
               <th>
-                Time <span>UTC</span>
+                Time <span>{props.timeZone??'UTC'}</span>
               </th>
               <th>Level</th>
               <th>Service</th>
@@ -233,6 +231,7 @@ export function Events(props: {
                       }}
                     >
                       <td class="expand-cell">
+                        <div class="event-margin">
                         <button
                           class="expand-button"
                           aria-label={`Inspect event ${id}`}
@@ -244,9 +243,17 @@ export function Events(props: {
                             size={14}
                           />
                         </button>
+                        <Show when={props.onDiagnostic}><span class="diagnostic-leaves">
+                          <For each={diagnosticTargets(event,props.diagnosticSources??[],props.diagnosticWindow)}>{target=><button
+                            type="button" class={`diagnostic-leaf diagnostic-${target.kind}`} aria-haspopup="dialog"
+                            aria-label={`Inspect ${target.kind} data linked by ${target.linkedBy} for event ${id}`}
+                            title={`${target.kind==='debug'?'Debug':'Trace'} data · ${target.linkedBy}: ${target.value}`}
+                            onClick={()=>props.onDiagnostic?.(target)}><Icon name="leaf" size={14}/><small>{target.kind==='debug'?'D':'T'}</small></button>}</For>
+                        </span></Show>
+                        </div>
                       </td>
                       <td class="time-cell" title={field(event, "time")}>
-                        {eventTime(event)}
+                        {eventTime(event,props.timeZone)}
                       </td>
                       <td>
                         <span class={`level level-${severity.toLowerCase()}`}>
@@ -342,6 +349,12 @@ export function Events(props: {
                     >
                       <td colSpan={9}>
                         <div class="event-fields" aria-label="Event Fields">
+                          <Show when={event.stateLeaf!==undefined}>
+                            <span class="field-tag fixed" title="Two-byte State Trie Leaf">
+                              <span class="field-name">@leaf</span>
+                              <span class="field-value">{`0x${event.stateLeaf!.toString(16).padStart(4,'0').toUpperCase()}`}</span>
+                            </span>
+                          </Show>
                           <For each={otherFields}>
                             {(item) => (
                               <FieldTag

@@ -54,9 +54,9 @@ type aggregateKey struct {
 	Reference uint16
 }
 type Group struct {
-	Period    int64     `cbor:"0,keyasint"`
-	Reference uint16    `cbor:"1,keyasint"`
-	Aggregate Aggregate `cbor:"2,keyasint"`
+	Period    int64     `pil:"0"`
+	Reference uint16    `pil:"1"`
+	Aggregate Aggregate `pil:"2"`
 }
 type Summary struct {
 	DurationWidth byte // Definition storage width; zero when no duration role is bound.

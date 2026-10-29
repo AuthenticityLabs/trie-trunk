@@ -68,7 +68,7 @@ func Cleanup(ctx context.Context, c Config, apply bool) (report CleanupReport, e
 		if splitBinding(binding) == nil {
 			return report, fmt.Errorf("invalid catalog binding")
 		}
-		data, e := os.ReadFile(filepath.Join(root, binding, "resource.map"))
+		data, e := os.ReadFile(filepath.Join(root, binding, "resource.rx"))
 		if e != nil {
 			return report, e
 		}
@@ -126,7 +126,7 @@ func Cleanup(ctx context.Context, c Config, apply bool) (report CleanupReport, e
 			return fmt.Errorf("cleanup refuses non-regular file: %s", path)
 		}
 		paths = append(paths, path)
-		if d.Name() == "resource.map" || strings.HasPrefix(d.Name(), "producer-") && strings.HasSuffix(d.Name(), ".map") {
+		if d.Name() == "resource.rx" || strings.HasPrefix(d.Name(), "producer-") && strings.HasSuffix(d.Name(), ".rx") {
 			data, e := os.ReadFile(path)
 			if e != nil {
 				return e
@@ -174,7 +174,7 @@ func Cleanup(ctx context.Context, c Config, apply bool) (report CleanupReport, e
 		if l == nil {
 			// A crash between ensureMap and catalog publication can leave just this
 			// definition. Never infer that an unregistered data directory is disposable.
-			if len(parts) != 4 || parts[3] != "resource.map" || splitBinding(binding) == nil {
+			if len(parts) != 4 || parts[3] != "resource.rx" || splitBinding(binding) == nil {
 				continue
 			}
 			data, e := os.ReadFile(path)
@@ -345,7 +345,7 @@ func cleanupHash(path string) (int64, [32]byte, error) {
 }
 
 // A corrupt/missing selected replacement must never make its predecessor garbage.
-// Validate committed index/population checksums without recovering or truncating
+// Validate committed index/payload checksums without recovering or truncating
 // source files. Incomplete active journals require normal recovery before cleanup.
 func verifyCleanupGeneration(ctx context.Context, base string, l *Layout, generation [16]byte, explicit bool) error {
 	tri, e := os.Open(base + ".journal")
@@ -366,17 +366,17 @@ func verifyCleanupGeneration(ctx context.Context, base string, l *Layout, genera
 		return e
 	}
 	defer idx.Close()
-	pop, e := os.Open(base + ".pods")
+	pods, e := os.Open(base + ".pods")
 	if e != nil {
 		return e
 	}
-	defer pop.Close()
+	defer pods.Close()
 	var actualGeneration []byte
 	for _, item := range []struct {
 		f     *os.File
 		magic string
 		width uint32
-	}{{tri, "TTCOMM00", IndexRowSize}, {idx, "NUTSIDX6", IndexRowSize}, {pop, "PILPOD00", 0}} {
+	}{{tri, "TTCOMM00", IndexRowSize}, {idx, "NUTSIDX6", IndexRowSize}, {pods, "PILPOD00", 0}} {
 		var h [headerSize]byte
 		if _, e = io.ReadFull(item.f, h[:]); e != nil {
 			return e
@@ -393,12 +393,12 @@ func verifyCleanupGeneration(ctx context.Context, base string, l *Layout, genera
 			return fmt.Errorf("active file generation mismatch")
 		}
 	}
-	popRetired, e := retiredBytes(pop)
+	podsRetired, e := retiredBytes(pods)
 	if e != nil {
 		return e
 	}
 	baseRows := uint64(0)
-	tail, popEnd := uint64(0), uint64(headerSize)+popRetired
+	tail, podsEnd := uint64(0), uint64(headerSize)+podsRetired
 	for {
 		if e = ctx.Err(); e != nil {
 			return e
@@ -432,14 +432,14 @@ func verifyCleanupGeneration(ctx context.Context, base string, l *Layout, genera
 			continue
 		}
 		r := commit.Run
-		if r.Start != tail+IndexHeaderSlots || r.End <= r.Start || r.End > IndexCapacity || r.End-r.Start > uint64(PACMaximumMembers) || r.End > (1<<63-1-headerSize)/IndexRowSize || r.PopStart != popEnd || r.PopEnd < r.PopStart || r.PopEnd > 1<<63-1 {
+		if r.Start != tail+IndexHeaderSlots || r.End <= r.Start || r.End > IndexCapacity || r.End-r.Start > uint64(PACMaximumMembers) || r.End > (1<<63-1-headerSize)/IndexRowSize || r.PodsStart != podsEnd || r.PodsEnd < r.PodsStart || r.PodsEnd > 1<<63-1 {
 			return fmt.Errorf("invalid active commit bounds")
 		}
 		for _, part := range []struct {
 			f        *os.File
 			from, to uint64
 			crc      uint32
-		}{{idx, headerSize + IndexRowSize*(r.Start-baseRows), headerSize + IndexRowSize*(r.End-baseRows), r.IndexCRC}, {pop, r.PopStart - popRetired, r.PopEnd - popRetired, r.PopCRC}} {
+		}{{idx, headerSize + IndexRowSize*(r.Start-baseRows), headerSize + IndexRowSize*(r.End-baseRows), r.IndexCRC}, {pods, r.PodsStart - podsRetired, r.PodsEnd - podsRetired, r.PodsCRC}} {
 			h := crc32.New(checksum)
 			n, e := io.Copy(h, io.NewSectionReader(part.f, int64(part.from), int64(part.to-part.from)))
 			if e != nil {
@@ -449,6 +449,6 @@ func verifyCleanupGeneration(ctx context.Context, base string, l *Layout, genera
 				return fmt.Errorf("active committed data checksum mismatch")
 			}
 		}
-		tail, popEnd = r.End, r.PopEnd
+		tail, podsEnd = r.End, r.PodsEnd
 	}
 }

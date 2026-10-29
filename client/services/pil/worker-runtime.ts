@@ -1,9 +1,10 @@
+import {INDEX_ROW_BYTES} from './pac-native.ts';
+import { decodeObject } from "./control.ts";
 import { nativeCacheIssue } from "../store/errors.ts";
 import { SummaryReplication } from "../summary-replication.ts";
 import { FastProjection, dayMs } from '../fast-dashboard.ts';
 import type { Selection } from "../events.ts";
 import { ViewCache } from "./view.ts";
-import { cbor } from "./cbor.ts";
 import type { PILDefinition } from "./layout.ts";
 import type { Archive, NativeSelection } from "../store/protocol.ts";
 import { conditions } from "../store/conditions.ts";
@@ -20,6 +21,8 @@ import type { Binding, Metadata } from "./metadata.ts";
 import type { Request, Reply } from "./protocol.ts";
 import { collectionURL } from "./selection.ts";
 import { historyURL, observedState } from "../replay.ts";
+import {loadTimeWindow} from './time-window.ts';
+import {readTrunk} from './trunk.ts';
 export function workerService(
   modulePromise: Promise<WebAssembly.Module>,
   fetcher: typeof fetch = fetch,
@@ -43,7 +46,7 @@ export function workerService(
   const headers = (token: string) => ({
     Accept: pilType,
     "PIL-Version": "2",
-    "PIL-Features": "adaptive-integers,event-gzip-v1",
+    "PIL-Features": "adaptive-integers",
     "Trunk-Completion": "body",
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
   });
@@ -62,12 +65,12 @@ export function workerService(
               definitions.set(m.digest, {
                 ...m,
                 handle: codec.define(m.pil),
-                definition: cbor(m.pil) as PILDefinition,
+                definition: decodeObject(m.pil) as PILDefinition,
               });
           }
           const views = new ViewCache(fetcher);
           const summaries = new SummaryReplication(async (query, signal) => {
-            const view = await views.query(query, token, signal, codec, definitions, undefined, true);
+            const view = await views.query(query, token, signal, codec, definitions, storage, true);
             if (view.result.page.length || view.batch.rows.length) throw Error('Summary collection returned events');
             return view.result.analytics?.days.length ?? 0;
           });
@@ -172,7 +175,7 @@ export function workerService(
         if(!deps)throw Error("Missing native source dependencies");
         sources.set(selection.source,deps);
         if(!cached.definitions.has(deps.definition.digest))cached.definitions.set(deps.definition.digest,{
-          ...deps.definition,handle:cached.codec.define(deps.definition.pil),definition:cbor(deps.definition.pil) as PILDefinition,
+          ...deps.definition,handle:cached.codec.define(deps.definition.pil),definition:decodeObject(deps.definition.pil) as PILDefinition,
         });
       }
       const bindings=[...sources.values()].map((s,stream)=>({stream,digest:s.definition.digest,tap:s.source.tap}));
@@ -187,24 +190,24 @@ export function workerService(
         for(;;){
           signal.throwIfAborted();
           const page=(await archive(token,{kind:"native-page",source:selection.source,from:selection.from,to:selection.to,after})).nativePage;
-          if(!page||page.rows.length%16||page.bases.length!==page.rows.length/16||page.offsets.length!==page.rows.length/16*2)throw Error("Invalid native page");
+          if(!page||page.rows.length%INDEX_ROW_BYTES||page.bases.length!==page.rows.length/INDEX_ROW_BYTES||page.offsets.length!==page.rows.length/INDEX_ROW_BYTES*2)throw Error("Invalid native page");
           const definition=cached.definitions.get(sources.get(selection.source)!.definition.digest)!;
-          // Validate original population frames without filling UUID/shared
+          // Validate original payload frames without filling UUID/shared
           // positions or allocating expanded field-value objects.
-          cached.codec.upload(page.population);
+          cached.codec.upload(page.payload);
           let end=0;
           for(let i=0;i<page.offsets.length;i+=2){
             const start=page.offsets[i],next=page.offsets[i+1];
-            if(start!==end||next<=start||next>page.population.length||cached.codec.scan(definition.handle,start,next-start)!==next-start)
-              throw Error("Invalid native population frame");
+            if(start!==end||next<=start||next>page.payload.length||cached.codec.scan(definition.handle,start,next-start)!==next-start)
+              throw Error("Invalid native payload frame");
             end=next;
           }
-          if(end!==page.population.length)throw Error("Trailing native population bytes");
+          if(end!==page.payload.length)throw Error("Trailing native payload bytes");
           if(page.rows.length){
             const job=jobs.get(id);if(!job)signal.throwIfAborted();
             const ack=new Promise<void>(resolve=>job!.ack=resolve);
             send({id,kind:"native-batch",source:selection.source,page,where:selection.where},[
-              page.rows.buffer as ArrayBuffer,page.population.buffer as ArrayBuffer,page.offsets.buffer as ArrayBuffer,
+              page.rows.buffer as ArrayBuffer,page.payload.buffer as ArrayBuffer,page.offsets.buffer as ArrayBuffer,
             ]);
             await ack;if(job)job.ack=undefined;
           }
@@ -247,6 +250,16 @@ export function workerService(
         id = request.id;
       void (async () => {
         const token = request.token.trim();
+        if(request.kind==='time-window'){const result=await loadTimeWindow(request.query,token,signal,archive,fetcher);signal.throwIfAborted();send({id,kind:'time-window',result});return;}
+        if(request.kind==='trunk'){
+          const cached=await session('',token,archive);
+          const snapshot=await readTrunk({token,signal,codec:cached.codec,definitions:cached.definitions,fetcher,folder:request.folder});
+          signal.throwIfAborted();
+          if(archive)await archive(token,{kind:'trunk-save',snapshot});
+          const {files,...trunk}=snapshot;
+          if(!request.folder)cached.views.setTrunk(trunk);
+          send({id,kind:'trunk',trunk});return;
+        }
         if(request.kind==="persist-view"){
           if(!archive)return;
           const cached=await session("",token,archive);
@@ -279,7 +292,7 @@ export function workerService(
             for(let from=request.request.from;from<request.request.to;from+=7*dayMs) {
               signal.throwIfAborted();
               const to=Math.min(request.request.to,from+7*dayMs), before=projection.count;
-              const view=await cached.views.query({tap:scope+(scope.split('/').length===2?'/*/*':'/*'),from:new Date(from).toISOString(),to:new Date(to).toISOString(),include:'summary',size:1},token,signal,cached.codec,cached.definitions,undefined,false,
+              const view=await cached.views.query({tap:scope+(scope.split('/').length===2?'/*/*':'/*'),from:new Date(from).toISOString(),to:new Date(to).toISOString(),include:'summary',size:1},token,signal,cached.codec,cached.definitions,archive,false,
                 (manifest,days)=>projection.consume(manifest,days));
               if(!view.result.summary)throw Error('Missing summary coverage.');
               projection.cover(view.result.summary.count,projection.count-before);
@@ -346,7 +359,7 @@ export function workerService(
                 cached.definitions.set(metadata.digest, {
                   ...metadata,
                   handle: cached.codec.define(metadata.pil),
-                  definition: cbor(metadata.pil) as PILDefinition,
+                  definition: decodeObject(metadata.pil) as PILDefinition,
                 });
             for (;;) {
               signal.throwIfAborted();
@@ -471,7 +484,7 @@ export function workerService(
                   s.definitions.set(m.digest, {
                     ...m,
                     handle: s.codec.define(m.pil),
-                    definition: cbor(m.pil) as PILDefinition,
+                    definition: decodeObject(m.pil) as PILDefinition,
                   });
                 send({ id, kind: "definition", definition: m });
                 sentDefinitions.add(m.digest);

@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	pil "github.com/AuthenticityLabs/pill-packer/go/codec"
 	"strconv"
 
 	"github.com/fxamacker/cbor/v2"
@@ -17,6 +18,7 @@ const (
 	ReadableJSON Format = 0
 	CompactJSON  Format = 1
 	CBOR         Format = 2
+	PIL          Format = 3
 )
 
 type Key uint16
@@ -28,8 +30,8 @@ func MarshalCompact(value any, format Format) ([]byte, error) {
 	switch format {
 	case CompactJSON:
 		return json.Marshal(value)
-	case CBOR:
-		return enc.Marshal(value)
+	case PIL:
+		return pil.MarshalObject(value)
 	default:
 		return nil, fmt.Errorf("expected compact format")
 	}
@@ -64,20 +66,6 @@ func (s Symbol) MarshalJSON() ([]byte, error) {
 		return json.Marshal(s.text)
 	}
 	return strconv.AppendUint(nil, uint64(s.id), 10), nil
-}
-func (s Symbol) MarshalCBOR() ([]byte, error) {
-	if s.literal {
-		return enc.Marshal(s.text)
-	}
-	// These three forms are the preferred CBOR unsigned-integer encodings.
-	// Avoid invoking the reflective encoder separately for every enum.
-	if s.id < 24 {
-		return []byte{byte(s.id)}, nil
-	}
-	if s.id < 256 {
-		return []byte{0x18, byte(s.id)}, nil
-	}
-	return []byte{0x19, byte(s.id >> 8), byte(s.id)}, nil
 }
 
 // Dictionary is immutable after construction. Names identify the application
@@ -144,23 +132,16 @@ func (d *Dictionary) Resolve(domain string, s Symbol) any {
 }
 
 type Field struct {
-	Name     string            `json:"name" cbor:"0,keyasint"`
-	Domain   string            `json:"domain,omitempty" cbor:"1,keyasint,omitempty"`
-	Enums    map[uint16]string `json:"values,omitempty" cbor:"2,keyasint,omitempty"`
-	Object   Schema            `json:"object,omitempty" cbor:"3,keyasint,omitempty"`
-	Array    Schema            `json:"array,omitempty" cbor:"4,keyasint,omitempty"`
-	Unit     string            `json:"unit,omitempty" cbor:"5,keyasint,omitempty"`
-	Encoding string            `json:"encoding,omitempty" cbor:"6,keyasint,omitempty"`
+	Name     string            `json:"name" cbor:"0,keyasint" pil:"0,keyasint"`
+	Domain   string            `json:"domain,omitempty" cbor:"1,keyasint,omitempty" pil:"1,keyasint,omitempty"`
+	Enums    map[uint16]string `json:"values,omitempty" cbor:"2,keyasint,omitempty" pil:"2,keyasint,omitempty"`
+	Object   Schema            `json:"object,omitempty" cbor:"3,keyasint,omitempty" pil:"3,keyasint,omitempty"`
+	Array    Schema            `json:"array,omitempty" cbor:"4,keyasint,omitempty" pil:"4,keyasint,omitempty"`
+	Unit     string            `json:"unit,omitempty" cbor:"5,keyasint,omitempty" pil:"5,keyasint,omitempty"`
+	Encoding string            `json:"encoding,omitempty" cbor:"6,keyasint,omitempty" pil:"6,keyasint,omitempty"`
 }
 type Schema map[Key]Field
 
-var enc = func() cbor.EncMode {
-	m, err := cbor.CoreDetEncOptions().EncMode()
-	if err != nil {
-		panic(err)
-	}
-	return m
-}()
 var dec = func() cbor.DecMode {
 	m, err := (cbor.DecOptions{DupMapKey: cbor.DupMapKeyEnforcedAPF,
 		MaxNestedLevels: 32, MaxArrayElements: 65536, MaxMapPairs: 65536}).DecMode()
@@ -170,15 +151,15 @@ var dec = func() cbor.DecMode {
 	return m
 }()
 
-// Encode uses integer keys for CBOR and decimal-string keys for compact JSON.
+// Encode uses native PIL objects or JSON text. CBOR is accepted only by Decode.
 func Encode(record Record, schema Schema, dictionary *Dictionary, format Format) ([]byte, error) {
 	switch format {
 	case ReadableJSON:
 		return json.Marshal(Expand(record, schema, dictionary))
 	case CompactJSON:
 		return json.Marshal(record)
-	case CBOR:
-		return enc.Marshal(record)
+	case PIL:
+		return pil.MarshalObject(record)
 	default:
 		return nil, fmt.Errorf("unsupported format %d", format)
 	}
@@ -196,6 +177,10 @@ func Decode(data []byte, format Format) (Record, error) {
 			return nil, fmt.Errorf("invalid JSON record")
 		}
 		if err := d.Decode(&out); err != nil {
+			return nil, err
+		}
+	case PIL:
+		if err := pil.UnmarshalObject(data, &out); err != nil {
 			return nil, err
 		}
 	case CBOR:
@@ -339,3 +324,5 @@ func jsonCompatible(v any) any {
 		return v
 	}
 }
+
+func (s Symbol) PILValue() any { return s.Raw() }

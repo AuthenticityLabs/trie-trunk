@@ -1,0 +1,65 @@
+{
+  "events": 1048576,
+  "hours": 256,
+  "wireBytes": 15405571,
+  "importMs": 800.952833,
+  "scope": "Production ViewCache, WASM decoder, NativeStore; memory-backed file I/O counters. Excludes HTTP, physical disk, DOM.",
+  "scans": [
+    {
+      "ms": 18789.146834000003,
+      "firstPageMs": 28.211166999999932,
+      "reads": 100118,
+      "readBytes": 96776710127,
+      "commands": 8205,
+      "matched": 1048576,
+      "loaded": 100
+    },
+    {
+      "ms": 19319.98225,
+      "firstPageMs": 7.915000000000873,
+      "reads": 100118,
+      "readBytes": 96776710127,
+      "commands": 8205,
+      "matched": 1048576,
+      "loaded": 100
+    },
+    {
+      "ms": 19256.270709000004,
+      "firstPageMs": 7.6652500000054715,
+      "reads": 100118,
+      "readBytes": 96776710127,
+      "commands": 8205,
+      "matched": 1048576,
+      "loaded": 100
+    }
+  ],
+  "pages": [
+    {
+      "ms": 19073.871499999997,
+      "firstPageMs": 9.860292000001209,
+      "reads": 100118,
+      "readBytes": 96776710127,
+      "commands": 8205,
+      "matched": 1048576,
+      "loaded": 100
+    },
+    {
+      "ms": 19308.011207999996,
+      "firstPageMs": 9.57762499999808,
+      "reads": 100118,
+      "readBytes": 96776710127,
+      "commands": 8205,
+      "matched": 1048576,
+      "loaded": 100
+    },
+    {
+      "ms": 19229.335083000013,
+      "firstPageMs": 10.066958000010345,
+      "reads": 100118,
+      "readBytes": 96776710127,
+      "commands": 8205,
+      "matched": 1048576,
+      "loaded": 100
+    }
+  ]
+}

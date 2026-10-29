@@ -26,45 +26,46 @@ type Config struct {
 	Now                 func() time.Time
 }
 type Catalog struct {
-	RetiredRows         map[string]map[Branch]uint64 `cbor:",omitempty"`
+	RetiredRows         map[string]map[Branch]uint64 `pil:",omitempty"`
 	Format              uint32
 	Cache, Tenant       string
 	Definitions         map[string][32]byte
 	Generations         map[string]map[Branch][16]byte
-	GenerationSequences map[string]map[Branch]uint64 `cbor:",omitempty"`
-	Preferred           map[string][32]byte          `cbor:",omitempty"`
+	GenerationSequences map[string]map[Branch]uint64 `pil:",omitempty"`
+	Preferred           map[string][32]byte          `pil:",omitempty"`
 }
 type pending struct {
 	id    [16]byte
 	frame []byte
 }
 type branchStore struct {
-	memory                          map[int64]*nativeArena
-	baseRows, popRetired, memberEnd uint64
-	blockBase                       uint32
-	branch                          Branch
-	layout                          *Layout
-	generation                      [16]byte
-	idx, pop, journal, sum          *os.File
-	swap                            *os.File
-	sealingBefore                   int64
-	finalizedBefore                 int64
-	rows                            []byte
-	mapping                         []byte
-	runs                            []Run
-	time                            timeDirectory
-	timeAnchor                      *TimeAnchor
-	timeDirty                       bool
-	live                            *nativeLive
-	liveViews                       map[string]liveViewSnapshot
-	pendingVersion                  uint64
-	pendingBytes                    int
-	popEnd, sumEnd                  uint64
-	summaries                       []Summary
-	accumulators                    map[int64]*summaryAccumulator
-	summaryDays                     map[int64]summaryDayLocation
-	summaryPackedThrough            int64
-	calendarRollups                 []CalendarRollup
+	memory                           map[int64]*nativeArena
+	baseRows, podsRetired, memberEnd uint64
+	blockBase                        uint32
+	branch                           Branch
+	layout                           *Layout
+	generation                       [16]byte
+	idx, pods, journal, sum          *os.File
+	swap                             *os.File
+	sealingBefore                    int64
+	finalizedBefore                  int64
+	rows                             []byte
+	mapping                          []byte
+	runs                             []Run
+	time                             timeDirectory
+	timeAnchor                       *TimeAnchor
+	timeDirty                        bool
+	live                             *nativeLive
+	liveViews                        map[string]liveViewSnapshot
+	pendingVersion                   uint64
+	provisionalRecords               map[int64]uint32
+	pendingBytes                     int
+	podsEnd, sumEnd                  uint64
+	summaries                        []Summary
+	accumulators                     map[int64]*summaryAccumulator
+	summaryDays                      map[int64]summaryDayLocation
+	summaryPackedThrough             int64
+	calendarRollups                  []CalendarRollup
 }
 type Store struct {
 	summaryExports     map[string][]byte
@@ -144,7 +145,7 @@ func (b *branchStore) close() error {
 	b.live = nil
 	b.liveViews = nil
 	e := b.unmapIndex()
-	for _, f := range []*os.File{b.idx, b.pop, b.journal, b.sum, b.swap} {
+	for _, f := range []*os.File{b.idx, b.pods, b.journal, b.sum, b.swap} {
 		if f != nil {
 			e = errors.Join(e, f.Close())
 		}

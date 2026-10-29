@@ -57,8 +57,8 @@ export async function immutable(
         throw Error("Conflicting local definition");
     } else {
       write(h, b, 0);
-      h.flush();
     }
+    h.flush();
   } finally {
     h.close();
   }

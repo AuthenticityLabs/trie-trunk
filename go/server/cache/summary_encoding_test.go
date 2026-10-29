@@ -71,7 +71,7 @@ func TestSummaryNumericWidthsAndBases(t *testing.T) {
 }
 
 func TestSummaryDurationDefinitionWidths(t *testing.T) {
-	for _, typ := range []string{"U8", "U16", "U32", "U64"} {
+	for _, typ := range []string{"U8", "U16", "U24", "U32", "U64"} {
 		d := testLayout(t, false).Definition
 		d.Fields[3].Type = typ
 		l, e := Compile(d)

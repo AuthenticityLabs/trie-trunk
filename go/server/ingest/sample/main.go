@@ -149,7 +149,7 @@ func release(minute int, service uint16) string {
 
 func run() error {
 	definitionPath := flag.String("definition", "", "write only the demo object definition as JSON")
-	output := flag.String("out", "", "new output directory for framed CBOR and manifest")
+	output := flag.String("out", "", "new output directory for framed PIL and manifest")
 	endText := flag.String("end", time.Now().UTC().Truncate(time.Minute).Format(time.RFC3339), "exclusive end of the seven-day window (RFC3339)")
 	flag.Parse()
 	if *definitionPath != "" {
@@ -185,11 +185,11 @@ func run() error {
 	if err != nil {
 		return err
 	}
-	if err := os.WriteFile(filepath.Join(*output, "schema.cbor"), framed, 0644); err != nil {
+	if err := os.WriteFile(filepath.Join(*output, "schema.rx"), framed, 0644); err != nil {
 		return err
 	}
 	events := week(end)
-	f, err := os.Create(filepath.Join(*output, "events.cbor"))
+	f, err := os.Create(filepath.Join(*output, "events.pil"))
 	if err != nil {
 		return err
 	}
@@ -200,7 +200,7 @@ func run() error {
 		if event.fields[2] == uint16(3) {
 			errors++
 		}
-		payload, err := codec.MarshalCompact(event.fields, codec.CBOR)
+		payload, err := codec.MarshalCompact(event.fields, codec.PIL)
 		if err != nil {
 			return err
 		}

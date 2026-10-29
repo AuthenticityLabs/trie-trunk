@@ -1,0 +1,65 @@
+{
+  "events": 1048576,
+  "hours": 256,
+  "wireBytes": 15405571,
+  "importMs": 779.752042,
+  "scope": "Production ViewCache, WASM decoder, NativeStore; memory-backed file I/O counters. Excludes HTTP, physical disk, DOM.",
+  "scans": [
+    {
+      "ms": 1919.931458,
+      "firstPageMs": 12.66537500000004,
+      "reads": 6532,
+      "readBytes": 112083007,
+      "commands": 271,
+      "matched": 1048576,
+      "loaded": 100
+    },
+    {
+      "ms": 1892.6386659999998,
+      "firstPageMs": 7.216249999999945,
+      "reads": 6532,
+      "readBytes": 112083007,
+      "commands": 271,
+      "matched": 1048576,
+      "loaded": 100
+    },
+    {
+      "ms": 1913.8118329999998,
+      "firstPageMs": 6.862207999999555,
+      "reads": 6532,
+      "readBytes": 112083007,
+      "commands": 271,
+      "matched": 1048576,
+      "loaded": 100
+    }
+  ],
+  "pages": [
+    {
+      "ms": 8.859333000000333,
+      "firstPageMs": 8.827041999999892,
+      "reads": 12,
+      "readBytes": 128425,
+      "commands": 4,
+      "matched": 1048576,
+      "loaded": 100
+    },
+    {
+      "ms": 6.595125000000735,
+      "firstPageMs": 6.563916000000063,
+      "reads": 12,
+      "readBytes": 128425,
+      "commands": 4,
+      "matched": 1048576,
+      "loaded": 100
+    },
+    {
+      "ms": 6.6594169999998485,
+      "firstPageMs": 6.6322500000005675,
+      "reads": 12,
+      "readBytes": 128425,
+      "commands": 4,
+      "matched": 1048576,
+      "loaded": 100
+    }
+  ]
+}

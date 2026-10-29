@@ -37,7 +37,7 @@ type Config struct {
 }
 
 // Logger serializes writes to its writer. JSON uses newline-delimited records;
-// Local CBOR output is raw; negotiated connections add a two-byte length prefix.
+// Local PIL output is raw; negotiated connections add a two-byte length prefix.
 type Logger struct {
 	pil       *pil.Logger
 	pilPlan   *pilEntryPlan
@@ -61,7 +61,7 @@ func New(writer io.Writer, config Config) (*Logger, error) {
 }
 
 func newLogger(config Config) (*Logger, error) {
-	if config.Format > codec.CBOR {
+	if config.Format > codec.PIL || config.Format == codec.CBOR {
 		return nil, errors.New("unsupported log format")
 	}
 	if config.MaxFields <= 0 {
@@ -326,7 +326,7 @@ func (b *Builder) Finish() error {
 			s.finishErr = err
 			return
 		}
-		if s.logger.config.Format != codec.CBOR {
+		if s.logger.config.Format != codec.PIL {
 			data = append(data, '\n')
 		}
 		if s.logger.session != nil {
@@ -355,10 +355,10 @@ func (b *Builder) Id() codec.UUIDv7 {
 var ErrLocalWriter = errors.New("logger uses a local writer, not a negotiated connection")
 
 // NewStream initializes and negotiates before returning a usable Logger. It
-// always selects CBOR; Config.Format applies only to New's local output mode.
+// always selects PIL; Config.Format applies only to New's local output mode.
 // Connector is the transport seam; out.WebSocketConnector supplies WebSocket I/O.
 func NewStream(ctx context.Context, connector out.Connector, config Config) (*Logger, error) {
-	config.Format = codec.CBOR
+	config.Format = codec.PIL
 	l, err := newLogger(config)
 	if err != nil {
 		return nil, err

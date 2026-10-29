@@ -78,7 +78,18 @@ func (h *HTTP) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Cache-Control", "no-store")
 	w.Header().Set("X-Content-Type-Options", "nosniff")
-	w.Header().Set("Trunk-Features", "native-ranges,pac-arrays,"+CompressionFeature)
+	w.Header().Set("Trunk-Features", "native-ranges,pac-arrays")
+	if trunkRequest(r) {
+		h.trunkHTTP(w, r)
+		return
+	}
+	if h.trunkFileHTTP(w, r) {
+		return
+	}
+	if file, ok := branchFilePath(r.URL.Path); ok {
+		h.branchFileHTTP(w, r, file)
+		return
+	}
 	if r.URL.Path == "/storage" {
 		h.storageHTTP(w, r)
 		return
@@ -106,16 +117,8 @@ func (h *HTTP) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path == "/ingest" && r.Method == http.MethodPost {
 		kind, _, _ := mime.ParseMediaType(r.Header.Get("Content-Type"))
 		switch strings.ToLower(kind) {
-		case "application/cbor":
+		case "application/cbor", "application/json", "application/jsonl", "application/x-ndjson", "text/plain", "application/syslog":
 			h.genericIngress(w, r)
-			return
-		case "application/json", "application/jsonl", "application/x-ndjson":
-			// TODO: JSONL adapter into the canonical PIL staging path.
-			http.Error(w, "JSONL ingress is not implemented; use application/pil", 501)
-			return
-		case "text/plain", "application/syslog":
-			// TODO: standard log/syslog adapter into the canonical PIL staging path.
-			http.Error(w, "standard log ingress is not implemented; use application/pil", 501)
 			return
 		case "application/pil":
 		default:
@@ -291,10 +294,6 @@ func (h *HTTP) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 					return
 				}
 				break
-			}
-			if l.IsCompressed(frame.raw) && !hasCompression(r) {
-				report(fmt.Errorf("event-gzip-v1 capability required"), 426)
-				return
 			}
 			batch = append(batch, frame)
 			size += len(frame.raw)

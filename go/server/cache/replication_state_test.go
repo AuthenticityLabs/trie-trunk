@@ -69,7 +69,7 @@ func TestNativeStatePagesHTTP(t *testing.T) {
 	r.Header.Set("Accept", "application/pil")
 	r.Header.Set("Accept-Encoding", "gzip")
 	r.Header.Set("PIL-Version", "2")
-	r.Header.Set("PIL-Features", "event-gzip-v1,native-ranges,native-state-pages,adaptive-integers")
+	r.Header.Set("PIL-Features", "native-ranges,native-state-pages,adaptive-integers")
 	w := httptest.NewRecorder()
 	(&HTTP{Store: s}).ServeHTTP(w, r)
 	if w.Code != 200 {

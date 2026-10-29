@@ -9,14 +9,14 @@ import (
 )
 
 type Retirement struct {
-	Time          *TimeAnchor `cbor:",omitempty"`
+	Time          *TimeAnchor `pil:",omitempty"`
 	Rows, Members uint64
 	Block         uint32
 	Cutoff        int64
 }
 type Commit struct {
-	Retired *Retirement `cbor:"2,keyasint,omitempty"`
-	Run     Run         `cbor:"0,keyasint"`
+	Retired *Retirement `pil:"2,omitempty"`
+	Run     Run         `pil:"0"`
 }
 
 func (s *Store) commitBatch(b *branchStore, batch []pending) error {
@@ -43,9 +43,9 @@ func (s *Store) commitBatch(b *branchStore, batch []pending) error {
 	worker := &Store{config: s.config, layout: s.layout, row: s.row, location: s.location,
 		policy: s.policy, branchPolicies: s.branchPolicies, shared: s.shared, trie: s.trie.clone()}
 	frozen := &branchStore{branch: b.branch, generation: b.generation, baseRows: b.baseRows,
-		popRetired: b.popRetired, memberEnd: b.memberEnd, blockBase: b.blockBase,
-		rows: b.rows, runs: append([]Run(nil), b.runs...), popEnd: b.popEnd, sumEnd: b.sumEnd,
-		idx: b.idx, pop: b.pop, sum: b.sum, journal: b.journal, accumulators: map[int64]*summaryAccumulator{endHour.UnixMilli() - TimeHourMS: b.accumulators[endHour.UnixMilli()-TimeHourMS]}}
+		podsRetired: b.podsRetired, memberEnd: b.memberEnd, blockBase: b.blockBase,
+		rows: b.rows, runs: append([]Run(nil), b.runs...), podsEnd: b.podsEnd, sumEnd: b.sumEnd,
+		idx: b.idx, pods: b.pods, sum: b.sum, journal: b.journal, accumulators: map[int64]*summaryAccumulator{endHour.UnixMilli() - TimeHourMS: b.accumulators[endHour.UnixMilli()-TimeHourMS]}}
 	s.mu.Unlock()
 	releaseSeal := s.config.Sealer.acquire()
 	result, err := worker.writeSealedHour(frozen, batch)
@@ -72,20 +72,39 @@ func (s *Store) commitBatch(b *branchStore, batch []pending) error {
 	}
 	b.runs = append(b.runs, result.run)
 	b.timeDirty = true
-	b.popEnd = result.run.PopEnd
+	b.podsEnd = result.run.PodsEnd
 	s.queueSearch(b.branch)
 	if err = s.indexSealedObjects(b, result); err != nil {
 		return s.fail(err)
 	}
+	// Drop provisional identities before publishing the canonical row identities.
+	b.finishPending(endHour.UnixMilli())
+	delete(b.provisionalRecords, endHour.UnixMilli()-TimeHourMS)
 	for n, p := range batch {
-		if err = s.rememberSealed(b, p.id, p.frame, result.run.Start+uint64(n)); err != nil {
+		b.pendingBytes -= len(p.frame)
+		var f Frame
+		if err = s.layout.Scan(p.frame, &f); err != nil {
 			return s.fail(err)
 		}
-		b.pendingBytes -= len(p.frame)
+		id, e := seedKey(eventTime(p.id[:]), uint32(n))
+		if e != nil {
+			return s.fail(e)
+		}
+		f.Values[s.layout.Event] = Value{Direct, id[:]}
+		f.Values[s.layout.Record] = Uint(uint64(n), 3)
+		f.Values[s.layout.Leaf] = Uint(uint64(b.rowLeaf(result.run.Start+uint64(n))), 2)
+		full, e := s.layout.Encode(nil, f.Values)
+		if e != nil {
+			return s.fail(e)
+		}
+		full, e = b.own(s, id, full, nil)
+		if e != nil {
+			return s.fail(e)
+		}
+		if err = s.rememberSealed(b, id, full, result.run.Start+uint64(n)); err != nil {
+			return s.fail(err)
+		}
 	}
-	// Clear this hour atomically with canonical publication. The seed may still
-	// contain its frames; restart deduplicates them against the committed journal.
-	b.finishPending(endHour.UnixMilli())
 	b.pendingVersion++
 	s.config.Sealer.observeWindow(endHour, s.config.Now())
 	return nil
@@ -102,6 +121,9 @@ type sealedHour struct {
 func (s *Store) writeSealedHour(b *branchStore, batch []pending) (*sealedHour, error) {
 	if e := s.sealProbe("prepare"); e != nil {
 		return nil, e
+	}
+	if len(batch) > maxHourRecords {
+		return nil, ErrIndexCapacity
 	}
 	idx := make([]byte, 0, len(batch)*s.row.Width)
 	frames := make([][]byte, 0, len(batch))
@@ -130,16 +152,20 @@ func (s *Store) writeSealedHour(b *branchStore, batch []pending) (*sealedHour, e
 		ref := s.trie.intern(s.layout, v)
 		refs[ref]++
 		row := make([]byte, s.row.Width)
+		order.PutUint16(row[4:6], ref)
 		if e := packIndexID(row, p.id, hourBase); e != nil {
 			return nil, e
 		}
 
 		v[s.layout.Event] = Value{}
-		if s.layout.Shared >= 0 && ref != 0 {
+		v[s.layout.Time] = Value{}
+		v[s.layout.Record] = Uint(uint64(ordinal), 3)
+		v[s.layout.Leaf] = Value{}
+		if ref != 0 {
 			s.trie.remove(ref, v)
-			raw := make([]byte, 2)
-			order.PutUint16(raw, ref)
-			v[s.layout.Shared] = Value{Direct, raw}
+		}
+		if s.layout.Shared >= 0 {
+			v[s.layout.Shared] = Value{}
 		}
 		var e error
 		encoded, e = s.layout.Encode(nil, v)
@@ -149,7 +175,7 @@ func (s *Store) writeSealedHour(b *branchStore, batch []pending) (*sealedHour, e
 		frames = append(frames, encoded)
 		idx = append(idx, row...)
 	}
-	pop, block, err := s.packBlock(b, startRow, batch, frames, idx)
+	pods, block, err := s.packBlock(b, startRow, batch, frames, idx)
 	if err != nil {
 		return nil, err
 	}
@@ -167,10 +193,10 @@ func (s *Store) writeSealedHour(b *branchStore, batch []pending) (*sealedHour, e
 		}
 		s.trie.persisted = len(s.trie.nodes)
 	}
-	if _, e := b.pop.WriteAt(pop, int64(b.popEnd-b.popRetired)); e != nil {
+	if _, e := b.pods.WriteAt(pods, int64(b.podsEnd-b.podsRetired)); e != nil {
 		return nil, e
 	}
-	if e := b.pop.Sync(); e != nil {
+	if e := b.pods.Sync(); e != nil {
 		return nil, e
 	}
 	if e := s.sealProbe("payload"); e != nil {
@@ -188,7 +214,7 @@ func (s *Store) writeSealedHour(b *branchStore, batch []pending) (*sealedHour, e
 	if e := s.sealProbe("index"); e != nil {
 		return nil, e
 	}
-	run := Run{References: refs, Start: startRow, End: startRow + uint64(len(batch)), PopStart: b.popEnd, PopEnd: b.popEnd + uint64(len(pop)), MinMS: eventTime(batch[0].id[:]), MaxMS: eventTime(batch[len(batch)-1].id[:]), IndexCRC: crc32.Checksum(idx, checksum), PopCRC: crc32.Checksum(pop, checksum), TrieSize: len(s.trie.nodes), PAC: block}
+	run := Run{References: refs, Start: startRow, End: startRow + uint64(len(batch)), PodsStart: b.podsEnd, PodsEnd: b.podsEnd + uint64(len(pods)), MinMS: eventTime(batch[0].id[:]), MaxMS: eventTime(batch[len(batch)-1].id[:]), IndexCRC: crc32.Checksum(idx, checksum), PodsCRC: crc32.Checksum(pods, checksum), TrieSize: len(s.trie.nodes), PAC: block}
 	var summaryResult *Summary
 	if b.sum != nil {
 		accumulator := b.accumulators[hourBase]

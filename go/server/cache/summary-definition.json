@@ -1,0 +1,1 @@
+{"pil":0,"definition":"trie-trunk/daily-summary","version":0,"fields":[{"name":"day","type":"U64"},{"name":"from","type":"U64"},{"name":"to","type":"U64"},{"name":"hour","type":"U64"},{"name":"sealed","type":"BOOL"},{"name":"encoding","type":"BYTES"},{"name":"columns","type":"BYTES"}]}

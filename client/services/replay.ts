@@ -1,3 +1,4 @@
+import {apiFetch,activeConnection,connectionFetch} from './connections.ts';
 import { validSource } from "./source.ts";
 import type { Archive } from "./store/protocol.ts";
 import { rawValue, decodeValue, type LogEvent } from './dictionary.ts';
@@ -71,7 +72,8 @@ export function historyURL(query: HistoryQuery): string {
   if (!Number.isFinite(from) || !Number.isFinite(to) || from >= to)
     throw Error("Object history requires a valid time window");
   parameters.set("from", query.from); parameters.set("to", query.to);
-  return `/objects/history?${parameters}`;
+  parameters.delete("id");
+  return `/collections/${encodeURIComponent(query.id)}?${parameters}`;
 }
 export function observedState(query: ObjectQuery, token: string): ObservedState {
   objectParameters(query);
@@ -102,13 +104,13 @@ async function stateRequest(query: ObjectQuery, credential: string, signal: Abor
   return value;
 }
 export async function observeObject(query: ObjectQuery, credential: string, signal: AbortSignal,
-  fetcher: typeof fetch = fetch): Promise<ObservedState> {
+  fetcher: typeof fetch = apiFetch): Promise<ObservedState> {
   return observedState(query, (await stateRequest(query, credential, signal, fetcher)).token);
 }
 // Revalidate after reload/reconnect. A network failure is unknown freshness,
 // never an authoritative cache hit. This does not prove a replay base exists.
 export async function validateObject(state: ObservedState, credential: string, signal: AbortSignal,
-  fetcher: typeof fetch = fetch): Promise<boolean> {
+  fetcher: typeof fetch = apiFetch): Promise<boolean> {
   return (await stateRequest(state, credential, signal, fetcher, state.token)).current!;
 }
 export class ObjectChangedDuringRefresh extends Error {
@@ -118,7 +120,8 @@ export class ObjectChangedDuringRefresh extends Error {
 // Never return the fetched value as validated when a newer error arrived during
 // the fetch; never clear a shared server token or validate another client's copy.
 export async function reconcileObject<T>(query: ObjectQuery, credential: string, signal: AbortSignal,
-  origin: (signal: AbortSignal) => Promise<T>, fetcher: typeof fetch = fetch): Promise<{ value: T; state: ObservedState }> {
+  origin: (signal: AbortSignal) => Promise<T>, fetcher: typeof fetch = apiFetch): Promise<{ value: T; state: ObservedState }> {
+  if(fetcher===apiFetch)fetcher=connectionFetch(activeConnection());
   const state = await observeObject(query, credential, signal, fetcher);
   const value = await origin(signal);
   signal.throwIfAborted();

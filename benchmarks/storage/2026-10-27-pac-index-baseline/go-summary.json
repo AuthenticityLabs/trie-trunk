@@ -1,0 +1,982 @@
+{
+  "BenchmarkIndexMemberWindow/sequential/explicit_next_start": {
+    "samples": 5,
+    "metrics": {
+      "B/op": {
+        "median": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "allocs/op": {
+        "median": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "ns/op": {
+        "median": 11.71,
+        "min": 11.69,
+        "max": 11.75
+      }
+    }
+  },
+  "BenchmarkIndexMemberWindow/sequential/current_starts": {
+    "samples": 5,
+    "metrics": {
+      "B/op": {
+        "median": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "allocs/op": {
+        "median": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "ns/op": {
+        "median": 11.88,
+        "min": 11.85,
+        "max": 11.93
+      }
+    }
+  },
+  "BenchmarkIndexMemberWindow/scattered/explicit_next_start": {
+    "samples": 5,
+    "metrics": {
+      "B/op": {
+        "median": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "allocs/op": {
+        "median": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "ns/op": {
+        "median": 36.55,
+        "min": 35.55,
+        "max": 37.96
+      }
+    }
+  },
+  "BenchmarkIndexMemberWindow/scattered/current_starts": {
+    "samples": 5,
+    "metrics": {
+      "B/op": {
+        "median": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "allocs/op": {
+        "median": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "ns/op": {
+        "median": 41.81,
+        "min": 40.52,
+        "max": 42.77
+      }
+    }
+  },
+  "BenchmarkIndexHour/hour18": {
+    "samples": 5,
+    "metrics": {
+      "B/op": {
+        "median": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "allocs/op": {
+        "median": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "index_bytes": {
+        "median": 18000000.0,
+        "min": 18000000.0,
+        "max": 18000000.0
+      },
+      "ns/op": {
+        "median": 217.5,
+        "min": 216.6,
+        "max": 220.6
+      }
+    }
+  },
+  "BenchmarkIndexHour/hour16": {
+    "samples": 5,
+    "metrics": {
+      "B/op": {
+        "median": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "allocs/op": {
+        "median": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "index_bytes": {
+        "median": 16000000.0,
+        "min": 16000000.0,
+        "max": 16000000.0
+      },
+      "ns/op": {
+        "median": 212.2,
+        "min": 209.6,
+        "max": 213.4
+      }
+    }
+  },
+  "BenchmarkIndexHour/reconstruct_uuid": {
+    "samples": 5,
+    "metrics": {
+      "B/op": {
+        "median": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "allocs/op": {
+        "median": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "ns/op": {
+        "median": 5.365,
+        "min": 5.357,
+        "max": 5.371
+      }
+    }
+  },
+  "BenchmarkRecordReference/sequential/segment_ref8": {
+    "samples": 5,
+    "metrics": {
+      "B/op": {
+        "median": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "allocs/op": {
+        "median": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "ns/op": {
+        "median": 8.707,
+        "min": 8.705,
+        "max": 8.724
+      }
+    }
+  },
+  "BenchmarkRecordReference/sequential/record_ref4": {
+    "samples": 5,
+    "metrics": {
+      "B/op": {
+        "median": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "allocs/op": {
+        "median": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "ns/op": {
+        "median": 7.294,
+        "min": 7.286,
+        "max": 7.301
+      }
+    }
+  },
+  "BenchmarkRecordReference/random/segment_ref8": {
+    "samples": 5,
+    "metrics": {
+      "B/op": {
+        "median": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "allocs/op": {
+        "median": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "ns/op": {
+        "median": 23.49,
+        "min": 23.26,
+        "max": 23.57
+      }
+    }
+  },
+  "BenchmarkRecordReference/random/record_ref4": {
+    "samples": 5,
+    "metrics": {
+      "B/op": {
+        "median": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "allocs/op": {
+        "median": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "ns/op": {
+        "median": 53.5,
+        "min": 52.71,
+        "max": 54.07
+      }
+    }
+  },
+  "BenchmarkPACWorkloads/dense12/50/plain": {
+    "samples": 5,
+    "metrics": {
+      "B/op": {
+        "median": 6976.0,
+        "min": 6976.0,
+        "max": 6976.0
+      },
+      "allocs/op": {
+        "median": 5.0,
+        "min": 5.0,
+        "max": 5.0
+      },
+      "bytes/record": {
+        "median": 118.2,
+        "min": 118.2,
+        "max": 118.2
+      },
+      "gzip-bytes/record": {
+        "median": 24.96,
+        "min": 24.96,
+        "max": 24.96
+      },
+      "ns/op": {
+        "median": 6049.0,
+        "min": 6041.0,
+        "max": 6071.0
+      }
+    }
+  },
+  "BenchmarkPACWorkloads/dense12/50/prefix": {
+    "samples": 5,
+    "metrics": {
+      "B/op": {
+        "median": 14512.0,
+        "min": 14512.0,
+        "max": 14512.0
+      },
+      "allocs/op": {
+        "median": 16.0,
+        "min": 16.0,
+        "max": 16.0
+      },
+      "bytes/record": {
+        "median": 99.6,
+        "min": 99.6,
+        "max": 99.6
+      },
+      "gzip-bytes/record": {
+        "median": 23.54,
+        "min": 23.54,
+        "max": 23.54
+      },
+      "ns/op": {
+        "median": 16235.0,
+        "min": 16140.0,
+        "max": 16298.0
+      }
+    }
+  },
+  "BenchmarkPACWorkloads/dense12/1000/plain": {
+    "samples": 5,
+    "metrics": {
+      "B/op": {
+        "median": 123712.0,
+        "min": 123712.0,
+        "max": 123712.0
+      },
+      "allocs/op": {
+        "median": 5.0,
+        "min": 5.0,
+        "max": 5.0
+      },
+      "bytes/record": {
+        "median": 118.0,
+        "min": 118.0,
+        "max": 118.0
+      },
+      "gzip-bytes/record": {
+        "median": 23.09,
+        "min": 23.09,
+        "max": 23.09
+      },
+      "ns/op": {
+        "median": 116522.0,
+        "min": 116201.0,
+        "max": 116919.0
+      }
+    }
+  },
+  "BenchmarkPACWorkloads/dense12/1000/prefix": {
+    "samples": 5,
+    "metrics": {
+      "B/op": {
+        "median": 255664.0,
+        "min": 255664.0,
+        "max": 255665.0
+      },
+      "allocs/op": {
+        "median": 16.0,
+        "min": 16.0,
+        "max": 16.0
+      },
+      "bytes/record": {
+        "median": 98.98,
+        "min": 98.98,
+        "max": 98.98
+      },
+      "gzip-bytes/record": {
+        "median": 21.82,
+        "min": 21.82,
+        "max": 21.82
+      },
+      "ns/op": {
+        "median": 306608.0,
+        "min": 305156.0,
+        "max": 307231.0
+      }
+    }
+  },
+  "BenchmarkPACWorkloads/dense12/10000/plain": {
+    "samples": 5,
+    "metrics": {
+      "B/op": {
+        "median": 1196864.0,
+        "min": 1196864.0,
+        "max": 1196881.0
+      },
+      "allocs/op": {
+        "median": 5.0,
+        "min": 5.0,
+        "max": 5.0
+      },
+      "bytes/record": {
+        "median": 118.9,
+        "min": 118.9,
+        "max": 118.9
+      },
+      "gzip-bytes/record": {
+        "median": 23.37,
+        "min": 23.37,
+        "max": 23.37
+      },
+      "ns/op": {
+        "median": 1134805.0,
+        "min": 1130808.0,
+        "max": 1136498.0
+      }
+    }
+  },
+  "BenchmarkPACWorkloads/dense12/10000/prefix": {
+    "samples": 5,
+    "metrics": {
+      "B/op": {
+        "median": 2442929.0,
+        "min": 2442928.0,
+        "max": 2442932.0
+      },
+      "allocs/op": {
+        "median": 16.0,
+        "min": 16.0,
+        "max": 16.0
+      },
+      "bytes/record": {
+        "median": 99.9,
+        "min": 99.9,
+        "max": 99.9
+      },
+      "gzip-bytes/record": {
+        "median": 22.34,
+        "min": 22.34,
+        "max": 22.34
+      },
+      "ns/op": {
+        "median": 2989873.0,
+        "min": 2979598.0,
+        "max": 3005921.0
+      }
+    }
+  },
+  "BenchmarkPACWorkloads/sparse1to2/50/plain": {
+    "samples": 5,
+    "metrics": {
+      "B/op": {
+        "median": 3520.0,
+        "min": 3520.0,
+        "max": 3520.0
+      },
+      "allocs/op": {
+        "median": 5.0,
+        "min": 5.0,
+        "max": 5.0
+      },
+      "bytes/record": {
+        "median": 51.76,
+        "min": 51.76,
+        "max": 51.76
+      },
+      "gzip-bytes/record": {
+        "median": 14.22,
+        "min": 14.22,
+        "max": 14.22
+      },
+      "ns/op": {
+        "median": 3680.0,
+        "min": 3661.0,
+        "max": 3699.0
+      }
+    }
+  },
+  "BenchmarkPACWorkloads/sparse1to2/50/prefix": {
+    "samples": 5,
+    "metrics": {
+      "B/op": {
+        "median": 4000.0,
+        "min": 4000.0,
+        "max": 4000.0
+      },
+      "allocs/op": {
+        "median": 7.0,
+        "min": 7.0,
+        "max": 7.0
+      },
+      "bytes/record": {
+        "median": 51.76,
+        "min": 51.76,
+        "max": 51.76
+      },
+      "gzip-bytes/record": {
+        "median": 14.22,
+        "min": 14.22,
+        "max": 14.22
+      },
+      "ns/op": {
+        "median": 3852.0,
+        "min": 3844.0,
+        "max": 3878.0
+      }
+    }
+  },
+  "BenchmarkPACWorkloads/sparse1to2/1000/plain": {
+    "samples": 5,
+    "metrics": {
+      "B/op": {
+        "median": 58176.0,
+        "min": 58176.0,
+        "max": 58176.0
+      },
+      "allocs/op": {
+        "median": 5.0,
+        "min": 5.0,
+        "max": 5.0
+      },
+      "bytes/record": {
+        "median": 51.01,
+        "min": 51.01,
+        "max": 51.01
+      },
+      "gzip-bytes/record": {
+        "median": 12.53,
+        "min": 12.53,
+        "max": 12.53
+      },
+      "ns/op": {
+        "median": 68724.0,
+        "min": 68538.0,
+        "max": 68801.0
+      }
+    }
+  },
+  "BenchmarkPACWorkloads/sparse1to2/1000/prefix": {
+    "samples": 5,
+    "metrics": {
+      "B/op": {
+        "median": 58656.0,
+        "min": 58656.0,
+        "max": 58656.0
+      },
+      "allocs/op": {
+        "median": 7.0,
+        "min": 7.0,
+        "max": 7.0
+      },
+      "bytes/record": {
+        "median": 51.01,
+        "min": 51.01,
+        "max": 51.01
+      },
+      "gzip-bytes/record": {
+        "median": 12.53,
+        "min": 12.53,
+        "max": 12.53
+      },
+      "ns/op": {
+        "median": 69738.0,
+        "min": 69494.0,
+        "max": 69938.0
+      }
+    }
+  },
+  "BenchmarkPACWorkloads/sparse1to2/10000/plain": {
+    "samples": 5,
+    "metrics": {
+      "B/op": {
+        "median": 516928.0,
+        "min": 516928.0,
+        "max": 516928.0
+      },
+      "allocs/op": {
+        "median": 5.0,
+        "min": 5.0,
+        "max": 5.0
+      },
+      "bytes/record": {
+        "median": 51.45,
+        "min": 51.45,
+        "max": 51.45
+      },
+      "gzip-bytes/record": {
+        "median": 12.55,
+        "min": 12.55,
+        "max": 12.55
+      },
+      "ns/op": {
+        "median": 679141.0,
+        "min": 677670.0,
+        "max": 681681.0
+      }
+    }
+  },
+  "BenchmarkPACWorkloads/sparse1to2/10000/prefix": {
+    "samples": 5,
+    "metrics": {
+      "B/op": {
+        "median": 517408.0,
+        "min": 517408.0,
+        "max": 517409.0
+      },
+      "allocs/op": {
+        "median": 7.0,
+        "min": 7.0,
+        "max": 7.0
+      },
+      "bytes/record": {
+        "median": 51.45,
+        "min": 51.45,
+        "max": 51.45
+      },
+      "gzip-bytes/record": {
+        "median": 12.55,
+        "min": 12.55,
+        "max": 12.55
+      },
+      "ns/op": {
+        "median": 689123.0,
+        "min": 688202.0,
+        "max": 690513.0
+      }
+    }
+  },
+  "BenchmarkPACValidation/50/plain": {
+    "samples": 5,
+    "metrics": {
+      "B/op": {
+        "median": 2232.0,
+        "min": 2232.0,
+        "max": 2232.0
+      },
+      "allocs/op": {
+        "median": 8.0,
+        "min": 8.0,
+        "max": 8.0
+      },
+      "ns/op": {
+        "median": 8927.0,
+        "min": 8904.0,
+        "max": 8975.0
+      }
+    }
+  },
+  "BenchmarkPACValidation/50/prefix": {
+    "samples": 5,
+    "metrics": {
+      "B/op": {
+        "median": 2808.0,
+        "min": 2808.0,
+        "max": 2808.0
+      },
+      "allocs/op": {
+        "median": 10.0,
+        "min": 10.0,
+        "max": 10.0
+      },
+      "ns/op": {
+        "median": 7883.0,
+        "min": 7858.0,
+        "max": 7904.0
+      }
+    }
+  },
+  "BenchmarkPACValidation/1000/plain": {
+    "samples": 5,
+    "metrics": {
+      "B/op": {
+        "median": 25528.0,
+        "min": 25528.0,
+        "max": 25528.0
+      },
+      "allocs/op": {
+        "median": 8.0,
+        "min": 8.0,
+        "max": 8.0
+      },
+      "ns/op": {
+        "median": 172228.0,
+        "min": 171997.0,
+        "max": 172347.0
+      }
+    }
+  },
+  "BenchmarkPACValidation/1000/prefix": {
+    "samples": 5,
+    "metrics": {
+      "B/op": {
+        "median": 26104.0,
+        "min": 26104.0,
+        "max": 26104.0
+      },
+      "allocs/op": {
+        "median": 10.0,
+        "min": 10.0,
+        "max": 10.0
+      },
+      "ns/op": {
+        "median": 148077.0,
+        "min": 147902.0,
+        "max": 148118.0
+      }
+    }
+  },
+  "BenchmarkPACValidation/10000/plain": {
+    "samples": 5,
+    "metrics": {
+      "B/op": {
+        "median": 246713.0,
+        "min": 246712.0,
+        "max": 246713.0
+      },
+      "allocs/op": {
+        "median": 8.0,
+        "min": 8.0,
+        "max": 8.0
+      },
+      "ns/op": {
+        "median": 1717050.0,
+        "min": 1711951.0,
+        "max": 1719955.0
+      }
+    }
+  },
+  "BenchmarkPACValidation/10000/prefix": {
+    "samples": 5,
+    "metrics": {
+      "B/op": {
+        "median": 247288.0,
+        "min": 247288.0,
+        "max": 247288.0
+      },
+      "allocs/op": {
+        "median": 10.0,
+        "min": 10.0,
+        "max": 10.0
+      },
+      "ns/op": {
+        "median": 1471322.0,
+        "min": 1470184.0,
+        "max": 1476703.0
+      }
+    }
+  },
+  "BenchmarkSummaryDayPACTransition/sumday/gzip0/encode": {
+    "samples": 5,
+    "metrics": {
+      "B/op": {
+        "median": 2105537.0,
+        "min": 2105527.0,
+        "max": 2105545.0
+      },
+      "allocs/op": {
+        "median": 244.0,
+        "min": 243.0,
+        "max": 244.0
+      },
+      "bytes/day": {
+        "median": 666321.0,
+        "min": 666321.0,
+        "max": 666321.0
+      },
+      "ns/op": {
+        "median": 3911727.0,
+        "min": 3903314.0,
+        "max": 3918811.0
+      }
+    }
+  },
+  "BenchmarkSummaryDayPACTransition/sumday/gzip0/decode": {
+    "samples": 5,
+    "metrics": {
+      "B/op": {
+        "median": 9536665.0,
+        "min": 9536655.0,
+        "max": 9536681.0
+      },
+      "allocs/op": {
+        "median": 3695.0,
+        "min": 3695.0,
+        "max": 3695.0
+      },
+      "ns/op": {
+        "median": 7790861.0,
+        "min": 7722062.0,
+        "max": 7800860.0
+      }
+    }
+  },
+  "BenchmarkSummaryDayPACTransition/sumday/gzip1/encode": {
+    "samples": 5,
+    "metrics": {
+      "B/op": {
+        "median": 3225503.0,
+        "min": 3225466.0,
+        "max": 3225612.0
+      },
+      "allocs/op": {
+        "median": 346.0,
+        "min": 345.0,
+        "max": 346.0
+      },
+      "bytes/day": {
+        "median": 17010.0,
+        "min": 17010.0,
+        "max": 17010.0
+      },
+      "ns/op": {
+        "median": 5408860.0,
+        "min": 5404862.0,
+        "max": 5421150.0
+      }
+    }
+  },
+  "BenchmarkSummaryDayPACTransition/sumday/gzip1/decode": {
+    "samples": 5,
+    "metrics": {
+      "B/op": {
+        "median": 11552678.0,
+        "min": 11552666.0,
+        "max": 11552682.0
+      },
+      "allocs/op": {
+        "median": 4010.0,
+        "min": 4010.0,
+        "max": 4010.0
+      },
+      "ns/op": {
+        "median": 8694104.0,
+        "min": 8683161.0,
+        "max": 8754098.0
+      }
+    }
+  },
+  "BenchmarkSummaryDayPACTransition/sumday/gzip6/encode": {
+    "samples": 5,
+    "metrics": {
+      "B/op": {
+        "median": 2791912.0,
+        "min": 2791878.0,
+        "max": 2791917.0
+      },
+      "allocs/op": {
+        "median": 343.0,
+        "min": 343.0,
+        "max": 343.0
+      },
+      "bytes/day": {
+        "median": 10370.0,
+        "min": 10370.0,
+        "max": 10370.0
+      },
+      "ns/op": {
+        "median": 5910628.0,
+        "min": 5876606.0,
+        "max": 5916262.0
+      }
+    }
+  },
+  "BenchmarkSummaryDayPACTransition/sumday/gzip6/decode": {
+    "samples": 5,
+    "metrics": {
+      "B/op": {
+        "median": 11546941.0,
+        "min": 11546936.0,
+        "max": 11546950.0
+      },
+      "allocs/op": {
+        "median": 3829.0,
+        "min": 3829.0,
+        "max": 3829.0
+      },
+      "ns/op": {
+        "median": 8615223.0,
+        "min": 8567219.0,
+        "max": 8623816.0
+      }
+    }
+  },
+  "BenchmarkSummaryDayPACTransition/pil-pac/gzip0/encode": {
+    "samples": 5,
+    "metrics": {
+      "B/op": {
+        "median": 2164836.0,
+        "min": 2164826.0,
+        "max": 2164851.0
+      },
+      "allocs/op": {
+        "median": 584.0,
+        "min": 584.0,
+        "max": 584.0
+      },
+      "bytes/day": {
+        "median": 668804.0,
+        "min": 668804.0,
+        "max": 668804.0
+      },
+      "ns/op": {
+        "median": 4634153.0,
+        "min": 4626770.0,
+        "max": 4756186.0
+      }
+    }
+  },
+  "BenchmarkSummaryDayPACTransition/pil-pac/gzip0/decode": {
+    "samples": 5,
+    "metrics": {
+      "B/op": {
+        "median": 8878757.0,
+        "min": 8878742.0,
+        "max": 8878766.0
+      },
+      "allocs/op": {
+        "median": 3681.0,
+        "min": 3681.0,
+        "max": 3681.0
+      },
+      "ns/op": {
+        "median": 7699240.0,
+        "min": 7646017.0,
+        "max": 7730286.0
+      }
+    }
+  },
+  "BenchmarkSummaryDayPACTransition/pil-pac/gzip1/encode": {
+    "samples": 5,
+    "metrics": {
+      "B/op": {
+        "median": 3956865.0,
+        "min": 3956850.0,
+        "max": 3956871.0
+      },
+      "allocs/op": {
+        "median": 688.0,
+        "min": 688.0,
+        "max": 688.0
+      },
+      "bytes/day": {
+        "median": 17235.0,
+        "min": 17235.0,
+        "max": 17235.0
+      },
+      "ns/op": {
+        "median": 6206739.0,
+        "min": 6181957.0,
+        "max": 6218032.0
+      }
+    }
+  },
+  "BenchmarkSummaryDayPACTransition/pil-pac/gzip1/decode": {
+    "samples": 5,
+    "metrics": {
+      "B/op": {
+        "median": 11583128.0,
+        "min": 11583118.0,
+        "max": 11583140.0
+      },
+      "allocs/op": {
+        "median": 4015.0,
+        "min": 4015.0,
+        "max": 4015.0
+      },
+      "ns/op": {
+        "median": 8657900.0,
+        "min": 8515330.0,
+        "max": 8700615.0
+      }
+    }
+  },
+  "BenchmarkSummaryDayPACTransition/pil-pac/gzip6/encode": {
+    "samples": 5,
+    "metrics": {
+      "B/op": {
+        "median": 3523318.0,
+        "min": 3523301.0,
+        "max": 3523349.0
+      },
+      "allocs/op": {
+        "median": 685.0,
+        "min": 685.0,
+        "max": 685.0
+      },
+      "bytes/day": {
+        "median": 10411.0,
+        "min": 10411.0,
+        "max": 10411.0
+      },
+      "ns/op": {
+        "median": 6746866.0,
+        "min": 6688590.0,
+        "max": 7002980.0
+      }
+    }
+  },
+  "BenchmarkSummaryDayPACTransition/pil-pac/gzip6/decode": {
+    "samples": 5,
+    "metrics": {
+      "B/op": {
+        "median": 11576886.0,
+        "min": 11576873.0,
+        "max": 11576894.0
+      },
+      "allocs/op": {
+        "median": 3835.0,
+        "min": 3835.0,
+        "max": 3835.0
+      },
+      "ns/op": {
+        "median": 8554440.0,
+        "min": 8504519.0,
+        "max": 8570604.0
+      }
+    }
+  }
+}

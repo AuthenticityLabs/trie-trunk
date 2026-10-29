@@ -17,9 +17,9 @@ import (
 // that exact schema to this stream. A mismatch triggers PushSchema, whose reply
 // must acknowledge installation AND binding before any records can be written.
 // Control exchanges must be distinguished from record data by the adapter.
-// PushSchema receives a length-prefixed CBOR definition; hash/parse its payload.
+// PushSchema receives a length-prefixed PIL definition; hash/parse its payload.
 //
-// WriteFrame sends one complete [uint16 big-endian length][CBOR payload] frame.
+// WriteFrame sends one complete [uint16 big-endian length][PIL payload] frame.
 // The prefix counts only payload bytes. Adapters must send the entire frame
 // verbatim, without adding another prefix, even when using WebSocket messages.
 // Implementations must neither mutate nor retain data after returning and must

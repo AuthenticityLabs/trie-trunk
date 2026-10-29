@@ -8,11 +8,11 @@ import (
 // Dashboard dimensions and exact mergeable duration distributions accompany
 // five-minute aggregate columns. They never retain event payloads.
 type statisticsGroup struct {
-	Period    int64       `cbor:"4,keyasint" json:"period"`
-	Labels    [4]string   `cbor:"0,keyasint" json:"labels"`
-	Count     uint64      `cbor:"1,keyasint" json:"count"`
-	Errors    uint64      `cbor:"2,keyasint,omitempty" json:"errors"`
-	Durations [][2]uint64 `cbor:"3,keyasint,omitempty" json:"durations"`
+	Period    int64       `pil:"4" json:"period"`
+	Labels    [4]string   `pil:"0" json:"labels"`
+	Count     uint64      `pil:"1" json:"count"`
+	Errors    uint64      `pil:"2,omitempty" json:"errors"`
+	Durations [][2]uint64 `pil:"3,omitempty" json:"durations"`
 }
 
 type statisticsLayout struct {

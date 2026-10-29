@@ -1,11 +1,12 @@
+import {decodeSummaryDay} from "../pil/summaries.ts";
+import { decodeObject } from "../pil/control.ts";
 import { NativeCacheError } from "./errors.ts";
-import { mergeTimeWindow, missingHours, timeLeaf, retireTime } from "./time-trie.ts";
-import { indexMillis } from '../pil/pac-native.ts';
+import { mergeTimeWindow, missingHours, timeLeaf, retireTime, HOUR, TIME_INDEX, TIME_STATE, TIME_SODS, TIME_SUM, markTimeFiles, type ClientTimeTrie } from "./time-trie.ts";
+import { indexMillis, INDEX_ROW_BYTES } from '../pil/pac-native.ts';
 import { pacHeader } from "../pil/pac.ts";
 import { pacPlacement, pacLocalRows, nativePAC, type PACPlacement } from "../pil/pac-native.ts";
 import { resourceBinding, type PILDefinition } from "../pil/layout.ts";
-import { cbor } from "../pil/cbor.ts";
-import { matchesSource } from "../source.ts";
+import { matchesSource,validSource } from "../source.ts";
 import { objectParameters, objectIdentityBytes, type ObjectQuery } from "../replay.ts";
 import type { Metadata, Binding } from "../pil/metadata.ts";
 import type { NativeRecord } from "../pil/stream.ts";
@@ -18,22 +19,23 @@ type Blob = { start: number; count: number; local: number; length: number; diges
 type StatePage = Blob & { first?: string; last?: string };
 type StateSnapshot = { epoch:string; sequence:number; collection:number; pages:StatePage[] };
 type File = { retired?:number; free?:number[]; pages?: Record<string,number>; end: number; extents: Extent[]; blobs: Blob[] };
-type Kind = "index" | "population" | "trie" | "map" | "state";
+type Kind = "index" | "sods" | "trie" | "map" | "state" | "sum";
 export type NativeControl = { serial:number; scopes:Record<string,number> };
 export type NativeManifest = {
+  IndexOnly?:boolean;
   TimeTrie?:Uint8Array;TimeRetired?:boolean;TimeRetainedFrom?:number;
-  RetiredRows?:number;RetiredMembers?:number;RetiredPopulation?:number;
+  RetiredRows?:number;RetiredMembers?:number;RetiredPods?:number;
   Definition: Uint8Array; Generation: Uint8Array; Branch: number;
-  From: number; To: number; Tail: number; Checkpoint: number; RowWidth: 16;
-  TrieNodes: number; Index: Span[]; Population: Span[];
+  From: number; To: number; Tail: number; Checkpoint: number; RowWidth: number;
+  TrieNodes: number; Index: Span[]; MemberRanges: Span[];
   Provisional: boolean; IndexPeriod: string; Timezone: string;
   StateEpoch?: Uint8Array; StateSequence?: number;
   GenerationSequence?: number;
 };
 export type NativeSource = {
-  timeTrie?:Uint8Array;
+  timeTrie?:ClientTimeTrie;
   key: string; tap: string; digest: string; generation: string;
-  files: Record<Kind, File>;
+  files: Record<Exclude<Kind,"sum">, File> & {sum?:File};
   trieNodes: number;
   retiredRows?:number;retiredMembers?:number;
   contexts?: {placement:PACPlacement;common:Uint8Array}[];
@@ -98,22 +100,25 @@ export function resolve(extents: Extent[], wanted: Span): Extent[] {
   return out;
 }
 function manifest(raw: Record<string, unknown>, binding: Binding): NativeManifest {
-  const m=raw as unknown as NativeManifest;
+  const stamp=(v:unknown)=>typeof v==='string'?Date.parse(v)/1000:v;
+  const m={...raw,From:stamp(raw.From),To:stamp(raw.To)} as unknown as NativeManifest;
   if(!(m.Definition instanceof Uint8Array)||hex(m.Definition)!==binding.digest||
-    !(m.Generation instanceof Uint8Array)||m.Generation.length!==16||m.RowWidth!==16||
-    !integer(m.Branch)||m.Branch>4||!integer(m.Tail)||m.Tail>Number.MAX_SAFE_INTEGER/16||
+    !(m.Generation instanceof Uint8Array)||m.Generation.length!==16||m.RowWidth!==INDEX_ROW_BYTES||
+    !integer(m.Branch)||m.Branch>4||!integer(m.Tail)||m.Tail>Number.MAX_SAFE_INTEGER/INDEX_ROW_BYTES||
     !integer(m.Checkpoint)||!integer(m.TrieNodes)||m.TrieNodes<1||m.TrieNodes>65536||
     !integer(m.From)||!integer(m.To)||m.From>=m.To||
     typeof m.Provisional!=="boolean"||typeof m.IndexPeriod!=="string"||typeof m.Timezone!=="string")
     throw Error("Invalid native manifest");
+  if(m.IndexOnly!==undefined&&typeof m.IndexOnly!=="boolean")throw Error("Invalid index collection mode");
+  if(m.IndexOnly&&((m.MemberRanges??[]).length||!m.Provisional&&!m.TimeTrie))throw Error("Invalid index-only manifest");
   if(m.GenerationSequence!==undefined&&(!integer(m.GenerationSequence)||m.GenerationSequence===0))throw Error("Invalid native generation sequence");
-  m.Index=normalize(m.Index??[]);m.Population=normalize(m.Population??[]);
+  m.Index=normalize(m.Index??[]);m.MemberRanges=normalize(m.MemberRanges??[]);
   if(m.Index.some(r=>r.End>m.Tail))
     throw Error("Invalid native index boundary");
   const rows=m.RetiredRows??0,members=m.RetiredMembers??0;
-  if(!integer(rows)||rows>m.Tail||!integer(members)||!integer(m.RetiredPopulation??0)||
-    m.Index.some(r=>r.Start<rows)||m.Population.some(r=>r.Start<members))throw Error("Invalid PAC retirement boundary");
-  // CBOR byte strings are views into the received buffer. Structured cloning a
+  if(!integer(rows)||rows>m.Tail||!integer(members)||!integer(m.RetiredPods??0)||
+    m.Index.some(r=>r.Start<rows)||m.MemberRanges.some(r=>r.Start<members))throw Error("Invalid PAC retirement boundary");
+  // PIL byte strings are views into the received buffer. Structured cloning a
   // view copies its entire backing buffer, not just its visible bytes. Persist
   // owned digest/identity bytes so each hourly manifest cannot retain a whole
   // network response (hundreds of MB across a month of small packages).
@@ -121,15 +126,21 @@ function manifest(raw: Record<string, unknown>, binding: Binding): NativeManifes
     ...(m.StateEpoch instanceof Uint8Array?{StateEpoch:m.StateEpoch.slice()}:{}),
     ...(m.TimeTrie instanceof Uint8Array?{TimeTrie:m.TimeTrie.slice()}:{})});
 }
-function empty(key:string,b:Binding,m:NativeManifest):NativeSource {
+function empty(key:string,b:Pick<Binding,'tap'|'digest'>,m:Pick<NativeManifest,'Generation'>):NativeSource {
   const file=():File=>({end:0,extents:[],blobs:[]});
   return {key,tap:b.tap,digest:b.digest,generation:hex(m.Generation),
-    files:{index:file(),population:file(),trie:file(),map:file(),state:file()},
+    files:{index:file(),sods:file(),trie:file(),map:file(),state:file()},
     trieNodes:1};
 }
-type Package = { rows?:{start:number;bytes:Uint8Array}[]; key:string; binding:Binding; manifest:NativeManifest; state?:StateSnapshot; stateFileRevision?:number; stateComplete:boolean; stateCount:number; stateLast?:string; closed:boolean };
+type Package = { indexHours?:Map<number,{time:number;count:number}>; rows?:{start:number;bytes:Uint8Array}[]; key:string; binding:Binding; manifest:NativeManifest; state?:StateSnapshot; stateFileRevision?:number; stateComplete:boolean; stateCount:number; stateLast?:string; closed:boolean };
 export type NativeSession = { packages: Package[]; active: Map<number,Package>; finished:boolean; serial:number };
-export type NativePage = { bases: Float64Array; common?:(Uint8Array|undefined)[]; rows: Uint8Array; population: Uint8Array; offsets: Uint32Array; after?: number; done: boolean };
+export type NativePage = { ordinals?:Float64Array; bases: Float64Array; common?:(Uint8Array|undefined)[]; rows: Uint8Array; payload: Uint8Array; offsets: Uint32Array; after?: number; done: boolean };
+
+export type SummaryQuery={tap:string;digest:string;generation:string;key?:string;day?:number};
+export type SummaryImport=SummaryQuery & {bytes:Uint8Array;serial:number};
+export type TimeQuery={tap:string;digest:string;from:number;to:number};
+export type TimeReceipt={serial:number;generation?:string;sequence?:number;rows:{time:number;count:number;flags:number}[];missing:{from:number;to:number}[]};
+export type TimeImport={tap:string;definition:Metadata;generation:string;sequence:number;serial:number;bytes:Uint8Array};
 
 export class NativeStore {
   private backend: NativeBackend;
@@ -142,6 +153,72 @@ export class NativeStore {
     if(!source||source.retiredBy||missingHours(source.timeTrie,q.from,q.to).length)return;
     return this.dependencies(key);
   }
+  async timeWindow(q:TimeQuery):Promise<TimeReceipt>{
+    const serial=await this.serial();
+    const sources=(await this.backend.list()).filter(s=>!s.retiredBy&&s.tap===q.tap&&s.digest===q.digest&&s.timeTrie);
+    sources.sort((a,b)=>(b.generationSequence??0)-(a.generationSequence??0));
+    const source=sources[0],tree=source?.timeTrie;
+    if(source&&sources.some(s=>s.key!==source.key&&s.generationSequence===source.generationSequence))throw Error('Conflicting time trie generations');
+    let from=q.from;
+    if(tree)from=Math.max(from,Number(new DataView(tree.bytes.buffer,tree.bytes.byteOffset).getBigUint64(8,true)));
+    const gaps=from<q.to?missingHours(tree,from,q.to,0):[];
+    const rows:TimeReceipt['rows']=[];
+    for(let at=Math.floor(q.from/HOUR)*HOUR;at<q.to;at+=HOUR){const item=timeLeaf(tree,at);if(item)rows.push({time:at,count:item.count,flags:item.flags})}
+    return {serial,generation:source?.generation,sequence:source?.generationSequence,rows,missing:gaps};
+  }
+  private async summarySource(q:SummaryQuery){
+    return (await this.backend.list()).find(s=>!s.retiredBy&&s.tap===q.tap&&s.digest===q.digest&&s.generation===q.generation);
+  }
+  async summaryBytes(q:SummaryQuery):Promise<Uint8Array|undefined>{
+    const s=await this.summarySource(q);if(!s)return;
+    const blob=s.files.sum?.blobs.find(b=>q.key?b.digest===q.key:b.start===q.day);
+    if(!blob)return;
+    const file=await this.backend.file(s.key,'sum');
+    try{const bytes=readFile(file,blob.local,blob.length);if(await hash(bytes)!==blob.digest)throw Error('Stored summary checksum mismatch');return bytes;}finally{file.close()}
+  }
+  async importSummary(input:SummaryImport){
+    if(await this.serial()!==input.serial)throw new NativeCacheError('Native cache rebased; retry summary collection',{code:'native-cache-race',reason:'Native cache rebased'});
+    const s=await this.summarySource(input);if(!s?.timeTrie)throw Error('Summary requires a matching time trie');
+    const decoded=await decodeSummaryDay(input.bytes),digest=await hash(input.bytes);
+    if(!decoded.sealed||input.key&&digest!==input.key||input.day!==undefined&&decoded.day!==input.day)throw Error('Invalid sealed summary binding');
+    const counts=new Map(decoded.hours.map(h=>[h.time,Number(h.view.getBigUint64(16,true)-h.view.getBigUint64(8,true))]));
+    const ranges:{from:number;to:number}[]=[];
+    for(let at=decoded.from;at<decoded.to;at+=HOUR){
+      const leaf=timeLeaf(s.timeTrie,at);if(!leaf)continue;
+      if(leaf.count!==(counts.get(at)??0))throw Error('Summary and time trie counts disagree');
+      const last=ranges.at(-1);if(last?.to===at)last.to+=HOUR;else ranges.push({from:at,to:at+HOUR});
+    }
+    const existing=s.files.sum?.blobs.find(b=>b.start===decoded.day);
+    if(existing&&existing.digest!==digest)throw Error('Immutable summary changed in the same generation');
+    const f=s.files.sum??={end:0,extents:[],blobs:[]},handle=await this.backend.file(s.key,'sum');
+    try{
+      if(!existing){recover(handle,f.end);write(handle,input.bytes,f.end);handle.flush();f.blobs.push({start:decoded.day,count:1,digest,local:f.end,length:input.bytes.length});f.end+=input.bytes.length;}
+      // The transaction flushes bytes before publishing these receipt bits.
+      for(const r of ranges)s.timeTrie=markTimeFiles(s.timeTrie!,Uint8Array.from(unhex(s.generation)),r.from,r.to,TIME_SUM);
+      await this.backend.put([s]);
+    }finally{handle.close()}
+  }
+  async importTime(input:TimeImport){
+    const {tap,definition,generation,sequence,serial,bytes}=input;
+    if(!/^[a-f0-9]{32}$/.test(generation)||!integer(sequence)||!sequence||!validSource(tap))throw Error('Invalid time trie identity');
+    const control=await this.backend.control();
+    if(control.serial!==serial)throw new NativeCacheError('Native cache rebased; retry time collection',{code:'native-cache-race',reason:'Native cache rebased'});
+    const salt=control.scopes[tap.split('/').slice(0,3).join('/')]??0;
+    const key=await hash(new TextEncoder().encode(JSON.stringify([tap,definition.digest,generation,...(salt?[salt]:[])])));
+    const known=await this.backend.list();
+    for(const other of known.filter(s=>!s.retiredBy&&s.tap===tap&&s.digest===definition.digest)){
+      if((other.generationSequence??0)>sequence||other.generationSequence===sequence&&other.generation!==generation)throw new NativeCacheError('Stale or conflicting time trie generation',{code:'native-cache-conflict',source:tap,reason:'generation-fork'});
+    }
+    const s=await this.backend.get(key)??empty(key,{tap,digest:definition.digest},{Generation:Uint8Array.from(unhex(generation))});
+    if(s.retiredBy||s.generationSequence!==undefined&&s.generationSequence!==sequence)throw Error('Stale time trie generation');
+    const tree=mergeTimeWindow(s.timeTrie,bytes,Uint8Array.from(unhex(generation)),0,true);
+    if(!s.files.map.end){
+      if(definition.digest!==await hash(definition.store)||definition.pil.length!==definition.store.length||definition.pil.some((b,i)=>b!==definition.store[i]))throw Error('Invalid time trie definition');
+      await this.blob(s,'map',0,1,definition.digest,definition.store);
+    }
+    s.timeTrie=tree;s.generationSequence=sequence;
+    await this.backend.put([s]);
+  }
   async serial():Promise<number>{return (await this.backend.control()).serial;}
   begin(serial=0):NativeSession {return {packages:[],active:new Map(),finished:false,serial};}
   async record(session:NativeSession,record:NativeRecord,definition?:Metadata){
@@ -152,7 +229,7 @@ export class NativeStore {
     if(record.kind==="manifest"){
       if(session.active.has(b.stream))throw Error("Overlapping native package");
       const m=manifest(record.manifest,b);
-      if(m.Provisional&&(m.Index.length||m.Population.length))throw Error("Partial hour cannot be persisted");
+      if(m.Provisional&&(m.Index.length||m.MemberRanges.length))throw Error("Partial hour cannot be persisted");
       const salt=control.scopes[b.tap.split("/").slice(0,3).join("/")]??0;
       const key=await hash(new TextEncoder().encode(JSON.stringify([b.tap,b.digest,hex(m.Generation),...(salt?[salt]:[])])));
       const s=await this.backend.get(key)??empty(key,b,m);
@@ -165,12 +242,17 @@ export class NativeStore {
         await this.blob(s,"map",0,1,b.digest,definition.store);
       }
       const p:Package={key,binding:b,manifest:m,stateComplete:false,stateCount:0,closed:false};
+      if(m.IndexOnly&&m.TimeTrie){
+        const tree=mergeTimeWindow(undefined,m.TimeTrie,m.Generation);
+        p.indexHours=new Map();
+        for(const span of tree.ranges)for(let at=span.from;at<span.to;at+=HOUR){const leaf=timeLeaf(tree,at)!;if(leaf.count)p.indexHours.set(leaf.start+1,{time:at,count:leaf.count});}
+      }
       session.packages.push(p);session.active.set(b.stream,p);return;
     }
     const p=session.active.get(b.stream);
     if(!p||b.tap!==p.binding.tap||b.digest!==p.binding.digest)throw Error("Native control outside package");
     if(record.kind==="package-end"){
-      if(p.rows?.length)throw Error("Incomplete population record");
+      if(p.rows?.length)throw Error("Incomplete payload record");
       if(!p.stateComplete)throw Error("Missing native invalidation state");
       p.closed=true;session.active.delete(b.stream);return;
     }
@@ -179,20 +261,26 @@ export class NativeStore {
     if((p.manifest.RetiredRows??0)<(s.retiredRows??0)||(p.manifest.RetiredMembers??0)<(s.retiredMembers??0))throw Error("Stale PAC retirement boundary");
     if(s.retiredBy)throw new NativeCacheError("Native generation retired; retry collection",{code:"native-cache-race",reason:"Native generation retired"});
     if(record.kind==="pac"){
+      if(p.manifest.IndexOnly)throw Error("Payload in index-only collection");
       await this.pac(s,p,record.bytes,record.bounds,record.integrityVerified===true);return;
     }
     const {file,start,bytes,digest}=record;
     if(!integer(start)||!bytes.length||(!record.integrityVerified&&await hash(bytes)!==digest))throw Error("Invalid native chunk");
-    if(file==="index"||file==="population"){
-      const unit=file==="index"?16:1;
+    if(file==="index"){
+      const unit=INDEX_ROW_BYTES;
       if(bytes.length%unit)throw Error("Partial native row");
       const end=start+bytes.length/unit;
-      if(!integer(end)||missing([{Start:start,End:end}],file==="index"?p.manifest.Index:p.manifest.Population).length)
+      if(!integer(end)||missing([{Start:start,End:end}],p.manifest.Index).length)
         throw Error("Native chunk outside requested ranges");
-      if(file==="population")throw Error("Expected complete PAC");
-      (p.rows??=[]).push({start,bytes:bytes.slice()});
+      if(p.manifest.IndexOnly){
+        const leaf=p.indexHours?.get(start),hour=leaf?.time;
+        if(hour===undefined||leaf!.count!==bytes.length/INDEX_ROW_BYTES)throw Error("Index chunk must contain a complete hour");
+        const segment=new Uint8Array(INDEX_ROW_BYTES+bytes.length),v=new DataView(segment.buffer);
+        v.setUint32(0,Math.floor(hour/2**32),true);
+        segment.set(bytes,INDEX_ROW_BYTES);await this.range(s,"index",(start-1)*INDEX_ROW_BYTES,segment);
+      }else (p.rows??=[]).push({start,bytes:bytes.slice()});
     }else if(file==="trie"){
-      const nodes=cbor(bytes);
+      const nodes=decodeObject(bytes);
       if(!Array.isArray(nodes)||start<1||start+nodes.length>p.manifest.TrieNodes)throw Error("Invalid native trie prefix");
       for(let i=0;i<nodes.length;i++){
         const n=nodes[i] as Record<string,unknown>;
@@ -209,11 +297,11 @@ export class NativeStore {
   }
   private async pac(s:NativeSource,p:Package,bytes:Uint8Array,bounds:Uint32Array,integrityVerified=false){
     const header=pacHeader(bytes,0,0xffffffff,new Set([1,nativePAC]));
-    if(!header||header.end!==bytes.length||header.digest!==s.digest||header.source!==s.tap)throw Error("PAC source mismatch");
+    if(!header||header.addressBytes!==4||header.end!==bytes.length||header.digest!==s.digest||header.source!==s.tap)throw Error("PAC source mismatch");
     const placement=pacPlacement(header),first=Number(placement.firstRow),rows=Number(placement.rows);
     if(placement.pageSize!==(1<<20)||placement.firstRow<BigInt(p.manifest.RetiredRows??0)||placement.memberStart<BigInt(p.manifest.RetiredMembers??0)||placement.source!==s.generation||Number(placement.from)<p.manifest.From*1000||Number(placement.to)>p.manifest.To*1000||p.manifest.Provisional)throw Error("PAC outside sealed hour");
     if(bounds.length!==rows*2)throw Error("PAC bounds mismatch");
-    const supplied=p.rows?.find(r=>r.start===first&&r.bytes.length===rows*16);
+    const supplied=p.rows?.find(r=>r.start===first&&r.bytes.length===rows*INDEX_ROW_BYTES);
     if(!supplied)throw Error("Missing PAC index rows");
     // Only the internal transport worker sets integrityVerified, after checking
     // the sealed CRC and index checksum. Do not scan those same events again.
@@ -245,25 +333,22 @@ export class NativeStore {
     // Diagnostic/unverified inputs retain the full temporal consistency check.
     if(!integrityVerified){
       for(let i=0;i<rows;i++){
-        const row=supplied.bytes.subarray(i*16,(i+1)*16),ms=indexMillis(row,Number(placement.from));
+        const row=supplied.bytes.subarray(i*INDEX_ROW_BYTES,(i+1)*INDEX_ROW_BYTES),ms=indexMillis(row,Number(placement.from));
         if(BigInt(ms)<placement.from||BigInt(ms)>=placement.to)throw Error("Invalid PAC event row");
-        if(i>0){const previous=supplied.bytes.subarray((i-1)*16,(i-1)*16+12);let compared=0;
-          for(let j=0;j<12&&!compared;j++)compared=previous[j]-row[j];
-          if(compared>=0)throw Error("Unordered PAC event rows");
-        }
+        if(i>0&&indexMillis(supplied.bytes.subarray((i-1)*INDEX_ROW_BYTES,i*INDEX_ROW_BYTES),Number(placement.from))>ms)throw Error("Unordered PAC event rows");
       }
     }
-    const sodsHeader=new Uint8Array(4);new DataView(sodsHeader.buffer).setUint32(0,Number(placement.memberBytes)+4,true);
-    if(start<4)throw Error("Invalid SODS segment start");
-    const hour=new Uint8Array(4+header.end-header.start);
-    hour.set(sodsHeader);hour.set(bytes.subarray(header.start,header.end),4);
-    await this.range(s,"population",start-4,hour);
-    const segmentHeader=new Uint8Array(16),hv=new DataView(segmentHeader.buffer);
-    // Literal count and width match the server segment header.
-    hv.setUint32(0,Number(placement.rows),true);hv.setBigInt64(4,placement.from,true);segmentHeader[12]=placement.rows<=65535n?2:placement.rows<=16777215n?3:4;
-    const hourIndex=new Uint8Array(16+local.length);
-    hourIndex.set(segmentHeader);hourIndex.set(local,16);
-    await this.range(s,"index",(first-1)*16,hourIndex);
+    const directoryBytes=rows*4;
+    const hour=new Uint8Array(4+directoryBytes+header.end-header.start);
+    new DataView(hour.buffer).setUint32(0,hour.length,true);
+    if(start<4+directoryBytes)throw Error("Invalid SODS segment start");
+    hour.set(header.directory,4);hour.set(bytes.subarray(header.start,header.end),4+directoryBytes);
+    await this.range(s,"sods",start-4-directoryBytes,hour);
+    const segmentHeader=new Uint8Array(INDEX_ROW_BYTES),hv=new DataView(segmentHeader.buffer);
+    hv.setUint32(0,Math.floor(Number(placement.from)/2**32),true);
+    const hourIndex=new Uint8Array(INDEX_ROW_BYTES+local.length);
+    hourIndex.set(segmentHeader);hourIndex.set(local,INDEX_ROW_BYTES);
+    await this.range(s,"index",(first-1)*INDEX_ROW_BYTES,hourIndex);
     if(!prior){(s.contexts??=[]).push(context);s.contexts.sort((a,b)=>a.placement.firstRow<b.placement.firstRow?-1:1);}
     await this.backend.put([s]);
     p.rows=p.rows!.filter(r=>r!==supplied);
@@ -272,7 +357,7 @@ export class NativeStore {
     const revision=s.stateFileRevision??0;
     if(p.stateFileRevision!==undefined&&p.stateFileRevision!==revision)throw new NativeCacheError("Native state compacted; retry collection",{code:"native-cache-race",reason:"Native state compacted"});
     p.stateFileRevision=revision;
-    const v=cbor(bytes) as Record<string,unknown>;
+    const v=decodeObject(bytes) as Record<string,unknown>;
     if(p.stateComplete||!v||!(v.Epoch instanceof Uint8Array)||v.Epoch.length!==16||
       !integer(v.Sequence)||!integer(v.Collection)||v.Collection>v.Sequence||
       (v.Objects!==null&&!Array.isArray(v.Objects))||
@@ -310,7 +395,7 @@ export class NativeStore {
     const header=new Uint8Array(8);new DataView(header.buffer).setBigUint64(0,BigInt(value),true);
     write(h,header,0);this.retiredHeaders.set(h,value);
   }
-  private async range(s:NativeSource,kind:"index"|"population",start:number,bytes:Uint8Array){
+  private async range(s:NativeSource,kind:"index"|"sods",start:number,bytes:Uint8Array){
     const f=s.files[kind], wanted={Start:start,End:start+bytes.length};
     if(!integer(wanted.End))throw Error("Native byte address overflow");
     const h=await this.backend.file(s.key,kind);
@@ -361,7 +446,7 @@ export class NativeStore {
       for(const b of f.blobs){
         const lo=Math.max(start,b.start),hi=Math.min(start+nodes.length,b.start+b.count);
         if(lo>=hi)continue;
-        const prior=cbor(readFile(h,b.local,b.length)) as Record<string,unknown>[];
+        const prior=decodeObject(readFile(h,b.local,b.length)) as Record<string,unknown>[];
         for(let id=lo;id<hi;id++){
           const a=prior[id-b.start],n=nodes[id-start] as Record<string,unknown>;
           if(a["0"]!==n["0"]||a["1"]!==n["1"]||hex(a["2"] as Uint8Array)!==hex(n["2"] as Uint8Array))
@@ -393,8 +478,8 @@ export class NativeStore {
       if(p.stateFileRevision!==(s.stateFileRevision??0))throw new NativeCacheError("Native state compacted; retry collection",{code:"native-cache-race",reason:"Native state compacted"});
       if(s.state&&s.state.epoch!==p.state.epoch)throw new NativeCacheError("Native state epoch changed; rebase required",{code:"native-cache-conflict",source:s.tap,reason:"state-epoch-changed",detail:{cachedEpoch:s.state.epoch,incomingEpoch:p.state.epoch}});
       if(!s.state||p.state.sequence>s.state.sequence)s.state=structuredClone(p.state);
-      for(const r of m.Index)resolve(s.files.index.extents,{Start:r.Start*16,End:r.End*16});
-      if(missing(m.Population,s.files.population.extents).length)throw Error("Missing native population");
+      for(const r of m.Index)resolve(s.files.index.extents,{Start:r.Start*INDEX_ROW_BYTES,End:r.End*INDEX_ROW_BYTES});
+      if(missing(m.MemberRanges,s.files.sods.extents).length)throw Error("Missing native payload");
       if(m.TrieNodes>1&&missing([{Start:1,End:m.TrieNodes}],s.files.trie.blobs.map(b=>({Start:b.start,End:b.start+b.count}))).length)
         throw Error("Missing native trie dependency");
       if(!m.Provisional&&!m.TimeRetired&&!m.TimeTrie)throw Error("Missing sealed time trie");
@@ -402,7 +487,18 @@ export class NativeStore {
         if(m.Provisional)throw Error("Provisional time trie publication");
         const h=new DataView(m.TimeTrie.buffer,m.TimeTrie.byteOffset,m.TimeTrie.byteLength);
         if(Number(h.getBigUint64(64,true))<m.From*1000||Number(h.getBigUint64(72,true))>m.To*1000)throw Error("Time trie outside collection");
-        s.timeTrie=mergeTimeWindow(s.timeTrie,m.TimeTrie,m.Generation,true,(m.RetiredRows??0)>0,true);
+        const received=mergeTimeWindow(undefined,m.TimeTrie,m.Generation);
+        const payloads=new Map((s.contexts??[]).map(c=>[Number(c.placement.from),c.placement]));
+        for(const span of received.ranges)for(let at=span.from;at<span.to;at+=HOUR){
+          const leaf=timeLeaf(received,at)!;if(!leaf.count)continue;
+          resolve(s.files.index.extents,{Start:(leaf.start+1)*INDEX_ROW_BYTES,End:leaf.end*INDEX_ROW_BYTES});
+          if(!m.IndexOnly){
+            const payload=payloads.get(at);
+            if(!payload||Number(payload.firstRow)!==leaf.start+1||Number(payload.rows)!==leaf.count)throw Error('Missing complete hourly payload');
+            resolve(s.files.sods.extents,{Start:Number(payload.memberStart)-4*Number(payload.rows)-4,End:Number(payload.memberStart+payload.memberBytes)});
+          }
+        }
+        s.timeTrie=mergeTimeWindow(s.timeTrie,m.TimeTrie,m.Generation,TIME_INDEX|TIME_STATE|(m.IndexOnly?0:TIME_SODS),(m.RetiredRows??0)>0,true);
       }
       s.trieNodes=Math.max(s.trieNodes,m.TrieNodes);
       changed.set(s.key,s);
@@ -433,7 +529,7 @@ export class NativeStore {
       }
     }
     await this.backend.put([...changed.values()]);session.finished=true;
-    for(const s of changed.values())if(!s.retiredBy)for(const kind of ["index","population"] as const){
+    for(const s of changed.values())if(!s.retiredBy)for(const kind of ["index","sods"] as const){
       if(s.files[kind].end<8)continue;
       const h=await this.backend.file(s.key,kind);
       try{recover(h,s.files[kind].end);this.retiredHeader(h,s.files[kind].retired??0);h.flush();}finally{h.close();}
@@ -442,7 +538,7 @@ export class NativeStore {
   private retire(s:NativeSource,rows:number,members:number,first?:number){
     if(rows>0&&first!==undefined){s.timeTrie=retireTime(s.timeTrie,first);}
     if(rows===(s.retiredRows??0)&&members===(s.retiredMembers??0))return;
-    for(const [kind,base] of [["index",rows*16],["population",members]] as const){
+    for(const [kind,base] of [["index",rows*INDEX_ROW_BYTES],["sods",members]] as const){
       const f=s.files[kind];f.retired=base;
       f.extents=f.extents.filter(e=>e.End>base).map(e=>({...e,local:e.local+Math.max(0,base-e.Start),Start:Math.max(e.Start,base)}));
       for(const [page,local] of Object.entries(f.pages??{}))if((Number(page)+1)*(1<<20)<=base){
@@ -451,7 +547,7 @@ export class NativeStore {
     }
     // Trim free physical tail pages after publication; interior slots remain
     // reusable without relocating any surviving source coordinates.
-    for(const kind of ["index","population"] as const){
+    for(const kind of ["index","sods"] as const){
       const f=s.files[kind],free=new Set(f.free??[]);
       while(f.end>8&&free.delete(f.end-(1<<20)))f.end-=1<<20;
       f.free=[...free];
@@ -541,7 +637,7 @@ export class NativeStore {
   }
   async coverage(tap?:string){
     return (await this.backend.list()).filter(s=>!s.retiredBy&&matchesSource(tap??"",s.tap)).filter(s=>s.state).map(s=>({
-      Definition:unhex(s.digest),Generation:unhex(s.generation),Index:committedRanges(s).index,Population:committedRanges(s).sods,TrieNodes:s.trieNodes,
+      Definition:unhex(s.digest),Generation:unhex(s.generation),Index:committedRanges(s).index,MemberRanges:committedRanges(s).sods,TrieNodes:s.trieNodes,
       ...(s.state?{StateKnown:true,StateEpoch:unhex(s.state.epoch),StateSequence:s.state.sequence}:{}),
     }));
   }
@@ -561,7 +657,7 @@ export class NativeStore {
       map=readFile(mapFile,0,source.files.map.end);
       if(await hash(map)!==source.digest)throw Error("Cached native map checksum mismatch");
     }finally{mapFile.close();}
-    const definition=cbor(map) as PILDefinition;
+    const definition=decodeObject(map) as PILDefinition;
     const role=resourceBinding(definition)?.roles.id, field=definition.fields.find(f=>f.name===role);
     if(!field)throw Error("Collection has no object identity");
     const id=hex(objectIdentityBytes(field.type,query.id));
@@ -573,7 +669,7 @@ export class NativeStore {
         recover(handle,source.files.state.end);
         const raw=readFile(handle,page.local,page.length);
         if(await hash(raw)!==page.digest)throw Error("Cached state checksum mismatch");
-        const snapshot=cbor(raw) as {Objects:{ID:Uint8Array;Token:number}[]};
+        const snapshot=decodeObject(raw) as {Objects:{ID:Uint8Array;Token:number}[]};
         token=snapshot.Objects.find(entry=>hex(entry.ID)===id)?.Token??0;
       }finally{handle.close();}
     }
@@ -596,7 +692,7 @@ export class NativeStore {
     }
     return out;
   }
-  async read(key:string,kind:"index"|"population",wanted:Span){
+  async read(key:string,kind:"index"|"sods",wanted:Span){
     const s=await this.backend.get(key);if(!s)throw Error("Unknown native source");
     if(s.retiredBy)throw Error("Native generation retired; recollect this window");
     const extents=resolve(s.files[kind].extents,wanted), h=await this.backend.file(key,kind);
@@ -625,62 +721,72 @@ export class NativeStore {
       throw Error("Invalid native record selection");
     return this.readPage(key,from,to,undefined,rows.length,rows);
   }
-  async page(key:string,from:number,to:number,after?:number,limit=512):Promise<NativePage>{
-    return this.readPage(key,from,to,after,limit);
+  async page(key:string,from:number,to:number,after?:number,limit=512,descending=false):Promise<NativePage>{
+    return this.readPage(key,from,to,after,limit,undefined,descending);
   }
-  private async readPage(key:string,from:number,to:number,after:number|undefined,limit:number,selected?:number[]):Promise<NativePage>{
+  private async readPage(key:string,from:number,to:number,after:number|undefined,limit:number,selected?:number[],descending=false):Promise<NativePage>{
     if(!integer(from)||!integer(to)||from>=to||after!==undefined&&!integer(after)||!integer(limit)||limit<1||limit>4096)
       throw Error("Invalid native page request");
     const s=await this.backend.get(key);if(!s)throw Error("Unknown native source");
     if(s.retiredBy)throw Error("Native generation retired; recollect this window");
-    const index=await this.backend.file(key,"index"),pop=await this.backend.file(key,"population");
+    const index=await this.backend.file(key,"index"),sodsFile=await this.backend.file(key,"sods");
     try{
-      recover(index,s.files.index.end);recover(pop,s.files.population.end);
-      const readIndex=rangeReader(index,s.files.index.extents),readPop=rangeReader(pop,s.files.population.extents);
-      const at=(row:number)=>readIndex({Start:row*16,End:(row+1)*16});
+      recover(index,s.files.index.end);recover(sodsFile,s.files.sods.end);
+      // Binary probes, sequential rows, directory entries, and payloads have
+      // different locality. Keep their small read windows independent.
+      const readBounds=rangeReader(index,s.files.index.extents,4096);
+      const readIndex=rangeReader(index,s.files.index.extents,16384);
+      const readDirectory=rangeReader(sodsFile,s.files.sods.extents,16384);
+      const readPayload=rangeReader(sodsFile,s.files.sods.extents,65536);
+      const at=(row:number)=>readIndex({Start:row*INDEX_ROW_BYTES,End:(row+1)*INDEX_ROW_BYTES});
       const records:Uint8Array[]=[],values:Uint8Array[]=[],offsets:number[]=[],common:(Uint8Array|undefined)[]=[];
-      const bases:number[]=[];
+      const bases:number[]=[],ordinals:number[]=[];
       let total=0,last:number|undefined,done=true;
-      outer: for(const context of s.contexts??[]){
+      outer: for(const context of descending?[...(s.contexts??[])].reverse():s.contexts??[]){
         const placement=context.placement;
         if(Number(placement.to)<=from||Number(placement.from)>=to)continue;
-        if(timeLeaf(s.timeTrie,Number(placement.from))?.state!==2)continue;
+        if(!((timeLeaf(s.timeTrie,Number(placement.from))?.flags??0)&TIME_SODS))continue;
         const range={Start:Number(placement.firstRow),End:Number(placement.firstRow+placement.rows)};
-        const lower=(start:number,end:number,time:number)=>{while(start<end){const mid=start+Math.floor((end-start)/2);if(indexMillis(at(mid),Number(placement.from))<time)start=mid+1;else end=mid;}return start;};
-        let first=Math.max(range.Start,after===undefined?0:after+1);
+        const lower=(start:number,end:number,time:number)=>{while(start<end){const mid=start+Math.floor((end-start)/2);if(indexMillis(readBounds({Start:mid*INDEX_ROW_BYTES,End:(mid+1)*INDEX_ROW_BYTES}),Number(placement.from))<time)start=mid+1;else end=mid;}return start;};
+        let first=Math.max(range.Start,after===undefined||descending?0:after+1);
         if(first>=range.End)continue;
         first=selected?first:lower(first,range.End,from);
-        const end=selected?range.End:lower(first,range.End,to);
+        const end=Math.min(selected?range.End:lower(first,range.End,to),descending&&after!==undefined?after:Infinity);
         const requested=selected?.filter(row=>row>=first&&row<end);
-        for(let position=0,row=requested?requested[0]:first;row!==undefined&&row<end;row=requested?requested[++position]:row+1){
+        for(let position=0,row=requested?requested[0]:descending?end-1:first;row!==undefined&&row<end&&row>=first;row=requested?requested[++position]:row+(descending?-1:1)){
           if(!selected&&(records.length>=limit||total>=8*1024*1024)){done=false;break outer;}
-          const raw=at(row).slice(),view=new DataView(raw.buffer,raw.byteOffset,16);
+          const raw=at(row).slice();
           if(selected&&(indexMillis(raw,Number(placement.from))<from||indexMillis(raw,Number(placement.from))>=to))
             throw Error("Selected record outside requested hour");
-          const base=Number(placement.memberStart),start=base+view.getUint32(12,true);
-          const next=row+1<range.End?at(row+1):undefined;
-          const finish=base+(next?new DataView(next.buffer,next.byteOffset,16).getUint32(12,true):Number(placement.memberBytes));
-          bases.push(Number(placement.from));
+          const base=Number(placement.memberStart),directory=base-Number(placement.rows)*4;
+          const offsetAt=directory+(row-range.Start)*4,offsetBytes=readDirectory({Start:offsetAt,End:offsetAt+(row+1<range.End?8:4)}),offsetView=new DataView(offsetBytes.buffer,offsetBytes.byteOffset,offsetBytes.length);
+          const relativeStart=offsetView.getUint32(0,true),relativeEnd=row+1<range.End?offsetView.getUint32(4,true):Number(placement.memberBytes);
+          if(relativeStart>=relativeEnd||relativeEnd>Number(placement.memberBytes))throw Error("Invalid PAC directory entry");
+          const start=base+relativeStart,finish=base+relativeEnd;
+          bases.push(Number(placement.from));ordinals.push(row);
           if(!Number.isSafeInteger(finish)||finish<=start)throw Error("Invalid PAC local coordinates");
           const wanted={Start:start,End:finish};
-          const bytes=readPop(wanted).slice();common.push(context.common.length?context.common:undefined);
+          const bytes=readPayload(wanted).slice();common.push(context.common.length?context.common:undefined);
           records.push(raw);values.push(bytes);offsets.push(total,total+bytes.length);total+=bytes.length;last=row;
         }
       }
       if(selected&&records.length!==selected.length)throw Error("Missing canonical search record");
-      const rows=new Uint8Array(records.length*16),population=new Uint8Array(total);
-      records.forEach((b,i)=>rows.set(b,i*16));values.forEach((b,i)=>population.set(b,offsets[i*2]));
-      return {bases:Float64Array.from(bases),rows,population,offsets:Uint32Array.from(offsets),common,after:last,done};
-    }finally{index.close();pop.close();}
+      const rows=new Uint8Array(records.length*INDEX_ROW_BYTES),payload=new Uint8Array(total);
+      records.forEach((b,i)=>rows.set(b,i*INDEX_ROW_BYTES));values.forEach((b,i)=>payload.set(b,offsets[i*2]));
+      return {ordinals:Float64Array.from(ordinals),bases:Float64Array.from(bases),rows,payload,offsets:Uint32Array.from(offsets),common,after:last,done};
+    }finally{index.close();sodsFile.close();}
   }
 }
 function unhex(s:string){return s.match(/../g)!.map(v=>parseInt(v,16));}
-function rangeReader(file:FileIO,extents:Extent[]){
+function rangeReader(file:FileIO,extents:Extent[],windowBytes=1<<20){
   // Header/event writes can publish separate extents in the same local page.
   // Merge only contiguous known bytes at contiguous physical positions, so a
   // 20-byte window is not split merely by the original write boundaries.
   const contiguous:Extent[]=[];
-  for(const e of extents){const last=contiguous.at(-1);
+  let previousEnd=0;
+  for(const e of extents){
+    if(!integer(e.Start)||!integer(e.End)||!integer(e.local)||e.Start<previousEnd||e.End<=e.Start)throw Error('Invalid native extents');
+    previousEnd=e.End;const last=contiguous.at(-1);
     if(last&&last.End===e.Start&&last.local+last.End-last.Start===e.local)last.End=e.End;
     else contiguous.push({...e});
   }
@@ -688,12 +794,18 @@ function rangeReader(file:FileIO,extents:Extent[]){
   let start=-1,end=-1,cached=new Uint8Array();
   return (wanted:Span):Uint8Array=>{
     if(wanted.Start>=start&&wanted.End<=end)return cached.subarray(wanted.Start-start,wanted.End-start);
-    const parts=resolve(extents,wanted);
-    if(parts.length===1){
-      const p=parts[0],extent=extents.find(e=>e.Start<=p.Start&&e.End>=p.End)!;
-      start=p.Start;end=Math.min(extent.End,Math.max(wanted.End,start+(1<<20)));
-      cached=readFile(file,p.local,end-start);return cached.subarray(0,wanted.End-start);
+    // Binary lookup avoids sorting/scanning every extent on each cache miss.
+    let lo=0,hi=extents.length;
+    while(lo<hi){const mid=(lo+hi)>>>1;if(extents[mid].End<=wanted.Start)lo=mid+1;else hi=mid;}
+    const extent=extents[lo];
+    if(extent&&extent.Start<=wanted.Start&&extent.End>=wanted.End){
+      // Align within the extent so descending scans reuse the window too.
+      start=extent.Start+Math.floor((wanted.Start-extent.Start)/windowBytes)*windowBytes;
+      end=Math.min(extent.End,Math.max(wanted.End,start+windowBytes));
+      cached=readFile(file,extent.local+start-extent.Start,end-start);
+      return cached.subarray(wanted.Start-start,wanted.End-start);
     }
+    const parts=resolve(extents,wanted);
     const result=new Uint8Array(wanted.End-wanted.Start);
     for(const p of parts)result.set(readFile(file,p.local,p.End-p.Start),p.Start-wanted.Start);
     return result;
@@ -704,10 +816,13 @@ function rangeReader(file:FileIO,extents:Extent[]){
 export function committedRanges(source:NativeSource):{index:Span[];sods:Span[]} {
  const index:Span[]=[],sods:Span[]=[];
  if(source.retiredBy)return {index,sods};
+ for(const range of source.timeTrie?.ranges??[])for(let at=range.from;at<range.to;at+=HOUR){
+  const leaf=timeLeaf(source.timeTrie,at)!;
+  if((leaf.flags&TIME_INDEX)&&leaf.count)index.push({Start:leaf.start+1,End:leaf.end});
+ }
  for(const {placement:p} of source.contexts??[]){
-  if(timeLeaf(source.timeTrie,Number(p.from))?.state!==2)continue;
-  if(p.rows)index.push({Start:Number(p.firstRow),End:Number(p.firstRow+p.rows)});
-  if(p.memberBytes)sods.push({Start:Number(p.memberStart),End:Number(p.memberStart+p.memberBytes)});
+  if(!((timeLeaf(source.timeTrie,Number(p.from))?.flags??0)&TIME_SODS))continue;
+  if(p.memberBytes)sods.push({Start:Number(p.memberStart)-4*Number(p.rows)-4,End:Number(p.memberStart+p.memberBytes)});
  }
  return {index:normalize(index),sods:normalize(sods)};
 }

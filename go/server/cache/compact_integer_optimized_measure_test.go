@@ -104,7 +104,7 @@ func TestMeasureOptimizedIntegers(t *testing.T) {
 		if v.compact {
 			return v.layout.encode(dst, values)
 		}
-		return v.layout.base.Encode(dst, values)
+		return v.layout.base.Layout.Encode(dst, values)
 	}
 	scan := func(v *variant, raw []byte, f *Frame) error {
 		if v.fast != nil {
@@ -160,7 +160,7 @@ func TestMeasureOptimizedIntegers(t *testing.T) {
 			wv[10] = nv[10]
 		}
 		record := compactExperimentRecord(narrow.base, nv)
-		cb, err := codec.MarshalCompact(record, codec.CBOR)
+		cb, err := marshalBlindCBOR(record)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -256,7 +256,7 @@ func TestMeasureOptimizedIntegers(t *testing.T) {
 	}
 	jobs = append(jobs, job{"cbor/encode", func() error {
 		for _, r := range records {
-			raw, e := codec.MarshalCompact(r, codec.CBOR)
+			raw, e := marshalBlindCBOR(r)
 			if e != nil {
 				return e
 			}
@@ -312,5 +312,5 @@ func TestMeasureOptimizedIntegers(t *testing.T) {
 	for _, v := range variants {
 		sizes[v.name] = v.bytes
 	}
-	saveMeasurement(t, map[string]any{"events": n, "sparse": sparse, "profile": profile, "definition": d, "wide_definition": wideDef, "population_bytes": sizes, "codec": timings, "allocations_per_record": allocs, "batch_rows": rows, "records_per_timing_sample": batch * repeats, "samples": len(jobs), "go": runtime.Version(), "platform": runtime.GOOS + "/" + runtime.GOARCH, "all_records_validated": true, "scope": "paired reference/optimized mask override; in-memory codec only; no storage/index/IPC/network", "format": "test-only, NOT existing PIL wire format"})
+	saveMeasurement(t, map[string]any{"events": n, "sparse": sparse, "profile": profile, "definition": d, "wide_definition": wideDef, "payload_bytes": sizes, "codec": timings, "allocations_per_record": allocs, "batch_rows": rows, "records_per_timing_sample": batch * repeats, "samples": len(jobs), "go": runtime.Version(), "platform": runtime.GOOS + "/" + runtime.GOARCH, "all_records_validated": true, "scope": "paired reference/optimized mask override; in-memory codec only; no storage/index/IPC/network", "format": "test-only, NOT existing PIL wire format"})
 }

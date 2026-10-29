@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-func TestColdViewPlansWholePACWithoutPopulationReads(t *testing.T) {
+func TestColdViewPlansWholePACWithoutPayloadReads(t *testing.T) {
 	requireSearch(t)
 	for _, branch := range []Branch{Error, Write} {
 		t.Run(branch.Name(), func(t *testing.T) {
@@ -44,10 +44,10 @@ func TestColdViewPlansWholePACWithoutPopulationReads(t *testing.T) {
 				t.Fatal(e)
 			}
 			source.close()
-			// The disposable text index is ready. Corrupt population bytes deliberately:
+			// The disposable text index is ready. Corrupt payload bytes deliberately:
 			// planning, scalar search, whole-run statistics, and cursor generation may not read them.
 			b := s.branches[branch]
-			if _, e = b.pop.WriteAt([]byte("BROKEN!!"), int64(b.runs[0].PopStart-b.popRetired)); e != nil {
+			if _, e = b.pods.WriteAt([]byte("BROKEN!!"), int64(b.runs[0].PodsStart-b.podsRetired)); e != nil {
 				t.Fatal(e)
 			}
 			h := &HTTP{Store: s}

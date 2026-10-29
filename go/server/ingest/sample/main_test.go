@@ -12,7 +12,7 @@ func TestWeek(t *testing.T) {
 	d := definition()
 	for _, key := range d.Path {
 		if d.Fields[key].Name == "message" {
-			t.Fatal("message must remain in the per-event population")
+			t.Fatal("message must remain in the per-event payload")
 		}
 	}
 	end := time.Date(2026, 9, 26, 21, 0, 0, 0, time.UTC)
@@ -35,11 +35,11 @@ func TestWeek(t *testing.T) {
 		if i > 0 && e.at.Before(events[i-1].at) {
 			t.Fatal("out of order")
 		}
-		a, err := codec.MarshalCompact(e.fields, codec.CBOR)
+		a, err := codec.MarshalCompact(e.fields, codec.PIL)
 		if err != nil {
 			t.Fatal(err)
 		}
-		b, err := codec.MarshalCompact(repeated[i].fields, codec.CBOR)
+		b, err := codec.MarshalCompact(repeated[i].fields, codec.PIL)
 		if err != nil || !bytes.Equal(a, b) {
 			t.Fatal("nondeterministic sample", err)
 		}

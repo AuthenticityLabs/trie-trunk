@@ -1,50 +1,37 @@
 package cache
 
 import (
-	"bytes"
 	"fmt"
 	"math/rand/v2"
 	"sort"
 	"testing"
 )
 
-func TestIndexUUIDRoundTripAndOrdering(t *testing.T) {
-	base := int64(1792584000000)
+func TestIndexTimeAndOrdinalKey(t *testing.T) {
 	rng := rand.New(rand.NewPCG(42, 7))
-	var previous [16]byte
-	for i := 0; i < 100000; i++ {
-		delta := int64(i * 35)
-		v := uuid(base+delta, uint32(rng.Uint64()))
-		id := [16]byte(v.Bytes)
-		id[6] = 0x70 | byte(rng.Uint64()&15)
-		id[7] = byte(rng.Uint64())
-		id[8] = 0x80 | byte(rng.Uint64()&63)
-		for j := 9; j < 16; j++ {
-			id[j] = byte(rng.Uint64())
-		}
-		var row [IndexRowSize]byte
-		if e := packIndexID(row[:], id, base); e != nil {
-			t.Fatal(e)
-		}
-		if got := unpackIndexID(row[:], base); got != id {
-			t.Fatalf("lost UUID bits %x != %x", got, id)
-		}
-		if indexDelta(row[:]) != delta {
-			t.Fatal("timestamp delta")
-		}
-		if i > 0 {
-			var before [IndexRowSize]byte
-			_ = packIndexID(before[:], previous, base)
-			if bytes.Compare(before[:12], row[:12]) >= 0 {
-				t.Fatal("order changed")
+	for _, base := range []int64{1792584000000, (1 << 32) / TimeHourMS * TimeHourMS} {
+		for i := 0; i < 100000; i++ {
+			ms := base + int64(i*35)
+			id := [16]byte(uuid(ms, uint32(rng.Uint64())).Bytes)
+			id[6] = 0x70 | byte(rng.Uint64()&15)
+			id[7] = byte(rng.Uint64())
+			id[8] = 0x80 | byte(rng.Uint64()&63)
+			var row [IndexRowSize]byte
+			if err := packIndexID(row[:], id, base); err != nil {
+				t.Fatal(err)
+			}
+			if got := indexTime(row[:], base); got != ms {
+				t.Fatal(got, ms)
+			}
+			restored, err := seedKey(indexTime(row[:], base), uint32(i))
+			if err != nil || eventTime(restored[:]) != ms {
+				t.Fatal("UUID mismatch", err)
 			}
 		}
-		previous = id
-	}
-	for _, delta := range []int64{-1, 1 << 22} {
-		id := [16]byte(uuid(base+delta, 1).Bytes)
-		if packIndexID(make([]byte, 18), id, base) == nil {
-			t.Fatal("invalid delta accepted")
+		for _, delta := range []int64{-1, TimeHourMS} {
+			if packIndexID(make([]byte, IndexRowSize), [16]byte(uuid(base+delta, 1).Bytes), base) == nil {
+				t.Fatal("invalid hour accepted")
+			}
 		}
 	}
 }
@@ -52,53 +39,6 @@ func TestIndexUUIDRoundTripAndOrdering(t *testing.T) {
 var benchOrdinal int
 var benchUUID [16]byte
 var benchLength uint32
-
-// Same rows and lookup sequence; compare the prior memberLength implementation
-// with the overlapping window. No storage I/O or PAC decoding is included.
-func BenchmarkIndexMemberWindow(b *testing.B) {
-	const segments, records = 1024, 1024
-	source := branchStore{rows: make([]byte, segments*(records+1)*IndexRowSize)}
-	for i := 0; i < segments; i++ {
-		start := uint64(i*(records+1) + 1)
-		source.runs = append(source.runs, Run{Start: start, End: start + records, PAC: &StoredPAC{Placement: PACPlacement{MemberBytes: records * 37}}})
-		for j := 0; j < records; j++ {
-			order.PutUint32(source.row(start + uint64(j))[12:], uint32(j)*37)
-		}
-	}
-	for _, scattered := range []bool{false, true} {
-		pattern := "sequential"
-		if scattered {
-			pattern = "scattered"
-		}
-		for _, window := range []bool{false, true} {
-			mode := "explicit_next_start"
-			if window {
-				mode = "current_starts"
-			}
-			b.Run(pattern+"/"+mode, func(b *testing.B) {
-				b.ReportAllocs()
-				for i := 0; i < b.N; i++ {
-					n := i % (segments * records)
-					if scattered {
-						n = (i * 7919) % (segments * records)
-					}
-					row := uint64(n/records*(records+1) + 1 + n%records)
-					if window {
-						benchLength = source.memberLength(row)
-					} else {
-						start := order.Uint32(source.row(row)[12:])
-						run := source.runs[source.runIndex(row)]
-						end := uint32(run.PAC.Placement.MemberBytes)
-						if row+1 < run.End {
-							end = order.Uint32(source.row(row + 1)[12:])
-						}
-						benchLength = end - start
-					}
-				}
-			})
-		}
-	}
-}
 
 func BenchmarkIndexHour(b *testing.B) {
 	const n = 1000000
@@ -108,7 +48,7 @@ func BenchmarkIndexHour(b *testing.B) {
 		id := [16]byte(uuid(base+int64(i)*3, uint32(i)).Bytes)
 		_ = packIndexID(compact[i*IndexRowSize:], id, base)
 	}
-	for _, stride := range []int{18, 16} {
+	for _, stride := range []int{6, 8} {
 		data := make([]byte, n*stride)
 		for i := 0; i < n; i++ {
 			copy(data[i*stride:], compact[i*IndexRowSize:(i+1)*IndexRowSize])
@@ -119,14 +59,14 @@ func BenchmarkIndexHour(b *testing.B) {
 			b.ReportMetric(float64(len(data)), "index_bytes")
 			for i := 0; i < b.N; i++ {
 				target := int64((i*7919)%n) * 3
-				benchOrdinal = sort.Search(n, func(k int) bool { return indexDelta(data[k*stride:]) >= target })
+				benchOrdinal = sort.Search(n, func(k int) bool { return indexTime(data[k*stride:], base) >= base+target })
 			}
 		})
 	}
 	b.Run("reconstruct_uuid", func(b *testing.B) {
 		b.ReportAllocs()
 		for i := 0; i < b.N; i++ {
-			benchUUID = unpackIndexID(compact[(i%n)*IndexRowSize:], base)
+			benchUUID, _ = seedKey(indexTime(compact[(i%n)*IndexRowSize:], base), uint32(i%n))
 		}
 	})
 }
@@ -204,7 +144,7 @@ func BenchmarkRecordReference(b *testing.B) {
 						row = run.Start + uint64(uint32(ref))
 						epoch = run.PAC.Placement.From
 					}
-					benchUUID = unpackIndexID(source.row(row), epoch)
+					benchUUID, _ = seedKey(indexTime(source.row(row), epoch), 0)
 				}
 			})
 		}

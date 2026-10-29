@@ -127,9 +127,9 @@ func (s *schema) owner(tr *trie, leaf uint32) uint32 {
 	return 0
 }
 func readSchemaMap(dir string) ([]byte, error) {
-	modern, e := readMap(filepath.Join(dir, "events.map"))
+	modern, e := readMap(filepath.Join(dir, "events.rx"))
 	if e == nil {
-		if _, err := os.Stat(filepath.Join(dir, "log.map")); err == nil {
+		if _, err := os.Stat(filepath.Join(dir, "log.rx")); err == nil {
 			return nil, fmt.Errorf("ambiguous schema maps in %s", dir)
 		} else if !os.IsNotExist(err) {
 			return nil, err
@@ -139,7 +139,7 @@ func readSchemaMap(dir string) ([]byte, error) {
 	if !os.IsNotExist(e) {
 		return nil, e
 	}
-	return readMap(filepath.Join(dir, "log.map"))
+	return readMap(filepath.Join(dir, "log.rx"))
 }
 func readScope(dir string) (scope, bool, error) {
 	f, err := os.Open(filepath.Join(dir, "events.idx"))

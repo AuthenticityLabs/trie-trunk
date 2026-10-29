@@ -2,9 +2,10 @@
 export type QueryField={name:string;type:string;values:string[];unit?:'us'};
 export type Literal={kind:'string'|'number'|'duration'|'boolean'|'null';value:string};
 export type Filter={field:string;op:'=='|'!='|'>'|'>='|'<'|'<='|'contains';value:Literal};
+export type Predicate={kind:'filter';filter:Filter}|{kind:'not';value:Predicate}|{kind:'and'|'or'|'xor';left:Predicate;right:Predicate};
 export type SearchMode='contains'|'terms'|'phrase'|'prefix'|'fuzzy';
 export const searchModes:SearchMode[]=['contains','terms','phrase','prefix','fuzzy'];
-export type QueryPlan={filters:Filter[];search?:{text:string;mode:SearchMode};order:'asc'|'desc'};
+export type QueryPlan={filters:Filter[];predicate?:Predicate;search?:{text:string;mode:SearchMode};order:'asc'|'desc'};
 export type QueryAST={collection:'events';plan:QueryPlan;page?:{size:number;after?:string}};
 type Token={text:string;kind:'word'|'string'|'number'|'symbol';at:number;end:number};
 export class QueryError extends Error {at:number;constructor(message:string,at:number){super(`${message} (column ${at+1})`);this.at=at}}
@@ -39,10 +40,8 @@ export function parseQuery(text:string,fields:readonly QueryField[]):QueryAST{
  if(tokens[0].kind==='string'){if(!tokens[0].text)fail('search requires nonempty text');result.plan.search={text:take().text,mode:'contains'};if(i!==tokens.length)fail('Unexpected suffix');return result}
  expect('events');const fluent=tokens[i]?.text==='.';
  if(fluent){expect('.');expect('query');expect('(');expect(')')}else if(tokens[i]?.text==='query')i++;
- let ordered=false,searched=false,paged=false;
- while(i<tokens.length){expect(fluent?'.':'|');const op=take().text;if(fluent)expect('(');
-  if(paged)fail('page must be the last stage');
-  if(op==='where'){
+ let predicateCount=0;
+ const comparison=():Predicate=>{
    const name=field();if(!fields.some(f=>f.name===name))fail(`Unknown field ${name}`);
    if(fluent)expect(',');const operator=take().text;if(!['==','!=','>','>=','<','<=','contains'].includes(operator))fail('Unsupported comparison');if(fluent)expect(',');
    const operand=value(name),definition=fields.find(f=>f.name===name)!;
@@ -52,8 +51,25 @@ export function parseQuery(text:string,fields:readonly QueryField[]):QueryAST{
    const expected=definition.type==='STRING'||definition.type==='UUID'?'string':definition.type==='BOOL'?'boolean':/^(?:[UIF]\d+|TIMESTAMP_\w+|REF16)$/.test(definition.type)?'number':undefined;
    if(operand.kind==='duration'&&definition.unit!=='us')fail(`Duration units require a duration field: ${name}`);
    if(operand.kind!=='null'&&expected&&operand.kind!==expected&&!(operand.kind==='duration'&&expected==='number'))fail(`Expected ${expected} value for ${name}`);
-   result.plan.filters.push({field:name,op:operator as Filter['op'],value:operand});
-   if(result.plan.filters.length>32)fail('At most 32 predicates');
+   if(++predicateCount>32)fail('At most 32 predicates');
+   return {kind:'filter',filter:{field:name,op:operator as Filter['op'],value:operand}};
+ };
+ const keyword=(word:string)=>tokens[i]?.kind==='word'&&tokens[i].text.toLowerCase()===word;
+ const atom=():Predicate=>{
+  if(keyword('not')){i++;return {kind:'not',value:atom()}}
+  if(tokens[i]?.text==='('){i++;const result=expression();expect(')');return result}
+  return comparison();
+ };
+ const and=():Predicate=>{let left=atom();while(keyword('and')){i++;left={kind:'and',left,right:atom()}}return left};
+ const xor=():Predicate=>{let left=and();while(keyword('xor')){i++;left={kind:'xor',left,right:and()}}return left};
+ const expression=():Predicate=>{let left=xor();while(keyword('or')){i++;left={kind:'or',left,right:xor()}}return left};
+ let ordered=false,searched=false,paged=false;
+ while(i<tokens.length){expect(fluent?'.':'|');const op=take().text;if(fluent)expect('(');
+  if(paged)fail('page must be the last stage');
+  if(op==='where'){
+   const predicate=expression();
+   if(predicate.kind==='filter')result.plan.filters.push(predicate.filter);
+   else result.plan.predicate=result.plan.predicate?{kind:'and',left:result.plan.predicate,right:predicate}:predicate;
   }else if(op==='search'){
    if(searched)fail('Only one search stage');searched=true;const t=take();if(t.kind!=='string'||!t.text)fail('search requires quoted text');let mode:SearchMode='contains';if(fluent?tokens[i]?.text===',':tokens[i]?.text==='mode'){i++;const m=take().text;if(!searchModes.includes(m as SearchMode))fail('Expected contains, terms, phrase, prefix, or fuzzy');mode=m as SearchMode}result.plan.search={text:t.text,mode};
   }else if(op==='order'){
@@ -77,7 +93,9 @@ export class EventQuery {
 export type Completion={label:string;insert:string;from:number;to:number;detail:string;cursor?:number};
 /** Completion tolerates incomplete syntax; it never submits a query. */
 export function completeQuery(text:string,caret:number,fields:readonly QueryField[]):Completion[]{
- const before=text.slice(0,caret);const match=before.match(/[\w@-]*$/)!;let from=caret-match[0].length;const partial=match[0];const context=before.slice(0,from);
+ const before=text.slice(0,caret);const match=before.match(/[\w@-]*$/)!;let from=caret-match[0].length;const partial=match[0];let context=before.slice(0,from);
+ // Treat a Boolean operand like a where-clause operand for completion.
+ try{const tokens=lex(context);const start=tokens.reverse().find(t=>t.kind==='word'&&['and','or','xor','not'].includes(t.text.toLowerCase()));if(start)context='where '+context.slice(start.end).replace(/^\s*\(\s*/,'');}catch{}
  let values:{label:string;insert:string;detail:string}[]=[];
  const add=(label:string,detail:string,insert=label)=>values.push({label,detail,insert});
  const fluent=/^\s*events\./.test(text);
@@ -119,6 +137,12 @@ export function formatQuery(ast:QueryAST,syntax:QuerySyntax):string {
  const value=(v:Literal)=>v.kind==='string'?quoted(v.value):v.kind==='null'?'null':v.value;
  const fluent=syntax==='builder',stages:string[]=[];
  for(const f of ast.plan.filters)stages.push(fluent?`where(${field(f.field)}, ${f.op}, ${value(f.value)})`:`where ${field(f.field)} ${f.op} ${value(f.value)}`);
+ if(ast.plan.predicate){
+  const expression=(p:Predicate):string=>p.kind==='filter'
+   ?(fluent?`${field(p.filter.field)}, ${p.filter.op}, ${value(p.filter.value)}`:`${field(p.filter.field)} ${p.filter.op} ${value(p.filter.value)}`)
+   :p.kind==='not'?`NOT (${expression(p.value)})`:`(${expression(p.left)}) ${p.kind.toUpperCase()} (${expression(p.right)})`;
+  stages.push(fluent?`where(${expression(ast.plan.predicate)})`:`where ${expression(ast.plan.predicate)}`);
+ }
  if(ast.plan.search){const {text,mode}=ast.plan.search;stages.push(fluent?`search(${quoted(text)}${mode==='contains'?'':', '+mode})`:`search ${quoted(text)}${mode==='contains'?'':' mode '+mode}`)}
  if(ast.plan.order==='desc')stages.push(fluent?'order(timestamp, desc)':'order timestamp desc');
  if(ast.page)stages.push(fluent?`page(${ast.page.size}${ast.page.after?', '+quoted(ast.page.after):''})`:`page ${ast.page.size}${ast.page.after?' after '+quoted(ast.page.after):''}`);
@@ -144,7 +168,7 @@ export function guidedCompletion(text:string,c:Completion):Completion {
  }
  if(tail.trim()&&!/^\s*(?:\.\w+\(|\|)/.test(tail))return c;
  let suffix='';
- if(/where(?:\s+|\(\s*)$/.test(before)||c.detail==='Comparison'||c.detail==='Time ordering')suffix=fluent?', ':' ';
+ if(/(?:where|AND|OR|XOR|NOT)(?:\s+|\(\s*)$/i.test(before)||c.detail==='Comparison'||c.detail==='Time ordering')suffix=fluent?', ':' ';
  else if(complete)suffix=fluent?') ':' ';
  if(c.detail==='Read-only stage'&&c.label==='search')return {...c,insert:c.insert+'""'+(fluent?')':''),cursor:c.insert.length+1};
  return {...c,insert:c.insert+suffix};

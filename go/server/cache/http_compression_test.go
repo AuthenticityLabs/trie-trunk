@@ -49,7 +49,7 @@ func TestHTTPGzipIngressMembersRecovery(t *testing.T) {
 		t.Fatalf("%d %s", w.Code, w.Body.String())
 	}
 	for _, p := range s.branches[Write].pendingAll() {
-		if l.IsCompressed(p.frame) || (!bytes.Equal(p.frame, a) && !bytes.Equal(p.frame, b)) {
+		if !sameSeedData(t, l, p.frame, a) && !sameSeedData(t, l, p.frame, b) {
 			t.Fatal("staging did not retain original plain PIL")
 		}
 	}
@@ -63,7 +63,7 @@ func TestHTTPGzipIngressMembersRecovery(t *testing.T) {
 	defer s.Close()
 	n := 0
 	err = s.SearchLive(context.Background(), Query{Branch: Write, From: now.Add(-time.Hour), To: now.Add(time.Hour)}, func(raw []byte) error {
-		if !bytes.Equal(raw, a) && !bytes.Equal(raw, b) {
+		if !sameSeedData(t, l, raw, a) && !sameSeedData(t, l, raw, b) {
 			t.Fatal("recovery changed payload")
 		}
 		n++

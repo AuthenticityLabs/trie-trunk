@@ -7,8 +7,6 @@ import (
 	"fmt"
 	pil "github.com/AuthenticityLabs/pill-packer/go/codec"
 	"time"
-
-	"github.com/fxamacker/cbor/v2"
 )
 
 const Format uint32 = 6
@@ -49,45 +47,53 @@ func ParseBranch(s string) (Branch, error) {
 
 type Field = pil.Field
 type Roles struct {
-	Shared   string `json:"shared,omitempty" cbor:"shared,omitempty"`
-	Event    string `json:"event_id" cbor:"event_id"`
-	Object   string `json:"id,omitempty" cbor:"id,omitempty"`
-	Revision string `json:"revision_id,omitempty" cbor:"revision_id,omitempty"`
-	Duration string `json:"duration,omitempty" cbor:"duration,omitempty"`
+	Shared   string `json:"shared,omitempty" pil:"shared,omitempty"`
+	Event    string `json:"event_id" pil:"event_id"`
+	Object   string `json:"id,omitempty" pil:"id,omitempty"`
+	Revision string `json:"revision_id,omitempty" pil:"revision_id,omitempty"`
+	Duration string `json:"duration,omitempty" pil:"duration,omitempty"`
 }
 type Binding struct {
-	Format       uint32                 `json:"format" cbor:"format"`
-	Service      string                 `json:"service" cbor:"service"`
-	Resource     string                 `json:"resource" cbor:"resource"`
-	Major        uint32                 `json:"major" cbor:"major"`
-	Minor        uint32                 `json:"minor" cbor:"minor"`
-	Timezone     string                 `json:"timezone" cbor:"timezone"`
-	Roles        Roles                  `json:"roles" cbor:"roles"`
-	Path         []string               `json:"path,omitempty" cbor:"path,omitempty"`
-	Aggregations []string               `json:"aggregations,omitempty" cbor:"aggregations,omitempty"`
-	References   []ReferenceTranslation `json:"references,omitempty" cbor:"references,omitempty"`
+	Format       uint32                 `json:"format" pil:"format"`
+	Service      string                 `json:"service" pil:"service"`
+	Resource     string                 `json:"resource" pil:"resource"`
+	Major        uint32                 `json:"major" pil:"major"`
+	Minor        uint32                 `json:"minor" pil:"minor"`
+	Timezone     string                 `json:"timezone" pil:"timezone"`
+	Roles        Roles                  `json:"roles" pil:"roles"`
+	Path         []string               `json:"path,omitempty" pil:"path,omitempty"`
+	Aggregations []string               `json:"aggregations,omitempty" pil:"aggregations,omitempty"`
+	References   []ReferenceTranslation `json:"references,omitempty" pil:"references,omitempty"`
 }
 
 // The standard PIL definition is also the storage map. Its resource section supplies
 // storage roles and projections; PIL clients can read the same definition bytes.
 type Definition struct {
-	PIL              uint32  `json:"pil" cbor:"pil"`
-	AdaptiveIntegers string  `json:"adaptive_integers,omitempty" cbor:"adaptive_integers,omitempty"`
-	Identity         string  `json:"definition" cbor:"definition"`
-	Version          uint64  `json:"version" cbor:"version"`
-	Fields           []Field `json:"fields" cbor:"fields"`
-	Resource         Binding `json:"resource" cbor:"resource"`
+	PIL              uint32  `json:"pil" pil:"pil"`
+	AdaptiveIntegers string  `json:"adaptive_integers,omitempty" pil:"adaptive_integers,omitempty"`
+	Identity         string  `json:"definition" pil:"definition"`
+	Version          uint64  `json:"version" pil:"version"`
+	Fields           []Field `json:"fields" pil:"fields"`
+	Resource         Binding `json:"resource" pil:"resource"`
 }
 type Layout struct {
 	statistics *statisticsLayout
 	*pil.Layout
 	Definition                                Definition
 	Event, Object, Revision, Duration, Shared int
+	Record, Time, Leaf                        int
 	Path                                      []int
 }
 
-var encoder, _ = cbor.CoreDetEncOptions().EncMode()
-var decoder, _ = (cbor.DecOptions{DupMapKey: cbor.DupMapKeyEnforcedAPF, IndefLength: cbor.IndefLengthForbidden, TagsMd: cbor.TagsForbidden, MaxNestedLevels: 32, MaxArrayElements: 65536, MaxMapPairs: 65536}).DecMode()
+// Cache metadata, controls, and open objects all use the PIL bootstrap layout.
+type objectCodec struct{}
+
+func (objectCodec) Marshal(v any) ([]byte, error)   { return pil.MarshalObject(v) }
+func (objectCodec) Unmarshal(b []byte, v any) error { return pil.UnmarshalObject(b, v) }
+func (objectCodec) Valid(b []byte) error            { var v any; return pil.UnmarshalObject(b, &v) }
+
+var encoder objectCodec
+var decoder objectCodec
 
 func name(s string) bool {
 	if len(s) == 0 || len(s) > 128 || s == "." || s == ".." {
@@ -110,8 +116,22 @@ func Compile(d Definition) (*Layout, error) {
 	d.Resource.Path = append([]string(nil), d.Resource.Path...)
 	d.Resource.Aggregations = append([]string(nil), d.Resource.Aggregations...)
 	d.Resource.References = cloneReferences(d.Resource.References)
+	for _, intrinsic := range []Field{{Name: "@event_id", Type: "U24"}, {Name: "@time", Type: "TIMESTAMP_MS"}, {Name: "@leaf", Type: "REF16"}} {
+		found := false
+		for _, f := range d.Fields {
+			if f.Name == intrinsic.Name {
+				if f.Type != intrinsic.Type {
+					return nil, fmt.Errorf("invalid Seed intrinsic field %s", f.Name)
+				}
+				found = true
+			}
+		}
+		if !found {
+			d.Fields = append(d.Fields, intrinsic)
+		}
+	}
 	n := d.Resource
-	raw, err := encoder.Marshal(d)
+	raw, err := pil.MarshalObject(d)
 	if err != nil {
 		return nil, err
 	}
@@ -146,6 +166,9 @@ func Compile(d Definition) (*Layout, error) {
 		}
 		return i, nil
 	}
+	l.Record = byName["@event_id"]
+	l.Leaf = byName["@leaf"]
+	l.Time = byName["@time"]
 	if l.Event, err = role(n.Roles.Event, true); err != nil {
 		return nil, err
 	}
@@ -180,7 +203,7 @@ func Compile(d Definition) (*Layout, error) {
 	for _, i := range []int{l.Object, l.Revision} {
 		if i >= 0 {
 			switch d.Fields[i].Type {
-			case "UUID", "U8", "U16", "U32", "U64", "STRING", "BYTES":
+			case "UUID", "U8", "U16", "U24", "U32", "U64", "STRING", "BYTES":
 			default:
 				return nil, fmt.Errorf("unsupported identity type")
 			}
@@ -191,7 +214,7 @@ func Compile(d Definition) (*Layout, error) {
 	}
 	if l.Duration >= 0 {
 		switch d.Fields[l.Duration].Type {
-		case "U8", "U16", "U32", "U64":
+		case "U8", "U16", "U24", "U32", "U64":
 		default:
 			return nil, fmt.Errorf("duration role must be an unsigned integer in microseconds")
 		}
@@ -213,7 +236,7 @@ func Compile(d Definition) (*Layout, error) {
 	seen := map[int]bool{}
 	for _, s := range n.Path {
 		i, ok := byName[s]
-		if !ok || roles[i] || seen[i] || l.Widths[i] == 0 {
+		if !ok || roles[i] || i == l.Record || i == l.Time || i == l.Leaf || seen[i] || l.Widths[i] == 0 {
 			return nil, fmt.Errorf("invalid shared path field %q", s)
 		}
 		seen[i] = true
@@ -228,14 +251,39 @@ func ParseDefinition(raw []byte) (*Layout, error) {
 		return nil, fmt.Errorf("map too large")
 	}
 	var d Definition
-	if err := decoder.Unmarshal(raw, &d); err != nil {
+	if err := pil.UnmarshalObject(raw, &d); err != nil {
 		return nil, err
 	}
 	l, err := Compile(d)
 	if err != nil {
 		return nil, err
 	}
+	if len(d.Fields) != len(l.Definition.Fields) {
+		return nil, fmt.Errorf("Definition is missing Seed intrinsic fields")
+	}
+	portable, err := pil.Parse(raw, l.Layout.Identity)
+	if err != nil {
+		return nil, err
+	}
+	l.Layout = portable
 	l.Bytes = append([]byte(nil), raw...)
 	l.Digest = sha256.Sum256(raw)
 	return l, nil
+}
+
+// Existing positional producers supply user columns; Seed-owned columns are
+// appended by the compiled binding and populated from the original UUID.
+func (l *Layout) Encode(dst []byte, values []Value) ([]byte, error) {
+	if len(values) == len(l.Definition.Fields)-3 && l.Record == len(values) && l.Time == len(values)+1 && l.Leaf == len(values)+2 {
+		values = append(append([]Value(nil), values...), Value{}, Value{}, Value{})
+	}
+	if len(values) == len(l.Definition.Fields) && values[l.Event].State != Absent && values[l.Event].State != Null {
+		id, err := eventID(values[l.Event])
+		if err != nil {
+			return nil, err
+		}
+		values = append([]Value(nil), values...)
+		values[l.Time] = Uint(uint64(eventTime(id[:])), 8)
+	}
+	return l.Layout.Encode(dst, values)
 }

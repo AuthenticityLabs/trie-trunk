@@ -102,7 +102,7 @@ func runServices(ctx context.Context, args []string) error {
 }
 
 const usage = `usage:
-  trunk cache init|ingest|search|verify|prune|prefer --cache name --tenant owner --definition resource.map
+  trunk cache init|ingest|search|verify|prune|prefer --cache name --tenant owner --definition resource.rx
   trunk cache definitions --cache name --tenant owner [--dir ./caches]
   trunk cache cleanup --cache name --tenant owner [--dir ./caches] [--apply]
     Preview unreferenced generations/unpublished maps; --apply removes verified candidates.
@@ -114,19 +114,19 @@ const usage = `usage:
     Requires --cert, --key and TRUNK_TOKEN or --client-ca.
     --http-address 127.0.0.1:3020 adds an HTTP origin for a trusted local proxy.
     Each command's flags follow its own name and port.
-    --cache name --tenant owner --definition resource.map selects the collection-native
+    --cache name --tenant owner --definition resource.rx selects the collection-native
     backend under --dir ./caches, using optimized PIL storage and stream assembly.
   trunk search [--endpoint https://host[:port] | --socket path | --local]
     Default: <dir>/.trunk/search.sock. --local reads files without a server.
     Remote TLS: --ca file [--client-cert file --client-key file].
-  trunk ingest [5140] --dir ./caches --cache name --tenant owner [--definition resource.map]
+  trunk ingest [5140] --dir ./caches --cache name --tenant owner [--definition resource.rx]
     Local HTTP PIL: POST /ingest?tap=<cache>/<service>/<resources>.v<major>/<branch>.
     Requires Content-Type: application/pil, PIL-Version: 2 and Definition-Version.
     Acknowledgements follow durable staging; finalization waits three 5-minute cycles.
     Add --cert cert.pem --key key.pem [--transport http|http3] for remote ingestion.
     Set TRUNK_TOKEN or use --client-ca ca.pem. Without --definition, register through
     HEAD/PUT /definitions before PIL writes, or send blind CBOR to /ingest.
-    Standard CBOR is independent ingress; JSONL/plain-text/syslog are TODO adapters.
+    Blind JSON/JSONL, CBOR, and plain-text/syslog HTTP input is converted to PIL.
     Loads .env, then .env.<ENVIRONMENT> when selected; --env path selects one file.
     Precedence: explicit arguments > process environment > profile > .env > defaults.
   trunk search [--tail [N] | --head [N]] [--pretty] [-f]

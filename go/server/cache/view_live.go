@@ -65,11 +65,11 @@ func (b *branchStore) captureLive(from, to time.Time, prior *viewBinding) (strin
 	b.liveViews[key] = liveViewSnapshot{values, now.Add(15 * time.Minute)}
 	return key, values, nil
 }
-func (s *viewSource) eventID(row uint64) []byte {
+func (s *viewSource) orderingKey(row uint64) []byte {
 	if row >= s.binding.Tail {
-		return s.pending[row-s.binding.Tail].id[:]
+		return timeKey(eventTime(s.pending[row-s.binding.Tail].id[:]))
 	}
-	return s.context.identity(&s.snap, row)
+	return s.snap.assemblyRow(row)
 }
 func (s *viewSource) fullFrame(row uint64) ([]byte, error) {
 	if row >= s.binding.Tail {
@@ -82,7 +82,7 @@ func (s *viewSource) fullFrame(row uint64) ([]byte, error) {
 	if e != nil {
 		return nil, e
 	}
-	return s.assembler.assemble(s.context.identity(&s.snap, row), raw, nil)
+	return s.assembler.assemble(s.snap.assemblyRow(row), raw, nil, s.snap.rowLeaf(row))
 }
 
 func (s *viewSource) resident(row uint64) []byte {
@@ -96,9 +96,9 @@ func (s *viewSource) resident(row uint64) []byte {
 	// its immutable contents. It must not advance or consult the ingestion clock.
 	var now time.Time
 	if s.indexing {
-		now = time.UnixMilli(s.context.segment(&s.snap, row).PAC.Placement.From + indexDelta(s.snap.row(row)))
+		now = time.UnixMilli(s.snap.rowTime(row))
 	} else {
 		now = s.store.config.Now()
 	}
-	return b.live.get(s.context.identity(&s.snap, row), false, now)
+	return b.live.row(s.snap.rowTime(row), row, now)
 }

@@ -141,7 +141,7 @@ func TestEncodingEquivalence(t *testing.T) {
 	if err := json.Unmarshal(readable, &want); err != nil {
 		t.Fatal(err)
 	}
-	for _, format := range []codec.Format{codec.CompactJSON, codec.CBOR} {
+	for _, format := range []codec.Format{codec.CompactJSON, codec.PIL} {
 		data, err := e.Encode(format, d)
 		if err != nil {
 			t.Fatal(err)
@@ -167,7 +167,7 @@ func TestExplicitEmptyAndUnknownReferences(t *testing.T) {
 	_, b := l.Begin(context.Background())
 	b.Service(65000).OperationText("").HttpStatus(200).ResponseBytes(0)
 	e := b.Snapshot()
-	for _, format := range []codec.Format{codec.CompactJSON, codec.CBOR} {
+	for _, format := range []codec.Format{codec.CompactJSON, codec.PIL} {
 		data, err := e.Encode(format, nil)
 		if err != nil {
 			t.Fatal(err)
@@ -198,7 +198,7 @@ func TestBoundedErrorMetadata(t *testing.T) {
 
 func TestEntryIdCarriesStartAndRemainsStable(t *testing.T) {
 	var out bytes.Buffer
-	l := testLogger(t, &out, Config{Format: codec.CBOR})
+	l := testLogger(t, &out, Config{Format: codec.PIL})
 	before := time.Now()
 	_, b := l.Begin(context.Background())
 	after := time.Now()
@@ -213,7 +213,7 @@ func TestEntryIdCarriesStartAndRemainsStable(t *testing.T) {
 	if e.Id != id || b.Id() != id || e.Duration < 0 {
 		t.Fatal("identity or duration relationship changed")
 	}
-	r, err := codec.Decode(out.Bytes(), codec.CBOR)
+	r, err := codec.Decode(out.Bytes(), codec.PIL)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -231,11 +231,11 @@ func TestEntryIdCarriesStartAndRemainsStable(t *testing.T) {
 	if other.Id() == id {
 		t.Fatal("new transaction reused Id")
 	}
-	first, err := e.Encode(codec.CBOR, nil)
+	first, err := e.Encode(codec.PIL, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
-	second, err := e.Encode(codec.CBOR, nil)
+	second, err := e.Encode(codec.PIL, nil)
 	if err != nil || !bytes.Equal(first, second) {
 		t.Fatal("re-encoding regenerated identity")
 	}
@@ -243,7 +243,7 @@ func TestEntryIdCarriesStartAndRemainsStable(t *testing.T) {
 
 func TestIdentityFailureDoesNotEmit(t *testing.T) {
 	var out bytes.Buffer
-	l := testLogger(t, &out, Config{Format: codec.CBOR})
+	l := testLogger(t, &out, Config{Format: codec.PIL})
 	_, b := l.Begin(context.Background())
 	failure := errors.New("entropy unavailable")
 	b.state.initErr = failure
@@ -253,7 +253,7 @@ func TestIdentityFailureDoesNotEmit(t *testing.T) {
 }
 
 func TestFinishRacesWithEnrichment(t *testing.T) {
-	l := testLogger(t, io.Discard, Config{Format: codec.CBOR})
+	l := testLogger(t, io.Discard, Config{Format: codec.PIL})
 	_, b := l.Begin(context.Background())
 	var group sync.WaitGroup
 	for i := 0; i < 16; i++ {

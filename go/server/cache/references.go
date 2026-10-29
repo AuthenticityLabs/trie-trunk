@@ -12,9 +12,9 @@ import (
 // administrator asserts semantic equivalence of each source/target reference.
 // Missing keys are errors, including zero; no numeric identity is inferred.
 type ReferenceTranslation struct {
-	Source string            `json:"source_definition" cbor:"source_definition"`
-	Field  string            `json:"field" cbor:"field"`
-	Values map[uint16]uint16 `json:"values" cbor:"values"`
+	Source string            `json:"source_definition" pil:"source_definition"`
+	Field  string            `json:"field" pil:"field"`
+	Values map[uint16]uint16 `json:"values" pil:"values"`
 }
 
 func referenceType(kind string) bool { return kind == "REF16" || kind == "ARRAY<REF16>" }

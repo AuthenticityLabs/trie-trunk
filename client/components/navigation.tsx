@@ -3,7 +3,7 @@ import { nextTheme, themeNames, type ThemePreference } from "../services/prefere
 import { Icon, ProfileMark, type IconName } from "./icon";
 import forward from "../assets/snoot-forward.png";
 
-export type Page = "Search" | "Dashboards" | "Alerts" | "Collections" | "Configs";
+export type Page = "Search" | "Dashboards" | "Alerts" | "Collections" | "Configs" | "Profile";
 const navigation: { title: Page; icon: IconName }[] = [
   { title: "Search", icon: "search" },
   { title: "Dashboards", icon: "dashboard" },
@@ -19,10 +19,9 @@ export function Navigation(props: {
   onToggleTheme: () => void;
   page: Page;
   count: number;
-  hasToken: boolean;
   onNavigate: (page: Page) => void;
   onHelp: () => void;
-  onConnection: () => void;
+  profileName:string;
   onProfile: () => void;
   onLogout: () => void;
   children?: JSX.Element;
@@ -100,20 +99,9 @@ export function Navigation(props: {
           <Icon name="help" />
           <span>Search Guide</span>
         </button>
-        <button
-          class="nav-item"
-          onClick={() => props.onConnection()}
-          title="Connection"
-        >
-          <Icon name="settings" />
-          <span>Connection</span>
-          <span
-            class={`connection-dot ${props.hasToken ? "configured" : ""}`}
-          />
-        </button>
-        <div class="sidebar-account" aria-label="Demo User and Session">
-          <button class="nav-item account-profile" onClick={props.onProfile} title="Demo User" aria-label="Demo User">
-            <span class="avatar"><ProfileMark size={36}/></span><span>Demo User</span>
+        <div class="sidebar-account" aria-label={`${props.profileName} and Session`}>
+          <button class="nav-item account-profile" onClick={props.onProfile} title="Profile" aria-label={`Profile for ${props.profileName}`}>
+            <span class="avatar"><ProfileMark size={36}/></span><span>{props.profileName}</span>
           </button>
           <button class="nav-item" onClick={props.onLogout} title="Log Out" aria-label="Log Out">
             <Icon name="logout"/><span>Log Out</span>

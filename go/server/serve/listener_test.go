@@ -70,7 +70,7 @@ func events(t *testing.T) (search.Config, *store.Manager) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		record, err := codec.MarshalCompact(codec.Record{8: id, 12: uint64(2234), 15: fmt.Sprintf("event %d", i)}, codec.CBOR)
+		record, err := codec.MarshalCompact(codec.Record{8: id, 12: uint64(2234), 15: fmt.Sprintf("event %d", i)}, codec.PIL)
 		if err != nil {
 			t.Fatal(err)
 		}

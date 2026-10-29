@@ -25,14 +25,14 @@ func modernFixture(t *testing.T, zone string) (Config, codec.Revision, []byte, *
 }
 func modernPayload(t *testing.T, at time.Time, resource uint64) (codec.UUIDv7, []byte) {
 	id, data := payload(t, at, 100, 5)
-	v, err := codec.Decode(data, codec.CBOR)
+	v, err := codec.Decode(data, codec.PIL)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if resource > 0 {
 		v[4] = resource
 	}
-	data, err = codec.MarshalCompact(v, codec.CBOR)
+	data, err = codec.MarshalCompact(v, codec.PIL)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -58,7 +58,7 @@ func TestEventsMaturityLateArrivalAndRecovery(t *testing.T) {
 		t.Fatal(scopes, err)
 	}
 	dir := filepath.Join(versionDir(c.Root, m.config.Tap, rev.Version), scopes[0].Dir)
-	before, err := os.ReadFile(filepath.Join(dir, "events.pop"))
+	before, err := os.ReadFile(filepath.Join(dir, "events.pods"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -82,9 +82,9 @@ func TestEventsMaturityLateArrivalAndRecovery(t *testing.T) {
 	if old.Size()-next.Size() != 8 {
 		t.Fatal(old.Size(), next.Size())
 	}
-	after, _ := os.ReadFile(filepath.Join(dir, "events.pop"))
+	after, _ := os.ReadFile(filepath.Join(dir, "events.pods"))
 	if !bytes.Equal(before, after) {
-		t.Fatal("population rewritten")
+		t.Fatal("payload rewritten")
 	}
 	_, late := modernPayload(t, now.Add(-22*time.Minute), 1)
 	if duplicate, err := m.Append(rev, late); err != nil || duplicate {
@@ -135,12 +135,12 @@ func TestEventsOwnersAndCrossOwnerDedup(t *testing.T) {
 	if _, err := m.Append(rev, a); err != nil {
 		t.Fatal(err)
 	}
-	fields, err := codec.Decode(a, codec.CBOR)
+	fields, err := codec.Decode(a, codec.PIL)
 	if err != nil {
 		t.Fatal(err)
 	}
 	fields[4] = uint64(2)
-	changed, err := codec.MarshalCompact(fields, codec.CBOR)
+	changed, err := codec.MarshalCompact(fields, codec.PIL)
 	if err != nil {
 		t.Fatal(err)
 	}

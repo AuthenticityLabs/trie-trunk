@@ -10,5 +10,5 @@ const temp = mkdtempSync(join(tmpdir(), 'trunk-cddl-'));
 try {
   const schema = join(temp, 'definition.cddl');
   writeFileSync(schema, 'entry = trunk-definition\n' + readFileSync(new URL('schemas/definition.cddl', library), 'utf8') + readFileSync(new URL('../schemas/trunk-definition.cddl', import.meta.url), 'utf8'));
-  execFileSync('cargo', ['run', '--locked', '--manifest-path', fileURLToPath(new URL('rust/Cargo.toml', library)), '--example', 'check_definition', '--', schema, ...['native-pil','native-ranges','pac-view'].map(n=>`client/services/fixtures/${n}/definition.cbor`)], {cwd:root, stdio:'inherit'});
+  execFileSync('cargo', ['run', '--locked', '--manifest-path', fileURLToPath(new URL('rust/Cargo.toml', library)), '--example', 'check_definition', '--', schema, ...['native-pil','native-ranges','pac-view'].map(n=>`client/services/fixtures/${n}/definition.rx`)], {cwd:root, stdio:'inherit'});
 } finally { rmSync(temp, {recursive:true, force:true}); }

@@ -19,7 +19,7 @@ var configurationGroups = map[string][]string{
 	"compression": {"pac.gzip_level", "summary.gzip_level"},
 	"staging":     {"staging.max_bytes", "staging.max_records", "staging.max_disk_bytes"},
 	"indexing":    {"search_index", "object_index", "cache_invalidation"},
-	"replication": {"replication.index_period", "replication.population", "replication.provisional_tail"},
+	"replication": {"replication.index_period", "replication.data", "replication.provisional_tail"},
 }
 
 type configurationView struct {

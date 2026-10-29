@@ -18,7 +18,7 @@ import (
 
 const sessionCookie = "snoot_desktop_session"
 
-var apiPaths = []string{"/caches", "/schemas", "/events", "/collect", "/summaries", "/objects", "/configurations", "/storage", "/rejections", "/definitions", "/ingest"}
+var apiPaths = []string{"/trunk", "/collections", "/caches", "/schemas", "/events", "/collect", "/summaries", "/objects", "/configurations", "/storage", "/rejections", "/definitions", "/ingest"}
 
 // One transport is selected for the session. A failed mutation is never replayed
 // against a different server; changing connections requires an explicit restart.
@@ -57,13 +57,14 @@ func selectTransport(ctx context.Context, endpoint, socket string) (*url.URL, *h
 }
 
 type bridge struct {
-	host, token string
-	files       fs.FS
-	proxy       http.Handler
-	selfTest    bool
-	report      chan []byte
-	transport   string
-	connection  *desktopConnection
+	host, token   string
+	files         fs.FS
+	proxy         http.Handler
+	selfTest      bool
+	dashboardTest bool
+	report        chan []byte
+	transport     string
+	connection    *desktopConnection
 }
 
 func newBridge(host, token string, files fs.FS, target *url.URL, transport http.RoundTripper, mode string) *bridge {
@@ -119,6 +120,15 @@ func (b *bridge) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	for _, p := range apiPaths {
 		if r.URL.Path == p || strings.HasPrefix(r.URL.Path, p+"/") {
+			b.proxy.ServeHTTP(w, r)
+			return
+		}
+	}
+	// Native replication routes are catalog paths, rather than fixed API names.
+	// Keep bundled frontend assets local; proxy the server's data-file routes.
+	if !strings.HasPrefix(r.URL.Path, "/assets/") {
+		switch path.Ext(r.URL.Path) {
+		case ".rx", ".tri", ".sum", ".idx", ".tvy", ".pods":
 			b.proxy.ServeHTTP(w, r)
 			return
 		}

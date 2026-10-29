@@ -1,3 +1,4 @@
+import {apiFetch} from './connections.ts';
 import { validSource } from "./source.ts";
 import { valueAt, jsonText, type LogEvent } from "./dictionary.ts";
 
@@ -12,7 +13,7 @@ export async function listCaches(
 ): Promise<string[]> {
   const headers: Record<string, string> = { Accept: "application/json" };
   if (token.trim()) headers.Authorization = `Bearer ${token.trim()}`;
-  const response = await fetch("/caches", { headers, signal, cache: "no-store" });
+  const response = await apiFetch("/caches", { headers, signal, cache: "no-store" });
   await checkResponse(response);
   if (
     response.headers.get("Content-Type")?.split(";", 1)[0].trim() !==
@@ -50,7 +51,7 @@ async function checkResponse(response: Response) {
   if (response.ok) return;
   if (response.status === 401)
     throw new Error(
-      "Authentication required. Add your bearer token in Connection settings.",
+      "Authentication required. Add your bearer token in Profile → Connections.",
     );
   if (response.status === 503)
     throw new Error(

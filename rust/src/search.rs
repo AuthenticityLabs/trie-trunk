@@ -436,14 +436,14 @@ mod tests {
 
     #[test]
     fn cached_lineage_keeps_traversal_order() {
-        let population = json!({"a": 1, "id": "uuid", "time": "derived", "z": [true, null]});
+        let payload = json!({"a": 1, "id": "uuid", "time": "derived", "z": [true, null]});
         let lineage = vec![
             ("service".into(), json!("vault")),
             ("level".into(), json!("ERROR")),
             ("time".into(), json!("stored")),
         ];
         let mut combined: Map<_, _> = lineage.iter().cloned().collect();
-        combined.extend(population.as_object().unwrap().clone());
+        combined.extend(payload.as_object().unwrap().clone());
         for pretty in [false, true] {
             for (headers, names) in [
                 (&[][..], ["id", "time", "service", "level", "a", "z"]),
@@ -455,7 +455,7 @@ mod tests {
                 let mut bytes = Vec::new();
                 encode(
                     &mut bytes,
-                    population.as_object().unwrap(),
+                    payload.as_object().unwrap(),
                     &lineage,
                     headers,
                     pretty,

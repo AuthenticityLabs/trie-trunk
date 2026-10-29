@@ -1,0 +1,84 @@
+{
+  "captured_at_utc": "2026-10-28T01:39:29.518061+00:00",
+  "platform": "macOS-27.0.1-arm64-arm-64bit-Mach-O",
+  "cpu_count": 10,
+  "GOMAXPROCS": null,
+  "source_exclusions": [
+    ".git and ignored/generated build products",
+    "benchmarks/ artifacts"
+  ],
+  "commands": [
+    {
+      "argv": [
+        "go",
+        "version"
+      ],
+      "exit_code": 0,
+      "output": "go version go1.26.4 darwin/arm64"
+    },
+    {
+      "argv": [
+        "rustc",
+        "-Vv"
+      ],
+      "exit_code": 0,
+      "output": "rustc 1.97.1 (8bab26f4f 2026-07-14)\nbinary: rustc\ncommit-hash: 8bab26f4f68e0e26f0bb7960be334d5b520ea452\ncommit-date: 2026-07-14\nhost: aarch64-apple-darwin\nrelease: 1.97.1\nLLVM version: 22.1.6"
+    },
+    {
+      "argv": [
+        "cargo",
+        "-V"
+      ],
+      "exit_code": 0,
+      "output": "cargo 1.97.1 (c980f4866 2026-06-30)"
+    },
+    {
+      "argv": [
+        "node",
+        "--version"
+      ],
+      "exit_code": 0,
+      "output": "v26.5.0"
+    },
+    {
+      "argv": [
+        "sysctl",
+        "-n",
+        "hw.model",
+        "hw.memsize",
+        "hw.ncpu",
+        "machdep.cpu.brand_string"
+      ],
+      "exit_code": 1,
+      "output": "sysctl: sysctl fmt -1 1024 1: Operation not permitted"
+    }
+  ],
+  "repositories": {
+    "pill-packer": {
+      "root": "/Users/jason/recovered-work/2026-10-27/pill-packer",
+      "head": "e663e8960acb71239992422b09714d224bdfe38d",
+      "source_files": 108,
+      "source_manifest_sha256": "55982d5812870f251e5b84aa6d11007c9edd5623526f297e5ac833220706e793",
+      "status": "M README.md\n M go/codec.go\n M go/codec/cbor_scan.go\n D go/codec/compression.go\n M go/codec/definition.go\n M go/codec/frame.go\n M go/codec/integers.go\n M go/codec/pac.go\n M go/codec/pac_gzip.go\n M go/codec/projection_values.go\n M go/codec/restore.go\n M go/codec_test.go\n M include/pill_packer.h\n M npm/fixtures/portable.json\n M npm/index.d.ts\n M npm/index.js\n M npm/package.json\n M npm/portable.test.mjs\n M npm/src/cbor.ts\n D npm/src/compression.ts\n M npm/src/layout.ts\n M npm/src/pac.ts\n M npm/test.mjs\n M rust/Cargo.lock\n M rust/Cargo.toml\n M rust/benches/codecs.rs\n M rust/benches/shared_refs.rs\n D rust/examples/cache_interop.rs\n M rust/examples/check_definition.rs\n M rust/examples/nested_objects.rs\n M rust/examples/roundtrip.rs\n M rust/ffi/Cargo.lock\n M rust/ffi/Cargo.toml\n M rust/ffi/src/lib.rs\n M rust/src/array.rs\n M rust/src/cbor.rs\n M rust/src/compression.rs\n M rust/src/definition.rs\n M rust/src/document.rs\n M rust/src/frame.rs\n M rust/src/index.rs\n M rust/src/lib.rs\n M rust/src/types.rs\n M rust/src/value.rs\n M rust/tests/adaptive.rs\n M rust/tests/borrowed_cbor.rs\n M rust/tests/codec.rs\n M rust/tests/documents.rs\n D rust/tests/fixtures/pac/definition.cbor\n M rust/tests/fixtures/pac/native.pac\n M rust/tests/fixtures/pac/packed.pac\n M rust/tests/fixtures/pac/packed.pac.gz\n M rust/tests/fixtures/pac/spliced-pacs.gz\n M rust/tests/frame_index.rs\n M rust/tests/pac.rs\n M rust/tests/reference.rs\n M rust/wasm/Cargo.lock\n M rust/wasm/Cargo.toml\n M rust/wasm/src/lib.rs\n M schemas/definition.cddl\n?? go/codec/fixed_string.go\n?? go/codec/fixed_string_test.go\n?? go/codec/object.go\n?? go/codec/object_fields.go\n?? go/codec/object_test.go\n?? go/codec/schema.go\n?? go/codec/schema_test.go\n?? npm/fixtures/object.hex\n?? npm/object.test.mjs\n?? npm/src/object.ts\n?? rust/src/bin/\n?? rust/src/borrowed_object.rs\n?? rust/src/object.rs\n?? rust/src/schema.rs\n?? rust/tests/fixed_strings.rs\n?? rust/tests/fixtures/pac/definition.rx\n?? rust/tests/fixtures/schema/\n?? rust/tests/rx.rs\n?? rust/tests/schema.rs\n?? schemas/pil.rx",
+      "snapshot_sha256": "08912c792c0d6c072a9856e360d4e089206361294ad337d7e13560f6ab9e51d8"
+    },
+    "trie-trunk": {
+      "root": "/Users/jason/recovered-work/2026-10-27/trie-trunk",
+      "head": "42ebf755222b88108cff2c3d0576642389355ce7",
+      "source_files": 725,
+      "source_manifest_sha256": "032612591a3bb4927482e7c85bcdbf5b35f07a218c59d0e3844cc4125d2951bd",
+      "status": "M README.md\n M client/scripts/benchmark-storage-footprint.mjs\n M client/scripts/test-search-browser.mjs\n M client/scripts/test-store-browser.mjs\n D client/services/compression.test.mjs\n M client/services/dictionary.ts\n M client/services/fixtures/compression/event.json\n M client/services/fixtures/daily-summary/aligned/manifest.json\n M client/services/fixtures/daily-summary/aligned/view.pil\n M client/services/fixtures/daily-summary/border/manifest.json\n M client/services/fixtures/daily-summary/border/view.pil\n M client/services/fixtures/native-pil/collect.pil\n D client/services/fixtures/native-pil/definition.cbor\n M client/services/fixtures/native-pil/frame.pil\n D client/services/fixtures/native-ranges/definition.cbor\n M client/services/fixtures/native-ranges/multi-hour.pil\n M client/services/fixtures/native-ranges/population.bin\n M client/services/fixtures/native-ranges/ranges.pil\n M client/services/fixtures/pac-buckets/native.pil\n M client/services/fixtures/pac-buckets/page-0.pil\n M client/services/fixtures/pac-buckets/page-1.pil\n M client/services/fixtures/pac-buckets/page-2.pil\n M client/services/fixtures/pac-buckets/warm.pil\n M client/services/fixtures/pac-live/first.pil\n M client/services/fixtures/pac-live/native.pil\n M client/services/fixtures/pac-live/next.pil\n M client/services/fixtures/pac-storage/after-retirement.pil\n M client/services/fixtures/pac-storage/after-retirement.pil.gz\n M client/services/fixtures/pac-storage/gap-0.pil\n M client/services/fixtures/pac-storage/gap-0.pil.gz\n M client/services/fixtures/pac-storage/gap-1.pil\n M client/services/fixtures/pac-storage/gap-1.pil.gz\n M client/services/fixtures/pac-storage/gap-2.pil\n M client/services/fixtures/pac-storage/gap-2.pil.gz\n M client/services/fixtures/pac-storage/hour.pil\n M client/services/fixtures/pac-storage/hour.pil.gz\n M client/services/fixtures/pac-storage/live-open.pil\n M client/services/fixtures/pac-storage/native-open.pil\n M client/services/fixtures/pac-storage/retired.pil\n M client/services/fixtures/pac-storage/retired.pil.gz\n M client/services/fixtures/pac-view/cold.pil\n M client/services/fixtures/pac-view/cold.pil.gz\n D client/services/fixtures/pac-view/definition.cbor\n M client/services/fixtures/pac-view/next.pil\n M client/services/fixtures/pac-view/next.pil.gz\n M client/services/fixtures/pac-view/warm.pil\n M client/services/fixtures/pac-view/warm.pil.gz\n D client/services/fixtures/references/definition.cbor\n M client/services/fixtures/rejections/inspection.jsonl\n M client/services/fixtures/replay/history.pil\n M client/services/fixtures/replay/metadata.json\n M client/services/fixtures/replay/warm.pil\n M client/services/fixtures/state-pages/ranges.pil\n M client/services/native-files.test.mjs\n M client/services/native-pil.test.mjs\n M client/services/native-store.test.mjs\n M client/services/notebooks.ts\n M client/services/pac-view.test.mjs\n M client/services/pil-fixtures.mjs\n M client/services/pil-worker.test.mjs\n D client/services/pil/cbor.ts\n D client/services/pil/compression.ts\n M client/services/pil/event.ts\n M client/services/pil/metadata.ts\n M client/services/pil/native-event.ts\n M client/services/pil/stream.ts\n M client/services/pil/summaries.ts\n M client/services/pil/summary-packs.ts\n M client/services/pil/view.ts\n M client/services/pil/worker-runtime.ts\n M client/services/query-metadata.test.mjs\n M client/services/reference.test.mjs\n M client/services/store.test.mjs\n M client/services/store/benchmark-worker.ts\n M client/services/store/browser-harness.ts\n M client/services/store/native-files.ts\n M client/services/store/native.ts\n M client/services/summary-pack-fixture.mjs\n M client/services/summary-packs.test.mjs\n M go/cmd/bench-retrieval/main.go\n M go/cmd/storage-bench/main.go\n M go/cmd/storage-bench/native.go\n M go/cmd/trunk/cache.go\n M go/cmd/trunk/main.go\n M go/cmd/trunk/search_test.go\n M go/codec/codec.go\n M go/codec/codec_test.go\n M go/codec/definition.go\n M go/codec/framing.go\n M go/codec/uuid_test.go\n M go/codec/value.go\n M go/logger/client/encode.go\n M go/logger/client/encode_test.go\n M go/logger/client/entry.go\n M go/logger/client/feature_benchmark_test.go\n M go/logger/client/http_benchmark_test.go\n M go/logger/client/logger.go\n M go/logger/client/logger_test.go\n M go/logger/client/pil.go\n M go/logger/client/pil_test.go\n M go/logger/client/stream_test.go\n M go/logger/out/connector.go\n M go/logger/out/writer.go\n M go/logger/pil/logger.go\n M go/logger/pil/logger_test.go\n M go/server/cache/aggregate.go\n M go/server/cache/assemble.go\n M go/server/cache/cbor_scan_test.go\n M go/server/cache/cleanup.go\n M go/server/cache/cleanup_test.go\n M go/server/cache/codec_measure_test.go\n M go/server/cache/compact_integer_experiment_measure_test.go\n M go/server/cache/compact_integer_optimized_measure_test.go\n M go/server/cache/compact_integer_streaming_measure_test.go\n M go/server/cache/compact_test.go\n M go/server/cache/compression.go\n D go/server/cache/compression_measure_test.go\n D go/server/cache/compression_test.go\n M go/server/cache/coordinator_test.go\n M go/server/cache/definition.go\n M go/server/cache/endpoint.go\n M go/server/cache/endpoint_test.go\n M go/server/cache/fixture_profiles_test.go\n M go/server/cache/generic.go\n M go/server/cache/generic_http.go\n M go/server/cache/generic_test.go\n M go/server/cache/history.go\n M go/server/cache/http.go\n M go/server/cache/http_compression_test.go\n M go/server/cache/http_test.go\n M go/server/cache/index.go\n M go/server/cache/measure_test.go\n M go/server/cache/naming_test.go\n M go/server/cache/native_delivery_bench_test.go\n M go/server/cache/native_http_test.go\n M go/server/cache/native_ingress.go\n M go/server/cache/native_ingress_test.go\n M go/server/cache/native_live.go\n M go/server/cache/native_memory_test.go\n M go/server/cache/negotiation.go\n M go/server/cache/object_state.go\n M go/server/cache/objects.go\n M go/server/cache/pac_storage.go\n M go/server/cache/pac_test.go\n M go/server/cache/pil_codec.go\n M go/server/cache/pil_controls.go\n M go/server/cache/preferred.go\n M go/server/cache/preferred_test.go\n M go/server/cache/projection.go\n M go/server/cache/projection_test.go\n M go/server/cache/query.go\n M go/server/cache/references.go\n M go/server/cache/references_test.go\n M go/server/cache/rejections.go\n M go/server/cache/replay_http.go\n M go/server/cache/replication.go\n M go/server/cache/replication_state.go\n M go/server/cache/replication_state_test.go\n M go/server/cache/seal.go\n M go/server/cache/search_index_test.go\n M go/server/cache/search_projection.go\n M go/server/cache/source_scope_test.go\n M go/server/cache/staging.go\n M go/server/cache/statistics_accumulator.go\n M go/server/cache/store.go\n M go/server/cache/store_open.go\n M go/server/cache/store_test.go\n M go/server/cache/summary_days.go\n M go/server/cache/summary_days_test.go\n M go/server/cache/summary_footprint_test.go\n M go/server/cache/summary_numeric_bench_test.go\n M go/server/cache/summary_packs_http.go\n M go/server/cache/summary_packs_http_test.go\n M go/server/cache/summary_rollups.go\n M go/server/cache/transforms.go\n M go/server/cache/transforms_test.go\n M go/server/cache/trie.go\n M go/server/cache/view_http.go\n M go/server/cache/view_http_test.go\n M go/server/cache/view_query.go\n D go/server/ingest/cbor/handler.go\n D go/server/ingest/cbor/protocol.go\n D go/server/ingest/cbor/websocket.go\n M go/server/ingest/handler.go\n M go/server/ingest/json/decode.go\n M go/server/ingest/sample/main.go\n M go/server/ingest/sample/main_test.go\n M go/server/ingest/taps.go\n M go/server/search/events_benchmark_test.go\n M go/server/search/follow_test.go\n M go/server/search/objects_test.go\n M go/server/search/search_test.go\n M go/server/serve/listener_test.go\n M go/server/serve/native_test.go\n M go/server/store/events_layout.go\n M go/server/store/events_test.go\n M go/server/store/files.go\n M go/server/store/layout_test.go\n M go/server/store/manager.go\n M go/server/store/message_test.go\n M go/server/store/objects.go\n M go/server/store/objects_test.go\n M go/server/store/partition.go\n M go/server/store/record.go\n M go/server/store/ref16_test.go\n M go/server/store/store_test.go\n M go/server/store/trie.go\n M rust/Cargo.lock\n M rust/browser/Cargo.lock\n M rust/browser/src/lib.rs\n M rust/browser/src/mapping.rs\n M rust/src/filter.rs\n M rust/src/pil.rs\n M rust/src/schema.rs\n M rust/src/store.rs\n M scripts/check-definition-schema.mjs\n M site/src/pages.mjs\n?? benchmarks/storage/2026-10-27-pac-index-baseline/\n?? benchmarks/storage/2026-10-27-summary-pac/\n?? client/services/fixtures/native-pil/definition.rx\n?? client/services/fixtures/native-ranges/definition.rx\n?? client/services/fixtures/pac-view/definition.rx\n?? client/services/fixtures/references/definition.rx\n?? client/services/pil/control.ts\n?? go/server/cache/blind_ingress_test.go\n?? go/server/cache/blind_json.go\n?? go/server/cache/summary-definition.json\n?? go/server/cache/summary.rx\n?? go/server/cache/summary_pac.go\n?? go/server/ingest/pil/\n?? scripts/regenerate-pil-fixtures.mjs",
+      "snapshot_sha256": "69dacdb9f2ee1f8f1e6112931fef5af5e4c913a89ddd6e24e681d33a832e3545"
+    }
+  },
+  "linked_libraries": {
+    "pill-packer/rust/ffi/target/release/libpill_packer_ffi.a": {
+      "size": 19558832,
+      "sha256": "99f08e079732cf2b87fecb0a8329fd36c61ed6658f3c38644bc63a2a9f7c1d9b"
+    },
+    "trie-trunk/rust/target/release/libtrie_trunk_search.a": {
+      "size": 41158376,
+      "sha256": "33ccc00b87f11d6d2b6d25a89fac43651746f66172836bcf90e8a125a851711d"
+    }
+  }
+}

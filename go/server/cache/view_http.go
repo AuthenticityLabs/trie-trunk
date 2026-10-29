@@ -173,6 +173,11 @@ func (h *HTTP) viewHTTP(w http.ResponseWriter, r *http.Request) {
 		for _, api := range apis {
 			branches, _ := api.selectedBranches(c.Scope)
 			for _, b := range branches {
+				// Diagnostic branches are inspected explicitly in their own view.
+				// A resource-wide event query contains operational events only.
+				if len(branches) > 1 && !b.Aggregates() {
+					continue
+				}
 				targets = append(targets, target{api, b, nil})
 			}
 		}
@@ -264,7 +269,7 @@ func (h *HTTP) viewHTTP(w http.ResponseWriter, r *http.Request) {
 		summary.Counts = make([]uint64, n)
 		summary.Errors = make([]uint64, n)
 		// Reopen at the captured tails; a retention replacement is an explicit retry,
-		// never a summary computed against a different population than the page.
+		// never a summary computed against a different payload than the page.
 		statSources := sources
 		if daily {
 			result.Analytics, statSources, e = buildViewAnalytics(sources, timeBound(from), timeBound(to), resolution)
@@ -316,7 +321,7 @@ func (h *HTTP) viewHTTP(w http.ResponseWriter, r *http.Request) {
 			if len(last) > 0 {
 				boundary := uint64(sort.Search(int(end-start), func(n int) bool {
 					row := span.at + uint64(n)
-					cmp := bytes.Compare(s.eventID(row), last)
+					cmp := bytes.Compare(s.orderingKey(row), last)
 					if queue.desc {
 						return cmp > 0 || cmp == 0 && (i > c.LastSource || i == c.LastSource && row >= c.LastRow)
 					}
@@ -352,14 +357,13 @@ func (h *HTTP) viewHTTP(w http.ResponseWriter, r *http.Request) {
 			}
 			hit := queue.hits[0]
 			s := sources[hit.source]
-			row := s.eventID(hit.row)
+			row := s.orderingKey(hit.row)
 			provisional := hit.row >= s.binding.Tail
 			key := viewDigest(struct {
 				Binding viewBinding
 				Row     uint64
 			}{viewBinding{Definition: s.binding.Definition, Generation: s.binding.Generation, Branch: s.branch}, hit.row})
 			var start, end uint64
-			var err error
 			if provisional {
 				end = uint64(len(s.pending[hit.row-s.binding.Tail].frame))
 				key = viewDigest(struct {
@@ -368,14 +372,10 @@ func (h *HTTP) viewHTTP(w http.ResponseWriter, r *http.Request) {
 					Branch     Branch
 					ID         string
 				}{s.binding.Definition, s.binding.Generation, s.branch, hex.EncodeToString(row)})
-			} else {
-				end = uint64(s.snap.memberLength(hit.row))
 			}
-			if err != nil {
-				http.Error(w, err.Error(), 500)
-				return
-			}
-			// Cap even cached pages; first oversize frame is allowed up to codec MaxFrame.
+			// Sealed rows carry references only. Do not read or decode their PACs
+			// to budget this response; only provisional frames carry payload bytes.
+			// The first oversize frame is allowed up to codec MaxFrame.
 			if total+int(end-start)+4096 > viewMaxBytes && len(result.Page) > 0 {
 				break
 			}
@@ -512,12 +512,7 @@ func (h *HTTP) viewHTTP(w http.ResponseWriter, r *http.Request) {
 			return err
 		}
 		for n := i; n < j; n++ {
-			raw := records[n].raw
-			raw, e = l.ExpandEvent(raw)
-			if e != nil {
-				return
-			}
-			frames = append(frames, raw)
+			frames = append(frames, records[n].raw)
 		}
 		if e = flush(); e != nil {
 			return

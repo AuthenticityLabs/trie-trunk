@@ -16,8 +16,8 @@ func TestPACBoundaryWalkEmptyBlankAndYear(t *testing.T) {
 	runs := []Run{timeRun(from+TimeHourMS, 0, 1), timeRun(from+5*TimeHourMS, 2, 1)}
 	const size = 128
 	for i := range runs {
-		runs[i].PopStart = headerSize + uint64(i*size)
-		runs[i].PopEnd = runs[i].PopStart + size
+		runs[i].PodsStart = headerSize + uint64(i*size)
+		runs[i].PodsEnd = runs[i].PodsStart + size
 	}
 	tree, err := buildTimeDirectory(runs, from, from+8*TimeHourMS, 4, [16]byte{1})
 	if err != nil {
@@ -30,7 +30,7 @@ func TestPACBoundaryWalkEmptyBlankAndYear(t *testing.T) {
 	defer f.Close()
 	raw := make([]byte, headerSize+size*2)
 	for _, r := range runs {
-		order.PutUint32(raw[r.PopStart:], size)
+		order.PutUint32(raw[r.PodsStart:], size)
 	}
 	if _, err = f.Write(raw); err != nil {
 		t.Fatal(err)
@@ -41,23 +41,21 @@ func TestPACBoundaryWalkEmptyBlankAndYear(t *testing.T) {
 			t.Fatalf("hour %d: %d %v", h, got, err)
 		}
 	}
-	// A blank sibling can be skipped for addressing, but cannot certify coverage.
-	_, _, _, state, _ := tree.positions(time.UnixMilli(from + 3*TimeHourMS))
-	tree.raw[state] = TimeBlank
+	// Empty sealed siblings need no occupancy byte and preserve PAC boundaries.
 	got, err := tree.podsBoundary(f, 0, from+4*TimeHourMS)
 	if err != nil || got != headerSize+size {
 		t.Fatal(got, err)
 	}
-	if _, err = tree.window(from+2*TimeHourMS, from+5*TimeHourMS, false); err == nil {
-		t.Fatal("blank certified as empty")
+	if _, err = tree.window(from+2*TimeHourMS, from+9*TimeHourMS, false); err == nil {
+		t.Fatal("unpublished hour certified as empty")
 	}
 	if _, err = tree.podsBoundary(f, 0, from+9*TimeHourMS); err == nil {
 		t.Fatal("future boundary accepted")
 	}
 	// Logical byte addresses retain their origin after physical prefix removal.
 	for i := range runs {
-		runs[i].PopStart += 4096
-		runs[i].PopEnd += 4096
+		runs[i].PodsStart += 4096
+		runs[i].PodsEnd += 4096
 	}
 	tree, err = buildTimeDirectory(runs, from, from+8*TimeHourMS, 4, [16]byte{1})
 	if err != nil {
@@ -100,7 +98,7 @@ func TestPACRangeStreamingDoesNotInspectInteriorPacks(t *testing.T) {
 	middle := b.runs[1]
 	// Deliberately unreadable interior length: transfer must not parse it. The
 	// receiver's sealed checksum rejects corruption; the sender only copies bytes.
-	if _, err = b.pop.WriteAt([]byte{0, 0, 0, 0}, int64(middle.PopStart-b.popRetired)); err != nil {
+	if _, err = b.pods.WriteAt([]byte{0, 0, 0, 0}, int64(middle.PodsStart-b.podsRetired)); err != nil {
 		t.Fatal(err)
 	}
 	packs[1].Data[0] = 0
@@ -137,12 +135,12 @@ func TestPACRangeStreamingDoesNotInspectInteriorPacks(t *testing.T) {
 	// Covering the middle hour splits the physical response into two ranges.
 	m := manifest.Blocks[1]
 	ranges = 0
-	have := Coverage{Definition: manifest.Definition, Generation: manifest.Generation, Index: []Span{{m.Start, m.End}}, Population: []Span{{m.PAC.Placement.MemberStart, m.PAC.Placement.MemberStart + m.PAC.Placement.MemberBytes}}}
+	have := Coverage{Definition: manifest.Definition, Generation: manifest.Generation, Index: []Span{{m.Start, m.End}}, MemberRanges: []Span{{m.PAC.Placement.MemberStart, m.PAC.Placement.MemberStart + m.PAC.Placement.MemberBytes}}}
 	if got := run(have); ranges != 2 || !bytes.Equal(got, append(packs[0].Data, packs[2].Data...)) {
 		t.Fatal("covered PAC was resent", ranges)
 	}
 	// Restore the pack for the end-to-end HTTP parser.
-	if _, err = b.pop.WriteAt(order.AppendUint32(nil, uint32(middle.PopEnd-middle.PopStart)), int64(middle.PopStart-b.popRetired)); err != nil {
+	if _, err = b.pods.WriteAt(order.AppendUint32(nil, uint32(middle.PodsEnd-middle.PodsStart)), int64(middle.PodsStart-b.podsRetired)); err != nil {
 		t.Fatal(err)
 	}
 	r := httptest.NewRequest("GET", "/collect?tap=demo/payment/transactions.v1/write&from="+at.Format(time.RFC3339)+"&to="+at.Add(6*time.Hour).Format(time.RFC3339), nil)
@@ -285,7 +283,7 @@ func BenchmarkPACRangeDelivery(b *testing.B) {
 	for _, mode := range []string{"per-pack", "contiguous"} {
 		b.Run(mode, func(b *testing.B) {
 			b.ReportAllocs()
-			b.SetBytes(int64(branch.popEnd - headerSize))
+			b.SetBytes(int64(branch.podsEnd - headerSize))
 			for n := 0; n < b.N; n++ {
 				var sendRange func(*os.File, uint64, uint64) error
 				if mode == "contiguous" {

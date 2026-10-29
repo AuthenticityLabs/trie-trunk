@@ -57,6 +57,7 @@ func run() error {
 	root := flag.String("resources", resources, "application resource directory")
 	headless := flag.Bool("bridge-only", false, "run only the local frontend/transport bridge")
 	selfTest := flag.Bool("self-test", false, "verify native WebKit features and frontend, then exit")
+	dashboardTest := flag.Bool("check-dashboard", false, "check the existing profile dashboard and report loaded assets, then exit")
 	inspector := flag.Bool("inspect", false, "enable WebKit developer tools")
 	flag.Parse()
 	if err = os.MkdirAll(*state, 0700); err != nil {
@@ -138,7 +139,8 @@ func run() error {
 	host := listener.Addr().String()
 	app := newBridge(host, token, os.DirFS(filepath.Join(*root, "web")), target, transport, mode)
 	app.connection = &desktopConnection{cfg: cfg, path: configPath, activePreference: cfg.Transport}
-	app.selfTest = *selfTest
+	app.selfTest = *selfTest || *dashboardTest
+	app.dashboardTest = *dashboardTest
 	server := &http.Server{Handler: app, ReadHeaderTimeout: 10 * time.Second, IdleTimeout: time.Minute, BaseContext: func(net.Listener) context.Context { return ctx }}
 	failure := make(chan error, 1)
 	go func() { failure <- server.Serve(listener) }()
@@ -177,7 +179,7 @@ func run() error {
 		case <-time.After(time.Second):
 		}
 	}()
-	if *selfTest {
+	if *selfTest || *dashboardTest {
 		select {
 		case report := <-app.report:
 			var result struct {

@@ -53,11 +53,11 @@ func BenchmarkNativeDelivery(b *testing.B) {
 			h := &HTTP{Store: s}
 			q := url.Values{"tap": {h.tap(Write)}, "from": {at.Format(time.RFC3339Nano)}, "to": {at.Add(time.Hour).Format(time.RFC3339Nano)}}
 			var snapshot Manifest
-			e = s.Collect(context.Background(), CollectionRequest{Branch: Write, At: at, PopulationFrom: at, PopulationTo: at.Add(time.Hour)}, func(m Manifest) error { snapshot = m; return nil }, func(NativeChunk) error { return nil })
+			e = s.Collect(context.Background(), CollectionRequest{Branch: Write, At: at, DataFrom: at, DataTo: at.Add(time.Hour)}, func(m Manifest) error { snapshot = m; return nil }, func(NativeChunk) error { return nil })
 			if e != nil {
 				b.Fatal(e)
 			}
-			coverage, _ := json.Marshal([]Coverage{{Definition: l.Digest, Generation: snapshot.Generation, Index: snapshot.Index, Population: snapshot.Population, TrieNodes: snapshot.TrieNodes}})
+			coverage, _ := json.Marshal([]Coverage{{Definition: l.Digest, Generation: snapshot.Generation, Index: snapshot.Index, MemberRanges: snapshot.MemberRanges, TrieNodes: snapshot.TrieNodes}})
 			for _, mode := range []string{"standalone", "native-cold", "native-index-only", "native-warm"} {
 				b.Run(mode, func(b *testing.B) {
 					params := q.Encode()
@@ -65,7 +65,7 @@ func BenchmarkNativeDelivery(b *testing.B) {
 						params += "&format=native"
 					}
 					if mode == "native-index-only" {
-						params += "&population=none"
+						params += "&data=none"
 					}
 					r := httptest.NewRequest("GET", "/collect?"+params, nil)
 					r.Header.Set("Accept", "application/pil")
@@ -123,7 +123,7 @@ func benchmarkStandaloneCollect(w http.ResponseWriter, r *http.Request, h *HTTP)
 		if e = writeBind(out, uint32(i), l.Digest, h.tap(b)); e != nil {
 			panic(e)
 		}
-		e = h.Store.SearchLive(r.Context(), Query{Branch: b, From: from, To: to}, func(raw []byte) error { return writeEvent(out, l, uint32(i), raw, hasCompression(r)) })
+		e = h.Store.SearchLive(r.Context(), Query{Branch: b, From: from, To: to}, func(raw []byte) error { return writeEvent(out, uint32(i), raw) })
 		if e != nil {
 			panic(e)
 		}

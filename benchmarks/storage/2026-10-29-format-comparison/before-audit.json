@@ -1,0 +1,120 @@
+{
+  "hours": 256,
+  "events": 1048576,
+  "indexChunkBytes": 16777216,
+  "pacHeaderBytes": 74288,
+  "directoryBytes": 0,
+  "commonBytes": 11520,
+  "memberBytes": 19922944,
+  "maskBytes": 2097152,
+  "fields": {
+    "event_id": {
+      "memberPresent": 0,
+      "memberValueBytes": 0,
+      "memberOffsetEntries": 0,
+      "commonPresent": 0
+    },
+    "id": {
+      "memberPresent": 0,
+      "memberValueBytes": 0,
+      "memberOffsetEntries": 0,
+      "commonPresent": 1048576
+    },
+    "revision_id": {
+      "memberPresent": 1048576,
+      "memberValueBytes": 8388608,
+      "memberOffsetEntries": 0,
+      "commonPresent": 0
+    },
+    "duration": {
+      "memberPresent": 1048576,
+      "memberValueBytes": 8388608,
+      "memberOffsetEntries": 0,
+      "commonPresent": 0
+    },
+    "state": {
+      "memberPresent": 1048576,
+      "memberValueBytes": 1048576,
+      "memberOffsetEntries": 0,
+      "commonPresent": 0
+    },
+    "message": {
+      "memberPresent": 0,
+      "memberValueBytes": 0,
+      "memberOffsetEntries": 0,
+      "commonPresent": 1048576
+    },
+    "amount": {
+      "memberPresent": 0,
+      "memberValueBytes": 0,
+      "memberOffsetEntries": 0,
+      "commonPresent": 1048576
+    }
+  },
+  "definitions": [
+    {
+      "pil": 0,
+      "fields": [
+        {
+          "name": "event_id",
+          "type": "UUID"
+        },
+        {
+          "name": "id",
+          "type": "UUID"
+        },
+        {
+          "name": "revision_id",
+          "type": "U64"
+        },
+        {
+          "name": "duration",
+          "type": "U64"
+        },
+        {
+          "name": "state",
+          "type": "STRING",
+          "values": [
+            "pending",
+            "authorized",
+            "canceled"
+          ]
+        },
+        {
+          "name": "message",
+          "type": "STRING"
+        },
+        {
+          "name": "amount",
+          "type": "U64"
+        }
+      ],
+      "version": 1048576,
+      "resource": {
+        "path": [
+          "state"
+        ],
+        "major": 1,
+        "minor": 0,
+        "roles": {
+          "id": "id",
+          "duration": "duration",
+          "event_id": "event_id",
+          "revision_id": "revision_id"
+        },
+        "format": 6,
+        "service": "payment",
+        "resource": "transactions",
+        "timezone": "America/New_York",
+        "aggregations": [
+          "count",
+          "duration.count",
+          "duration.sum",
+          "duration.min",
+          "duration.max"
+        ]
+      },
+      "definition": "payment/transactions"
+    }
+  ]
+}

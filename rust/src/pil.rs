@@ -5,7 +5,7 @@ use crate::{
 };
 use ciborium::Value as Cbor;
 use pil_codec::{
-    Array, CborRef, Definition, Field, FrameEncoder, Scalar, Type, Value, decode_exact, encode,
+    Array, Definition, Field, FrameEncoder, ObjectRef, Scalar, Type, Value, decode_exact, encode,
     read_frame_bytes,
 };
 use sha2::{Digest, Sha256};
@@ -93,7 +93,7 @@ impl Mapping {
             } else if mapped {
                 Scalar::String
             } else {
-                Scalar::Cbor
+                Scalar::Object
             };
             fields.push(if mapped {
                 Field::mapped(&field.name, field.enums.values().cloned())
@@ -108,7 +108,7 @@ impl Mapping {
         }
         for (base, kind) in [
             ("trunk_lineage", Type::Array(Scalar::U16)),
-            ("trunk_fallback", Type::Scalar(Scalar::Cbor)),
+            ("trunk_fallback", Type::Scalar(Scalar::Object)),
         ] {
             let mut name = base.to_owned();
             while fields.iter().any(|f| f.name == name) {
@@ -130,12 +130,12 @@ impl Mapping {
         })
     }
 
-    fn value<'a>(&self, index: usize, value: CborRef<'a>) -> Option<Value<'a>> {
+    fn value<'a>(&self, index: usize, value: ObjectRef<'a>) -> Option<Value<'a>> {
         if value.is_null() {
             return Some(Value::Null);
         }
         Some(match self.definition.fields()[index].kind {
-            Type::Scalar(Scalar::Cbor) => Value::ValidatedCbor(value),
+            Type::Scalar(Scalar::Object) => Value::Object(value.as_bytes()),
             Type::Scalar(Scalar::Uuid) => Value::Uuid(value.bytes()?.try_into().ok()?),
             Type::Scalar(Scalar::U64) => Value::U64(value.unsigned()?),
             Type::Scalar(Scalar::String) => {
@@ -188,17 +188,18 @@ impl Mapping {
         }
         fallback.clear();
         if !extra.is_empty() {
-            ciborium_ll::Encoder::from(&mut *fallback)
-                .push(ciborium_ll::Header::Map(Some(extra.len())))?;
-            for (key, value) in extra {
-                ciborium::ser::into_writer(&key, &mut *fallback).map_err(invalid)?;
-                fallback.extend_from_slice(value.as_bytes());
-            }
+            let pairs = extra
+                .into_iter()
+                .map(|(key, value)| {
+                    Ok((Cbor::Integer(key.into()), schema::decode(value.as_bytes())?))
+                })
+                .collect::<io::Result<Vec<_>>>()?;
+            *fallback = pil_codec::object::encode_value(&Cbor::Map(pairs)).map_err(invalid)?;
         }
         let extra = if fallback.is_empty() {
             Value::Absent
         } else {
-            Value::ValidatedCbor(CborRef::parse(fallback).map_err(invalid)?)
+            Value::Object(fallback)
         };
         lineage.clear();
         pil_codec::encode_extended(record.lineage.keys.len() as u64, lineage);
@@ -244,14 +245,14 @@ impl Mapping {
                 Value::String(text) => Cbor::Text(text.to_owned()),
                 Value::Uuid(bytes) => Cbor::Bytes(bytes.to_vec()),
                 Value::U64(number) => Cbor::Integer(number.into()),
-                Value::Cbor(bytes) => schema::decode(bytes)?,
+                Value::Object(bytes) => schema::decode(bytes)?,
                 _ => return Err(invalid("unexpected PIL event value")),
             };
             fields.insert(*key, value);
         }
         match frame.values()[self.keys.len() + 1] {
             Value::Absent => {}
-            Value::Cbor(bytes) => {
+            Value::Object(bytes) => {
                 for (key, value) in schema::record(schema::decode(bytes)?)? {
                     if fields.insert(key, value).is_some() {
                         return Err(invalid("duplicate fallback field"));
@@ -291,7 +292,7 @@ impl Mapping {
 }
 
 fn write_definition(data: &[u8], mapping: &Mapping, output: &mut impl Write) -> io::Result<()> {
-    let definition = mapping.definition.to_cbor().map_err(invalid)?;
+    let definition = mapping.definition.to_pil().map_err(invalid)?;
     let hash = digest(data);
     output.write_all(&[DEFINE])?;
     output.write_all(
@@ -389,7 +390,7 @@ pub fn schemas(
     let mut sent: HashSet<_> = known.iter().cloned().collect();
     output.write_all(if v2 { MAGIC_V2 } else { MAGIC })?;
     for (id, path) in paths.into_iter().enumerate() {
-        let bytes = std::fs::read(store::schema_file(&path, "map")?)?;
+        let bytes = std::fs::read(store::schema_file(&path, "rx")?)?;
         if sent.insert(hex(&digest(&bytes))) {
             write_definition(&bytes, &Mapping::new(&bytes)?, output)?;
         }
@@ -475,7 +476,7 @@ pub fn decode(
                         return Err(invalid("schema digest mismatch"));
                     }
                     let mapping = Mapping::new(data)?;
-                    if mapping.definition != Definition::from_cbor(pil).map_err(invalid)? {
+                    if mapping.definition != Definition::from_pil(pil).map_err(invalid)? {
                         return Err(invalid("incompatible event definition"));
                     }
                     definitions.insert(hash.to_vec(), mapping);

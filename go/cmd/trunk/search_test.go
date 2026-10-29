@@ -81,7 +81,7 @@ func TestSearchCommandWindowAndFromTo(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		b, err := codec.MarshalCompact(codec.Record{8: id, 12: uint64(2234 + i), 15: "first line\nsecond line <ok>"}, codec.CBOR)
+		b, err := codec.MarshalCompact(codec.Record{8: id, 12: uint64(2234 + i), 15: "first line\nsecond line <ok>"}, codec.PIL)
 		if err != nil {
 			t.Fatal(err)
 		}

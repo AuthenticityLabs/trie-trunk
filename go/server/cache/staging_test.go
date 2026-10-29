@@ -33,7 +33,7 @@ func TestStagingHoldbackLiveSearchAndLateAudit(t *testing.T) {
 		t.Fatal(e)
 	}
 	b := s.branches[Write]
-	if len(b.rows) != 0 || b.popEnd != headerSize {
+	if len(b.rows) != 0 || b.podsEnd != headerSize {
 		t.Fatal("young records finalized")
 	}
 	q := Query{Branch: Write, From: at.Add(-time.Hour), To: now}
@@ -41,7 +41,7 @@ func TestStagingHoldbackLiveSearchAndLateAudit(t *testing.T) {
 	if e = s.SearchLive(context.Background(), q, func(raw []byte) error { live = append(live, append([]byte(nil), raw...)); return nil }); e != nil {
 		t.Fatal(e)
 	}
-	if len(live) != 2 || !bytes.Equal(live[0], earlier) {
+	if len(live) != 2 || !sameSeedData(t, l, live[0], earlier) {
 		t.Fatal("staged search missing/out of order")
 	}
 	if e = s.Close(); e != nil {
@@ -59,10 +59,10 @@ func TestStagingHoldbackLiveSearchAndLateAudit(t *testing.T) {
 		t.Fatal(e)
 	}
 	got := collect(t, s, Write, q.From, now)
-	if len(got) != 2 || !bytes.Equal(got[0], earlier) || !bytes.Equal(got[1], first) {
+	if len(got) != 2 || !sameSeedData(t, l, got[0], earlier) || !sameSeedData(t, l, got[1], first) {
 		t.Fatal("final storage not sorted")
 	}
-	if dup, e := s.Append(Write, first); e != nil || !dup {
+	if dup, e := s.Append(Write, first); e == nil || dup {
 		t.Fatal("retry", dup, e)
 	}
 	rejected := testFrame(t, l, at.Add(-2*time.Second), 3, false)
@@ -74,11 +74,11 @@ func TestStagingHoldbackLiveSearchAndLateAudit(t *testing.T) {
 	n := 0
 	if e = s.Rejections(func(r Rejection) error {
 		n++
-		if !bytes.Equal(r.PIL, rejected) || r.Reason != "arrival_after_finalization" {
+		if (!bytes.Equal(r.PIL, rejected) && !bytes.Equal(r.PIL, first)) || r.Reason != "arrival_after_finalization" {
 			t.Fatal("lost audit payload")
 		}
 		return nil
-	}); e != nil || n != 1 {
+	}); e != nil || n != 2 {
 		t.Fatal(n, e)
 	}
 	// The empty closed interval and audit survive restart too.
@@ -152,7 +152,7 @@ func TestStagingSIGKILLRecovery(t *testing.T) {
 	n := 0
 	if e = s.History(context.Background(), testObject(42), at, at.Add(time.Hour), func(row uint64, raw []byte) error {
 		n++
-		if row != ProvisionalRow || !bytes.Equal(raw, testFrame(t, l, at, 1, false)) {
+		if row != ProvisionalRow || !sameSeedData(t, l, raw, testFrame(t, l, at, 1, false)) {
 			t.Fatal("recovered live history")
 		}
 		return nil
@@ -169,7 +169,7 @@ func TestStagingSIGKILLRecovery(t *testing.T) {
 			t.Fatal(e)
 		}
 		return frames
-	}(); len(got) != 1 || !bytes.Equal(got[0], testFrame(t, l, at, 1, false)) {
+	}(); len(got) != 1 || !sameSeedData(t, l, got[0], testFrame(t, l, at, 1, false)) {
 		t.Fatal("recovery payload")
 	}
 }
@@ -304,7 +304,7 @@ func TestStagingRetentionKeepsYoungTail(t *testing.T) {
 	}
 	now = now.Add(time.Hour)
 	got := collect(t, s, Write, now.Add(-2*time.Hour), now)
-	if len(got) != 1 || !bytes.Equal(got[0], young) {
+	if len(got) != 1 || !sameSeedData(t, l, got[0], young) {
 		t.Fatal("retention/restart lost pending event")
 	}
 }

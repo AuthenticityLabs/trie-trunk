@@ -69,7 +69,7 @@ pub(crate) fn schema_identity(path: &Path) -> io::Result<(String, Option<String>
         .and_then(|s| s.to_str())
         .ok_or_else(|| invalid("invalid tap directory"))?;
     // An object directory lives underneath a tap; a named definition is verified
-    // against events.map below, rather than inferred from its version alone.
+    // against events.rx below, rather than inferred from its version alone.
     if let Some((object, major)) = object_major(parent_name) {
         if n >= (1 << 20) {
             return Err(invalid("invalid definition minor"));
@@ -281,13 +281,13 @@ pub(crate) struct Catalog {
 pub(crate) struct Lineage {
     pub fields: Vec<(String, Json)>,
     pub keys: Box<[u16]>,
-    pub cbor_values: Vec<Vec<u8>>,
+    pub object_values: Vec<Vec<u8>>,
     duration: Option<u64>,
 }
 
 impl Catalog {
     fn load(version: &Path, filter: &Filter, stream: usize, compact: bool) -> io::Result<Self> {
-        let file = File::open(schema_file(version, "map")?)?;
+        let file = File::open(schema_file(version, "rx")?)?;
         let size = file.metadata()?.len();
         if size == 0 || size > MAX_RECORD {
             return Err(invalid("invalid schema length"));
@@ -377,7 +377,7 @@ impl Catalog {
         }
         let mut fields = Vec::new();
         let mut keys = Vec::new();
-        let mut cbor_values = Vec::new();
+        let mut object_values = Vec::new();
         let mut duration = None;
         let mut parent = leaf;
         while parent != 0 {
@@ -389,9 +389,9 @@ impl Catalog {
                 return Err(invalid("duplicate trie field"));
             }
             if raw {
-                let mut encoded = Vec::new();
-                ciborium::ser::into_writer(&node.value, &mut encoded).map_err(invalid)?;
-                cbor_values.push(encoded);
+                let encoded = pil_codec::object::encode_value(&Value::Integer(node.value.into()))
+                    .map_err(invalid)?;
+                object_values.push(encoded);
             } else {
                 let (name, value) = if self.compact {
                     (node.key.to_string(), Json::from(node.value))
@@ -412,10 +412,10 @@ impl Catalog {
         }
         fields.reverse();
         keys.reverse();
-        cbor_values.reverse();
+        object_values.reverse();
         let keys = keys.into_boxed_slice();
-        let bytes = cbor_values.capacity() * std::mem::size_of::<Vec<u8>>()
-            + cbor_values.iter().map(Vec::capacity).sum::<usize>()
+        let bytes = object_values.capacity() * std::mem::size_of::<Vec<u8>>()
+            + object_values.iter().map(Vec::capacity).sum::<usize>()
             + std::mem::size_of::<Lineage>()
             + std::mem::size_of_val(keys.as_ref())
             + fields.capacity() * std::mem::size_of::<(String, Json)>()
@@ -426,7 +426,7 @@ impl Catalog {
         let lineage = Arc::new(Lineage {
             fields,
             keys,
-            cbor_values,
+            object_values,
             duration,
         });
         if bytes <= LINEAGE_CACHE_BYTES.saturating_sub(self.lineage_bytes) {
@@ -484,8 +484,8 @@ struct Run {
     width: usize,
     count: usize,
     buffer: Mutex<RowBuffer>,
-    population_start: u64,
-    population_end: u64,
+    pods_start: u64,
+    pods_end: u64,
     validated: AtomicBool,
 }
 
@@ -522,7 +522,7 @@ impl Run {
                 let base = if self.width == 34 {
                     0
                 } else if buffer.first == 0 {
-                    self.population_start
+                    self.pods_start
                 } else {
                     let mut b = [0; 8];
                     file.read_exact_at(&mut b, offset - 8)?;
@@ -547,10 +547,10 @@ impl Cursor {
     pub fn validate(&mut self, source: &Source, scratch: &mut [u8]) -> io::Result<()> {
         crate::runtime::check()?;
         if !self.run.validated.load(AtomicOrdering::Relaxed) {
-            check_population(
-                &source.pop,
-                self.run.population_start,
-                self.run.population_end,
+            check_payload(
+                &source.pods,
+                self.run.pods_start,
+                self.run.pods_end,
                 scratch,
             )?;
             self.run.validated.store(true, AtomicOrdering::Relaxed);
@@ -616,7 +616,7 @@ impl Eq for Cursor {}
 
 pub(crate) struct Source {
     idx: Snapshot,
-    pop: Snapshot,
+    pods: Snapshot,
     pub catalog: Arc<RwLock<Catalog>>,
 }
 
@@ -628,17 +628,17 @@ pub(crate) struct Record {
 }
 
 pub(crate) struct RawRecord<'a> {
-    pub fields: Vec<(u16, pil_codec::CborRef<'a>)>,
+    pub fields: Vec<(u16, pil_codec::ObjectRef<'a>)>,
     pub lineage: Arc<Lineage>,
     pub uuid: [u8; 16],
     pub id: u16,
 }
 impl RawRecord<'_> {
-    pub fn field(&self, key: u16) -> Option<pil_codec::CborRef<'_>> {
+    pub fn field(&self, key: u16) -> Option<pil_codec::ObjectRef<'_>> {
         if let Some(index) = self.lineage.keys.iter().position(|&k| k == key) {
             // These small integer encodings are cached with the lineage.
             return Some(
-                pil_codec::CborRef::parse(&self.lineage.cbor_values[index])
+                pil_codec::ObjectRef::parse(&self.lineage.object_values[index])
                     .expect("encoded trie integer"),
             );
         }
@@ -658,10 +658,10 @@ impl Source {
         }
     }
 
-    fn population(&self, cursor: &Cursor, buffer: &mut [u8]) -> io::Result<BTreeMap<u16, Value>> {
+    fn payload(&self, cursor: &Cursor, buffer: &mut [u8]) -> io::Result<BTreeMap<u16, Value>> {
         let row = &cursor.row;
         let data = &mut buffer[..(row.end - row.start) as usize];
-        self.pop.file.read_exact_at(data, row.start)?;
+        self.pods.file.read_exact_at(data, row.start)?;
         let mut fields = schema::record(schema::decode(data)?)?;
         fields.insert(
             self.catalog.read().unwrap().schema.id,
@@ -682,9 +682,9 @@ impl Source {
         match self.decision(cursor)? {
             Decision::Exclude => Ok(false),
             Decision::Include => Ok(true),
-            Decision::Population => {
+            Decision::Payload => {
                 cursor.validate(self, buffer)?;
-                Ok(self.accepts(cursor, &self.population(cursor, buffer)?))
+                Ok(self.accepts(cursor, &self.payload(cursor, buffer)?))
             }
         }
     }
@@ -701,10 +701,10 @@ impl Source {
         cursor.validate(self, buffer)?;
         let row = &cursor.row;
         let data = &mut buffer[..(row.end - row.start) as usize];
-        self.pop.file.read_exact_at(data, row.start)?;
-        // Population predicates retain the existing evaluator. Unfiltered and
-        // trie-only searches never construct population objects on the PIL path.
-        if decision == Decision::Population {
+        self.pods.file.read_exact_at(data, row.start)?;
+        // Payload predicates retain the existing evaluator. Unfiltered and
+        // trie-only searches never construct payload objects on the PIL path.
+        if decision == Decision::Payload {
             let mut fields = schema::record(schema::decode(data)?)?;
             fields.insert(
                 self.catalog.read().unwrap().schema.id,
@@ -714,7 +714,7 @@ impl Source {
                 return Ok(None);
             }
         }
-        let pairs = pil_codec::CborMap::new(data, 32).map_err(invalid)?;
+        let pairs = pil_codec::ObjectMap::new(data, 32).map_err(invalid)?;
         let mut fields = Vec::with_capacity(pairs.size_hint().1.unwrap_or(0));
         for pair in pairs {
             let (key, value) = pair.map_err(invalid)?;
@@ -726,7 +726,7 @@ impl Source {
         }
         fields.sort_unstable_by_key(|&(key, _)| key);
         if fields.windows(2).any(|pair| pair[0].0 == pair[1].0) {
-            return Err(invalid("duplicate CBOR field"));
+            return Err(invalid("duplicate PIL field"));
         }
         let mut catalog = self.catalog.write().unwrap();
         let lineage = catalog.lineage(row.leaf, true)?;
@@ -761,8 +761,8 @@ impl Source {
             return Ok(None);
         }
         cursor.validate(self, buffer)?;
-        let mut fields = self.population(cursor, buffer)?;
-        if decision == Decision::Population && !self.accepts(cursor, &fields) {
+        let mut fields = self.payload(cursor, buffer)?;
+        if decision == Decision::Payload && !self.accepts(cursor, &fields) {
             return Ok(None);
         }
         let row = &cursor.row;
@@ -794,33 +794,33 @@ impl Source {
     }
 }
 
-fn check_population(pop: &Snapshot, start: u64, end: u64, buffer: &mut [u8]) -> io::Result<()> {
-    if end <= start || end - start > MAX_BLOCK || end > pop.size {
-        return Err(invalid("invalid population block range"));
+fn check_payload(pods: &Snapshot, start: u64, end: u64, buffer: &mut [u8]) -> io::Result<()> {
+    if end <= start || end - start > MAX_BLOCK || end > pods.size {
+        return Err(invalid("invalid payload block range"));
     }
     let mut header = [0; 8];
-    pop.file.read_exact_at(&mut header, start - 8)?;
+    pods.file.read_exact_at(&mut header, start - 8)?;
     if u64::from(u32be(&header)) != end - start {
-        return Err(invalid("population length mismatch"));
+        return Err(invalid("payload length mismatch"));
     }
     let mut offset = start;
     let mut checksum = 0;
     while offset < end {
         crate::runtime::check()?;
         let size = buffer.len().min((end - offset) as usize);
-        pop.file.read_exact_at(&mut buffer[..size], offset)?;
+        pods.file.read_exact_at(&mut buffer[..size], offset)?;
         checksum = crc32c::crc32c_append(checksum, &buffer[..size]);
         offset += size as u64;
     }
     if checksum != u32be(&header[4..]) {
-        return Err(invalid("population checksum mismatch"));
+        return Err(invalid("payload checksum mismatch"));
     }
     Ok(())
 }
 
 pub(crate) struct Progress {
     offset: u64,
-    population_end: u64,
+    pods_end: u64,
     identity: Option<(u64, u64)>,
     compact: bool,
     digest: u32,
@@ -829,7 +829,7 @@ impl Default for Progress {
     fn default() -> Self {
         Self {
             offset: 8,
-            population_end: 8,
+            pods_end: 8,
             identity: None,
             compact: false,
             digest: 0,
@@ -996,7 +996,7 @@ impl Reader {
             if !matches!(idx.format, 3 | 4) || !idx.compact || progress.compact {
                 return Err(invalid("unexpected index replacement"));
             }
-            progress.population_end
+            progress.pods_end
         } else {
             0
         };
@@ -1033,12 +1033,12 @@ impl Reader {
                 return Ok(None);
             }
         }
-        let mut pop = None;
+        let mut pods = None;
         let mut cursors = Vec::new();
-        let mut population_end = if converted {
+        let mut pods_end = if converted {
             8
         } else {
-            progress.population_end
+            progress.pods_end
         };
         let next = idx
             .scan(scan_start, &mut self.buffer, |offset, data, cached| {
@@ -1054,10 +1054,10 @@ impl Reader {
                 }
                 let rows = Rows::parse(data, idx.compact, idx.format == 4)?;
                 if cached && !self.follow {
-                    if u64be(&rows.row(0)[20..]) != population_end + 8 {
-                        return Err(invalid("noncontiguous population block"));
+                    if u64be(&rows.row(0)[20..]) != pods_end + 8 {
+                        return Err(invalid("noncontiguous payload block"));
                     }
-                    population_end = rows.end(rows.len() - 1);
+                    pods_end = rows.end(rows.len() - 1);
                 }
                 let mut previous: Option<[u8; 16]> = None;
                 for i in 0..if cached && !self.follow {
@@ -1080,21 +1080,21 @@ impl Reader {
                         }
                     }
                     if let Some(previous) = previous {
-                        if row.start != population_end || previous.as_slice() >= rows.uuid(i) {
+                        if row.start != pods_end || previous.as_slice() >= rows.uuid(i) {
                             return Err(invalid("unordered or noncontiguous index run"));
                         }
-                    } else if row.start != population_end + 8 {
-                        return Err(invalid("noncontiguous population block"));
+                    } else if row.start != pods_end + 8 {
+                        return Err(invalid("noncontiguous payload block"));
                     }
                     previous = Some(bytes[..16].try_into().unwrap());
-                    population_end = row.end;
+                    pods_end = row.end;
                     if self.follow {
                         digest = crc32c::crc32c_append(digest, &bytes[..20]);
                         digest = crc32c::crc32c_append(digest, &bytes[28..]);
                     }
                 }
-                if converted && population_end <= consumed {
-                    if population_end == consumed {
+                if converted && pods_end <= consumed {
+                    if pods_end == consumed {
                         if digest != expected_digest {
                             return Err(invalid("converted index changed consumed rows"));
                         }
@@ -1136,18 +1136,18 @@ impl Reader {
                         first: 0,
                         rows: Vec::new(),
                     }),
-                    population_start: u64be(&rows.row(0)[20..]),
-                    population_end,
+                    pods_start: u64be(&rows.row(0)[20..]),
+                    pods_end,
                     validated: AtomicBool::new(false),
                 };
-                if pop.is_none() {
-                    pop = Some(Snapshot::open(
+                if pods.is_none() {
+                    pods = Some(Snapshot::open(
                         &dir.join(if matches!(idx.format, 3 | 4) {
-                            "events.pop"
+                            "events.pods"
                         } else {
-                            "log.pop"
+                            "log.pods"
                         }),
-                        b"TPOP",
+                        b"TPOD",
                     )?);
                 }
                 let position = if backwards { positions.len() - 1 } else { 0 };
@@ -1180,16 +1180,16 @@ impl Reader {
         progress.compact = idx.compact;
         progress.digest = digest;
         progress.offset = next;
-        progress.population_end = population_end;
+        progress.pods_end = pods_end;
         progress.identity = Some(idx.identity);
-        let Some(pop) = pop else {
+        let Some(pods) = pods else {
             return Ok(None);
         };
         let catalog = match catalog {
             Some(catalog) => catalog,
             None => load_catalog(&mut self.catalogs, version, &self.filter, self.compact)?,
         };
-        Ok(Some((Source { idx, pop, catalog }, cursors)))
+        Ok(Some((Source { idx, pods, catalog }, cursors)))
     }
 }
 

@@ -3,9 +3,9 @@ package cache
 import "fmt"
 
 type sharedNode struct {
-	Parent uint16 `cbor:"0,keyasint"`
-	Field  uint16 `cbor:"1,keyasint"`
-	Bytes  []byte `cbor:"2,keyasint"`
+	Parent uint16 `pil:"0"`
+	Field  uint16 `pil:"1"`
+	Bytes  []byte `pil:"2"`
 }
 type sharedKey struct {
 	Parent uint16
@@ -78,7 +78,7 @@ func (t *sharedTrie) expand(ref uint16, v []Value) error {
 	for ref != 0 {
 		n := t.nodes[ref]
 		if v[n.Field].State != Absent {
-			return fmt.Errorf("population shadows shared reference")
+			return fmt.Errorf("payload shadows shared reference")
 		}
 		v[n.Field] = Value{Direct, n.Bytes}
 		ref = n.Parent

@@ -1,11 +1,10 @@
 package cache
 
 // Summary searches select the exact content identities advertised by the view
-// snapshot. The response is a CBOR array of unchanged compressed daily packs.
+// snapshot. The response is a PIL ARRAY<BYTES> of unchanged compressed daily packs.
 import (
 	"bytes"
 	"context"
-	"encoding/binary"
 	"encoding/hex"
 	"encoding/json"
 	"io"
@@ -26,32 +25,6 @@ type summaryPackQuery struct {
 type summaryPackBody struct {
 	reader io.Reader
 	length uint64
-}
-
-func summaryArrayHead(major byte, n uint64) []byte {
-	var b [9]byte
-	b[0] = major << 5
-	switch {
-	case n < 24:
-		b[0] |= byte(n)
-		return b[:1]
-	case n <= 255:
-		b[0] |= 24
-		b[1] = byte(n)
-		return b[:2]
-	case n <= 65535:
-		b[0] |= 25
-		binary.BigEndian.PutUint16(b[1:], uint16(n))
-		return b[:3]
-	case n <= 0xffffffff:
-		b[0] |= 26
-		binary.BigEndian.PutUint32(b[1:], uint32(n))
-		return b[:5]
-	default:
-		b[0] |= 27
-		binary.BigEndian.PutUint64(b[1:], n)
-		return b[:9]
-	}
 }
 
 func (h *HTTP) summariesHTTP(w http.ResponseWriter, r *http.Request) {
@@ -152,28 +125,30 @@ func (h *HTTP) summariesHTTP(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}
-	length := uint64(len(summaryArrayHead(4, uint64(len(query.Packs)))))
+	array := extended(nil, uint64(len(query.Packs)))
+	var end uint64
 	for _, ref := range query.Packs {
 		pack, ok := lookup[ref]
 		if !ok {
 			http.Error(w, "summary snapshot expired or unavailable; retry search", 409)
 			return
 		}
-		length += uint64(len(summaryArrayHead(2, pack.length))) + pack.length
+		end += pack.length
+		array = extended(array, end)
 	}
-	w.Header().Set("Content-Type", "application/cbor")
+	prefix := extended([]byte{0xc0}, uint64(len(array))+end)
+	prefix = append(prefix, array...)
+	length := uint64(len(prefix)) + end
+	w.Header().Set("Content-Type", "application/pil")
 	w.Header().Set("Cache-Control", "private, no-store")
 	w.Header().Set("Content-Length", strconv.FormatUint(length, 10))
 	out := summaryContextWriter{r.Context(), w}
-	if _, err := out.Write(summaryArrayHead(4, uint64(len(query.Packs)))); err != nil {
+	if _, err := out.Write(prefix); err != nil {
 		return
 	}
 	buf := make([]byte, 32<<10)
 	for _, ref := range query.Packs {
 		pack := lookup[ref]
-		if _, err := out.Write(summaryArrayHead(2, pack.length)); err != nil {
-			panic(http.ErrAbortHandler)
-		}
 		n, err := io.CopyBuffer(out, pack.reader, buf)
 		if err != nil || uint64(n) != pack.length {
 			panic(http.ErrAbortHandler)

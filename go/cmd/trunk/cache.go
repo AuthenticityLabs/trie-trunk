@@ -24,7 +24,7 @@ func runCache(ctx context.Context, args []string, input io.Reader, output io.Wri
 	root := flags.String("dir", "./caches", "cache storage root")
 	name := flags.String("cache", "", "registered cache key")
 	tenant := flags.String("tenant", "", "registered owner")
-	definition := flags.String("definition", "", "unified resource.map or JSON definition")
+	definition := flags.String("definition", "", "unified resource.rx or JSON definition")
 	branch := flags.String("branch", "write", "read, write, error, debug or trace")
 	from := flags.String("from", "", "inclusive RFC3339 time")
 	to := flags.String("to", "", "exclusive RFC3339 time")

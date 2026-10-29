@@ -44,7 +44,7 @@ func (r Retention) Durations() (map[Branch]time.Duration, error) {
 
 type ReplicationPolicy struct {
 	IndexPeriod     string `toml:"index_period"`
-	Population      string `toml:"population"`
+	Data            string `toml:"data"`
 	ProvisionalTail string `toml:"provisional_tail"`
 }
 type PACPolicy struct {
@@ -103,7 +103,7 @@ func (p Policy) validate() error {
 		return e
 	}
 	r := p.Replication
-	if !validIndexPeriod(r.IndexPeriod) || r.Population != "" && r.Population != "lazy" {
+	if !validIndexPeriod(r.IndexPeriod) || r.Data != "" && r.Data != "lazy" {
 		return fmt.Errorf("unsupported replication policy")
 	}
 	if r.ProvisionalTail != "" {
@@ -175,8 +175,8 @@ func mergePolicy(p, q Policy) Policy {
 	if q.Replication.IndexPeriod != "" {
 		p.Replication.IndexPeriod = q.Replication.IndexPeriod
 	}
-	if q.Replication.Population != "" {
-		p.Replication.Population = q.Replication.Population
+	if q.Replication.Data != "" {
+		p.Replication.Data = q.Replication.Data
 	}
 	if q.Replication.ProvisionalTail != "" {
 		p.Replication.ProvisionalTail = q.Replication.ProvisionalTail

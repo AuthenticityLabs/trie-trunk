@@ -12,7 +12,7 @@ import (
 	"trie-trunk/go/codec"
 )
 
-func TestSharedTrieAndPopulationLayout(t *testing.T) {
+func TestSharedTrieAndPayloadLayout(t *testing.T) {
 	c, rev, definition, now := fixture(t)
 	c.Tap = "sandbox"
 	m := mustOpen(t, c, rev, definition)
@@ -42,11 +42,11 @@ func TestSharedTrieAndPopulationLayout(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		pop, err := p.readPopRun(rows)
+		pods, err := p.readPodsRun(rows)
 		if err != nil {
 			t.Fatal(err)
 		}
-		fields, err := codec.Decode(pop, codec.CBOR)
+		fields, err := codec.Decode(pods, codec.PIL)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -55,7 +55,7 @@ func TestSharedTrieAndPopulationLayout(t *testing.T) {
 		}
 		for _, key := range []codec.Key{8, 3, 14, 2} {
 			if _, ok := fields[key]; ok {
-				t.Fatalf("shared or uuid field %d repeated in pop", key)
+				t.Fatalf("shared or uuid field %d repeated in pods", key)
 			}
 		}
 		dir := filepath.Dir(p.idx.Name())
@@ -96,7 +96,7 @@ func TestSharedTrieAndPopulationLayout(t *testing.T) {
 	}
 }
 
-func TestPopulationRecovery(t *testing.T) {
+func TestPayloadRecovery(t *testing.T) {
 	for _, damage := range []string{"orphan", "partial_index", "truncated_referenced", "corrupt_referenced"} {
 		t.Run(damage, func(t *testing.T) {
 			c, rev, definition, now := fixture(t)
@@ -109,12 +109,12 @@ func TestPopulationRecovery(t *testing.T) {
 				t.Fatal(err)
 			}
 			dir := filepath.Join(versionDir(c.Root, "0", rev.Version), dayPath(*now))
-			popPath := filepath.Join(dir, "log.pop")
-			stat, err := os.Stat(popPath)
+			podsPath := filepath.Join(dir, "log.pods")
+			stat, err := os.Stat(podsPath)
 			if err != nil {
 				t.Fatal(err)
 			}
-			f, err := os.OpenFile(popPath, os.O_RDWR, 0600)
+			f, err := os.OpenFile(podsPath, os.O_RDWR, 0600)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -149,13 +149,13 @@ func TestPopulationRecovery(t *testing.T) {
 					t.Fatal(err)
 				}
 				opened.Close()
-				after, _ := os.Stat(popPath)
+				after, _ := os.Stat(podsPath)
 				if after.Size() != stat.Size() {
-					t.Fatal("unreferenced population bytes retained")
+					t.Fatal("unreferenced payload bytes retained")
 				}
 			} else if err == nil {
 				opened.Close()
-				t.Fatal("accepted damaged committed population")
+				t.Fatal("accepted damaged committed payload")
 			}
 		})
 	}

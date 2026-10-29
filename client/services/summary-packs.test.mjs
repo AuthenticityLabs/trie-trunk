@@ -8,7 +8,7 @@ const root=new URL('./fixtures/daily-summary/aligned/',import.meta.url);
 const refs=JSON.parse(readFileSync(new URL('manifest.json',root))).result.analytics.days;
 const pack=ref=>new Uint8Array(readFileSync(new URL(`${ref.key}.sumday`,root)));
 const signal=()=>new AbortController().signal;
-const response=raw=>new Response(raw,{headers:{'Content-Type':'application/cbor'}});
+const response=raw=>new Response(raw,{headers:{'Content-Type':'application/pil'}});
 
 test('array parser handles arbitrary network boundaries and applies backpressure per pack',async()=>{
   const packs=[new Uint8Array(32).fill(1),new Uint8Array(300).fill(2)],raw=summaryArray(packs);

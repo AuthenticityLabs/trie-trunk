@@ -44,8 +44,8 @@ func TestHotReplayStagingRestartPromotionAndExpiry(t *testing.T) {
 			if (v.raw != nil) != resident {
 				t.Fatal("wrong resident state")
 			}
-			if resident && v.source.branch.pop != nil {
-				t.Fatal("resident history opened population file")
+			if resident && v.source.branch.pods != nil {
+				t.Fatal("resident history opened payload file")
 			}
 			if !resident && !v.source.reader.point {
 				t.Fatal("cold history used read-ahead")
@@ -53,7 +53,7 @@ func TestHotReplayStagingRestartPromotionAndExpiry(t *testing.T) {
 		}
 		n := 0
 		if e = h.visit(context.Background(), func(_ EventReference, raw []byte) error {
-			if !bytes.Equal(raw, frames[n]) {
+			if !sameSeedData(t, l, raw, frames[n]) {
 				t.Fatal("history altered or unordered")
 			}
 			n++
@@ -139,7 +139,7 @@ func TestLiveViewPaginationSurvivesFinalization(t *testing.T) {
 	if d.result.Summary.Count != 3 || d.result.Summary.Status != "live-snapshot" || len(d.frames) != 2 || d.result.Next == "" {
 		t.Fatalf("live summary/page: %+v", d.result)
 	}
-	if !bytes.Equal(d.frames[0], originals[0]) || !bytes.Equal(d.frames[1], originals[1]) {
+	if !sameSeedData(t, l, d.frames[0], originals[0]) || !sameSeedData(t, l, d.frames[1], originals[1]) {
 		t.Fatal("mixed page order")
 	}
 	if d.result.Summary.Statistics == nil || d.result.Summary.Statistics.Duration.Count != 3 || d.result.Summary.Statistics.Duration.Average != 12 {
@@ -176,7 +176,7 @@ func TestLiveViewPaginationSurvivesFinalization(t *testing.T) {
 			}
 		}
 	}
-	if d2.result.Summary.Count != 3 || len(d2.frames) != 1 || d2.result.Next != "" || !bytes.Equal(d2.frames[0], originals[2]) {
+	if d2.result.Summary.Count != 3 || len(d2.frames) != 1 || d2.result.Next != "" || !sameSeedData(t, l, d2.frames[0], originals[2]) {
 		t.Fatal("snapshot drifted after finalization")
 	}
 	fresh := get("")
@@ -235,8 +235,8 @@ func TestLiveHistoryObjectAndTimeBounds(t *testing.T) {
 			t.Fatal("bounded history", len(got), e)
 		}
 		for i, raw := range got {
-			if !bytes.Equal(raw, testFrame(t, l, at, uint32(i+1), false)) {
-				t.Fatal("cross-object or UUID ordering error")
+			if !sameSeedData(t, l, raw, testFrame(t, l, at, uint32(2-i), false)) {
+				t.Fatal("cross-object or equal-time arrival ordering error")
 			}
 		}
 	}

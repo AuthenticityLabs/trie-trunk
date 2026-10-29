@@ -3,6 +3,7 @@ package cache
 import (
 	"fmt"
 	"sort"
+	"time"
 )
 
 // Only aggregate cells live on the Go heap, never copies of event payloads.
@@ -156,6 +157,11 @@ func (a *summaryAccumulator) snapshot(run Run, l *Layout, trie *sharedTrie) (Sum
 	return out, e
 }
 func (s *Store) rememberPendingValues(b *branchStore, p pending, values []Value) error {
+	hour, _ := semanticBounds(time.UnixMilli(eventTime(p.id[:])), 1, s.location)
+	if b.provisionalRecords == nil {
+		b.provisionalRecords = map[int64]uint32{}
+	}
+	b.provisionalRecords[hour.UnixMilli()] = max(b.provisionalRecords[hour.UnixMilli()], uint32(unsigned(values[s.layout.Record].Bytes))+1)
 	if e := s.rememberLive(b, p, ProvisionalRow, true); e != nil {
 		return e
 	}

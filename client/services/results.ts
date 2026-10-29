@@ -6,6 +6,7 @@ import {
 } from "./dictionary.ts";
 import { type Indicator, type Matcher, type Signal } from "./indicators.ts";
 import { Operations } from "./operations.ts";
+import { isDiagnostic } from './diagnostics.ts';
 
 type Counts = Map<Field | undefined, Map<unknown, number>>;
 const failures = new Set(["ERROR", "FATAL", "CRITICAL"]);
@@ -159,6 +160,7 @@ export class Results {
     const errors: LogEvent[] = [];
     const marked: LogEvent[] = [];
     for (const event of batch) {
+      if (isDiagnostic(event)) continue;
       let ids = this.identities.get(event.dictionary.tap);
       if (!ids) this.identities.set(event.dictionary.tap, (ids = new Set()));
       if (ids.has(event.uuid)) continue;

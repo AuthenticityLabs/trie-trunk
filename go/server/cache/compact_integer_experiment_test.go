@@ -5,6 +5,7 @@ package cache
 // protocol negotiation, Rust/WASM, arrays and storage bindings are implemented.
 import (
 	"fmt"
+	pil "github.com/AuthenticityLabs/pill-packer/go/codec"
 	"io"
 	"math/bits"
 	"strings"
@@ -24,10 +25,17 @@ type compactIntegerLayout struct {
 }
 
 func compileCompactIntegerExperiment(d Definition) (*compactIntegerLayout, error) {
-	l, err := Compile(d)
+	// Codec experiments test exactly the supplied schema, without Trunk-owned
+	// intrinsic fields. Use the portable codec instead of resource compilation.
+	raw, err := pil.MarshalObject(d)
 	if err != nil {
 		return nil, err
 	}
+	portable, err := pil.Parse(raw, pil.IdentityProfile{Primary: -1})
+	if err != nil {
+		return nil, err
+	}
+	l := &Layout{Layout: portable, Definition: d, Event: 0, Object: -1, Revision: -1, Duration: -1, Shared: -1, Record: -1, Time: -1, Leaf: -1}
 	a := &compactIntegerLayout{base: l, fields: make([]compactIntegerField, len(d.Fields)), mask: (len(d.Fields) + 3) / 4}
 	a.mask32 = make([]byte, a.mask)
 	a.mask64 = make([]byte, a.mask)
@@ -143,7 +151,7 @@ func (a *compactIntegerLayout) encode(dst []byte, values []Value) ([]byte, error
 		return nil, fmt.Errorf("field count mismatch")
 	}
 	if !a.eligible {
-		return a.base.Encode(dst, values)
+		return a.base.Layout.Encode(dst, values)
 	}
 	dst = append(dst[:0], make([]byte, a.mask)...)
 	var widths [256]byte

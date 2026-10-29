@@ -1,3 +1,4 @@
+import {apiFetch} from './connections.ts';
 // Read-only storage evaluation. No deletion or policy publication.
 export type StorageSample = { path: string[]; hour: number; bytes: number };
 export const GB = 1000 ** 3;
@@ -135,7 +136,7 @@ export function validateStorage(data: StorageSnapshot) {
 export async function loadStorage(token:string,signal:AbortSignal):Promise<StorageSnapshot>{
  const headers:Record<string,string>={Accept:'application/json'};
  if(token.trim())headers.Authorization=`Bearer ${token.trim()}`;
- const response=await fetch('/storage',{headers,signal,cache:'no-store'});
+ const response=await apiFetch('/storage',{headers,signal,cache:'no-store'});
  if(!response.ok)throw new Error(`Storage measurements unavailable (${response.status}).`);
  const data=await response.json();
  return validateStorage(data);

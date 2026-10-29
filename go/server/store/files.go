@@ -166,7 +166,7 @@ func mkdirDurable(path string) error {
 	return syncDirectory(parent)
 }
 
-func installMap(dir string, data []byte) error { return installNamedMap(dir, "log.map", data) }
+func installMap(dir string, data []byte) error { return installNamedMap(dir, "log.rx", data) }
 func installNamedMap(dir, filename string, data []byte) error {
 	if e := mkdirDurable(dir); e != nil {
 		return e

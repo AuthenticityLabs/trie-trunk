@@ -73,7 +73,7 @@ func extendedWidth(n uint64) int {
 func (a *fastIntegerLayout) encode(dst []byte, values []Value, compact bool) ([]byte, error) {
 	// The original fixed encoder is already a single-pass append fast path when capacity is reused.
 	if !compact && cap(dst) > 0 {
-		return a.reference.base.Encode(dst, values)
+		return a.reference.base.Layout.Encode(dst, values)
 	}
 	if len(values) != len(a.fields) {
 		return nil, fmt.Errorf("field count mismatch")
@@ -263,7 +263,7 @@ func (a *compactIntegerLayout) encodeFastLoads(dst []byte, values []Value) ([]by
 		return nil, fmt.Errorf("field count mismatch")
 	}
 	if !a.eligible {
-		return a.base.Encode(dst, values)
+		return a.base.Layout.Encode(dst, values)
 	}
 	dst = append(dst[:0], make([]byte, a.mask)...)
 	var widths [256]byte

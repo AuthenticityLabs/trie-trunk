@@ -17,7 +17,7 @@ if(manifest.Synthetic!==true)throw Error('This comparison requires the synthetic
 const codec=new Codec(await WebAssembly.instantiate(await WebAssembly.compile(await readFile(new URL('../assets/pil.wasm',import.meta.url)))));
 const definitions=new Map(),mappings=new Map(),lines=[],bare=[],ids=new Set();let events=0;
 const query=new URLSearchParams({tap:`${manifest.Cache}/*/*/*`,from:manifest.From,to:manifest.To,limit:'all'});
-const response=await fetch(`${origin}/collect?${query}`,{headers:{Accept:'application/pil','PIL-Version':'2','PIL-Features':'adaptive-integers,event-gzip-v1','Trunk-Completion':'body'},signal:AbortSignal.timeout(120000)});
+const response=await fetch(`${origin}/collect?${query}`,{headers:{Accept:'application/pil','PIL-Version':'2','PIL-Features':'adaptive-integers','Trunk-Completion':'body'},signal:AbortSignal.timeout(120000)});
 const parser=new PILStream(codec,definitions,()=>{},binding=>{
  mappings.set(binding.stream,{mapping:compile(definitions.get(binding.digest),binding.tap,[]),tap:binding.tap});
 },async batch=>{

@@ -38,7 +38,7 @@ func BenchmarkEventsResident(b *testing.B) {
 		if e != nil {
 			b.Fatal(e)
 		}
-		raw, e := codec.MarshalCompact(codec.Record{8: id, 12: uint64(i % 50000), 3: uint64(5), 14: uint64(400 + i%8), 19: "/secrets"}, codec.CBOR)
+		raw, e := codec.MarshalCompact(codec.Record{8: id, 12: uint64(i % 50000), 3: uint64(5), 14: uint64(400 + i%8), 19: "/secrets"}, codec.PIL)
 		if e != nil {
 			b.Fatal(e)
 		}

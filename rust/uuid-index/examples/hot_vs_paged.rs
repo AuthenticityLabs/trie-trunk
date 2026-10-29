@@ -211,7 +211,7 @@ fn run(n: usize, revisions: usize) {
         let mut m = resident.write().unwrap();
         for refs in m.values_mut() {
             assert_eq!(refs.len(), revisions + 1);
-            refs.pop();
+            refs.pods();
         }
     }
     samples.sort_by(f64::total_cmp);

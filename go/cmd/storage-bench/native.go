@@ -28,7 +28,7 @@ func native(root, output, shape string, samples int, aggregates, objects bool, s
 	}
 	frames := make([][]byte, len(source))
 	for i, raw := range source {
-		r, e := codec.Decode(raw, codec.CBOR)
+		r, e := codec.Decode(raw, codec.PIL)
 		if e != nil {
 			return e
 		}
@@ -188,7 +188,7 @@ func native(root, output, shape string, samples int, aggregates, objects bool, s
 	out.NativeBytes = map[string]map[string]int64{}
 	out.NativeLatency = map[string]latency{}
 	for _, q := range queries[1:3] {
-		request := cache.CollectionRequest{Branch: cache.Write, Day: q.From, PopulationFrom: q.From, PopulationTo: q.To}
+		request := cache.CollectionRequest{Branch: cache.Write, Day: q.From, DataFrom: q.From, DataTo: q.To}
 		var manifest cache.Manifest
 		capture := func(key string) error {
 			counts := map[string]int64{}
@@ -206,7 +206,7 @@ func native(root, output, shape string, samples int, aggregates, objects bool, s
 			return e
 		}
 		out.NativeLatency[q.Name+"_cold"] = metric
-		request.Have = cache.Coverage{Definition: manifest.Definition, Generation: manifest.Generation, Index: manifest.Index, Population: manifest.Population, TrieNodes: manifest.TrieNodes}
+		request.Have = cache.Coverage{Definition: manifest.Definition, Generation: manifest.Generation, Index: manifest.Index, MemberRanges: manifest.MemberRanges, TrieNodes: manifest.TrieNodes}
 		if e = capture(q.Name + "_cached"); e != nil {
 			return e
 		}
@@ -217,12 +217,12 @@ func native(root, output, shape string, samples int, aggregates, objects bool, s
 			return e
 		}
 		out.NativeLatency[q.Name+"_cached"] = metric
-		if out.NativeBytes[q.Name+"_cached"]["index"] != 0 || out.NativeBytes[q.Name+"_cached"]["population"] != 0 {
+		if out.NativeBytes[q.Name+"_cached"]["index"] != 0 || out.NativeBytes[q.Name+"_cached"]["sods"] != 0 {
 			return fmt.Errorf("duplicate native transfer")
 		}
 	}
-	out.Notes = []string{"Native PIL frames prepared before ingestion timing; numeric fixture object IDs are mapped to deterministic UUIDs to satisfy the collection contract. This changes identity bytes relative to earlier benchmarks.", "18-byte event rows contain hour-relative UUIDv7, REF16 and segment-relative population end; object/revision identities and their presence states remain in PIL population.", "Native measurements are in-process Go API calls, not Rust IPC or HTTP; latency differences cannot be attributed to layout alone.", "Response bytes are standalone PIL frames without transport control framing; not a native replication bandwidth measurement.", "Ingest includes validation, shared paths, index/population/accumulator sync, 30-day trie statistics, and optional object index. Reopen verifies committed CRCs.", "OS page cache not flushed. Native indexes are read-only memory mappings; resident pages are OS-managed, not a claimed fixed memory budget."}
-	out.Notes = append(out.Notes, "Native chunk bytes include map/trie/state/index/population bodies, excluding manifest/control framing and HTTP; cached means a matching complete source generation.")
+	out.Notes = []string{"Native PIL frames prepared before ingestion timing; numeric fixture object IDs are mapped to deterministic UUIDs to satisfy the collection contract. This changes identity bytes relative to earlier benchmarks.", "16-byte event rows contain the 96-bit hour-relative UUIDv7 representation and a four-byte decoded member start; REF16, object/revision identities, and their presence states remain in PIL members.", "Native measurements are in-process Go API calls, not Rust IPC or HTTP; latency differences cannot be attributed to layout alone.", "Response bytes are standalone PIL frames without transport control framing; not a native replication bandwidth measurement.", "Ingest includes validation, shared paths, index/payload/accumulator sync, 30-day trie statistics, and optional object index. Reopen verifies committed CRCs.", "OS page cache not flushed. Native indexes are read-only memory mappings; resident pages are OS-managed, not a claimed fixed memory budget."}
+	out.Notes = append(out.Notes, "Native chunk bytes include map/trie/state/index/payload bodies, excluding manifest/control framing and HTTP; cached means a matching complete source generation.")
 	raw, e := json.MarshalIndent(out, "", "  ")
 	if e != nil {
 		return e

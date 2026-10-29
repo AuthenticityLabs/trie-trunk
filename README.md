@@ -6,10 +6,34 @@ Ingest typed events once; reuse complete hourly datasets and compact summaries i
 the browser instead of repeating every investigation against the server.
 
 [Website](https://trietrunk.com) · [Snoot](https://snoot.trietrunk.com) ·
-[PIL Definition Schema](https://github.com/AuthenticityLabs/pill-packer/blob/main/schemas/definition.cddl)
+[PIL Bootstrap Definition (.rx)](https://github.com/AuthenticityLabs/pill-packer/blob/main/schemas/pil.rx)
 
 Version zero: storage designs and fixtures can change without migration paths.
 The sample datasets are disposable.
+
+## Pack and Replication Design
+
+[Pill Packer](../pill-packer/README.md#pack-api) owns PIL/PAC framing,
+named headers, optional embedded member directories, fixed-width validation,
+and explicit compression. Trie-Trunk owns grouping, identity, storage placement,
+replication, and retention. Ordinary event members remain variable-width.
+
+The development branch index uses six-byte rows: four timestamp bytes and a
+two-byte state leaf. Record position supplies the ordinal; payload boundaries
+come from the PAC directory. The former 16-byte index and the entropy-preserving
+experiment are historical baselines, not current layout descriptions.
+
+Current Search order: `/trunk` bootstrap, scoped `.tri` ranges and immediate
+counts, then collection of missing whole hourly `.pods` packs into `.sods`.
+Local matching begins as each collected window becomes available. Fast dashboards
+replicate summary PACs separately. Tantivy remains an explicit server comparison;
+production client Tantivy replication and execution are deferred.
+
+The proposed leaf-to-hour occurrence index is **not implemented**. Current local
+search bounds by time and checks state leaves while scanning the selected rows.
+Its reader currently brings payload bytes into memory before leaf rejection.
+A directly routed leaf/hour directory with paged occurrence lists remains design
+work; no lookup complexity or performance improvement is claimed for it yet.
 
 ## Architecture
 
@@ -26,7 +50,7 @@ The sample datasets are disposable.
 This is not yet a fully native record engine. Go still allocates projection,
 query-result, and sealing metadata. Measure native memory and process RSS along
 with Go allocations; moving ownership alone does not establish a latency win.
-The separate standalone CBOR store/search tooling is not Snoot's canonical path.
+Blind CBOR and JSON inputs are decoded at ingestion. Definitions, event payloads, controls, metadata, and browser state use PIL.
 
 ### Transaction Logging
 
@@ -48,7 +72,7 @@ Data seeds are the data records; seed packs group those seeds. Pods and Sods are
 | --- | --- | --- |
 | Seeds — Sequentially Encoded Event Data | `.seed` | Observability Ingress — durability until the hourly seal completes, with recent data seeds in native memory for live tail; implementation of PIL |
 | Packs — Packed Array Container | `.pack` | Seal & Compress the Hour — hourly grouping after the late-arrival window; implementation of PIL PACs |
-| Pods — Packed Observability Datastore | `.pods` | Packed Data Storage — sealed server storage for seed packs; writes compress unless Collections is enabled for direct replay |
+| Pods — Packed Observability Datastore | `.pods` | Packed Data Storage — sealed server storage for seed packs; write packs remain uncompressed for object lookup |
 | Sods — Sparse Observability Datastore | `.sods` | Sparse Replication — decoded data seeds in sparse browser storage for complete collected hours |
 | Stalks — Sparse Telemetry Analytic Lineage Kolumns | In Memory | Analytic Engine — analytic columns; summary columns exist, broader data-seed projection remains future work |
 | Summaries | `.sum` | 5-minute columnar aggregates, daily compressed summary packets, and calendar rollups |
@@ -70,13 +94,13 @@ packets are separate structures; they are not renamed to data seeds or seed pack
 caches/<cache>/
   registry.cfg
   registry.map
-  registry.tri
+  resource.tri
   <service>/<resource>.v<major>/
     collection.idx                 # optional object/revision lookup
     collection.state               # invalidation state
     <minor>/
-      resource.map
-      resource.tri
+      resource.rx
+      state.tri
       resource.stats
       read.* / write.* / error.* / debug.* / trace.*
       lost.log
@@ -167,6 +191,14 @@ the operand exactly, without rounding stored values. Search Guide and field
 completions expose the query unit. Refresh preserves the selected time window
 independently of disposable scroll geometry.
 
+Definition-declared object IDs have a distinct link color. Clicking one opens
+Object History and performs a fresh `/collections/<id>` lookup in its resource.
+Debug and trace leaf buttons sit in the event margin and open separate data
+dialogs. They use `correlation_id` or `trace_id` when supplied, with an exact
+millisecond timestamp fallback within the same resource. Their records are
+excluded from normal event counts, histograms, distributions, and operation
+rankings. Diagnostic dialogs request pages without event summaries.
+
 Native collection rejects conflicting physical generations before publishing
 coverage. A recreated or restored server dataset can have the same Definition
 and generation sequence as an older local replica but a different generation
@@ -183,11 +215,11 @@ silently converted into retryable conflicts.
 
 
 Native event storage uses OPFS under `snoot-store/<credential hash>/`. Each
-branch holds its sparse `events.sods`, `events.idx`, resource trie/definition
+branch holds its sparse `events.sods`, `events.idx`, state trie/definition
 files, and raw time trie. Committed time-trie leaves determine availability;
 there is no second per-event IndexedDB index or persisted package-coverage list.
-Allocation/decoding context is stored in `layout.<revision>.cbor`. The atomic
-`commit.cbor` root publishes immutable layout and `branch.<revision>.tri`
+Allocation/decoding context is stored in `layout.<revision>.pil`. The atomic
+`commit.pil` root publishes immutable layout and `branch.<revision>.tri`
 snapshots after data files have been flushed. Native responses queue up to 4 MiB
 or 4,096 control records per batch (a single larger PAC is flushed immediately).
 Small responses publish once after wire completion, rather than committing
@@ -202,19 +234,148 @@ previous committed leaves authoritative. Saved collection bookmarks use a
 separate OPFS file, not IndexedDB. Compressed summary packets retain their
 bounded Cache Storage cache.
 
-Each hour has one status byte in the time trie. The low two bits encode unknown
-(`0`), metadata-only (`1`), or committed event data (`2`); bit `0x04` independently
-records a committed replicated Tantivy index. Thus an index can be queried before
-its event blocks are collected. Receiving data preserves the index flag; evicting
-an index leaves event coverage intact. A known hour with zero records remains
-distinct from an unknown hour. Index flags must be published only after verified
-index files are flushed; event flags still follow the `.sods` flush. The flag
-helpers exist, but the index-replication transport has not yet been connected.
-The byte layout adds 6,588 bytes per allocated calendar year per branch compared
-with the previous two-bit map. Version-zero directory fixtures are regenerated;
-old local directory files require resetting the disposable local cache.
+Client completeness concerns the files being synchronized. A sods completion bit
+is published after its data is committed, while other replicated files can become
+available independently. Default Search collects whole hourly event packs before
+evaluating predicates locally. Client file-completion booleans belong in a compact mask;
+the server does not maintain a client receipt mask.
 
-### Client Tantivy Replication
+Server time tries contain sealed hourly address/count leaves, without a status
+tail. Sparse client copies append one file-completion byte: summary `1`, index
+`2`, state `4`, inverted `8`, and sods `16`. Zero means no associated files are
+complete. Sparse allocation ranges identify received time leaves, including
+known empty hours, independently of those file bits. Importing time alone does
+not certify any other file. A time refresh preserves committed file bits.
+
+`GET /trunk` bootstraps all registered resources, signature tries, and `.rx`
+definitions in one uncompressed PIL stream. The resource hierarchy is
+`resource.tri` at the cache root; each definition folder holds its `state.tri`
+signatures and `resource.rx`. The catalog advertises actual relative artifact
+paths. `GET /trunk/<relative-folder>/` traverses registered folders without
+assuming a fixed hierarchy depth. The client validates artifacts and commits its
+bootstrap snapshot only after every file is durable.
+
+A scoped time request uses the advertised path, for example
+`/demo/payment/transactions.v1/0/write.tri?begin=YYDDDHH&end=YYDDDHH`.
+The same pattern applies to other branches. Bounds are UTC,
+begin-inclusive/end-exclusive, with two-digit years interpreted as 2000–2099.
+It returns only published hours, clipped to retained bounds, and reports the
+Definition and physical generation in response headers. Each definition has its
+own physical path; there is no definition query selector. Clients use catalog
+paths rather than constructing them from version components.
+
+Bootstrap and time-window replication are connected to Search. Selecting a scope
+or applying a window reads available local time leaves and fetches missing ranges
+through the catalog's branch `.tri` paths, with at most four concurrent requests.
+The histogram shows sealed hourly counts before Search is invoked; debug/trace
+branches do not contribute to ordinary event counts. Long ranges combine hourly
+counts into at most 300 rendered bars. Time imports preserve existing completion
+bits and publish no event/index completeness. Changing the calendar window no
+longer submits an event search automatically.
+
+### Client Search Execution
+
+Search uses catalog paths and hourly completeness bits to collect only missing
+whole `.pods` packs. It does not call `/events` or independently fetch `.idx`
+ranges in the default path. The first nonempty hour is scheduled separately for
+prompt first-page results; remaining work is grouped by day with at most four
+concurrent branch tasks. Each window is matched locally after collection.
+The default Search path never asks the server to evaluate predicates.
+
+State leaves reject impossible matches before decoding event values. Compiled
+predicates support AND, OR, XOR, NOT, and parentheses; precedence is NOT, AND,
+XOR, OR. An OR match is counted once even when both conditions are true.
+Text matching currently searches Definition enum values; text absent from those
+Definitions is ignored and reported. Free-form event text and production client
+Tantivy search remain deferred. The Tantivy Comparison option invokes the server
+explicitly and rejects Boolean expressions it cannot represent.
+
+Native paging retains the two binary boundary searches. Independent aligned
+read windows serve index probes, sequential rows, PAC directories, and payloads.
+Small first-page reads grow to bounded 4,096-record scans, subject to the existing
+byte cap. Complete query aggregates are cached for at most eight exact snapshots;
+later pages seek to their cursor timestamp, resolve ties by the full source key,
+and stop after the requested page. A changed query, window, generation, or local
+rebase invalidates reuse. A fresh worker can rebuild aggregates from durable data
+without recollecting complete hours. Local latency rankings report their actual
+average, rather than labeling that mean as P95.
+
+Summary PACs are stored in OPFS `branch.sum` for planted service dashboards.
+Their bits publish only after durable storage and agreement with received hourly
+counts. Search event charts aggregate the locally matched events; Fast dashboards
+consume precomputed summary columns. The performance flyover separates planning,
+collection, and client work.
+
+`go test ./server/cache -run TestSearchPlannerWorkerAgainstHTTP -v` exercises the
+production worker and WASM codec against an isolated Go server: cold/warm search,
+restart, paging, ignored text, truncated whole-pack delivery, and failed summary
+publication followed by retry. It asserts that default Search never requests
+`/events` or an independent `.idx`. Client tests also cover Boolean combinations,
+same-timestamp cross-branch paging, cache invalidation, and cancellation. The
+Node process is a test client, not an application server. Browser verification
+covers the actual Search page and real storage-worker/OPFS I/O separately.
+
+### Client Search Measurements
+
+A development stress test on 1,048,576 synthetic events in 256 hourly packs used Chromium,
+production WASM, storage-worker messaging, and durable OPFS. Identity and storage
+formats were identical. Both runs returned the exact count and disjoint pages.
+The before build was reconstructed from development sources saved before the
+optimization pass, not from the deployed release. The unfiltered query requested
+100 events while aggregating all million records; the first page was ready long
+before the full request finished.
+
+| Measurement | Before | After |
+| --- | ---: | ---: |
+| Full local scan and statistics | 132.83 s | 5.36 s |
+| First 100-event page available | 64.5 ms | 49.0 ms |
+| Next 100-event page ready for UI | 62.3 ms | 42.7 ms |
+| Subsequent request complete, including statistics | 132.08 s | 42.7 ms |
+| Storage-worker page reads per full scan | 8,192 | 268 |
+
+These are sequential single-run browser measurements, not production latency
+claims or a deployed-versus-new comparison. Next-page completion improves mainly
+by reusing statistics instead of repeating the full scan. Fixture transport was
+cached; real network transfer and DOM rendering
+are excluded. The full scan remains linear in the number of collected candidates;
+this change does not turn event analytics into summary-column performance.
+[Raw Chromium results](benchmarks/client/2026-10-29-planner/chromium.json).
+
+A separate three-run memory-backed I/O harness measured median fresh full scans
+at 19.26 s before and 1.91 s after. File read requests fell from 96.78 GB to
+112.08 MB per scan; those counters measure requested bytes, not physical disk
+traffic. [Before](benchmarks/client/2026-10-29-planner/memory-before.json) ·
+[After](benchmarks/client/2026-10-29-planner/memory-after.json).
+
+Reproduce the memory harness with
+`node --experimental-strip-types client/scripts/benchmark-planner.mjs <checkout> <fixture.pil> <report.json>`.
+The fixture requires its adjacent `.pil.json` metadata. Build the browser worker
+with `node client/scripts/build-planner-benchmark.mjs`; serve its output, WASM,
+and `/fixture/dense.pil` plus metadata through the Go test server, then start
+`worker.js` as a module worker and post `{variant: "after"}`. It reports timings,
+checks counts/page overlap, and removes its own temporary OPFS namespace.
+
+Snoot's Profile page has Preferences and Connections tabs. Preferences include
+name, Light/Dark/System appearance, Trunk/Snoot theme, and events per page.
+Connection registrations are local profile data until identity-server integration.
+Each enabled registration receives its own `/trunk` request at startup. The
+selected server supplies the current workspace controls. Bearer tokens remain
+separate per registration in tab memory; they are not saved with the profile.
+Worker sessions and durable caches are isolated by server and credential.
+Remote servers must permit browser requests from the app's origin.
+
+Only complete collected hours enter durable event coverage; partial query results
+remain in memory. A received time leaf establishes count/address availability;
+its sods bit establishes committed event-data availability. Other bits certify validated, committed
+contents for the matching source and generation. Sparse allocation mappings and
+record counts serve address calculations, rather than file-completion tracking.
+
+Storage names are `.pods` on the server and `.sods` on the client. Protocol
+`MemberRanges` denotes decoded PAC member coordinates. The `replication.data`
+policy and `data=none` collection option control data fetching. Recreate
+version-zero caches after the serialized-name and file-identifier cleanup.
+
+### Tantivy Reader Experiment
 
 The read-only WASM reader in `rust/search-wasm` opens immutable Tantivy 0.25
 files through synchronous worker file handles. It shares schema construction,
@@ -224,35 +385,43 @@ pill-packer. The reader has a bounded 8 MiB cache of 64 KiB index blocks;
 posting/column reads reuse those blocks instead of making one OPFS call per
 small value. Original event payloads are not stored in Tantivy.
 
-This reader is tested separately; Snoot's active Search still uses `/events`.
-Index replication and the live planner have not yet switched to it. The
-remaining integration uses indexes to decide which event data to retrieve:
+Time bounds come from the branch time trie and binary searches of its indexed millisecond
+index. Tantivy evaluates text and indexed predicates, then its candidate
+collector clips canonical event addresses to those exact snapshot ranges. It
+does not enumerate address terms to construct a time-range bitset. Each accepted
+address is resolved through the captured time trie before record retrieval.
+Tantivy document IDs remain segment-local; they are not event addresses. Pure
+time-window searches bypass Tantivy. Broad text matches still visit matching
+postings outside the requested window; time-partitioned index storage is deferred.
 
-- Traverse the selected resource/window's time trie and replicate missing
-  immutable hourly search indexes alongside their time-trie records. Reuse
-  cached indexes and search each segment as it becomes available. Event-data
-  collection is not a prerequisite for executing the query. Current branch-wide
-  mutable indexes cannot be copied as hour-scoped snapshots.
-- Bind each index to the resource, Definition, physical generation, hour and
-  event-address range. Index availability and event availability are distinct:
-  receiving an index never publishes a `.sods` coverage leaf. Flush `.sods`
-  before committing its event-data time-trie leaf. Unknown hours are never
-  treated as empty.
-- Search indexes to obtain candidate event addresses, then collect only the
-  missing hourly seed packs needed for the requested result page or analytics.
-  Render progressive results while remaining indexes arrive; final counts need
-  complete index evaluation, not complete event replication. Predicates that
-  require payload evaluation fetch candidate hours before finalizing matches.
-  Exact partial-hour bounds, duration normalization, residual
-  predicates, pagination and full-range statistics must match the existing
-  server path before cutover. Open/live hours need explicit handling rather
-  than a false completeness claim.
-- Reuse collected hours/indexes across query changes. Full-window event
-  collection is an explicit workload requirement, not the default search plan.
-  Credential isolation,
-  stale-generation invalidation, cancellation and storage quota failures must
-  share the existing collection transaction behavior. No index bytes belong
-  in IndexedDB or session storage.
+This Tantivy reader is tested separately and is not invoked by Snoot Search.
+Default matching runs in the client planner described above; only explicit
+Tantivy comparison uses server search. Whole `.pods` transfers are decoded into
+`.sods`, and file-completion bits publish after durable commit.
+
+Replication uses these boundaries; the inverted-index stage remains deferred:
+
+- State/filter parameters remain part of the request contract. Compressed PAC
+  collection transfers whole requested hourly packs without scanning state
+  references to decide whether an hour is worth transferring. A collection
+  response does not claim that its records satisfy those predicates.
+- Uncompressed `write.pods` still transfers whole packs. A future heavy-server
+  mode may evaluate full searches over uncompressed data; it is not implemented
+  by this replication policy.
+- Inverted-index replication follows Tantivy's native segment/file layout, not
+  forced hourly indexes. Transfer metadata and referenced files from one pinned
+  committed snapshot. Existing immutable files may be reused; merges produce
+  replacement segments. Keep the prior snapshot usable until the replacement
+  is complete. The time trie records coverage of that snapshot; an hour's
+  inverted bit requires all index files needed to search that hour, not merely
+  one received segment. A snapshot may cover multiple hours.
+
+Production `.tvy` snapshot pinning, publication, and planner integration remain
+unimplemented. The default planner uses `.pods`; Fast dashboards use `.sum`.
+Independent `.idx` replication exists but is not a prerequisite of default Search.
+Source/Definition/generation binding, cancellation,
+retention, and credential isolation apply to each artifact. Index and summary
+bytes stay in OPFS, outside IndexedDB and session storage.
 
 Build the reader with `node client/scripts/build-search-wasm.mjs` after installing
 `wasm-bindgen-cli` 0.2.129; `WASM_BINDGEN` can point to an isolated installation.
@@ -396,9 +565,9 @@ cache identity to avoid collisions.
 
 Some inventoried branches have event counts without precomputed summary columns.
 The dashboard explicitly reports summarized events versus all matched events;
-all displayed metrics and groups refer to the summarized population. It does not
+all displayed metrics and groups refer to the summarized data set. It does not
 invent per-resource metrics for uncovered events or scan those events to fill
-missing summaries. Tables export the same displayed population. Summary dimension
+missing summaries. Tables export the same displayed data set. Summary dimension
 incompleteness, duplicate sources, or overlapping requested scopes are errors.
 
 Compressed sealed packets use a 256 MiB Cache Storage budget rather than a packet
@@ -500,22 +669,35 @@ from `github.com/AuthenticityLabs/pill-packer/go/codec`; browser helpers come fr
 `pill-packer` exports. Trunk adapters supply resource roles and TPIL control
 schemas, without maintaining another PIL field encoder or PAC parser.
 
-The existing `.sum` container is still a Trie-Trunk-specific columnar format,
-not a PIL PAC. Its gzip, base-residual and shuffle primitives now use Pill Packer;
-aggregate selection and the hourly/daily storage schema remain here. Moving codec
-ownership does not by itself convert that storage format. The fixed-width PAC
-provision is documented in [Pill Packer's design](https://github.com/AuthenticityLabs/pill-packer/blob/main/README.md#fixed-width-pac-design).
+Sealed daily summaries in the `.sum` stream are standard PIL PACs, with one hourly
+aggregate record per member and a checked-in `go/server/cache/summary.rx`
+Definition. Each member carries its compact five-minute column payload as BYTES;
+open hourly summaries remain individual `SUMCOL` records until daily sealing.
+Pill Packer owns PAC framing and gzip while Trie-Trunk owns aggregation and the
+compact summary-column codec. `.pods` members remain
+variable length even when the Definition's scalar types have fixed widths:
+individual events may omit fields. The six-byte branch-index row contains the low
+four bytes of epoch milliseconds followed by a two-byte state trie leaf. The hour
+header carries the high timestamp word. The final zero-based record ordinal is
+implicit in index position and is stored once as a fixed U24 `@event_id` in the
+sealed member. No per-record payload offset or UUID entropy is stored in this index.
 
 The definition-engine registration plan is JSON folders/upload/editor → portable
-structure/codec checks → Trie-Trunk profile checks → immutable CBOR → publication.
-Persist definitions as CBOR so they can bootstrap without a preloaded PIL schema.
+structure/codec checks → Trie-Trunk profile checks → immutable PIL `.rx` → publication.
+Persist definitions, including structured CDDL schemas, as PIL `.rx` documents.
+The compiler/runtime and application-profile boundaries are described below.
+The fixed `pil/value` bootstrap layout is built into the codec and published as
+[`pil.rx`](https://github.com/AuthenticityLabs/pill-packer/blob/main/schemas/pil.rx);
+that definition is encoded using the same layout it describes.
 Keep source text separately for editor fidelity. Unknown metadata must survive
 forwarding; required validation must be explicitly supported, not inferred from
 an annotation. Folder ingestion and editor/upload UI are pending.
 
 PIL carries complete objects or partial changes. Definitions specify ordered
 fields, primitive types, dictionaries, and integer-encoding options. Definitions
-are CBOR; [`definition.cddl`](https://github.com/AuthenticityLabs/pill-packer/blob/main/schemas/definition.cddl) describes their structure.
+are PIL `.rx` documents; [`definition.cddl`](https://github.com/AuthenticityLabs/pill-packer/blob/main/schemas/definition.cddl) is the editable CDDL description of their structure.
+`resource.rx` and `producer-<digest>.rx` store native PIL definitions; internal
+metadata such as `registry.map` retains its existing encoding.
 Absent, null, direct, and offset-backed field states remain distinct. `REF16` is
 optional. Adaptive integers are configured per Definition.
 
@@ -529,6 +711,27 @@ See [`../pill-packer/rust/src`](https://github.com/AuthenticityLabs/pill-packer/
 for the implemented format. Format experiments replace fixtures; old benchmark
 snapshots are not compatibility contracts.
 
+### Definition Validation Ownership
+
+Pill Packer compiles supported CDDL into a PIL root layout and nested schema plan.
+Rust, Go, and WASM share that nested runtime and reject a schema that disagrees
+with its compiled layout. Trie-Trunk separately validates resource identity,
+version, timezone, role/type bindings, aggregation, and shared projection paths
+in `go/server/cache/definition.go` and `references.go`.
+
+Compiler, CLI, bootstrap, and binding parity tests live in Pill Packer's
+`rust/tests/schema.rs`, `rust/tests/rx.rs`, `rust/tests/documents.rs`,
+`go/codec/schema_test.go`, and npm tests. Cache profile checks stay in Trie-Trunk's
+cache tests; demo-generation tests stay with `go/cmd/seed-demo`.
+
+Demo Definitions are still assembled as Go structs. Loading authored `.rx`
+resources requires an explicit portable binding for CDDL constraints to storage
+roles: for example, `bstr .size 16` compiles as BYTES while the cache identity role
+requires UUID. Neither validator should be weakened to disguise that gap.
+Generic/recursive rules, group inclusion, dynamic map keys, tuple arrays, and
+unbounded `int`/`nint` remain outside the supported CDDL subset. Folder ingestion
+and the Definition upload/editor UI remain pending.
+
 ## Logger
 
 The Go PIL logger registers a Definition before its first write. It exchanges
@@ -538,7 +741,7 @@ accepts frames under the producer's original Definition. Extensions can use
 explicitly enabled `@fields` and be promoted by compatible newer Definitions.
 
 ```go
-mapBytes, err := os.ReadFile("resource.map")
+mapBytes, err := os.ReadFile("resource.rx")
 if err != nil { return err }
 logger, err := pil.Open(ctx, pil.Config{
     URL: trunkURL, Cache: "prod", Branch: "write",
@@ -576,9 +779,107 @@ browser visual correctness, Safari storage behavior, or production performance.
 
 ## Measurements
 
+### Ordinal Identity Format (Development)
+
+Ingress takes the timestamp from the supplied UUIDv7 and discards its entropy.
+`@event_id` is a provisional per-hour number while live; sealing sorts the hour and
+assigns final zero-based U24 row numbers (0–16,777,215). These numbers are scoped by
+resource, physical branch, and hour. They are not globally unique. The original
+UUID cannot be reconstructed and UUID-based ingress retry deduplication is no
+longer available. Collection object/revision uniqueness remains enforced.
+
+`@leaf` remains a REF16 Definition field, but its stored value lives only in the
+two-byte index postfix. State values covered by that leaf are also omitted from
+the sealed member and resolved from the state trie. Materialized event views
+expose those values and `@leaf` without creating a second persisted copy. The
+original UUID field is hidden in ordinal event views; internal live/paging APIs
+use a synthetic timestamp/ordinal key, not the producer UUID.
+
+Collection index encoding is unchanged: event positions start at one, and zero
+remains invalid/empty. The boundary converts a zero-based `@event_id` to the
+existing one-based collection position. Hour values, page layout, independent
+width widening, and retention addressing keep their established conventions.
+
+[Ordinal benchmark results](benchmarks/storage/2026-10-29-format-comparison/ordinal-results.json)
+use the same 1,048,576 input events and 256 hours as the original baseline.
+The resource store includes summaries and excludes Tantivy and collection indexes.
+The client replica covers the event/index replication path; summaries are not
+part of that client measurement. All bytes below are decimal MB.
+
+| Measurement | Original Baseline | Entropy Experiment | Ordinal Layout |
+| --- | ---: | ---: | ---: |
+| Total Server Store | 22.59 MB | 27.76 MB | 15.81 MB |
+| Total Client Replica | 39.04 MB | 46.47 MB | 35.99 MB |
+| Client Decode | 98.8 ms | — | 147.1 ms |
+| Client Decode and Durable Replication | 420.5 ms | — | 579.6 ms |
+| Local 100-Event Page | 21.4 ms | — | 27.7 ms |
+
+The original and ordinal builds were measured sequentially in the same isolated
+Chrome session: seven decode runs, five storage-worker/OPFS replication runs, and
+five page reads per replication. Timings exclude network transfer and DOM/GPU
+rendering. All 256 hours and 1,048,576 events passed full readback. Original UUID
+hashes intentionally differ because this design discards entropy.
+
+The footprint is smaller, but retrieval is still slower than the original
+baseline. The [member audit](benchmarks/storage/2026-10-29-format-comparison/ordinal-audit.json)
+finds 22-byte decoded members, including the fixed three-byte ordinal and no
+payload copy of `@leaf` or trie-covered state. Four-byte PAC directory entries
+remain, along with a three-byte mask versus the original two-byte mask. This
+fixture has uniform member widths; directory elimination remains an optimization
+target. No speedup in total retrieval is claimed.
+
+### Entropy-Preserving Experiment (Superseded)
+
+[Reproducible results and artifact hashes](benchmarks/storage/2026-10-29-format-comparison/results.json)
+compare Trie-Trunk `42ebf75` and Pill Packer `e663e89` with the earlier entropy-preserving
+experiment. Both use the same 1,048,576 deterministic events in 256 hours, including
+full 74-bit UUID entropy. Summaries are enabled; Tantivy and the optional
+collection index are disabled in both. These measurements cover the full isolated
+resource store, not just event payloads.
+
+| Measurement | Before | Development |
+| --- | ---: | ---: |
+| Event index | 16.78 MB | 6.29 MB |
+| Total server store, logical bytes | 22.59 MB | 27.76 MB |
+| Total client replica, logical bytes | 39.04 MB | 46.47 MB |
+| Time lower-bound lookup, 1 million rows | 176 ns | 146 ns |
+| Time lower-bound lookup, 16 million rows | 481 ns | 365 ns |
+| Client decode | 95 ms | 222 ms |
+| Client decode and durable replication | 416 ms | 701 ms |
+| Local 100-event page with field materialization | 21.5 ms | 27.2 ms |
+
+Client medians use five alternating Chrome runs through the actual storage
+worker and OPFS. Transfer bytes are already in memory when timing starts;
+network download and DOM/GPU painting are excluded. All million records are
+read back, and reconstructed UUID hashes agree. Go lookup runs use five samples
+per format and zero allocations per lookup.
+
+In that experiment, the index was smaller and faster, but the entire change was
+not a performance improvement. Relocated entropy passed through gzip; that PAC layout
+also introduces directory entries, variable-field offsets, and a wider field
+state mask. Controlled same-byte decompression is approximately 144 ms with the
+old Pill Packer and 142 ms with the new one, so these results do not show a slower
+decompression codec. The report includes entropy/directory isolation measurements.
+A [full member audit](benchmarks/storage/2026-10-29-format-comparison/after-audit.json)
+accounts for the replica growth: 10 fewer index bytes, but 13 more member bytes
+and four directory bytes per event. All measured members are exactly 32 bytes,
+so this fixture does not need a directory. The state field is also still present
+in the payload despite its leaf being indexed. Original UUID and `@time` values
+are absent from sealed members; entropy is stored once. This is an implementation
+overhead finding, not evidence of duplicated complete event copies.
+
+An idle native-buffer suffix saturation bug found during restart benchmarking
+has been fixed and covered by a bounded-memory regression test.
+
+To regenerate the development fixture in an isolated temporary store:
+`TRUNK_FORMAT_BENCH_OUTPUT=/tmp/trunk-format/dense.pil go -C go test ./server/cache -run '^TestFormatComparisonFixture$' -count=1 -v`.
+Run index measurements with `go -C go test ./server/cache -run '^$' -bench '^BenchmarkFormatIndex$' -benchmem -benchtime=500ms -count=5`.
+
+
 **The full Trie-Trunk datastore is 70.9% smaller than expanded JSONL** in the
 million-event synthetic fixture, including indexes, summaries, journals, and
-metadata. Collections is disabled; ordinary writes use compression too.
+metadata. This historical measurement used compressed writes with Collections
+disabled; it predates the current uncompressed `write.pods` policy.
 
 | Artifact | Decimal MB |
 | --- | ---: |
@@ -660,7 +961,7 @@ Local API delivery medians were 129 ms for seeds plus summaries, 60 ms for seeds
 alone, 343 ms for a broad numeric query, and 468 ms for a broad text query.
 The numeric and text queries spent roughly 330 ms and 401 ms, respectively, in
 the initial search response. One-branch search responses were about 25 ms.
-The scopes and matching populations differ; this comparison locates work rather
+The scopes and matching data sets differ; this comparison locates work rather
 than claiming an equivalent-workload speedup.
 
 Measurements include HTTP gzip decoding, routing metadata parsing, and summary
@@ -674,7 +975,7 @@ this benchmark. No competing platform has been measured on this workload yet.
 The browser now delivers the validated event page before loading chart summaries
 from the same snapshot. Missing summary packs are selected through `POST /summaries`
 with `{ "packs": [{ "source": "…", "definition": "…", "key": "…" }] }`, using identities from the
-search manifest. The response is a streamed CBOR array of byte strings: each
+search manifest. The response is a streamed PIL record containing `ARRAY<BYTES>`: each
 entry is an unchanged daily summary pack in request order. There is no JSON/base64
 payload conversion or weekly recompression. Requests contain at most 1,024 packs;
 larger sets continue in bounded batches. All references are resolved and their
@@ -899,3 +1200,7 @@ that a mark is registered.
 
 For branding permission beyond the uses above, contact the project maintainers
 through https://github.com/AuthenticityLabs/trie-trunk.
+
+Dashboard statistic values fit their available card width, including space for
+trend indicators. Full numbers stay on one line; font sizing is recalculated only
+when the value, available width, or loaded font changes.

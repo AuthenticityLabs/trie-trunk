@@ -1,10 +1,9 @@
 use crate::{Filter, QueryPlan, Result};
 use std::ops::Bound;
 use tantivy::Term;
-use tantivy::collector::DocSetCollector;
 use tantivy::query::{
-    BooleanQuery, EmptyQuery, FuzzyTermQuery, Occur, PhrasePrefixQuery, PhraseQuery, Query,
-    RangeQuery, RegexQuery, TermQuery,
+    AllQuery, BooleanQuery, EmptyQuery, FuzzyTermQuery, Occur, PhrasePrefixQuery, PhraseQuery,
+    Query, RangeQuery, RegexQuery, TermQuery,
 };
 use tantivy::schema::{Field, IndexRecordOption, Schema};
 use tantivy::tokenizer::TokenStream;
@@ -16,45 +15,28 @@ pub fn search(
     r: &QueryPlan<'_>,
     cancel: Option<std::sync::Arc<std::sync::atomic::AtomicBool>>,
 ) -> Result<Vec<u64>> {
+    let collector = crate::collector::CandidateCollector::new(r.ranges, cancel);
+    collector.check()?;
+    if collector.is_empty() {
+        return Ok(Vec::new());
+    }
     let searcher = reader.searcher();
     let schema = index.schema();
-    let row = schema.get_field("r")?;
-    let ranges: Vec<Box<dyn Query>> = r
-        .ranges
-        .iter()
-        .filter(|(a, b)| a < b)
-        .map(|&(a, b)| {
-            Box::new(RangeQuery::new(
-                Bound::Included(Term::from_field_u64(row, a)),
-                Bound::Excluded(Term::from_field_u64(row, b)),
-            )) as Box<dyn Query>
-        })
-        .collect();
-    let mut clauses: Vec<(Occur, Box<dyn Query>)> = vec![(Occur::Must, union(ranges))];
+    // The caller derives these address boundaries from its time trie and UUIDv7
+    // index. Do not enumerate address terms to build a second time-window index.
+    let mut clauses: Vec<(Occur, Box<dyn Query>)> = Vec::new();
     for filter in r.filters {
         clauses.push((Occur::Must, predicate(&schema, filter)?));
     }
     if !r.text.is_empty() {
         clauses.push((Occur::Must, text_query(index, &searcher, r)?));
     }
-    let query = BooleanQuery::new(clauses);
-    let hits = if let Some(cancel) = cancel {
-        searcher.search(&query, &crate::CancelCollector(cancel))?
+    let query: Box<dyn Query> = if clauses.is_empty() {
+        Box::new(AllQuery)
     } else {
-        searcher.search(&query, &DocSetCollector)?
+        Box::new(BooleanQuery::new(clauses))
     };
-    let columns = searcher
-        .segment_readers()
-        .iter()
-        .map(|s| Ok((s.fast_fields().u64("rh")?, s.fast_fields().u64("rn")?)))
-        .collect::<tantivy::Result<Vec<_>>>()?;
-    let mut rows: Vec<u64> = hits
-        .into_iter()
-        .filter_map(|d| {
-            let (h, n) = &columns[d.segment_ord as usize];
-            Some(h.first(d.doc_id)? << 32 | n.first(d.doc_id)?)
-        })
-        .collect();
+    let mut rows = searcher.search(query.as_ref(), &collector)?;
     rows.sort_unstable();
     rows.dedup();
     Ok(rows)

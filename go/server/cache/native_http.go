@@ -36,7 +36,7 @@ func (h *HTTP) nativeCollect(w http.ResponseWriter, r *http.Request) {
 	}
 	for key := range q {
 		switch key {
-		case "format", "tap", "from", "to", "definition", "population":
+		case "format", "tap", "from", "to", "definition", "data":
 		default:
 			http.Error(w, "unsupported native selection parameter", 400)
 			return
@@ -52,8 +52,8 @@ func (h *HTTP) nativeCollect(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "invalid time window", 400)
 		return
 	}
-	if q.Get("population") != "" && q.Get("population") != "none" {
-		http.Error(w, "population must be omitted or none", 400)
+	if q.Get("data") != "" && q.Get("data") != "none" {
+		http.Error(w, "payload must be omitted or none", 400)
 		return
 	}
 	// Coverage is scoped by immutable definition + physical generation. Bound the
@@ -166,15 +166,16 @@ func (h *HTTP) nativeCollect(w http.ResponseWriter, r *http.Request) {
 				break
 			}
 			req := CollectionRequest{Branch: target.branch, At: window.From, Until: window.To, IndexPeriod: window.IndexPeriod, Have: coverage,
+				IndexOnly:  q.Get("data") == "none",
 				StatePages: strings.Contains(","+r.Header.Get("PIL-Features")+",", ",native-state-pages,")}
-			if q.Get("population") != "none" {
-				req.PopulationFrom = from
-				if req.PopulationFrom.Before(window.From) {
-					req.PopulationFrom = window.From
+			if q.Get("data") != "none" {
+				req.DataFrom = from
+				if req.DataFrom.Before(window.From) {
+					req.DataFrom = window.From
 				}
-				req.PopulationTo = to
-				if req.PopulationTo.After(window.To) {
-					req.PopulationTo = window.To
+				req.DataTo = to
+				if req.DataTo.After(window.To) {
+					req.DataTo = window.To
 				}
 			}
 			var manifest Manifest
@@ -196,13 +197,13 @@ func (h *HTTP) nativeCollect(w http.ResponseWriter, r *http.Request) {
 			e = writeControl(out, 6, endControl, Uint(uint64(target.stream), 4))
 			if coverage.Generation != manifest.Generation {
 				coverage.Index = nil
-				coverage.Population = nil
+				coverage.MemberRanges = nil
 			}
 			coverage.Generation = manifest.Generation
 			coverage.StateKnown, coverage.StateEpoch, coverage.StateSequence = true, manifest.StateEpoch, manifest.StateSequence
 			coverage.TrieNodes = manifest.TrieNodes
 			coverage.Index, _ = Normalize(append(coverage.Index, manifest.Index...))
-			coverage.Population, _ = Normalize(append(coverage.Population, manifest.Population...))
+			coverage.MemberRanges, _ = Normalize(append(coverage.MemberRanges, manifest.MemberRanges...))
 		}
 	}
 	if e == nil {
@@ -219,7 +220,10 @@ func (h *HTTP) nativeCollect(w http.ResponseWriter, r *http.Request) {
 }
 func fmtDigestNative(d [32]byte) string { return hex.EncodeToString(d[:]) }
 func writeNativeChunk(out io.Writer, stream uint32, c NativeChunk) error {
-	kind := map[string]byte{"map": 0, "trie": 1, "state": 2, "index": 3, "population": 4}[c.Kind]
+	kind, ok := map[string]byte{"map": 0, "trie": 1, "state": 2, "index": 3}[c.Kind]
+	if !ok {
+		return fmt.Errorf("unsupported native chunk kind %q", c.Kind)
+	}
 	return writeControl(out, 5, chunkControl, Uint(uint64(stream), 4), Uint(uint64(kind), 1), Uint(c.Start, 8), bytesValue(c.Digest[:]), bytesValue(c.Data))
 }
 

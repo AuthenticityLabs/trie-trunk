@@ -1,0 +1,47 @@
+{
+  "date": "2026-10-29",
+  "status": "development only; live store unchanged",
+  "events": 1048576,
+  "hours": 256,
+  "identity": "UUID timestamp retained; original entropy discarded; U24 ordinal finalized per branch/hour; index-only U16 leaf",
+  "index_row_bytes": 6,
+  "original_baseline": {
+    "trie_trunk": "42ebf755222b88108cff2c3d0576642389355ce7",
+    "pill_packer": "e663e8960acb71239992422b09714d224bdfe38d"
+  },
+  "ordinal_fixture_sha256": "ce13a2004813cee1d837503515c51b8a74c2b11b796380b13d608b6d24029c94",
+  "ordinal_server_bytes": 15811941,
+  "ordinal_client_bytes": 35985973,
+  "ordinal_wire_bytes": 15405571,
+  "browser_medians": {
+    "original": {
+      "decode_ms": 98.79999995231628,
+      "durable_replication_ms": 420.5,
+      "page_100_ms": 21.40000009536743
+    },
+    "ordinal": {
+      "decode_ms": 147.09999990463257,
+      "durable_replication_ms": 579.5999999046326,
+      "page_100_ms": 27.700000047683716
+    }
+  },
+  "verification": {
+    "hours": 256,
+    "events": 1048576
+  },
+  "method": "Original baseline and ordinal build run in isolated Chrome over Go HTTP. Seven decode runs and five durable-worker replication runs per build. Page median pools five 100-event reads per replication. Network transfer and DOM/GPU rendering excluded. Builds run sequentially, not interleaved. All hourly event bytes read back once. Original UUID hashes intentionally differ.",
+  "remaining_costs": [
+    "4-byte PAC member directory per event remains",
+    "3-byte member mask versus 2-byte baseline",
+    "Durable retrieval remains slower than original baseline"
+  ],
+  "collection_addressing": "Established encoding restored unchanged: one-based collection positions, zero reserved, unmodified hour encoding. Convert zero-based event ordinal at the boundary.",
+  "validation": {
+    "client_tests": 370,
+    "typescript": "passed",
+    "cache_suite": "passed before collection restoration; focused collection/address/recovery/retention suite passed after restoration",
+    "all_go_packages": "not passing: logger field-count integration, CLI identity expectation, and missing trunk-search executable for legacy server/CLI tests",
+    "deployment": "none",
+    "scope": "Broader changes stopped following user instruction; remaining integration failures are unresolved."
+  }
+}

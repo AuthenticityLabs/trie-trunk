@@ -75,8 +75,8 @@ func (s *Store) openSwap(b *branchStore) error {
 		if e != nil {
 			return e
 		}
-		if duplicate, e := s.committedDuplicate(b, id, raw); duplicate || e != nil {
-			return e
+		if eventTime(id[:]) < b.ingressBoundary() {
+			return nil
 		}
 		if prior := b.live.get(id[:], true, s.config.Now()); prior != nil {
 			if !s.layout.sameEvent(prior, raw) {
@@ -218,14 +218,14 @@ func (s *Store) invalidateReceived(branch Branch, raw []byte) error {
 		return nil
 	}
 	var f Frame
-	if e := s.layout.IdentityFrame(raw, &f); e != nil {
+	if e := s.layout.Scan(raw, &f); e != nil {
 		return e
 	}
 	if branch == Write && f.Values[s.layout.Revision].State != Absent {
 		return nil
 	}
 	if s.layout.Object >= 0 && f.Values[s.layout.Object].State >= Direct {
-		return s.invalidate([][]byte{s.layout.IdentityValue(s.layout.Object, f.Values[s.layout.Object]).Bytes}, false)
+		return s.invalidate([][]byte{s.layout.NormalizeIntegerWidth(s.layout.Object, f.Values[s.layout.Object]).Bytes}, false)
 	}
 	return s.invalidate(nil, true)
 }

@@ -46,7 +46,7 @@ func BenchmarkFeatureCost(b *testing.B) {
 		{"LiteralMessage512", func(tx *Builder) { tx.MessageText(message) }},
 	} {
 		b.Run(tc.name, func(b *testing.B) {
-			l := testLogger(b, io.Discard, Config{Format: codec.CBOR, Service: codec.Ref(1), Version: "1.0.0"})
+			l := testLogger(b, io.Discard, Config{Format: codec.PIL, Service: codec.Ref(1), Version: "1.0.0"})
 			build := func() *Builder {
 				_, tx := l.Begin(context.Background())
 				tx.Resource(1).Operation(1).HttpMethod(GET).HttpStatus(200).ResponseBytes(128)
@@ -59,7 +59,7 @@ func BenchmarkFeatureCost(b *testing.B) {
 			}
 			e := sample.Snapshot()
 			e.Duration = 8432 * time.Microsecond
-			data, err := e.Encode(codec.CBOR, nil)
+			data, err := e.Encode(codec.PIL, nil)
 			if err != nil {
 				b.Fatal(err)
 			}

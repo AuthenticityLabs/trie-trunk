@@ -1,7 +1,6 @@
 package cache
 
 import (
-	"bytes"
 	"context"
 	"crypto/sha256"
 	"errors"
@@ -43,7 +42,7 @@ func TestCompleteHourCollectionAndGapResend(t *testing.T) {
 	}
 	var m Manifest
 	chunks := map[string]int{}
-	request := CollectionRequest{Branch: Write, Day: at, PopulationFrom: at, PopulationTo: at.Add(time.Hour)}
+	request := CollectionRequest{Branch: Write, Day: at, DataFrom: at, DataTo: at.Add(time.Hour)}
 	collect := func() error {
 		return s.Collect(context.Background(), request, func(v Manifest) error { m = v; return nil }, func(c NativeChunk) error {
 			if sha256.Sum256(c.Data) != c.Digest {
@@ -56,10 +55,10 @@ func TestCompleteHourCollectionAndGapResend(t *testing.T) {
 	if e = collect(); e != nil {
 		t.Fatal(e)
 	}
-	if m.Tail != 4 || len(m.Index) != 2 || m.Index[0] != (Span{1, 2}) || m.Index[1] != (Span{3, 4}) || len(m.Population) != 2 || chunks["map"] != 1 || chunks["trie"] != 1 || chunks["index"] != 2 || chunks["pac"] != 2 || m.Provisional {
+	if m.Tail != 4 || len(m.Index) != 2 || m.Index[0] != (Span{1, 2}) || m.Index[1] != (Span{3, 4}) || len(m.MemberRanges) != 2 || chunks["map"] != 1 || chunks["trie"] != 1 || chunks["index"] != 2 || chunks["pac"] != 2 || m.Provisional {
 		t.Fatalf("%+v %+v", m, chunks)
 	}
-	request.Have = Coverage{Definition: m.Definition, Generation: m.Generation, Index: m.Index, Population: m.Population, TrieNodes: m.TrieNodes}
+	request.Have = Coverage{Definition: m.Definition, Generation: m.Generation, Index: m.Index, MemberRanges: m.MemberRanges, TrieNodes: m.TrieNodes}
 	clear(chunks)
 	if e = collect(); e != nil {
 		t.Fatal(e)
@@ -82,8 +81,8 @@ func TestCompleteHourCollectionAndGapResend(t *testing.T) {
 		t.Fatalf("cancellation %v", e)
 	}
 	request.Day = at.AddDate(0, 0, -1)
-	request.PopulationFrom = time.Time{}
-	request.PopulationTo = time.Time{}
+	request.DataFrom = time.Time{}
+	request.DataTo = time.Time{}
 	if e = collect(); e != nil || len(m.Index) != 0 || m.Checkpoint == 0 {
 		t.Fatalf("known empty %+v %v", m, e)
 	}
@@ -125,7 +124,7 @@ func TestObjectHistoryAndIndependentInvalidation(t *testing.T) {
 		t.Fatalf("unrelated object %+v %v", other, e)
 	}
 	var history [][]byte
-	if e = s.History(context.Background(), id, at.Add(-time.Second), at.Add(time.Second), func(_ uint64, b []byte) error { history = append(history, append([]byte(nil), b...)); return nil }); e != nil || len(history) != 1 || !bytes.Equal(history[0], testFrame(t, l, at, 2, false)) {
+	if e = s.History(context.Background(), id, at.Add(-time.Second), at.Add(time.Second), func(_ uint64, b []byte) error { history = append(history, append([]byte(nil), b...)); return nil }); e != nil || len(history) != 1 || !sameSeedData(t, l, history[0], testFrame(t, l, at, 2, false)) {
 		t.Fatalf("history %v %v", history, e)
 	}
 	if e = s.Close(); e != nil {
@@ -218,7 +217,7 @@ func TestObjectLookupRequiresIndex(t *testing.T) {
 				} else {
 					err = s.Search(context.Background(), query, visit)
 				}
-				if err != nil || !reflect.DeepEqual(got, [][]byte{older, newer}) {
+				if err != nil || len(got) != 2 || !sameSeedData(t, l, got[0], older) || !sameSeedData(t, l, got[1], newer) {
 					t.Fatalf("indexed lookup history=%v: %d events, %v", history, len(got), err)
 				}
 			}
@@ -226,7 +225,7 @@ func TestObjectLookupRequiresIndex(t *testing.T) {
 			var count int
 			if err := s.Search(context.Background(), query, func(_ uint64, raw []byte) error {
 				count++
-				if !bytes.Equal(raw, newer) {
+				if !sameSeedData(t, l, raw, newer) {
 					t.Fatal("object lookup ignored the precise time bound")
 				}
 				return nil
@@ -399,7 +398,7 @@ func TestRetentionPreservesRowsAndInvalidatesReplay(t *testing.T) {
 		t.Fatal("generation sequences did not follow branch retention", s.catalog.GenerationSequences)
 	}
 	rows := collect(t, s, Write, now.Add(-72*time.Hour), now)
-	if len(rows) != 1 || !bytes.Equal(rows[0], kept) {
+	if len(rows) != 1 || !sameSeedData(t, l, rows[0], kept) {
 		t.Fatal("retained event changed")
 	}
 	locations, e := s.ObjectLocations(id)
@@ -427,7 +426,7 @@ func TestRetentionPreservesRowsAndInvalidatesReplay(t *testing.T) {
 		t.Fatal("generation sequences lost on restart")
 	}
 	rows = collect(t, s, Write, now.Add(-72*time.Hour), now)
-	if len(rows) != 1 || !bytes.Equal(rows[0], kept) {
+	if len(rows) != 1 || !sameSeedData(t, l, rows[0], kept) {
 		t.Fatal("generation reopening failed")
 	}
 	locations, e = s.ObjectLocations(id)

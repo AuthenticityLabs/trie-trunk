@@ -22,10 +22,11 @@ func controlLayout(types ...string) *pil.Layout {
 
 var defineControl = controlLayout("BYTES", "BYTES", "BYTES")
 var bindControl = controlLayout("U32", "BYTES", "STRING")
-var manifestControl = controlLayout("U32", "CBOR")
+var manifestControl = controlLayout("U32", "OBJECT")
 var chunkControl = controlLayout("U32", "U8", "U64", "BYTES", "BYTES")
 var endControl = controlLayout("U32")
 var viewControl = controlLayout("BYTES")
+var trunkControl = controlLayout("BYTES")
 
 func writeControl(w io.Writer, tag byte, l *pil.Layout, values ...pil.Value) error {
 	if n, err := w.Write([]byte{tag}); err != nil {

@@ -30,7 +30,7 @@ func payload(t *testing.T, at time.Time, duration uint64, level uint64) (codec.U
 	if e != nil {
 		t.Fatal(e)
 	}
-	b, e := codec.MarshalCompact(codec.Record{8: id, 12: duration, 2: uint64(1), 3: level, 14: uint64(401), 19: "/secrets"}, codec.CBOR)
+	b, e := codec.MarshalCompact(codec.Record{8: id, 12: duration, 2: uint64(1), 3: level, 14: uint64(401), 19: "/secrets"}, codec.PIL)
 	if e != nil {
 		t.Fatal(e)
 	}
@@ -127,7 +127,7 @@ func TestRoundTripDedupRecoveryAndLateCorrections(t *testing.T) {
 		t.Fatal(len(sums), e)
 	}
 	path := filepath.Join(versionDir(c.Root, "0", rev.Version), dayPath(dayOf(id)))
-	for _, name := range []string{"log.idx", "log.pop", "log.sum"} {
+	for _, name := range []string{"log.idx", "log.pods", "log.sum"} {
 		if _, e = os.Stat(filepath.Join(path, name)); e != nil {
 			t.Fatal(e)
 		}
@@ -237,10 +237,10 @@ func TestInvalidRecords(t *testing.T) {
 	c, rev, d, now := fixture(t)
 	m := mustOpen(t, c, rev, d)
 	_, valid := payload(t, *now, 3, 5)
-	r, _ := codec.Decode(valid, codec.CBOR)
+	r, _ := codec.Decode(valid, codec.PIL)
 	cases := []codec.Record{{8: []byte{1}, 12: 3}, {8: r[8], 12: -1}, {8: r[8], 12: 0, 3: 999}, {8: r[8], 12: 0, 999: 1}}
 	for _, v := range cases {
-		b, _ := codec.MarshalCompact(v, codec.CBOR)
+		b, _ := codec.MarshalCompact(v, codec.PIL)
 		if _, e := m.Append(rev, b); !errors.Is(e, ErrInvalid) {
 			t.Fatal(e)
 		}
@@ -317,7 +317,7 @@ func BenchmarkAppend(b *testing.B) {
 		b.Fatal(e)
 	}
 	primeId, _ := codec.NewUUIDv7(now)
-	prime, _ := codec.MarshalCompact(codec.Record{8: primeId, 12: uint64(10), 2: uint64(1), 3: uint64(3)}, codec.CBOR)
+	prime, _ := codec.MarshalCompact(codec.Record{8: primeId, 12: uint64(10), 2: uint64(1), 3: uint64(3)}, codec.PIL)
 	if _, e = m.Append(rev, prime); e != nil {
 		b.Fatal(e)
 	}
@@ -328,7 +328,7 @@ func BenchmarkAppend(b *testing.B) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		id, _ := codec.NewUUIDv7(now)
-		payload, _ := codec.MarshalCompact(codec.Record{8: id, 12: uint64(10), 2: uint64(1), 3: uint64(3)}, codec.CBOR)
+		payload, _ := codec.MarshalCompact(codec.Record{8: id, 12: uint64(10), 2: uint64(1), 3: uint64(3)}, codec.PIL)
 		if _, e = m.Append(rev, payload); e != nil {
 			b.Fatal(e)
 		}
@@ -369,7 +369,7 @@ func TestRejectMalformedNestedError(t *testing.T) {
 	m := mustOpen(t, c, rev, d)
 	id, _ := codec.NewUUIDv7(*now)
 	for _, bad := range []any{"error", map[uint16]any{0: 999}, map[uint16]any{3: "500"}} {
-		b, _ := codec.MarshalCompact(codec.Record{8: id, 12: 1, 16: bad}, codec.CBOR)
+		b, _ := codec.MarshalCompact(codec.Record{8: id, 12: 1, 16: bad}, codec.PIL)
 		if _, e := m.Append(rev, b); !errors.Is(e, ErrInvalid) {
 			t.Fatal(e)
 		}
@@ -406,7 +406,7 @@ func FuzzDecodeRecord(f *testing.F) {
 		f.Fatal(e)
 	}
 	id, _ := codec.NewUUIDv7(time.Now())
-	b, _ := codec.MarshalCompact(codec.Record{8: id, 12: 0}, codec.CBOR)
+	b, _ := codec.MarshalCompact(codec.Record{8: id, 12: 0}, codec.PIL)
 	f.Add(b)
 	f.Add([]byte{0xa1, 0x08, 0xff})
 	f.Fuzz(func(t *testing.T, b []byte) { _, _ = s.decode(b) })

@@ -1,3 +1,4 @@
+import {apiFetch} from './connections.ts';
 export type ConfigurationCategory = 'compression' | 'staging' | 'indexing' | 'replication' | 'transforms';
 export type ConfigurationField = {key: string; label: string; type: 'number' | 'boolean' | 'select' | 'text'; help: string; fallback?: string | number | boolean; options?: string[]; min?: number; max?: number; resourceOnly?: boolean};
 export const configurationCategories: {id: ConfigurationCategory; label: string; fields: ConfigurationField[]}[] = [
@@ -17,7 +18,7 @@ export const configurationCategories: {id: ConfigurationCategory; label: string;
   ]},
   {id: 'replication', label: 'Replication', fields: [
     {key: 'replication.index_period', label: 'Index Period', type: 'select', options: ['1h', '4h', '6h', '12h', '24h', 'day'], fallback: '1h', help: 'Period used for index replication packages.'},
-    {key: 'replication.population', label: 'Population', type: 'select', options: ['lazy'], fallback: 'lazy', help: 'Fetch seed detail on demand.'},
+    {key: 'replication.data', label: 'Seed Data', type: 'select', options: ['lazy'], fallback: 'lazy', help: 'Fetch seed detail on demand.'},
     {key: 'replication.provisional_tail', label: 'Late Arrival Window', type: 'text', fallback: '15m', help: 'Keep the recent tail provisional for late arrivals. Duration such as 15m or 1h; minimum 15 minutes.'},
   ]},
   {id: 'transforms', label: 'Transforms', fields: []},
@@ -31,7 +32,7 @@ export async function requestConfiguration(token: string, scope: string[], signa
   const headers: Record<string, string> = {Accept: 'application/json'};
   if (token.trim()) headers.Authorization = `Bearer ${token.trim()}`;
   if (change) {headers['Content-Type'] = 'application/json'; headers['If-Match'] = `"${change.revision}"`;}
-  const response = await fetch(`/configurations?${new URLSearchParams({scope: JSON.stringify(scope)})}`, {
+  const response = await apiFetch(`/configurations?${new URLSearchParams({scope: JSON.stringify(scope)})}`, {
     method: change ? 'PUT' : 'GET', headers, signal, cache: 'no-store',
     body: change ? JSON.stringify({category: change.category, values: change.values}) : undefined,
   });

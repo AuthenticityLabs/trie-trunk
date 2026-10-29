@@ -8,17 +8,17 @@ const wasm = await WebAssembly.compile(readFileSync(new URL("../assets/pil.wasm"
 async function reader(onNative) {
  return new PILStream(new Codec(await WebAssembly.instantiate(wasm)),new Map(),()=>{},()=>{},async()=>{throw Error("unexpected expanded event")},onNative);
 }
-test("Go native range stream retains complete index and lazy population",async()=>{
+test("Go native range stream retains complete index and lazy payload",async()=>{
  const records=[],s=await reader(async r=>records.push(r));
  try{
   for(let i=0;i<wire.length;i+=17)await s.feed(wire.subarray(i,i+17));
   assert.equal(s.finish(),true);
   const m=records.find(r=>r.kind==="manifest");
-  assert.equal(m.manifest.RowWidth,16);
+  assert.equal(m.manifest.RowWidth,6);
   assert.equal(m.manifest.Provisional,false);
   assert.deepEqual(m.manifest.Index.map(r=>[r.Start,r.End]),[[1,7]]);
   assert.equal(records.filter(r=>r.kind==="package-end").length,1);
-  assert.equal(records.find(r=>r.kind==="chunk"&&r.file==="index").bytes.length,6*16);
+  assert.equal(records.find(r=>r.kind==="chunk"&&r.file==="index").bytes.length,6*6);
   assert.equal(records.filter(r=>r.kind==="pac").length,1);
  }finally{s.close()}
 });

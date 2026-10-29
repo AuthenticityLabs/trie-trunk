@@ -52,7 +52,7 @@ const (
 	FailedTransaction     MessageId = 2
 )
 
-// SchemaVersion 5 keeps message values in the per-event population, outside the trie.
+// SchemaVersion 5 keeps message values in the per-event payload, outside the trie.
 const SchemaVersion uint32 = 5
 
 // BuildSchema returns a fresh field schema for encoding and inspection.

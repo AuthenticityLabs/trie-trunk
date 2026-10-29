@@ -99,8 +99,9 @@ func calendarRollups(days map[int64]summaryDayLocation, from, to int64) ([]Calen
 	return out, nil
 }
 
-// The daily replacement transaction also publishes this small fixed-row table.
-// The existing .sum record framing provides length and CRC; no separate journal.
+// The daily replacement transaction also publishes this small derived coverage
+// table. Daily aggregates themselves are PIL PACs; this table certifies the
+// calendar range and is rebuilt and checked against those PACs on open.
 const calendarRollupRowSize = 88
 
 func encodeCalendarRollups(from, to int64, rows []CalendarRollup) []byte {

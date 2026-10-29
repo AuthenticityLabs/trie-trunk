@@ -1,4 +1,5 @@
 import { rawValue, type LogEvent } from "./dictionary.ts";
+import { isDiagnostic } from './diagnostics.ts';
 
 type Dimension = string | number | boolean | undefined;
 
@@ -78,6 +79,7 @@ type Group = {
 };
 
 export type OperationRank = {
+  statistic?: "average" | "p95";
   service: string;
   resource: string;
   operation: string;
@@ -126,6 +128,7 @@ export class Operations {
   private cached?: { errors: OperationRank[]; latency: OperationRank[] };
 
   add(event: LogEvent, error: boolean, duration: unknown) {
+    if (isDiagnostic(event)) return;
     const measured =
       typeof duration === "number" &&
       Number.isFinite(duration) &&

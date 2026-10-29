@@ -128,7 +128,7 @@ func TestPACGzipReuseAndFixture(t *testing.T) {
 		if e = os.MkdirAll(dir, 0755); e != nil {
 			t.Fatal(e)
 		}
-		for name, raw := range map[string][]byte{"packed.pac": p.Bytes, "packed.pac.gz": encoded.Bytes(), "spliced-pacs.gz": spliced.Bytes(), "definition.cbor": l.Bytes} {
+		for name, raw := range map[string][]byte{"packed.pac": p.Bytes, "packed.pac.gz": encoded.Bytes(), "spliced-pacs.gz": spliced.Bytes(), "definition.rx": l.Bytes} {
 			if e = os.WriteFile(filepath.Join(dir, name), raw, 0644); e != nil {
 				t.Fatal(e)
 			}

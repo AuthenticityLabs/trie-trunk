@@ -167,7 +167,7 @@ fn parse_predicate(input: &str) -> io::Result<(Predicate, &str)> {
 pub(crate) enum Decision {
     Include,
     Exclude,
-    Population,
+    Payload,
 }
 
 struct BoundPredicate {
@@ -241,7 +241,7 @@ impl BoundFilter {
             }
         }
         if unresolved {
-            Decision::Population
+            Decision::Payload
         } else {
             Decision::Exclude
         }
@@ -254,7 +254,7 @@ impl BoundFilter {
             .ok_or_else(|| invalid("invalid trie leaf"))
     }
 
-    pub fn matches(&self, leaf: u32, schema: &Schema, population: &BTreeMap<u16, Value>) -> bool {
+    pub fn matches(&self, leaf: u32, schema: &Schema, payload: &BTreeMap<u16, Value>) -> bool {
         let states = &self.states[leaf as usize * self.stride..];
         self.groups.iter().any(|group| {
             group.iter().all(|&index| match get(states, index) {
@@ -262,7 +262,7 @@ impl BoundFilter {
                 TRUE => true,
                 _ => {
                     let predicate = &self.predicates[index];
-                    predicate.matches(schema, predicate.key.and_then(|key| population.get(&key)))
+                    predicate.matches(schema, predicate.key.and_then(|key| payload.get(&key)))
                 }
             })
         })
@@ -323,8 +323,7 @@ mod tests {
                 ]),
             ),
         ]);
-        let mut bytes = Vec::new();
-        ciborium::ser::into_writer(&value, &mut bytes).unwrap();
+        let bytes = pil_codec::object::encode_value(&value).unwrap();
         Schema::parse(&bytes, 1).unwrap()
     }
 
@@ -406,14 +405,14 @@ mod tests {
                         Some(Value::Text("vault".into())),
                         Some(Value::Text("billing".into())),
                     ] {
-                        let mut population = BTreeMap::new();
+                        let mut payload = BTreeMap::new();
                         if let Some(value) = error.clone() {
-                            population.insert(16, value);
+                            payload.insert(16, value);
                         }
                         if let Some(value) = service.clone() {
-                            population.insert(3, value);
+                            payload.insert(3, value);
                         }
-                        let mut record = population.clone();
+                        let mut record = payload.clone();
                         let mut parent = leaf;
                         while parent != 0 {
                             let (next, key, value) = nodes[parent - 1];
@@ -432,8 +431,8 @@ mod tests {
                         let actual = match bound.decision(leaf as u32).unwrap() {
                             Decision::Include => true,
                             Decision::Exclude => false,
-                            Decision::Population => {
-                                bound.matches(leaf as u32, &schema, &population)
+                            Decision::Payload => {
+                                bound.matches(leaf as u32, &schema, &payload)
                             }
                         };
                         assert_eq!(actual, expected, "{clauses:?} leaf {leaf} {record:?}");

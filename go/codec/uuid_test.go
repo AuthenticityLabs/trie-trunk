@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/hex"
 	"encoding/json"
+	pil "github.com/AuthenticityLabs/pill-packer/go/codec"
 	"testing"
 	"time"
 )
@@ -18,12 +19,13 @@ func TestUUIDv7RFCVector(t *testing.T) {
 	if !id.Valid() || uuidTimestamp(id) != 1645557742000 || id.String() != "017f22e2-79b0-7cc3-98c4-dc0c0c07398f" {
 		t.Fatalf("RFC vector failed: %s %v", id, uuidTimestamp(id))
 	}
-	data, err := MarshalCompact(id, CBOR)
+	data, err := MarshalCompact(id, PIL)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(data) != 17 || data[0] != 0x50 || !bytes.Equal(data[1:], raw) {
-		t.Fatalf("not a 16-byte CBOR byte string: %x", data)
+	var got []byte
+	if err = pil.UnmarshalObject(data, &got); err != nil || !bytes.Equal(got, raw) {
+		t.Fatal("PIL UUID bytes", err)
 	}
 	data, err = json.Marshal(id)
 	if err != nil || string(data) != `"017f22e2-79b0-7cc3-98c4-dc0c0c07398f"` {

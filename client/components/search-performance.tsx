@@ -3,6 +3,7 @@ import type { ViewTimings } from '../services/pil/view';
 export type SearchTiming = { kind: 'Search' | 'Restore' | 'Page' | 'Charts'; ms: number; phases?: ViewTimings };
 const duration=(ms:number)=>ms<1000?`${Math.round(ms)} ms`:`${(ms/1000).toFixed(2)} s`;
 const stages = [
+ ['planning','Replication & Planning','Read hourly receipts and collect missing summaries and indexes.'],
  ['request','Request & Wait','Server wait and network time until response headers.'],
  ['response','Response & Decode','Receive and decode the search response.'],
  ['summaries','Summaries','Fetch or reuse daily summaries, decode and aggregate them.'],
@@ -49,7 +50,7 @@ export function SearchPerformance(props: { timing?: SearchTiming; matched?: numb
  const rows=createMemo(()=>{
   const t=props.timing;if(!t)return [];
   const p=t.phases;
-  const measured=p?p.request+p.response+p.summaries+p.events:0;
+  const measured=p?(p.planning??0)+p.request+p.response+p.summaries+p.events:0;
   return stages.map(([key,label,hint])=>({key,label,hint,ms:key==='client'?Math.max(0,t.ms-measured):Math.max(0,p?.[key]??0)}));
  });
  return <Show when={props.timing}>{timing=><span class="search-performance" ref={root} data-open={open()}

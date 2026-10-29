@@ -29,23 +29,23 @@ type run struct {
 }
 
 type partition struct {
-	day           time.Time
-	scope         scope
-	compact       bool
-	dir           string
-	schema        *schema
-	idx, pop, sum *os.File
-	trie          *trie
-	popEnd        int64
-	runs          []run
-	pending       []row
-	committedMax  codec.UUIDv7
-	pendingBytes  int
-	acc           map[group]Aggregate
-	watermarks    [512]int64
-	indexEnd      int64
-	config        Config
-	touched       uint64
+	day            time.Time
+	scope          scope
+	compact        bool
+	dir            string
+	schema         *schema
+	idx, pods, sum *os.File
+	trie           *trie
+	podsEnd        int64
+	runs           []run
+	pending        []row
+	committedMax   codec.UUIDv7
+	pendingBytes   int
+	acc            map[group]Aggregate
+	watermarks     [512]int64
+	indexEnd       int64
+	config         Config
+	touched        uint64
 }
 
 func openPartition(root string, s *schema, day time.Time, c Config) (p *partition, err error) {
@@ -57,7 +57,7 @@ func openScopedPartition(root string, s *schema, sc scope, c Config) (p *partiti
 	if err = mkdirDurable(dir); err != nil {
 		return nil, err
 	}
-	p = &partition{scope: sc, dir: dir, day: day, schema: s, config: c, popEnd: fileHeaderSize, acc: make(map[group]Aggregate), indexEnd: fileHeaderSize}
+	p = &partition{scope: sc, dir: dir, day: day, schema: s, config: c, podsEnd: fileHeaderSize, acc: make(map[group]Aggregate), indexEnd: fileHeaderSize}
 	defer func(opened *partition) {
 		if err != nil {
 			opened.closeFiles()
@@ -69,7 +69,7 @@ func openScopedPartition(root string, s *schema, sc scope, c Config) (p *partiti
 	if p.idx, err = p.openIndex(); err != nil {
 		return nil, err
 	}
-	if p.pop, err = s.openLog(filepath.Join(dir, s.filename("pop")), "TPOP"); err != nil {
+	if p.pods, err = s.openLog(filepath.Join(dir, s.filename("pods")), "TPOD"); err != nil {
 		return nil, err
 	}
 	if p.sum, err = s.openLog(filepath.Join(dir, s.filename("sum")), "TSUM"); err != nil {
@@ -107,10 +107,10 @@ func openScopedPartition(root string, s *schema, sc scope, c Config) (p *partiti
 		if len(p.runs) >= c.MaxRuns {
 			return ErrLimit
 		}
-		if rows[0].Start != uint64(p.popEnd+8) {
-			return fmt.Errorf("noncontiguous population block")
+		if rows[0].Start != uint64(p.podsEnd+8) {
+			return fmt.Errorf("noncontiguous payload block")
 		}
-		pop, e := p.readPopRun(rows)
+		pods, e := p.readPodsRun(rows)
 		if e != nil {
 			return e
 		}
@@ -118,13 +118,13 @@ func openScopedPartition(root string, s *schema, sc scope, c Config) (p *partiti
 			if int(r.Leaf) >= len(p.trie.nodes) || !p.accepts(r) {
 				return fmt.Errorf("invalid index reference/day")
 			}
-			fields, e := codec.Decode(pop[r.Start-rows[0].Start:r.End-rows[0].Start], codec.CBOR)
+			fields, e := codec.Decode(pods[r.Start-rows[0].Start:r.End-rows[0].Start], codec.PIL)
 			if e != nil {
-				return fmt.Errorf("invalid population CBOR: %w", e)
+				return fmt.Errorf("invalid payload PIL: %w", e)
 			}
 			duration, ok := fields[s.duration].(uint64)
 			if s.hasDuration && (!ok || duration > uint64((7*24*time.Hour)/time.Microsecond)) {
-				return fmt.Errorf("invalid population duration")
+				return fmt.Errorf("invalid payload duration")
 			}
 			bucket := s.bucket(r.Id)
 			if int(bucket) >= len(p.watermarks) {
@@ -146,7 +146,7 @@ func openScopedPartition(root string, s *schema, sc scope, c Config) (p *partiti
 			p.committedMax = last
 		}
 		p.indexEnd = end
-		p.popEnd = int64(rows[len(rows)-1].End)
+		p.podsEnd = int64(rows[len(rows)-1].End)
 		return nil
 	}); err != nil {
 		return nil, err
@@ -157,10 +157,10 @@ func openScopedPartition(root string, s *schema, sc scope, c Config) (p *partiti
 		}
 	}
 
-	if err = p.pop.Truncate(p.popEnd); err != nil {
+	if err = p.pods.Truncate(p.podsEnd); err != nil {
 		return nil, err
 	}
-	if err = errors.Join(p.pop.Sync(), p.idx.Sync(), p.sum.Sync()); err != nil {
+	if err = errors.Join(p.pods.Sync(), p.idx.Sync(), p.sum.Sync()); err != nil {
 		return nil, err
 	}
 	return p, nil
@@ -168,7 +168,7 @@ func openScopedPartition(root string, s *schema, sc scope, c Config) (p *partiti
 
 func (p *partition) closeFiles() error {
 	var errs []error
-	for _, f := range []*os.File{p.idx, p.pop, p.sum} {
+	for _, f := range []*os.File{p.idx, p.pods, p.sum} {
 		if f != nil {
 			errs = append(errs, f.Close())
 		}
@@ -334,21 +334,21 @@ func (p *partition) commitPending() (int64, error) {
 	payload := make([]byte, 0, p.pendingBytes)
 	for i := range p.pending {
 		r := &p.pending[i]
-		r.Start = uint64(p.popEnd + 8 + int64(len(payload)))
+		r.Start = uint64(p.podsEnd + 8 + int64(len(payload)))
 		payload = append(payload, r.Dynamic...)
-		r.End = uint64(p.popEnd + 8 + int64(len(payload)))
+		r.End = uint64(p.podsEnd + 8 + int64(len(payload)))
 	}
 	if err := p.trie.file.Sync(); err != nil {
 		return 0, err
 	}
-	end, err := appendBlock(p.pop, payload)
+	end, err := appendBlock(p.pods, payload)
 	if err != nil {
 		return 0, err
 	}
-	if err = p.pop.Sync(); err != nil {
+	if err = p.pods.Sync(); err != nil {
 		return 0, err
 	}
-	p.popEnd = end
+	p.podsEnd = end
 	encoded, err := p.encodeRun(p.pending)
 	if err != nil {
 		return 0, err
@@ -411,24 +411,24 @@ func decodeRow(b []byte) (row, error) {
 	return r, nil
 }
 
-func (p *partition) readPopRun(rows []row) ([]byte, error) {
+func (p *partition) readPodsRun(rows []row) ([]byte, error) {
 	start, end := rows[0].Start, rows[len(rows)-1].End
 	if end-start > maxBlockSize {
-		return nil, fmt.Errorf("oversized population block")
+		return nil, fmt.Errorf("oversized payload block")
 	}
 	var header [8]byte
-	if _, err := p.pop.ReadAt(header[:], int64(start)-8); err != nil {
+	if _, err := p.pods.ReadAt(header[:], int64(start)-8); err != nil {
 		return nil, err
 	}
 	if uint64(order.Uint32(header[:4])) != end-start {
-		return nil, fmt.Errorf("population length mismatch")
+		return nil, fmt.Errorf("payload length mismatch")
 	}
 	data := make([]byte, int(end-start))
-	if _, err := p.pop.ReadAt(data, int64(start)); err != nil {
+	if _, err := p.pods.ReadAt(data, int64(start)); err != nil {
 		return nil, err
 	}
 	if crc32.Checksum(data, crcTable) != order.Uint32(header[4:]) {
-		return nil, fmt.Errorf("population checksum mismatch")
+		return nil, fmt.Errorf("payload checksum mismatch")
 	}
 	return data, nil
 }

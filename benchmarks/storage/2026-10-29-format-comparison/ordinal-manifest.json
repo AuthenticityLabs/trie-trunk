@@ -1,0 +1,42 @@
+{
+  "allocated_bytes": 16490496,
+  "events": 1048576,
+  "files": 14,
+  "from": "2026-09-01T00:00:00Z",
+  "headers": {
+    "Content-Type": "application/pil",
+    "Definition-Version": "f71e182f4fab8afb3ed385822885cdeb2c71a9dff2cb6876ddca5fb58b1e72f4",
+    "PIL-Version": "2",
+    "Trunk-Completion": "body",
+    "Trunk-Format": "native-pac/0"
+  },
+  "hours": 256,
+  "index_row_bytes": 6,
+  "input_uuid_sha256": "a70f951cdc6d1517b369257bef353f29e3548b8ca5c45bfe093c76044a3ad2f6",
+  "logical_bytes": {
+    ".cfg": 42,
+    ".idx": 6293064,
+    ".journal": 196120,
+    ".lock": 0,
+    ".map": 205,
+    ".pods": 8872697,
+    ".rx": 1241,
+    ".seed": 88,
+    ".state": 72,
+    ".stats": 491,
+    ".sum": 306951,
+    ".tri": 140970
+  },
+  "native_memory": {
+    "Used": 8683520,
+    "Peak": 8683520,
+    "Limit": 33554432
+  },
+  "reopen_ms": 261.915625,
+  "scope": "Entire isolated resource store; summaries enabled; Tantivy and collection index disabled; same deterministic input events; ingress entropy discarded; sealed U24 ordinal",
+  "seal_ms": 11439.794208,
+  "tap": "demo/payment/transactions.v1/error",
+  "to": "2026-09-11T16:00:00Z",
+  "total_logical_bytes": 15811941,
+  "wireBytes": 15405571
+}

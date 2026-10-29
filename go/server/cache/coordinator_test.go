@@ -232,7 +232,7 @@ func TestCoordinatorRegistrationSelectsCollectionAndPreferred(t *testing.T) {
 	for _, l := range []*Layout{first, second} {
 		r := httptest.NewRequest("PUT", "/definitions", bytes.NewReader(l.Bytes))
 		definitionHeaders(r.Header, l)
-		r.Header.Set("Content-Type", "application/cbor")
+		r.Header.Set("Content-Type", "application/pil")
 		w := httptest.NewRecorder()
 		p.ServeHTTP(w, r)
 		if w.Code != 204 {
@@ -251,7 +251,7 @@ func TestCoordinatorRegistrationSelectsCollectionAndPreferred(t *testing.T) {
 	}
 	r := httptest.NewRequest("PUT", "/definitions", bytes.NewReader(first.Bytes))
 	definitionHeaders(r.Header, first)
-	r.Header.Set("Content-Type", "application/cbor")
+	r.Header.Set("Content-Type", "application/pil")
 	w := httptest.NewRecorder()
 	p.ServeHTTP(w, r)
 	if w.Code != 200 || w.Header().Get("Definition-Version") != fmtDigest(next) || !bytes.Equal(w.Body.Bytes(), next.Bytes) {

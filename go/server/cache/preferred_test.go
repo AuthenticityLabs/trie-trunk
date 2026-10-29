@@ -19,7 +19,7 @@ func TestPromotionValidatesRegisteredProducerTranslations(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer p.Close()
-	path := filepath.Join(p.api.Store.collection, fmt.Sprintf("producer-%x.map", producer.Digest))
+	path := filepath.Join(p.api.Store.collection, fmt.Sprintf("producer-%x.rx", producer.Digest))
 	if err = ensureMap(path, producer.Bytes); err != nil {
 		t.Fatal(err)
 	}

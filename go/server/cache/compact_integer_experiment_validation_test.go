@@ -302,7 +302,7 @@ func TestCompactIntegerExperimentNativeCompatibility(t *testing.T) {
 			w := a.fields[i].width
 			values[i] = Uint(uint64(1)<<uint(w*8-2), w)
 		}
-		ordinary, err := a.base.Encode(nil, values)
+		ordinary, err := a.base.Layout.Encode(nil, values)
 		if err != nil {
 			t.Fatal(err)
 		}

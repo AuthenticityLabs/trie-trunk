@@ -1,0 +1,7 @@
+{
+  "status": "Historical baseline, superseded by the six-byte ordinal index",
+  "index_layout": "16-byte event rows: 12-byte hour-relative UUID representation and 4-byte member offset; 16-byte run header slot",
+  "scope": "Existing Go address, pack, and daily-summary benchmarks plus Rust codec controls; not current application throughput",
+  "known_failure": "TestDailySummaryCodec corruption 20 changed gzip MTIME, which can preserve decoded bytes and CRC; the historical test expected rejection. Raw logs retained.",
+  "provenance": "metadata.json, commands.json, source manifests, tracked patches, and source archives retain original capture details. See go-summary.json for summarized results."
+}

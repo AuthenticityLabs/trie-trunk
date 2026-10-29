@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/fxamacker/cbor/v2"
+	pilcodec "github.com/AuthenticityLabs/pill-packer/go/codec"
 	"trie-trunk/go/codec"
 	Keys "trie-trunk/go/logger/client/keys"
 	"trie-trunk/go/logger/pil"
@@ -123,14 +123,14 @@ func TestPILBuilderNegotiatedCompletion(t *testing.T) {
 		t.Fatal("dictionary translation")
 	}
 	var extras map[string]any
-	if err := cbor.Unmarshal(values["@fields"].Bytes, &extras); err != nil {
+	if err := pilcodec.UnmarshalObject(values["@fields"].Bytes, &extras); err != nil {
 		t.Fatal(err)
 	}
 	if extras["password"] != "*******" || extras["nullable"] != nil || len(extras) != 2 {
 		t.Fatal(extras)
 	}
 	var checkpoints []map[string]any
-	if err := cbor.Unmarshal(values["checkpoints"].Bytes, &checkpoints); err != nil {
+	if err := pilcodec.UnmarshalObject(values["checkpoints"].Bytes, &checkpoints); err != nil {
 		t.Fatal(err)
 	}
 	if checkpoints[0]["name"] != "db" || checkpoints[0]["duration"] != uint64(1000) {
@@ -160,7 +160,7 @@ func TestPILBuilderNegotiatedCompletion(t *testing.T) {
 		}
 		if field.Name == "error" {
 			var failure map[string]any
-			if err := cbor.Unmarshal(f.Values[i].Bytes, &failure); err != nil {
+			if err := pilcodec.UnmarshalObject(f.Values[i].Bytes, &failure); err != nil {
 				t.Fatal(err)
 			}
 			if failure["code"] != "INVALID_INPUT" {
@@ -265,10 +265,10 @@ func BenchmarkRequestEncoding(b *testing.B) {
 	entry.Resource(8).Operation(23).HttpMethod(GET).HttpStatus(200).Message(SuccessfulTransaction)
 	event := entry.Snapshot()
 	event.Duration = 250 * time.Microsecond
-	b.Run("LegacyCBOR", func(b *testing.B) {
+	b.Run("DictionaryPIL", func(b *testing.B) {
 		b.ReportAllocs()
 		for i := 0; i < b.N; i++ {
-			raw, e := event.Encode(codec.CBOR, dict)
+			raw, e := event.Encode(codec.PIL, dict)
 			if e != nil {
 				b.Fatal(e)
 			}

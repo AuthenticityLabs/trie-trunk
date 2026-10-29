@@ -28,6 +28,7 @@ func TestPACNativePlacementAndRows(t *testing.T) {
 		t.Fatal(err)
 	}
 	p.Extensions = []PACExtension{ext}
+	p.AddressBytes = 4
 	p.Bytes, err = p.Marshal()
 	if err != nil {
 		t.Fatal(err)
@@ -41,8 +42,8 @@ func TestPACNativePlacementAndRows(t *testing.T) {
 		t.Fatal(err)
 	}
 	rows := make([]byte, IndexRowSize*len(frames))
-	var end uint32
-	for i, m := range p.Members {
+
+	for i := range p.Members {
 		var f Frame
 		if e := l.Scan(frames[i], &f); e != nil {
 			t.Fatal(e)
@@ -54,8 +55,6 @@ func TestPACNativePlacementAndRows(t *testing.T) {
 		if e = packIndexID(rows[i*IndexRowSize:], id, place.From); e != nil {
 			t.Fatal(e)
 		}
-		order.PutUint32(rows[i*IndexRowSize+12:], end)
-		end += uint32(len(m))
 	}
 	local, err := PACLocalRows(p, decoded, rows)
 	if err != nil {
@@ -70,7 +69,7 @@ func TestPACNativePlacementAndRows(t *testing.T) {
 		t.Fatal("hour alignment padding", err)
 	}
 	bad := append([]byte(nil), rows...)
-	bad[14] ^= 1
+	order.PutUint32(bad, 3600000)
 	if _, err = PACLocalRows(p, place, bad); err == nil {
 		t.Fatal("wrong source length accepted")
 	}

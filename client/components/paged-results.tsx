@@ -11,6 +11,7 @@ import type { EventField, Matcher, Annotations } from '../services/indicators';
 import { Events } from './events';
 import { Histogram } from './charts';
 import type { ObjectHistoryTarget } from '../services/replay';
+import type { DiagnosticTarget } from '../services/diagnostics';
 
 export type PagedViewState = {
  result?: ViewResult;
@@ -22,10 +23,12 @@ export type PagedViewState = {
 
 /** Cursor pages are fetched on scroll; loaded rows never certify complete replication. */
 export function PagedResults(props:{
+ timeZone?:string;
  query:ViewQuery; token:string; pageSize:number; active:boolean;
  matchers:Matcher[]; onIndicator:(field:EventField)=>void; indicatorsLoading:boolean;
  onState:(state:PagedViewState)=>void;
  collections?:readonly string[];onObjectHistory?:(target:ObjectHistoryTarget)=>void;
+ diagnosticSources?:readonly string[];onDiagnostic?:(target:DiagnosticTarget)=>void;
 }) {
  const [result,setResult]=createSignal<ViewResult>();
  const [events,setEvents]=createSignal<LogEvent[]>([]);
@@ -161,6 +164,7 @@ export function PagedResults(props:{
  const more=()=>{const cursor=result()?.next;if(cursor&&!busy()&&!restoring()&&!error()&&!chartError())void fetchPage(cursor)};
  return <div class="paged-results search-layout" aria-busy={busy()}>
   <div class="results-column">
+  <Show when={result()?.notice}><p class="notice" role="status">{result()!.notice}</p></Show>
   <Show when={chartLoading()&&!result()?.summary}><section class="card activity-card" aria-busy="true">
    <div class="results-toolbar"><strong>Event Activity</strong><span role="status">Loading Charts…</span></div>
    <div style={{height:'148px'}} />
@@ -191,9 +195,10 @@ export function PagedResults(props:{
     </>}>{repairButton()}</Show>
    </div></Show>
    <Show when={events().length} fallback={<Show when={!busy()&&!error()}><div class="empty-state">No events match this query in the selected time window. Try a wider window or remove a filter.</div></Show>}>
-    <Events events={events()} revision={revision()} selected={selected()} select={choose} position={position()} onPosition={rememberPosition}
+    <Events timeZone={props.timeZone} events={events()} revision={revision()} selected={selected()} select={choose} position={position()} onPosition={rememberPosition}
      annotations={annotations()} onIndicator={props.onIndicator} indicatorsLoading={props.indicatorsLoading}
      collections={props.collections} onObjectHistory={props.onObjectHistory}
+     diagnosticSources={props.diagnosticSources} diagnosticWindow={props.query} onDiagnostic={props.onDiagnostic}
      reveal={undefined} pageSize={props.pageSize} onNearEnd={more} hasMore={!!result()?.next&&!error()&&!chartError()} loading={busy()||restoring()} active={props.active} />
    </Show>
   </section>

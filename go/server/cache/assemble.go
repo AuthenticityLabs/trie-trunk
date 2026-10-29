@@ -1,9 +1,7 @@
 package cache
 
 import (
-	"bytes"
 	"fmt"
-	pil "github.com/AuthenticityLabs/pill-packer/go/codec"
 )
 
 type frameAssembler struct {
@@ -12,55 +10,37 @@ type frameAssembler struct {
 	identity Frame
 }
 
-// Assemble copies encoded primitive spans and the entire existing offset/value
-// section unchanged. Only the mask, indexed UUID and referenced direct fields
-// are added. No per-event Value array, scalar decoding or Encode call occurs.
-// Input is an ingest-validated population protected by committed CRCs. This is
-// standalone output; native Collect sends index/population bytes unchanged.
-func (a *frameAssembler) assemble(row, pop, dst []byte) ([]byte, error) {
+// Reconstruct standalone event identity from the indexed timestamp and stored
+// record number, then resolve index-bound shared fields. Native replication transfers the sealed
+// index and PAC unchanged and does not invoke this materialization path.
+func (a *frameAssembler) assemble(row, pods, dst []byte, leaf uint16) ([]byte, error) {
 	if len(row) != 16 {
 		return nil, fmt.Errorf("short row")
 	}
 	l := a.layout
-	if l.IsCompressed(pop) {
-		f := &a.identity
-		// Committed bytes were validated at ingress. Check the clear identity only.
-		head, n, _, stored, err := l.CompressionLengths(pop)
-		if err != nil {
-			return nil, err
-		}
-		if len(pop) != head+n+stored || len(row) != 16 {
-			return nil, fmt.Errorf("invalid compressed population")
-		}
-		if err = l.ScanPlain(pop[head:head+n], f); err != nil {
-			return nil, err
-		}
-		if !bytes.Equal(f.Values[l.Event].Bytes, row[:16]) {
-			return nil, fmt.Errorf("compressed identity differs from index")
-		}
-		return append(dst[:0], pop...), nil
+	f := &a.identity
+	if err := l.Scan(pods, f); err != nil {
+		return nil, err
 	}
-	if l.Shared >= 0 {
-		f := &a.identity
-		if err := l.Scan(pop, f); err != nil {
-			return nil, err
-		}
-		if err := expandShared(l, a.trie, f.Values); err != nil {
-			return nil, err
-		}
-		if f.Values[l.Event].State != Absent {
-			return nil, fmt.Errorf("population shadows event_id")
-		}
-		f.Values[l.Event] = Value{Direct, row[:16]}
-		return l.Encode(dst, f.Values)
+	if f.Values[l.Event].State != Absent || f.Values[l.Time].State != Absent {
+		return nil, fmt.Errorf("payload shadows indexed identity")
 	}
-	if len(row) != 16 {
-		return nil, fmt.Errorf("short row")
+	if f.Values[l.Record].State != Direct || len(f.Values[l.Record].Bytes) != 3 {
+		return nil, fmt.Errorf("missing fixed U24 event record")
 	}
-	return l.RestoreDirect(dst, pop, []pil.DirectField{{Index: l.Event, Bytes: row[:16]}})
+	id, err := seedKey(eventTime(row), uint32(unsigned(f.Values[l.Record].Bytes)))
+	if err != nil {
+		return nil, err
+	}
+	if err = a.trie.expand(leaf, f.Values); err != nil {
+		return nil, err
+	}
+	f.Values[l.Leaf] = Uint(uint64(leaf), 2)
+	f.Values[l.Event] = Value{Direct, id[:]}
+	return l.Encode(dst, f.Values)
 }
 
-func (s *Store) assemble(row, pop, dst []byte) ([]byte, error) {
+func (s *Store) assemble(row, pods, dst []byte, leaf uint16) ([]byte, error) {
 	a := frameAssembler{layout: s.layout, trie: &s.trie}
-	return a.assemble(row, pop, dst)
+	return a.assemble(row, pods, dst, leaf)
 }

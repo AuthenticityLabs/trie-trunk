@@ -1,4 +1,4 @@
-import { cbor } from "./cbor.ts";
+import { decodeObject } from "./control.ts";
 import { compileFields, type Dictionary, type Fields } from "../dictionary.ts";
 import { resourceBinding, type PILDefinition } from "./layout.ts";
 export type Metadata = { digest: string; store: Uint8Array; pil: Uint8Array };
@@ -30,8 +30,8 @@ function compileDefinition(
   tap: string,
   headers: string[] = [],
 ): Mapping {
-  const store = cbor(metadata.store) as Record<string, any>;
-  const def = cbor(metadata.pil) as PILDefinition;
+  const store = decodeObject(metadata.store) as Record<string, any>;
+  const def = decodeObject(metadata.pil) as PILDefinition;
   const resource = resourceBinding(store);
   if (resource) {
     if (
@@ -117,7 +117,7 @@ function compileDefinition(
         ? "U64"
         : mapped
           ? "STRING"
-          : "CBOR";
+          : "OBJECT";
     const p = def.fields[i];
     if (
       p.name !== field.name ||
@@ -130,7 +130,7 @@ function compileDefinition(
   });
   for (const [i, base, type] of [
     [keys.length, "trunk_lineage", "ARRAY<U16>"],
-    [keys.length + 1, "trunk_fallback", "CBOR"],
+    [keys.length + 1, "trunk_fallback", "OBJECT"],
   ] as const) {
     let name = base as string;
     while (schema.names.has(name)) name += "_";

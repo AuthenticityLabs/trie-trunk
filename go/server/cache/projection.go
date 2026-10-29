@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/fxamacker/cbor/v2"
+	pil "github.com/AuthenticityLabs/pill-packer/go/codec"
 )
 
 // Projection is compiled once per negotiation. Positional input is always
@@ -47,7 +47,7 @@ func CompileProjection(source, target *Layout) (*Projection, error) {
 			return nil, fmt.Errorf("field %s changes type", f.Name)
 		}
 		var references map[uint16][]byte
-		if referenceType(f.Type) && source.Digest != target.Digest {
+		if f.Name != "@leaf" && referenceType(f.Type) && source.Digest != target.Digest {
 			if dest < 0 {
 				return nil, fmt.Errorf("reference field %s cannot be demoted to @fields", f.Name)
 			}
@@ -81,7 +81,7 @@ func (p *Projection) Values(input []Value) ([]Value, error) {
 		return nil, fmt.Errorf("source field count mismatch")
 	}
 	out := make([]Value, len(p.target.Widths))
-	var extras map[string]cbor.RawMessage
+	var extras map[string]pil.RawObject
 	for i, f := range p.source.Definition.Fields {
 		if f.Name == "@fields" && input[i].State != Absent {
 			if input[i].State != Offset {
@@ -97,7 +97,7 @@ func (p *Projection) Values(input []Value) ([]Value, error) {
 			continue
 		}
 		f := p.source.Definition.Fields[i]
-		if f.Name == "@fields" {
+		if f.Name == "@fields" || f.Name == "@leaf" {
 			continue
 		}
 		dest := p.slots[i]
@@ -134,9 +134,9 @@ func (p *Projection) Values(input []Value) ([]Value, error) {
 			continue
 		}
 		if extras == nil {
-			extras = map[string]cbor.RawMessage{}
+			extras = map[string]pil.RawObject{}
 		}
-		raw, e := fieldCBOR(f, v)
+		raw, e := fieldObject(f, v)
 		if e != nil {
 			return nil, e
 		}
@@ -145,7 +145,7 @@ func (p *Projection) Values(input []Value) ([]Value, error) {
 	// Promote observed extension values when the preferred definition gives them
 	// a typed position. Values that cannot be represented fail without data loss.
 	for i, f := range p.target.Definition.Fields {
-		if f.Name == "@fields" {
+		if f.Name == "@fields" || f.Name == "@leaf" {
 			continue
 		}
 		raw, ok := extras[f.Name]
@@ -155,10 +155,10 @@ func (p *Projection) Values(input []Value) ([]Value, error) {
 		if out[i].State != Absent {
 			return nil, fmt.Errorf("extension shadows %s", f.Name)
 		}
-		if referenceType(f.Type) && !(len(raw) == 1 && raw[0] == 0xf6) {
+		if referenceType(f.Type) && !isNullObject(raw) {
 			return nil, fmt.Errorf("cannot promote an unbound extension value into %s", f.Name)
 		}
-		v, e := valueFromCBOR(f, p.target.Widths[i], raw)
+		v, e := valueFromObject(f, p.target.Widths[i], raw)
 		if e != nil {
 			return nil, fmt.Errorf("promote %s: %w", f.Name, e)
 		}
@@ -175,7 +175,7 @@ func (p *Projection) Values(input []Value) ([]Value, error) {
 		}
 		out[p.extension] = Value{Offset, raw}
 	} else if p.extension >= 0 && extras != nil {
-		out[p.extension] = Value{Offset, []byte{0xa0}}
+		out[p.extension] = Value{Offset, emptyObject()}
 	}
 	return out, nil
 }

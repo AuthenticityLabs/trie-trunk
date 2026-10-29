@@ -58,6 +58,9 @@ func buildViewAnalytics(sources []*viewSource, from, to int64, resolution Resolu
 	}
 	var remaining []*viewSource
 	for _, v := range sources {
+		if !v.branch.Aggregates() {
+			continue
+		}
 		if !v.hasSummaries {
 			remaining = append(remaining, v)
 			continue
@@ -142,10 +145,13 @@ func buildViewAnalytics(sources []*viewSource, from, to int64, resolution Resolu
 	return a, remaining, nil
 }
 func viewLower(v *viewSource, a, z uint64, ms int64) uint64 {
-	return a + uint64(sort.Search(int(z-a), func(i int) bool { return eventTime(v.eventID(a+uint64(i))) >= ms }))
+	return a + uint64(sort.Search(int(z-a), func(i int) bool { return eventTime(v.orderingKey(a+uint64(i))) >= ms }))
 }
 func addViewCounts(summary *ViewSummary, sources []*viewSource) {
 	for _, s := range sources {
+		if !s.branch.Aggregates() {
+			continue
+		}
 		for _, span := range s.ranges {
 			at := span.at
 			for i := range summary.Counts {

@@ -93,11 +93,11 @@ func (s *Store) prune(branch Branch, cutoff time.Time) (err error) {
 	}()
 	last := old.runs[count-1]
 	baseRows := last.End
-	popRetired := last.PopEnd - headerSize
+	podsRetired := last.PodsEnd - headerSize
 	memberEnd := last.PAC.Placement.MemberStart + last.PAC.Placement.MemberBytes
 	blockBase := last.PAC.Placement.Block + 1
 	base := filepath.Join(s.dir, fmt.Sprintf("%s.r%d", branch.Prefix(), baseRows))
-	next := &branchStore{branch: branch, layout: s.layout, generation: old.generation, baseRows: baseRows, popRetired: popRetired, memberEnd: memberEnd, blockBase: blockBase, popEnd: headerSize + popRetired, sumEnd: headerSize, time: timeDirectory{}}
+	next := &branchStore{branch: branch, layout: s.layout, generation: old.generation, baseRows: baseRows, podsRetired: podsRetired, memberEnd: memberEnd, blockBase: blockBase, podsEnd: headerSize + podsRetired, sumEnd: headerSize, time: timeDirectory{}}
 	var created []string
 	published := false
 	defer func() {
@@ -119,7 +119,7 @@ func (s *Store) prune(branch Branch, cutoff time.Time) (err error) {
 	if next.idx, err = create(".idx", "NUTSIDX6", IndexRowSize); err != nil {
 		return err
 	}
-	if next.pop, err = create(".pods", "PILPOD00", 0); err != nil {
+	if next.pods, err = create(".pods", "PILPOD00", 0); err != nil {
 		return err
 	}
 	if next.journal, err = create(".journal", "TTCOMM00", IndexRowSize); err != nil {
@@ -133,7 +133,7 @@ func (s *Store) prune(branch Branch, cutoff time.Time) (err error) {
 	if err = setRetiredBytes(next.idx, baseRows*IndexRowSize); err != nil {
 		return err
 	}
-	if err = setRetiredBytes(next.pop, popRetired); err != nil {
+	if err = setRetiredBytes(next.pods, podsRetired); err != nil {
 		return err
 	}
 	first := min(utcHour(cutoff.UnixMilli()), utcHour(old.finalizedBefore))
@@ -152,7 +152,7 @@ func (s *Store) prune(branch Branch, cutoff time.Time) (err error) {
 	}
 	for i, run := range old.runs[count:] {
 		idx := old.rows[(run.Start-old.baseRows)*IndexRowSize : (run.End-old.baseRows)*IndexRowSize]
-		pop, e := readBytes(old.pop, run.PopStart-old.popRetired, run.PopEnd-old.popRetired)
+		pods, e := readBytes(old.pods, run.PodsStart-old.podsRetired, run.PodsEnd-old.podsRetired)
 		if e != nil {
 			return e
 		}
@@ -162,7 +162,7 @@ func (s *Store) prune(branch Branch, cutoff time.Time) (err error) {
 		if _, err = next.idx.WriteAt(idx, headerSize+int64((run.Start-baseRows)*IndexRowSize)); err != nil {
 			return err
 		}
-		if _, err = next.pop.WriteAt(pop, int64(run.PopStart-popRetired)); err != nil {
+		if _, err = next.pods.WriteAt(pods, int64(run.PodsStart-podsRetired)); err != nil {
 			return err
 		}
 		if next.sum != nil {
@@ -189,9 +189,9 @@ func (s *Store) prune(branch Branch, cutoff time.Time) (err error) {
 			return err
 		}
 		next.runs = append(next.runs, run)
-		next.popEnd = run.PopEnd
+		next.podsEnd = run.PodsEnd
 	}
-	for _, f := range []*os.File{next.idx, next.pop, next.journal, next.sum} {
+	for _, f := range []*os.File{next.idx, next.pods, next.journal, next.sum} {
 		if f != nil {
 			if err = f.Sync(); err != nil {
 				return err
@@ -264,7 +264,7 @@ func (s *Store) prune(branch Branch, cutoff time.Time) (err error) {
 			return err
 		}
 	}
-	paths := []string{old.idx.Name(), old.pop.Name(), old.journal.Name(), strings.TrimSuffix(old.journal.Name(), ".journal") + ".tri"}
+	paths := []string{old.idx.Name(), old.pods.Name(), old.journal.Name(), strings.TrimSuffix(old.journal.Name(), ".journal") + ".tri"}
 	if old.sum != nil {
 		paths = append(paths, old.sum.Name())
 	}

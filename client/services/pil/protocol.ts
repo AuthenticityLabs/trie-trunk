@@ -5,7 +5,9 @@ import type { Metadata, Binding } from "./metadata.ts";
 import type { Batch } from "./stream.ts";
 import type { NativePage } from "../store/native.ts";
 import type { HistoryQuery, ObservedState } from "../replay.ts";
-export type Request =
+export type Request = (
+  | {id:number;kind:'time-window';query:import('./time-window.ts').TimeWindowRequest;token:string}
+  | {id:number;kind:'trunk';token:string;folder?:string}
   | { id:number; kind:"fast-dashboard"; request:import('../fast-dashboard.ts').FastRequest; token:string }
   | { id:number; kind:"prime-summaries"; service:string; recent:boolean; token:string }
   | { id:number; kind:"persist-view"; definitions:Metadata[]; bindings:Binding[]; token:string }
@@ -25,8 +27,11 @@ export type Request =
   | { id: number; kind: "restore"; collection?: string; token: string }
   | { id: number; kind: "cancel" }
   | { id: number; kind: "ack" }
-  | { kind: "close" };
+  | { kind: "close" }
+) & {connection?:import('../connections.ts').ServerConnection};
 export type Reply =
+  | {id:number;kind:'time-window';result:import('./time-window.ts').TimeWindowResult}
+  | {id:number;kind:'trunk';trunk:import('./trunk.ts').TrunkBootstrap}
   | { id:number; kind:"view-page"; view:ViewResponse }
   | { id:number; kind:"view-summary"; result:ViewResponse["result"]; timings:ViewResponse["timings"] }
   | { id:number; kind:"fast-dashboard"; result:import('../fast-dashboard.ts').FastResult }

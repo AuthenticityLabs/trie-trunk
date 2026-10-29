@@ -20,7 +20,7 @@ func TestRecordStartsAcrossHeadersPagesAndRetention(t *testing.T) {
 	for _, r := range b.runs {
 		copy(b.row(r.Start-1), indexHeader(r.PAC.Placement.From, r.End-r.Start))
 		for n := r.Start; n < r.End; n++ {
-			order.PutUint32(b.row(n)[12:], uint32(n-r.Start)*37)
+			order.PutUint32(b.row(n), uint32(r.PAC.Placement.From+int64(n-r.Start)))
 		}
 	}
 	check := func() {
@@ -29,7 +29,7 @@ func TestRecordStartsAcrossHeadersPagesAndRetention(t *testing.T) {
 				t.Fatal(e)
 			}
 			for n := r.Start; n < r.End; n++ {
-				if b.memberLength(n) != 37 {
+				if b.rowTime(n) != r.PAC.Placement.From+int64(n-r.Start) {
 					t.Fatal("start boundary", n)
 				}
 			}
@@ -64,7 +64,7 @@ func TestRecordAddressRejectsCorruptHeader(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	raw[headerSize+12] = 9
+	raw[headerSize+4] = 9
 	if err = os.WriteFile(name, raw, 0600); err != nil {
 		t.Fatal(err)
 	}
@@ -167,7 +167,7 @@ func TestOptionalSharedReferenceInPIL(t *testing.T) {
 				t.Fatal(e)
 			}
 			b := s.branches[Error]
-			var reader populationReader
+			var reader podsReader
 			stored, e := reader.read(b, b.runs[0].Start, s.row)
 			if e != nil {
 				t.Fatal(e)
@@ -176,15 +176,11 @@ func TestOptionalSharedReferenceInPIL(t *testing.T) {
 				t.Fatal(e)
 			}
 			state := fieldIndex(l, "state")
-			if shared {
-				if f.Values[l.Shared].State != Direct || f.Values[state].State != Absent {
-					t.Fatal("missing PIL reference projection")
-				}
-			} else if f.Values[state].State == Absent {
-				t.Fatal("implicit trie stripping without role")
+			if f.Values[state].State != Absent || f.Values[l.Leaf].State != Absent || shared && f.Values[l.Shared].State != Absent {
+				t.Fatal("state or leaf duplicated in payload")
 			}
 			full, e := s.frame(b, b.runs[0].Start, nil)
-			if e != nil || !bytes.Equal(original, full) {
+			if e != nil || !sameSeedData(t, l, original, full) {
 				t.Fatal("reference expansion round trip", e)
 			}
 		})

@@ -11,7 +11,7 @@ import (
 func referenceLayouts(t testing.TB) (*Layout, Definition) {
 	t.Helper()
 	d := Definition{Identity: "payment/transactions", Version: 1 << 20,
-		Fields:   []Field{{Name: "event_id", Type: "UUID"}, {Name: "classification", Type: "REF16"}, {Name: "related", Type: "ARRAY<REF16>"}, {Name: "@fields", Type: "CBOR"}},
+		Fields:   []Field{{Name: "event_id", Type: "UUID"}, {Name: "classification", Type: "REF16"}, {Name: "related", Type: "ARRAY<REF16>"}, {Name: "@fields", Type: "OBJECT"}},
 		Resource: Binding{Format: Format, Service: "payment", Resource: "transactions", Major: 1, Timezone: "UTC", Roles: Roles{Event: "event_id"}}}
 	source, err := Compile(d)
 	if err != nil {
@@ -40,6 +40,7 @@ func TestReferenceProjectionExplicitBoundsAndSparseValues(t *testing.T) {
 		t.Fatal(err)
 	}
 	input := []Value{{State: Absent}, Uint(1, 2), {Offset, []byte{3, 0, 0, 0, 1, 0, 255, 255}}, {State: Absent}}
+	input = append(input, Value{}, Value{}, Value{})
 	mapped, err := projection.Values(input)
 	if err != nil {
 		t.Fatal(err)
@@ -63,7 +64,7 @@ func TestReferenceProjectionExplicitBoundsAndSparseValues(t *testing.T) {
 		if err = os.MkdirAll(dir, 0755); err != nil {
 			t.Fatal(err)
 		}
-		for name, data := range map[string][]byte{"definition.cbor": target.Bytes, "frame.pil": raw} {
+		for name, data := range map[string][]byte{"definition.rx": target.Bytes, "frame.pil": raw} {
 			if err = os.WriteFile(filepath.Join(dir, name), data, 0644); err != nil {
 				t.Fatal(err)
 			}
@@ -106,11 +107,11 @@ func TestReferenceProjectionExplicitBoundsAndSparseValues(t *testing.T) {
 	}
 	// Ordinary CBOR numbers cannot claim membership in a reference table.
 	input[2] = Value{State: Absent}
-	input[3] = Value{Offset, []byte{0xa1, 0x6e, 'c', 'l', 'a', 's', 's', 'i', 'f', 'i', 'c', 'a', 't', 'i', 'o', 'n', 1}}
+	input[3] = Value{Offset, mustObject(t, map[string]any{"classification": 1})}
 	if _, err = projection.Values(input); err == nil {
 		t.Fatal("unbound extension reference promoted")
 	}
-	input[3].Bytes[len(input[3].Bytes)-1] = 0xf6
+	input[3].Bytes = mustObject(t, map[string]any{"classification": nil})
 	mapped, err = projection.Values(input)
 	if err != nil || mapped[3].State != Null {
 		t.Fatal("null extension lost its state", err)

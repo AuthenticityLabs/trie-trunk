@@ -3,7 +3,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { workerService } from "./pil/worker-runtime.ts";
-import { fixture, response, bytes, magic, frame, le, cb } from "./pil-fixtures.mjs";
+import { fixture, response, bytes, magic, frame, le, pilObject } from "./pil-fixtures.mjs";
 import { NativeStore } from "./store/native.ts";
 import { Backend } from "./native-backend-fixture.mjs";
 import { Codec } from "./pil/wasm.ts";
@@ -85,8 +85,9 @@ test("object history streams original cross-minor PIL and reuses maps without ce
   const connect = workerService(module, async (url, options) => {
     calls.push(options.headers);
     const parsed = new URL(url, "https://localhost");
-    assert.equal(parsed.pathname, "/objects/history");
-    assert.equal(parsed.searchParams.get("id"), "42");
+    assert.equal(parsed.pathname, "/collections/42");
+    assert.equal(parsed.searchParams.has("id"), false);
+    assert.equal(options.cache, 'no-store');
     assert.equal(options.headers.Authorization, "Bearer auth");
     return historyResponse(calls.length === 1 ? historyBytes : historyWarmBytes);
   }, async (_, command) => {
@@ -562,7 +563,7 @@ test("native-capable worker collects missing ranges, delivers unassembled pages 
  const schemas=bytes(magic,define,bind,[255,254]);
  const manifest={...first.manifest,IndexBases:[]};
  const state=records.find(r=>r.kind==="chunk"&&r.file==="state");
- const warm=bytes(magic,bind,[4],frame([2,3],[le(binding.stream,4),cb(manifest)]),[5],frame([2,2,2,3,3],[le(binding.stream,4),le(2,1),le(0,8),Uint8Array.from(Buffer.from(state.digest,"hex")),state.bytes]),[6],frame([2],[le(binding.stream,4)]),[255,254]);
+ const warm=bytes(magic,bind,[4],frame([2,3],[le(binding.stream,4),pilObject(manifest)]),[5],frame([2,2,2,3,3],[le(binding.stream,4),le(2,1),le(0,8),Uint8Array.from(Buffer.from(state.digest,"hex")),state.bytes]),[6],frame([2],[le(binding.stream,4)]),[255,254]);
  const backend=new Backend(),store=new NativeStore(backend),sessions=new Map(),saved=new Map();
  const archive=async(token,c)=>{
   for(const item of c.records??[])await store.record(sessions.get(c.session),item.record,item.definition);
@@ -609,7 +610,9 @@ test("native-capable worker collects missing ranges, delivers unassembled pages 
   const replies=await current.run({kind:"events",selection:query,collection:collection.id,token:"native"});
   assert.equal(replies.filter(r=>r.kind==="batch").length,0);
   const page=replies.find(r=>r.kind==="native-batch").page;
-  assert.equal(page.rows.length,16);assert.equal(page.population.length,19);
+  assert.equal(page.rows.length,6);
+  const check=new Codec(await WebAssembly.instantiate(await module)),handle=check.define(definition.pil);
+  check.upload(page.payload);assert.equal(check.scanStructural(handle,0,page.payload.length),page.payload.length);check.release(handle);
   assert.ok(replies.some(r=>r.kind==="native-source"));
  }
  assert.equal(requests,2);
@@ -661,7 +664,7 @@ test("native worker delivers provisional hours in memory without claiming persis
  assert.equal(replies.filter(r=>r.kind==="batch").reduce((n,r)=>n+r.batch.rows.length/3,0),2);
  assert.equal(requests.length,3);
  assert.ok(!calls.includes("save")&&!calls.includes("finish")&&!calls.includes("lookup"));
- for(const source of await backend.list()){assert.equal(source.index,undefined);assert.equal(source.population,undefined);assert.equal(source.timeTrie,undefined);}
+ for(const source of await backend.list()){assert.equal(source.index,undefined);assert.equal(source.payload,undefined);assert.equal(source.timeTrie,undefined);}
 });
 
 test('view delivery completes independently of failed durable cache storage',async t=>{
@@ -677,7 +680,7 @@ test('view delivery completes independently of failed durable cache storage',asy
   const r=response(raw,'a'.repeat(64));r.headers.set('Trunk-Format','pac-view/0');return r;
  };
  const client=tab(workerService(module,fetcher,archive),t);
- const replies=await client.run({kind:'view',token:'auth',query:{tap:'demo/payment/transactions.v1/write',from:'2026-09-01T12:00:00Z',to:'2026-09-01T14:00:00Z',size:2}});
+ const replies=await client.run({kind:'view',token:'auth',query:{engine:'tantivy',tap:'demo/payment/transactions.v1/write',from:'2026-09-01T12:00:00Z',to:'2026-09-01T14:00:00Z',size:2}});
  const view=replies.find(r=>r.kind==='view').view;
  assert.equal(view.result.page.length,2);assert.equal(replies.at(-1).kind,'done');
  assert.deepEqual(storage,['definitions']);

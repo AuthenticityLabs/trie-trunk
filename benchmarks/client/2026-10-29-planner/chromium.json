@@ -1,0 +1,67 @@
+{
+  "date": "2026-10-29",
+  "dataset": {
+    "events": 1048576,
+    "hours": 256,
+    "wireBytes": 15405571
+  },
+  "conditions": "One sequential before/after Chromium run using production WASM, storage worker IPC and durable OPFS, with cached fixture transport. Excludes real network and DOM/rendering. No event identity or storage format change between runs. Both runs checked total count and disjoint 100-event pages.",
+  "before": {
+    "variant": "before",
+    "events": 1048576,
+    "hours": 256,
+    "collectMs": 732.7999999523163,
+    "scan": {
+      "ms": 132826.5,
+      "firstPageMs": 64.5,
+      "commands": {
+        "time-read": 2,
+        "native-resolve": 11,
+        "native-page": 8192
+      },
+      "matched": 1048576,
+      "loaded": 100
+    },
+    "nextPage": {
+      "ms": 132076.70000004768,
+      "firstPageMs": 62.299999952316284,
+      "commands": {
+        "time-read": 2,
+        "native-resolve": 11,
+        "native-page": 8192
+      },
+      "matched": 1048576,
+      "loaded": 100
+    },
+    "scope": "Chromium + WASM + production storage worker + durable OPFS. Cached fixture transport; excludes network and DOM rendering."
+  },
+  "after": {
+    "variant": "after",
+    "events": 1048576,
+    "hours": 256,
+    "collectMs": 619.8000001907349,
+    "scan": {
+      "ms": 5357.199999809265,
+      "firstPageMs": 49,
+      "commands": {
+        "time-read": 2,
+        "native-resolve": 1,
+        "native-page": 268
+      },
+      "matched": 1048576,
+      "loaded": 100
+    },
+    "nextPage": {
+      "ms": 42.700000047683716,
+      "firstPageMs": 42.700000047683716,
+      "commands": {
+        "time-read": 2,
+        "native-resolve": 1,
+        "native-page": 1
+      },
+      "matched": 1048576,
+      "loaded": 100
+    },
+    "scope": "Chromium + WASM + production storage worker + durable OPFS. Cached fixture transport; excludes network and DOM rendering."
+  }
+}

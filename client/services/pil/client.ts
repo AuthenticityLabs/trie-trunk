@@ -1,4 +1,6 @@
+import {INDEX_ROW_BYTES} from './pac-native.ts';
 import { restoreCacheError } from "../store/errors.ts";
+import {activeConnection,setActiveConnection,type ServerConnection} from '../connections.ts';
 import { viewEvents } from "./view-events.ts";
 import type { ViewResponse, ViewQuery, ViewResult } from "./view.ts";
 import type { Collection } from "../store/protocol.ts";
@@ -28,6 +30,11 @@ export function disconnectClient() {
   fileWorker = undefined;
   for (const job of [...requests.values()]) job.fail(new DOMException('Workspace closed', 'AbortError'));
   requests.clear();
+}
+export function selectConnection(value:ServerConnection){
+ const previous=activeConnection();
+ if(previous.id===value.id&&previous.url===value.url)return;
+ setActiveConnection(value);
 }
 function port(): MessagePort {
   if (transport) return transport;
@@ -80,6 +87,8 @@ function port(): MessagePort {
 }
 function request(
   command:
+    | {kind:'time-window';query:import('./time-window.ts').TimeWindowRequest;token:string}
+    | {kind:'trunk';token:string;folder?:string}
     | { kind:"fast-dashboard"; request:import('../fast-dashboard.ts').FastRequest; token:string }
     | { kind:"prime-summaries"; service:string; recent:boolean; token:string }
     | { kind:"persist-view"; definitions:Metadata[]; bindings:Binding[]; token:string }
@@ -98,6 +107,7 @@ function request(
     | { kind: "restore"; collection?: string; token: string },
   signal: AbortSignal,
   receive: (reply: Reply) => void,
+  targetConnection?:ServerConnection,
 ): Promise<void> {
   signal.throwIfAborted();
   const connection = port(),
@@ -140,7 +150,7 @@ function request(
         }
       },
     });
-    connection.postMessage({ ...command, id } satisfies Request);
+    connection.postMessage({ ...command, id,connection:targetConnection??activeConnection() } satisfies Request);
   });
 }
 export async function loadDictionaries(
@@ -155,6 +165,16 @@ export async function loadDictionaries(
   });
   if (!result) throw Error("Missing PIL schema negotiation");
   return result;
+}
+export async function readTimeWindow(query:import('./time-window.ts').TimeWindowRequest,token:string,signal:AbortSignal){
+ let result:import('./time-window.ts').TimeWindowResult|undefined;
+ await request({kind:'time-window',query,token},signal,reply=>{if(reply.kind==='time-window')result=reply.result;});
+ if(!result)throw Error('Missing time window result');return result;
+}
+export async function loadTrunk(connection:ServerConnection,token:string,signal:AbortSignal,folder?:string):Promise<import('./trunk.ts').TrunkBootstrap>{
+ let result:import('./trunk.ts').TrunkBootstrap|undefined;
+ await request({kind:'trunk',token,folder},signal,reply=>{if(reply.kind==='trunk')result=reply.trunk;},connection);
+ if(!result)throw Error('Missing trunk bootstrap');return result;
 }
 export async function streamEvents(
   selection: Selection,
@@ -212,10 +232,10 @@ async function receiveEvents(
     } else if(reply.kind === "native-batch") {
       const trie=native.get(reply.source);
       if(!trie)throw Error("Missing native source dependencies");
-      const {rows,population,offsets}=reply.page;
+      const {rows,payload,offsets}=reply.page;
       const events:LogEvent[]=[];
       for(let i=0;i<offsets.length;i+=2){
-        const event=new NativeEvent(rows.subarray(i/2*16,(i/2+1)*16),population.subarray(offsets[i],offsets[i+1]),trie,reply.page.common?.[i/2],reply.page.bases[i/2]);
+        const event=new NativeEvent(rows.subarray(i/2*INDEX_ROW_BYTES,(i/2+1)*INDEX_ROW_BYTES),payload.subarray(offsets[i],offsets[i+1]),trie,reply.page.common?.[i/2],reply.page.bases[i/2]);
         if(reply.where.every(([name,value])=>valueAt(event,name)===value))events.push(event);
       }
       receive(events);

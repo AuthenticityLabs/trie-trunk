@@ -75,7 +75,8 @@ impl Drop for SearchIndex {
 }
 #[wasm_bindgen]
 impl SearchIndex {
-    /// Files must belong to one committed hour, definition, and generation.
+    /// Files must belong to one committed index snapshot, definition, and generation.
+    /// Native Tantivy segment boundaries need not coincide with hour boundaries.
     /// Caller verifies the replication manifest before exposing these files.
     #[wasm_bindgen(constructor)]
     pub fn new(files: &str, read_file: Function) -> std::result::Result<SearchIndex, JsValue> {

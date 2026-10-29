@@ -3,7 +3,7 @@
 mod mapping;
 #[cfg(target_arch = "wasm32")]
 mod wasm;
-use mapping::{Mapping, head};
+use mapping::Mapping;
 use pil_codec::{FrameEncoder, FrameIndex};
 use std::collections::{HashMap, HashSet};
 pub type Result<T> = std::result::Result<T, String>;
@@ -11,8 +11,8 @@ fn bad<T>(s: &str) -> Result<T> {
     Err(s.into())
 }
 pub const TRI: u32 = 0;
-pub const POP: u32 = 1;
-/// UUID (16), REF16 (2), population start/end/block (8 each), all big endian.
+pub const SODS: u32 = 1;
+/// UUID (16), REF16 (2), payload start/end/block (8 each), all big endian.
 /// Existing 44-byte U32 pointers remain readable; new pointers are 42 bytes.
 pub const ROW_SIZE: usize = 42;
 const LEGACY_ROW_SIZE: usize = 44;
@@ -35,7 +35,7 @@ pub fn block(data: &[u8]) -> Result<Vec<u8>> {
     Ok(out)
 }
 fn init(f: &mut impl Files, id: u32) -> Result<()> {
-    let expected = [b"TTRI", b"TPOP"][id as usize];
+    let expected = [b"TTRI", b"TSOD"][id as usize];
     let mut header = [0; 8];
     header[..4].copy_from_slice(expected);
     header[7] = 2;
@@ -86,7 +86,7 @@ struct Node {
 struct Pending {
     uuid: [u8; 16],
     leaf: u32,
-    pop: Vec<u8>,
+    payload: Vec<u8>,
 }
 pub struct Store {
     mapping: Mapping,
@@ -95,7 +95,7 @@ pub struct Store {
     nodes: Vec<Node>,
     edges: HashMap<(u32, u16, u64), u32>,
     ends: [u64; 2],
-    population: Option<(u64, Vec<u8>)>,
+    payload: Option<(u64, Vec<u8>)>,
     pending: Vec<Pending>,
     pending_ids: HashSet<[u8; 16]>,
     frame: FrameIndex,
@@ -104,7 +104,7 @@ pub struct Store {
 impl Store {
     pub fn open(schema: &[u8], pil: &[u8], day: u64, f: &mut impl Files) -> Result<Self> {
         let mapping = Mapping::new(schema, pil)?;
-        for id in [TRI, POP] {
+        for id in [TRI, SODS] {
             init(f, id)?;
         }
         let mut s = Self {
@@ -114,7 +114,7 @@ impl Store {
             nodes: Vec::new(),
             edges: HashMap::new(),
             ends: [8; 2],
-            population: None,
+            payload: None,
             pending: Vec::new(),
             pending_ids: HashSet::new(),
             frame: FrameIndex::default(),
@@ -126,10 +126,10 @@ impl Store {
     pub fn reload(&mut self, f: &mut impl Files) -> Result<()> {
         // Reopen only when another tab/worker changed a file. The browser holds
         // an origin-wide Web Lock throughout every call and flush sequence.
-        if self.ends == [f.size(TRI)?, f.size(POP)?] && !self.nodes.is_empty() {
+        if self.ends == [f.size(TRI)?, f.size(SODS)?] && !self.nodes.is_empty() {
             return Ok(());
         }
-        self.population = None;
+        self.payload = None;
         self.nodes.clear();
         self.edges.clear();
         self.pending.clear();
@@ -146,7 +146,7 @@ impl Store {
             }
             let parent = u32::from_be_bytes(b[..4].try_into().unwrap());
             let key = u16::from_be_bytes(b[4..6].try_into().unwrap());
-            let value = pil_codec::CborRef::parse(&b[6..])
+            let value = pil_codec::ObjectRef::parse(&b[6..])
                 .map_err(|e| e.to_string())?
                 .unsigned()
                 .ok_or("invalid trie value")?;
@@ -168,12 +168,12 @@ impl Store {
         }
         self.ends[TRI as usize] = at;
         // The host first recovers both files to IndexedDB's committed ends.
-        // Population CRCs are checked lazily, once per block actually read.
-        self.ends[POP as usize] = f.size(POP)?;
+        // Payload CRCs are checked lazily, once per block actually read.
+        self.ends[SODS as usize] = f.size(SODS)?;
         Ok(())
     }
     pub fn put(&mut self, frame: &[u8]) -> Result<()> {
-        let (uuid, chain, mut pop) = self.mapping.split(frame, &mut self.frame)?;
+        let (uuid, chain, mut payload) = self.mapping.split(frame, &mut self.frame)?;
         if day(&uuid) != self.day {
             return bad("event routed to wrong day");
         }
@@ -191,14 +191,14 @@ impl Store {
             }
         }
         // Check capacity before appending any nodes. At capacity, preserve the
-        // complete lineage as population fields; never wrap or drop an event.
+        // complete lineage as payload fields; never wrap or drop an event.
         if parent > u16::MAX as u32
             || missing.is_some_and(|i| self.nodes.len() + chain.len() - i > 65536)
         {
             let value: ciborium::Value =
-                ciborium::from_reader(pop.as_slice()).map_err(|e| e.to_string())?;
+                pil_codec::object::decode_value(payload.as_slice()).map_err(|e| e.to_string())?;
             let ciborium::Value::Map(mut fields) = value else {
-                return bad("invalid population map");
+                return bad("invalid payload map");
             };
             for &(key, value) in &chain {
                 let k = ciborium::Value::Integer(key.into());
@@ -208,11 +208,10 @@ impl Store {
                 fields.push((k, ciborium::Value::Integer(value.into())));
             }
             fields.sort_by_key(|(key, _)| key.as_integer().map(i128::from));
-            pop.clear();
-            ciborium::into_writer(&ciborium::Value::Map(fields), &mut pop)
+            payload = pil_codec::object::encode_value(&ciborium::Value::Map(fields))
                 .map_err(|e| e.to_string())?;
-            if pop.len() > 65535 {
-                return bad("population too large");
+            if payload.len() > 65535 {
+                return bad("payload too large");
             }
             parent = 0;
         } else if let Some(first) = missing {
@@ -227,7 +226,7 @@ impl Store {
         self.pending.push(Pending {
             uuid,
             leaf: parent,
-            pop,
+            payload,
         });
         Ok(())
     }
@@ -240,7 +239,10 @@ impl Store {
             let mut b = Vec::new();
             b.extend_from_slice(&n.parent.to_be_bytes());
             b.extend_from_slice(&n.key.to_be_bytes());
-            head(0, n.value, &mut b);
+            b.extend_from_slice(
+                &pil_codec::object::encode_value(&ciborium::Value::Integer(n.value.into()))
+                    .map_err(|e| e.to_string())?,
+            );
             let end = at + 8 + b.len() as u64;
             f.write(TRI, at, &block(&b)?)?;
             at = end;
@@ -253,14 +255,14 @@ impl Store {
         while offset < self.pending.len() {
             let mut finish = offset;
             let mut size = 0;
-            while finish < self.pending.len() && size + self.pending[finish].pop.len() <= MAX {
-                size += self.pending[finish].pop.len();
+            while finish < self.pending.len() && size + self.pending[finish].payload.len() <= MAX {
+                size += self.pending[finish].payload.len();
                 finish += 1;
             }
-            let mut pop = Vec::with_capacity(size);
+            let mut payload = Vec::with_capacity(size);
             for r in &self.pending[offset..finish] {
-                let start = self.ends[POP as usize] + 8 + pop.len() as u64;
-                pop.extend_from_slice(&r.pop);
+                let start = self.ends[SODS as usize] + 8 + payload.len() as u64;
+                payload.extend_from_slice(&r.payload);
                 rows.extend_from_slice(&r.uuid);
                 rows.extend_from_slice(
                     &u16::try_from(r.leaf)
@@ -268,12 +270,12 @@ impl Store {
                         .to_be_bytes(),
                 );
                 rows.extend_from_slice(&start.to_be_bytes());
-                rows.extend_from_slice(&(start + r.pop.len() as u64).to_be_bytes());
-                rows.extend_from_slice(&self.ends[POP as usize].to_be_bytes());
+                rows.extend_from_slice(&(start + r.payload.len() as u64).to_be_bytes());
+                rows.extend_from_slice(&self.ends[SODS as usize].to_be_bytes());
             }
-            f.write(POP, self.ends[POP as usize], &block(&pop)?)?;
-            f.flush(POP)?;
-            self.ends[POP as usize] += 8 + pop.len() as u64;
+            f.write(SODS, self.ends[SODS as usize], &block(&payload)?)?;
+            f.flush(SODS)?;
+            self.ends[SODS as usize] += 8 + payload.len() as u64;
             offset = finish;
         }
         self.pending.clear();
@@ -303,7 +305,7 @@ impl Store {
         }
         let ref_width = if row.len() == ROW_SIZE { 2 } else { 4 };
         let offsets = 16 + ref_width;
-        let pop_at = u64::from_be_bytes(row[offsets + 16..offsets + 24].try_into().unwrap());
+        let sods_at = u64::from_be_bytes(row[offsets + 16..offsets + 24].try_into().unwrap());
         let mut leaf = if ref_width == 2 {
             u32::from(u16::from_be_bytes(row[16..18].try_into().unwrap()))
         } else {
@@ -321,27 +323,27 @@ impl Store {
         chain.reverse();
         let start = u64::from_be_bytes(row[offsets..offsets + 8].try_into().unwrap());
         let end = u64::from_be_bytes(row[offsets + 8..offsets + 16].try_into().unwrap());
-        if pop_at < 8
-            || start < pop_at.checked_add(8).ok_or("invalid block offset")?
+        if sods_at < 8
+            || start < sods_at.checked_add(8).ok_or("invalid block offset")?
             || end <= start
             || end - start > 65535
-            || end > self.ends[POP as usize]
+            || end > self.ends[SODS as usize]
         {
-            return bad("invalid population range");
+            return bad("invalid payload range");
         }
-        if self.population.as_ref().map(|(at, _)| *at) != Some(pop_at) {
-            self.population = Some((
-                pop_at,
-                read_block(f, POP, pop_at)?.ok_or("missing population block")?,
+        if self.payload.as_ref().map(|(at, _)| *at) != Some(sods_at) {
+            self.payload = Some((
+                sods_at,
+                read_block(f, SODS, sods_at)?.ok_or("missing payload block")?,
             ));
         }
-        let pop = &self.population.as_ref().unwrap().1;
-        let start = usize::try_from(start - pop_at - 8).map_err(|_| "invalid population range")?;
-        let end = usize::try_from(end - pop_at - 8).map_err(|_| "invalid population range")?;
+        let payload = &self.payload.as_ref().unwrap().1;
+        let start = usize::try_from(start - sods_at - 8).map_err(|_| "invalid payload range")?;
+        let end = usize::try_from(end - sods_at - 8).map_err(|_| "invalid payload range")?;
         self.mapping.join(
             uuid,
             &chain,
-            pop.get(start..end).ok_or("invalid population range")?,
+            payload.get(start..end).ok_or("invalid payload range")?,
             &mut self.encoder,
             &mut self.frame,
         )

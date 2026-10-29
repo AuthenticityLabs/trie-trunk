@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/fxamacker/cbor/v2"
+	pil "github.com/AuthenticityLabs/pill-packer/go/codec"
 	"github.com/pelletier/go-toml/v2"
 )
 
@@ -81,7 +81,7 @@ func (s *Store) loadTransforms() error {
 	return nil
 }
 func (s *Store) transform(values []Value) ([]byte, error) {
-	fields := map[string]cbor.RawMessage{}
+	fields := map[string]pil.RawObject{}
 	for i, v := range values {
 		if v.State == Absent {
 			continue
@@ -91,7 +91,7 @@ func (s *Store) transform(values []Value) ([]byte, error) {
 			if v.State == Null {
 				return nil, fmt.Errorf("@fields must be a map")
 			}
-			var ext map[string]cbor.RawMessage
+			var ext map[string]pil.RawObject
 			if e := decoder.Unmarshal(v.Bytes, &ext); e != nil {
 				return nil, e
 			}
@@ -100,7 +100,7 @@ func (s *Store) transform(values []Value) ([]byte, error) {
 			}
 			continue
 		}
-		raw, e := fieldCBOR(f, v)
+		raw, e := fieldObject(f, v)
 		if e != nil {
 			return nil, e
 		}
@@ -206,7 +206,7 @@ func (s *Store) transform(values []Value) ([]byte, error) {
 		}
 	}
 	out := make([]Value, len(values))
-	ext := map[string]cbor.RawMessage{}
+	ext := map[string]pil.RawObject{}
 	for k, v := range fields {
 		i := fieldIndex(s.layout, k)
 		if i < 0 {
@@ -216,7 +216,7 @@ func (s *Store) transform(values []Value) ([]byte, error) {
 		if k == "@fields" {
 			return nil, fmt.Errorf("transform cannot assign reserved @fields")
 		}
-		value, e := s.layout.ValueFromCBOR(i, v)
+		value, e := s.layout.ValueFromObject(i, v)
 		if e != nil {
 			return nil, fmt.Errorf("%s: %w", k, e)
 		}

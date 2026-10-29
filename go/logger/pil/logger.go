@@ -78,7 +78,6 @@ type Logger struct {
 	origin          *url.URL
 	digest          string
 	ready, closed   bool
-	compression     bool
 	httpCompression bool
 }
 
@@ -165,12 +164,12 @@ func (w *Logger) request(ctx context.Context, method, path string, body io.Reade
 	r.Header.Set("Definition-Revision", fmt.Sprint(announced.Definition.Version))
 	// This client implements both fixed and adaptive layouts, regardless of the
 	// producer's initial choice. The server may select either supported profile.
-	r.Header.Set("PIL-Features", "adaptive-integers,"+cache.CompressionFeature+","+cache.HTTPCompressionFeature)
+	r.Header.Set("PIL-Features", "adaptive-integers,"+cache.HTTPCompressionFeature)
 	if w.config.Token != "" {
 		r.Header.Set("Authorization", "Bearer "+w.config.Token)
 	}
 	if method == "PUT" {
-		r.Header.Set("Content-Type", "application/cbor")
+		r.Header.Set("Content-Type", "application/pil")
 	} else if method == "POST" {
 		r.Header.Set("Content-Type", "application/pil")
 		if compressed, ok := body.(*compressedRequest); ok {
@@ -192,7 +191,6 @@ func (w *Logger) ack(r *http.Response) error {
 	if r.Header.Get("PIL-Version") != "2" || r.Header.Get("Definition-Version") != w.digest {
 		return fmt.Errorf("server acknowledged a different PIL definition")
 	}
-	w.compression = !w.config.DisableCompression && strings.Contains(","+r.Header.Get("PIL-Features")+",", ","+cache.CompressionFeature+",")
 	w.httpCompression = !w.config.DisableCompression && strings.Contains(","+r.Header.Get("PIL-Features")+",", ","+cache.HTTPCompressionFeature+",")
 	return nil
 }
@@ -418,19 +416,12 @@ func (w *Logger) writeOnce(ctx context.Context, frames [][]byte, branch string) 
 	}
 	readers := make([]io.Reader, len(frames))
 	for i, b := range frames {
-		if w.compression && !w.httpCompression {
-			var err error
-			b, err = w.layout.CompressEventLevel(b, w.config.CompressionLevel)
-			if err != nil {
-				return err
-			}
-		}
 		readers[i] = bytes.NewReader(b)
 	}
 	var body io.Reader = io.MultiReader(readers...)
 	if w.httpCompression {
 		// Compress the batch once, including every PIL header. Ingress removes
-		// this coding before staging; there is no per-event recompression here.
+		// this transport coding before staging.
 		var packed bytes.Buffer
 		if err := pilcodec.Gzip(&packed, body, w.config.CompressionLevel); err != nil {
 			return err

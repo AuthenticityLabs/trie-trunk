@@ -91,10 +91,9 @@ func collectView(t *testing.T, l *Layout, h *HTTP, raw []byte) viewDecoded {
 		if e != nil {
 			t.Fatal(e)
 		}
-		id := unpackIndexID(row, place.From)
-		prefix := bytes.Clone(id[:])
+		prefix := timeKey(indexTime(row, place.From))
 		a := frameAssembler{layout: l, trie: &trie}
-		full, e := a.assemble(prefix, member, nil)
+		full, e := a.assemble(prefix, member, nil, order.Uint16(row[4:6]))
 		if e != nil {
 			t.Fatal(e)
 		}

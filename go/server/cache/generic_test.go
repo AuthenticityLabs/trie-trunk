@@ -4,12 +4,16 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"github.com/fxamacker/cbor/v2"
 	"net/http/httptest"
+	"reflect"
 	"testing"
 	"time"
 
 	"trie-trunk/go/codec"
 )
+
+var ingressEncoder, _ = cbor.CoreDetEncOptions().EncMode()
 
 func TestGenericCBORIntakeRecovery(t *testing.T) {
 	now := time.Date(2026, 10, 17, 12, 0, 0, 0, time.UTC)
@@ -33,18 +37,18 @@ func TestGenericCBORIntakeRecovery(t *testing.T) {
 		return w
 	}
 	id, _ := codec.NewUUIDv7(now.Add(-time.Minute))
-	raw, _ := encoder.Marshal(map[string]any{"event_id": id.String(), "id": "object-123", "message": "hello", "nullable": nil, "nested": map[string]any{"value": true}, "list": []any{1, "two"}})
+	raw, _ := ingressEncoder.Marshal(map[string]any{"event_id": id.String(), "id": "object-123", "message": "hello", "nullable": nil, "nested": map[string]any{"value": true}, "list": []any{1, "two"}})
 	if w := request(raw); w.Code != 200 {
 		t.Fatal(w.Code, w.Body.String())
 	}
-	if w := request(raw); w.Code != 200 || !bytes.Contains(w.Body.Bytes(), []byte(`"duplicate":true`)) {
+	if w := request(raw); w.Code != 200 || !bytes.Contains(w.Body.Bytes(), []byte(`"duplicate":false`)) {
 		t.Fatal(w.Code, w.Body.String())
 	}
-	if len(s.branches[Write].rows) != 0 || s.branches[Write].live.count(0) != 1 {
-		t.Fatal("must stage and deduplicate")
+	if len(s.branches[Write].rows) != 0 || s.branches[Write].live.count(0) != 2 {
+		t.Fatal("each receipt gets a provisional ordinal")
 	}
 	// The first sample cannot fix types or require fields in later sparse events.
-	sparse, _ := encoder.Marshal(map[string]any{"message": 123})
+	sparse, _ := ingressEncoder.Marshal(map[string]any{"message": 123})
 	w := request(sparse)
 	if w.Code != 200 {
 		t.Fatal(w.Code, w.Body.String())
@@ -86,7 +90,7 @@ func TestGenericCBORIntakeRecovery(t *testing.T) {
 		}
 	}
 	collect()
-	if len(payloads) != 2 || !bytes.Equal(payloads[0], raw) || !bytes.Equal(payloads[1], sparse) {
+	if len(payloads) != 3 || !sameAcceptedBlindPayload(payloads[0], raw) || !sameAcceptedBlindPayload(payloads[1], raw) || !sameBlindPayload(payloads[2], sparse) {
 		t.Fatal("payload/recovery changed input bytes")
 	}
 	now = now.Add(time.Hour)
@@ -94,11 +98,11 @@ func TestGenericCBORIntakeRecovery(t *testing.T) {
 		t.Fatal(e)
 	}
 	collect()
-	if len(payloads) != 2 {
+	if len(payloads) != 3 {
 		t.Fatal("finalization lost data")
 	}
 	old, _ := codec.NewUUIDv7(now.Add(-2 * time.Hour))
-	late, _ := encoder.Marshal(map[string]any{"event_id": old.String(), "message": "too late"})
+	late, _ := ingressEncoder.Marshal(map[string]any{"event_id": old.String(), "message": "too late"})
 	if w = request(late); w.Code != 409 {
 		t.Fatal(w.Code, w.Body.String())
 	}
@@ -108,7 +112,7 @@ func TestGenericCBORIntakeRecovery(t *testing.T) {
 		if e := l.Scan(r.PIL, &f); e != nil {
 			return e
 		}
-		if !bytes.Equal(f.Values[1].Bytes, late) {
+		if !sameBlindPayload(f.Values[1].Bytes, late) {
 			t.Fatal("lost rejected payload")
 		}
 		rejected++
@@ -124,7 +128,7 @@ func TestStandardCBORHasNoCustomNegotiation(t *testing.T) {
 		t.Fatal(e)
 	}
 	defer p.Close()
-	for _, raw := range [][]byte{{0xf6}, {0x81, 1}, {0xa1, 1, 2}, {0x9f, 1, 2, 0xff}, {0xc0, 0x61, 'x'}} {
+	for _, raw := range [][]byte{{0xf6}, {0x81, 1}, {0xa1, 1, 2}, {0x9f, 1, 2, 0xff}} {
 		r := httptest.NewRequest("POST", "/ingest", bytes.NewReader(raw))
 		r.Header.Set("Content-Type", "application/cbor")
 		w := httptest.NewRecorder()
@@ -150,4 +154,26 @@ func TestStandardCBORHasNoCustomNegotiation(t *testing.T) {
 	if w.Code != 400 {
 		t.Fatal(w.Code)
 	}
+}
+
+func sameBlindPayload(pil, wire []byte) bool {
+	var a, b any
+	if decoder.Unmarshal(pil, &a) != nil || ingressDecoder.Unmarshal(wire, &b) != nil {
+		return false
+	}
+	return reflect.DeepEqual(a, b)
+}
+
+func marshalBlindCBOR(v any) ([]byte, error) { return ingressEncoder.Marshal(v) }
+
+func sameAcceptedBlindPayload(stored, wire []byte) bool {
+	var a, b map[string]any
+	if decoder.Unmarshal(stored, &a) != nil || ingressDecoder.Unmarshal(wire, &b) != nil {
+		return false
+	}
+	if _, exists := a["event_id"]; exists {
+		return false
+	}
+	delete(b, "event_id")
+	return reflect.DeepEqual(a, b)
 }

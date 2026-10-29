@@ -1,9 +1,9 @@
-import { compressedMarker, envelopeLength, expandEvent } from "./compression.ts";
+import {INDEX_ROW_BYTES} from './pac-native.ts';
+import { decodeObject, encodeObject, objectView } from "./control.ts";
 import { nativePAC, pacPlacement } from "./pac-native.ts";
-import { pacHeader, expandPAC, indexedPACBounds } from "./pac.ts";
+import { pacHeader, expandPAC, pacBounds } from "./pac.ts";
 import { validSource } from "../source.ts";
 import { Codec } from "./wasm.ts";
-import { cbor, controlCBOR } from "./cbor.ts";
 import { read, type PILDefinition } from "./layout.ts";
 import { compile, type Metadata, type Binding } from "./metadata.ts";
 export const pilType = "application/pil";
@@ -35,14 +35,14 @@ const bind: PILDefinition = {
   ],
 };
 // Opt-in native storage controls. These carry server bytes and coordinates;
-// they are not event objects or an alternate population encoding.
+// they are not event objects or an alternate payload encoding.
 export type NativeRecord =
   | { kind: "pac"; binding: Binding; bytes: Uint8Array; bounds: Uint32Array; integrityVerified?:true }
   | { kind: "manifest"; binding: Binding; manifest: Record<string, unknown> }
-  | { kind: "chunk"; binding: Binding; file: "map" | "trie" | "state" | "index" | "population"; start: number; digest: string; bytes: Uint8Array; integrityVerified?:true }
+  | { kind: "chunk"; binding: Binding; file: "map" | "trie" | "state" | "index"; start: number; digest: string; bytes: Uint8Array; integrityVerified?:true }
   | { kind: "package-end"; binding: Binding };
 const nativeControls: PILDefinition[] = [
-  { pil: 0, definition: "trunk-native-control", version: 1, fields: [{name:"stream",type:"U32"},{name:"manifest",type:"CBOR"}] },
+  { pil: 0, definition: "trunk-native-control", version: 1, fields: [{name:"stream",type:"U32"},{name:"manifest",type:"OBJECT"}] },
   { pil: 0, definition: "trunk-native-control", version: 2, fields: [{name:"stream",type:"U32"},{name:"kind",type:"U8"},{name:"start",type:"U64"},{name:"digest",type:"BYTES"},{name:"data",type:"BYTES"}] },
   { pil: 0, definition: "trunk-native-control", version: 3, fields: [{name:"stream",type:"U32"}] },
 ];
@@ -76,6 +76,8 @@ export class PILStream {
   private viewHandle?: number;
   private onView?: (value:unknown)=>void;
   private onNative?: (record: NativeRecord) => Promise<void>;
+  private trunkHandle?:number;
+  private onTrunk?:(value:unknown)=>Promise<void>;
   constructor(
     codec: Codec,
     definitions: Map<string, StoredDefinition>,
@@ -84,20 +86,23 @@ export class PILStream {
     onBatch: (b: Batch) => Promise<void>,
     onNative?: (record: NativeRecord) => Promise<void>,
     onView?: (value:unknown)=>void,
+    onTrunk?: (value:unknown)=>Promise<void>,
   ) {
     this.codec = codec;
     this.onView=onView;
+    this.onTrunk=onTrunk;
     this.definitions = definitions;
     this.onDefinition = onDefinition;
     this.onBinding = onBinding;
     this.onBatch = onBatch;
     this.onNative = onNative;
     this.handles = [
-      codec.define(controlCBOR(define)),
-      codec.define(controlCBOR(bind)),
-      ...(onNative ? nativeControls.map(d => codec.define(controlCBOR(d))) : []),
+      codec.define(encodeObject(define)),
+      codec.define(encodeObject(bind)),
+      ...(onNative ? nativeControls.map(d => codec.define(encodeObject(d))) : []),
     ];
-    if(onView){this.viewHandle=codec.define(controlCBOR(viewControl));this.handles.push(this.viewHandle)}
+    if(onView){this.viewHandle=codec.define(encodeObject(viewControl));this.handles.push(this.viewHandle)}
+    if(onTrunk){this.trunkHandle=codec.define(encodeObject(viewControl));this.handles.push(this.trunkHandle)}
   }
     close() {
     this.handles.forEach((h) => this.codec.release(h));
@@ -126,13 +131,11 @@ export class PILStream {
     }
     const rows: number[] = [];
     const common: (Uint8Array | undefined)[] = [];
-    const expanded = new Map<number, Uint8Array>();
-    let expandedBytes=0;
-    const flushExpanded=async()=>{
-      let size=0;for(let i=0;i<rows.length;i+=3)size+=expanded.get(i)?.length??rows[i+2]-rows[i+1];
+    const flushRows=async()=>{
+      let size=0;for(let i=0;i<rows.length;i+=3)size+=rows[i+2]-rows[i+1];
       const payload=new Uint8Array(size);let at=0;
-      for(let i=0;i<rows.length;i+=3){const frame=expanded.get(i)??bytes.subarray(rows[i+1],rows[i+2]);payload.set(frame,at);rows[i+1]=at;at+=frame.length;rows[i+2]=at;}
-      await this.onBatch({bytes:payload.buffer,rows:Uint32Array.from(rows),common:common.slice()});rows.length=0;common.length=0;expanded.clear();expandedBytes=0;
+      for(let i=0;i<rows.length;i+=3){const frame=bytes.subarray(rows[i+1],rows[i+2]);payload.set(frame,at);rows[i+1]=at;at+=frame.length;rows[i+2]=at;}
+      await this.onBatch({bytes:payload.buffer,rows:Uint32Array.from(rows),common:common.slice()});rows.length=0;common.length=0;
     };
     // Scan a bounded window through pill-packer. Awaited callbacks may reuse
     // the codec's input memory, so invalidate the window at each such boundary.
@@ -209,12 +212,10 @@ export class PILStream {
           const prior = this.definitions.get(hash);
           if (!prior) {
             compile(metadata, "validation");
-            if (this.definitions.size >= 1024)
-              throw Error("Too many PIL definitions in this session");
             this.definitions.set(hash, {
               ...metadata,
               handle: this.codec.define(pil),
-              definition: cbor(pil) as PILDefinition,
+              definition: decodeObject(pil) as PILDefinition,
             });
           } else if (hex(prior.pil) !== hex(pil))
             throw Error("Immutable PIL definition changed");
@@ -255,10 +256,13 @@ export class PILStream {
         const binding = this.bindings.get(stream)!;
         if (kind === 4) {
           if (this.nativePackages.has(stream)) throw Error("Overlapping native packages");
-          const manifest = read(frame, control, 1) as Record<string, unknown>;
+          const manifest = objectView(read(frame, control, 1)) as Record<string, unknown>;
           if (!manifest || typeof manifest !== "object" || Array.isArray(manifest)) throw Error("Invalid native manifest");
+          // Generic PIL times are RFC3339 text. The native cache works in
+          // whole epoch seconds for package boundaries.
+          for(const key of ['From','To'])if(typeof manifest[key]==='string')manifest[key]=Date.parse(manifest[key] as string)/1000;
           const digest = manifest.Definition;
-          if (!(digest instanceof Uint8Array) || hex(digest) !== binding.digest || manifest.RowWidth !== 16)
+          if (!(digest instanceof Uint8Array) || hex(digest) !== binding.digest || manifest.RowWidth !== INDEX_ROW_BYTES)
             throw Error("Native manifest binding mismatch");
           this.nativePackages.add(stream);
           // Own every nested byte string, including optional block metadata.
@@ -275,7 +279,7 @@ export class PILStream {
             this.nativeIndexes.delete(stream);this.nativeBlocks.delete(stream);
             await this.onNative({kind:"package-end", binding});
           } else {
-            const kinds = ["map", "trie", "state", "index", "population"] as const;
+            const kinds = ["map", "trie", "state", "index"] as const;
             const type = read(frame, control, 1), start = read(frame, control, 2);
             const digest = read(frame, control, 3), data = read(frame, control, 4);
             if (typeof type !== "number" || !kinds[type] || typeof start !== "number" || !Number.isSafeInteger(start) || start < 0 ||
@@ -290,6 +294,14 @@ export class PILStream {
         pos += 1 + n;
         invalidate();
         continue;
+      }
+      if(kind===10){
+        if(!this.onTrunk||this.trunkHandle===undefined)throw Error('Trunk bootstrap was not negotiated');
+        const n=scanAt(this.trunkHandle,pos+1);if(!n)break;
+        const raw=read(bytes.subarray(pos+1,pos+1+n),viewControl,0);
+        if(!(raw instanceof Uint8Array))throw Error('Invalid trunk metadata');
+        const value=ownControlBytes(decodeObject(raw));
+        await this.onTrunk(value);pos+=1+n;invalidate();continue;
       }
       if(kind===8){
         if(!this.onView||this.viewHandle===undefined)throw Error("View response was not negotiated");
@@ -328,7 +340,8 @@ export class PILStream {
           this.codec.verifyCRC32C(wire,expected);
           const indexes=this.nativeIndexes.get(binding.stream)!,index=indexes.get(first);
           if(!index||placement.memberBytes!==BigInt(pac.end-pac.start))throw Error("Missing native PAC member directory");
-          const bounds=indexedPACBounds(pac,index,16,12);
+          if(pac.addressBytes!==4||index.length!==pac.count*INDEX_ROW_BYTES)throw Error("Invalid native PAC directory");
+          const bounds=pacBounds(pac);
           await this.onNative({kind:"pac",binding,bytes:raw.slice(),bounds,integrityVerified:true});
           indexes.delete(first);
           if(this.nativeRange){this.nativeRange.remaining-=unpacked.end-pacStart;if(!this.nativeRange.remaining)this.nativeRange=undefined;}
@@ -336,7 +349,7 @@ export class PILStream {
         }
         if(unpacked.bytes.buffer!==bytes.buffer){
           // Flush prior row views before replacing their backing network buffer.
-          if(rows.length)await flushExpanded();
+          if(rows.length)await flushRows();
           const next=new Uint8Array(pos+1+unpacked.bytes.length+bytes.length-unpacked.end);
           next.set(bytes.subarray(0,pos+1));next.set(unpacked.bytes,pos+1);next.set(bytes.subarray(unpacked.end),pos+1+unpacked.bytes.length);bytes=next;
         }
@@ -363,15 +376,6 @@ export class PILStream {
       ).getUint32(0, true);
       const d = this.streams.get(id);
       if (!d) throw Error("Unbound PIL event");
-      const candidate=bytes.subarray(pos+5);
-      if(compressedMarker(candidate,d.definition)){
-        const length=envelopeLength(candidate,d.definition);if(length===undefined||candidate.length<length)break;
-        const validate=(raw:Uint8Array)=>{this.codec.upload(raw);if(this.codec.scanStructural(d.handle,0,raw.length)!==raw.length)throw Error("Invalid expanded PIL frame");};
-        const full=await expandEvent(candidate.subarray(0,length),d.definition,validate,(b,n)=>this.codec.inflate(b,n));
-        expanded.set(rows.length,full);rows.push(id,0,full.length);expandedBytes+=full.length;
-        if(expandedBytes>=8*1024*1024)await flushExpanded();
-        invalidate();this.hasEvents=true;pos+=5+length;continue;
-      }
       const n = scanAt(d.handle,pos+5);
       if (!n) break;
       this.hasEvents = true;
@@ -382,7 +386,6 @@ export class PILStream {
     // the worker does not retain a second working set or decoded event objects.
     this.pending = bytes.slice(pos);
     if (rows.length) {
-      if(expanded.size){await flushExpanded();return;}
       const payload =
         pos === bytes.length &&
         bytes.byteOffset === 0 &&

@@ -10,7 +10,7 @@ import { fixture,bytes,magic,frame,le,extended,response } from './pil-fixtures.m
 const module=WebAssembly.compile(readFileSync(new URL('../assets/pil.wasm',import.meta.url)));
 const cold=readFileSync(new URL('./fixtures/pac-view/cold.pil',import.meta.url));
 const warm=readFileSync(new URL('./fixtures/pac-view/warm.pil',import.meta.url));
-const query={tap:'demo/payment/transactions.v1/write',from:'2026-09-01T12:00:00Z',to:'2026-09-01T14:00:00Z',size:2};
+const query={engine:'tantivy',tap:'demo/payment/transactions.v1/write',from:'2026-09-01T12:00:00Z',to:'2026-09-01T14:00:00Z',size:2};
 function reply(raw,stride=65536){const r=response(raw,'a'.repeat(64),stride);r.headers.set('Trunk-Format','pac-view/0');return r}
 const fresh=async()=>new Codec(await WebAssembly.instantiate(await module));
 test('Go PAC view round trip, one GET and exact cached dependencies/page omission',async()=>{
@@ -80,7 +80,7 @@ test('pages certify a full semantic bucket and reuse it across queries and worke
  const calls=[],saved=[];let at=0;
  const cache=new ViewCache(async(url,opts)=>{calls.push(opts.headers);return reply(at<3?raw[at++]:warm)});
  const codec=await fresh(),definitions=new Map(),signal=new AbortController().signal;
- const q={...query,to:'2026-09-01T13:00:00Z'};
+ const q={engine:'tantivy',...query,to:'2026-09-01T13:00:00Z'};
  let after;
  for(let i=0;i<3;i++){
   const v=await cache.query({...q,after},'',signal,codec,definitions);saved.push(v);after=v.result.next;
@@ -112,7 +112,7 @@ test('Go live pages include pending events without certifying their disk rows',a
  const pages=['first','next'].map(name=>readFileSync(new URL('./fixtures/pac-live/'+name+'.pil',import.meta.url)));
  let n=0;const calls=[],cache=new ViewCache(async(url,opts)=>{calls.push(opts.headers);return reply(pages[n++],1)});
  const codec=await fresh(),defs=new Map(),signal=new AbortController().signal;
- const q={...query,from:'2026-10-18T10:00:00Z',to:'2026-10-18T14:00:00Z'};
+ const q={engine:'tantivy',...query,from:'2026-10-18T10:00:00Z',to:'2026-10-18T14:00:00Z'};
  const a=await cache.query(q,'',signal,codec,defs);
  assert.equal(a.result.summary.status,'live-snapshot');
  assert.equal(a.result.summary.count,3);
@@ -144,17 +144,17 @@ test('native placement preserves source rows across pages without padding or rec
  const header=pacHeader(raw,0,64<<20,new Set([nativePAC]));
  const place=pacPlacement(header);
  assert.equal(place.memberStart,119n);assert.equal(place.pageSize,64);assert.equal(place.firstRow,77n);
- const codec=await fresh(),handle=codec.define(readFileSync(new URL('../../../pill-packer/rust/tests/fixtures/pac/definition.cbor',import.meta.url)));
+ const codec=await fresh(),handle=codec.define(readFileSync(new URL('../../../pill-packer/rust/tests/fixtures/pac/definition.rx',import.meta.url)));
  codec.upload(raw);
  assert.throws(()=>codec.pac(handle,0,raw.length,header.count),/unsupported/);
  const bounds=codec.pac(handle,0,raw.length,header.count,true);
  const lengths=Uint32Array.from({length:header.count},(_,i)=>bounds[i*2+1]-bounds[i*2]);
  codec.release(handle);
  assert.deepEqual(Buffer.from(pacLocalRows(place,source,lengths)),expected);
- const local=new DataView(expected.buffer,expected.byteOffset,expected.byteLength);
- assert.equal(local.getUint32(12,true),0,'member starts are segment-relative on both ends');
+ const local=new DataView(header.directory.buffer,header.directory.byteOffset,header.directory.byteLength);
+ assert.equal(local.getUint32(0,true),0,'member starts are segment-relative on both ends');
  assert.throws(()=>pacLocalRows({...place,memberBytes:place.memberBytes+1n},source,lengths),/extent/);
- const bad=lengths.slice();bad[0]++;assert.throws(()=>pacLocalRows(place,source,bad),/member start/);
+ const bad=lengths.slice();bad[0]++;assert.throws(()=>pacLocalRows(place,source,bad),/extent|page marker/);
 });
 
 test('sealed-hour promotions serialize across tabs and retry failed persistence',async()=>{

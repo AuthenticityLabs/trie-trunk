@@ -1,3 +1,4 @@
+import {apiFetch} from './connections.ts';
 import {storageNodeName, compareStoragePaths} from './storage-labels.ts';
 import {within, type StorageNode} from './quota-preview.ts';
 
@@ -71,7 +72,7 @@ export async function requestQuotas(token: string, signal?: AbortSignal, saved?:
     headers['Content-Type'] = 'application/json';
     headers['If-Match'] = `"${saved.revision}"`;
   }
-  const response = await fetch('/storage/quotas', {method: saved ? 'PUT' : 'GET', headers, signal, cache: 'no-store', body: saved ? JSON.stringify(policy) : undefined});
+  const response = await apiFetch('/storage/quotas', {method: saved ? 'PUT' : 'GET', headers, signal, cache: 'no-store', body: saved ? JSON.stringify(policy) : undefined});
   if (!response.ok) throw new Error(response.status === 412 ? 'Another administrator changed these settings. Reload before saving.' : (await response.text()).trim() || `Quota settings unavailable (${response.status}).`);
   return response.json();
 }

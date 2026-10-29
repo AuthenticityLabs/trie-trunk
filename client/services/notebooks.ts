@@ -1,4 +1,4 @@
-import { cbor, encodeCBOR } from './pil/cbor.ts';
+import { decodeObject, encodeObject } from "./pil/control.ts";
 import { atomicFile } from './store/native-files.ts';
 import { directory } from './store/files.ts';
 type Saved = { notebooks:Notebook[]; references:EventReference[] };
@@ -6,10 +6,10 @@ async function access<T>(change:boolean, action:(saved:Saved)=>T):Promise<T>{
  return navigator.locks.request('snoot-saved-collections',async()=>{
   const dir=await directory(await navigator.storage.getDirectory(),'snoot-collections');
   let saved:Saved={notebooks:[],references:[]};
-  try{saved=cbor(new Uint8Array(await (await (await dir.getFileHandle('bookmarks.cbor')).getFile()).arrayBuffer())) as Saved;}
+  try{saved=decodeObject(new Uint8Array(await (await (await dir.getFileHandle('bookmarks.pil')).getFile()).arrayBuffer())) as Saved;}
   catch(error){if(!(error instanceof DOMException&&error.name==='NotFoundError'))throw error;}
   const result=action(saved);
-  if(change)await atomicFile(dir,'bookmarks.cbor',encodeCBOR(saved));
+  if(change)await atomicFile(dir,'bookmarks.pil',encodeObject(saved));
   return result;
  });
 }

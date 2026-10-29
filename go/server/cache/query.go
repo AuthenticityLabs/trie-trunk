@@ -35,30 +35,27 @@ func (h *cursors) Pop() any {
 	return v
 }
 func (s *Store) frame(b *branchStore, number uint64, dst []byte) ([]byte, error) {
-	if raw := b.live.get(b.rowID(number), false, s.config.Now()); raw != nil {
+	if raw := b.live.row(b.rowTime(number), number, s.config.Now()); raw != nil {
 		return append(dst[:0], raw...), nil
 	}
-	reader := populationReader{point: true}
+	reader := podsReader{point: true}
 	raw, e := reader.read(b, number, s.row)
 	if e != nil {
 		return nil, e
 	}
 	row := b.assemblyRow(number)
-	return s.assemble(row, raw, dst)
+	return s.assemble(row, raw, dst, b.rowLeaf(number))
 }
 
-// expandFrame is shared by storage readers after population decoding. Keeping
+// expandFrame is shared by storage readers after payload decoding. Keeping
 // identity restoration, trie expansion and PIL output here also permits codec
 // measurements without changing the search path or introducing transport IPC.
-func (s *Store) expandFrame(row []byte, f *Frame, dst []byte) ([]byte, error) {
-	if f.Values[s.layout.Event].State != Absent {
-		return nil, fmt.Errorf("population shadows event_id")
+func (s *Store) expandFrame(row []byte, f *Frame, dst []byte, leaf uint16) ([]byte, error) {
+	raw, err := s.layout.Layout.Encode(nil, f.Values)
+	if err != nil {
+		return nil, err
 	}
-	f.Values[s.layout.Event] = Value{Direct, row[:16]}
-	if e := s.expandShared(f.Values); e != nil {
-		return nil, e
-	}
-	return s.layout.Encode(dst, f.Values)
+	return s.assemble(row, raw, dst, leaf)
 }
 func (l *Layout) equal(i int, a, b Value) bool {
 	if a.State == Absent || a.State == Null || b.State == Absent || b.State == Null {
@@ -94,19 +91,18 @@ func (s *Store) Search(ctx context.Context, q Query, visit func(uint64, []byte) 
 	return s.search(ctx, q, visit, s.assembledReader(point))
 }
 func (s *Store) assembledReader(point ...bool) func(*branchStore, uint64, []byte) ([]byte, error) {
-	reader := populationReader{point: len(point) > 0 && point[0]}
-	var context recordContext
+	reader := podsReader{point: len(point) > 0 && point[0]}
 	assembler := frameAssembler{layout: s.layout, trie: &s.trie}
 	return func(b *branchStore, number uint64, dst []byte) ([]byte, error) {
-		id := context.identity(b, number)
-		if raw := b.live.get(id, false, s.config.Now()); raw != nil {
+		id := b.assemblyRow(number)
+		if raw := b.live.row(b.rowTime(number), number, s.config.Now()); raw != nil {
 			return append(dst[:0], raw...), nil
 		}
 		raw, e := reader.read(b, number, s.row)
 		if e != nil {
 			return nil, e
 		}
-		return assembler.assemble(id, raw, dst)
+		return assembler.assemble(id, raw, dst, b.rowLeaf(number))
 	}
 }
 
@@ -117,7 +113,7 @@ func (s *Store) SearchLive(ctx context.Context, q Query, visit func([]byte) erro
 	return s.searchView(ctx, q, func(_ uint64, raw []byte) error { return visit(raw) }, s.assembledReader(point), true)
 }
 
-// A reader parameter keeps traversal identical when measuring population codecs.
+// A reader parameter keeps traversal identical when measuring payload codecs.
 func (s *Store) search(ctx context.Context, q Query, visit func(uint64, []byte) error, frame func(*branchStore, uint64, []byte) ([]byte, error)) error {
 	return s.searchView(ctx, q, visit, frame, false)
 }
@@ -148,16 +144,6 @@ func (s *Store) searchView(ctx context.Context, q Query, visit func(uint64, []by
 		}
 	}
 	scanPredicate := s.layout.Scan
-	identityOnly := true
-	for i := range wanted {
-		if !s.layout.IdentityField(i) {
-			identityOnly = false
-			break
-		}
-	}
-	if identityOnly {
-		scanPredicate = s.layout.IdentityFrame
-	}
 	objectID, objectLookup := wanted[s.layout.Object]
 	if objectLookup {
 		if !s.config.ObjectIndex || s.objects == nil {
@@ -202,7 +188,7 @@ func (s *Store) searchView(ctx context.Context, q Query, visit func(uint64, []by
 	if live {
 		var object []byte
 		if objectLookup {
-			object = s.layout.IdentityValue(s.layout.Object, objectID).Bytes
+			object = s.layout.NormalizeIntegerWidth(s.layout.Object, objectID).Bytes
 		}
 		staged = b.pendingWindow(object, q.From, q.To)
 	}
@@ -210,7 +196,7 @@ func (s *Store) searchView(ctx context.Context, q Query, visit func(uint64, []by
 		if e := ctx.Err(); e != nil {
 			return e
 		}
-		if len(staged) > 0 && (h.Len() == 0 || bytes.Compare(staged[0].id[:], b.rowID(h.values[0].at)) < 0) {
+		if len(staged) > 0 && (h.Len() == 0 || eventTime(staged[0].id[:]) < b.rowTime(h.values[0].at)) {
 			p := staged[0]
 			staged = staged[1:]
 			if len(wanted) > 0 {
@@ -239,13 +225,6 @@ func (s *Store) searchView(ctx context.Context, q Query, visit func(uint64, []by
 			heap.Pop(&h)
 		} else {
 			heap.Fix(&h, 0)
-		}
-		matchIndex := true
-		if value, ok := wanted[s.layout.Event]; ok && !s.layout.equal(s.layout.Event, Value{Direct, b.rowID(number)}, value) {
-			matchIndex = false
-		}
-		if !matchIndex {
-			continue
 		}
 		var e error
 		output, e = frame(b, number, output)

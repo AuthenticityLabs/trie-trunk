@@ -21,6 +21,11 @@ export type NativeSelection = {
 };
 export type NativeInput = {record:NativeRecord;definition?:Metadata};
 export type Command =
+  | {kind:'summary-read';query:import('./native.ts').SummaryQuery}
+  | {kind:'summary-save';input:import('./native.ts').SummaryImport}
+  | {kind:'time-read';query:import('./native.ts').TimeQuery}
+  | {kind:'time-save';input:import('./native.ts').TimeImport}
+  | {kind:'trunk-save';snapshot:import('../pil/trunk.ts').TrunkSnapshot}
   | { kind: "native-rebase"; sources:string[] }
   | { kind: "native-begin"; session: string }
   | { kind: "native-records"; session:string; records:NativeInput[] }
@@ -32,7 +37,7 @@ export type Command =
   | { kind: "native-object-state"; query: ObjectQuery }
   | { kind: "native-dependencies"; source: string }
   | { kind: "native-rows"; source: string; from: number; to: number; rows: number[] }
-  | { kind: "native-page"; source: string; from: number; to: number; after?: number; limit?: number }
+  | { kind: "native-page"; source: string; from: number; to: number; after?: number; limit?: number; descending?:boolean }
   | { kind: "definitions" }
   | { kind: "remember"; definitions: Metadata[]; bindings: Binding[] }
   | { kind: "begin"; collection: Collection }
@@ -59,12 +64,14 @@ export type Command =
   | { kind: "next"; cursor: string }
   | { kind: "release"; cursor: string };
 export type ArchiveReply = {
+  summaryBytes?:Uint8Array;
+  time?:import('./native.ts').TimeReceipt;
   nativeObjectState?: { token:string; sequence:number };
   nativeSelections?: NativeSelection[];
   nativeSources?: string[];
   nativePage?: NativePage;
   nativeDependencies?: { source: NativeSource; definition: Metadata; trie: {start:number;bytes:Uint8Array}[] };
-  nativeCoverage?: { Definition:number[]; Generation:number[]; Index:{Start:number;End:number}[]; Population:{Start:number;End:number}[]; TrieNodes:number; StateKnown?:boolean; StateEpoch?:number[]; StateSequence?:number }[];
+  nativeCoverage?: { Definition:number[]; Generation:number[]; Index:{Start:number;End:number}[]; MemberRanges:{Start:number;End:number}[]; TrieNodes:number; StateKnown?:boolean; StateEpoch?:number[]; StateSequence?:number }[];
   batch?: Batch;
   definitions?: Metadata[];
   bindings?: Binding[];

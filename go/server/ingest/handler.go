@@ -9,8 +9,8 @@ import (
 	"sync"
 	"time"
 
-	"trie-trunk/go/server/ingest/cbor"
 	"trie-trunk/go/server/ingest/json"
+	"trie-trunk/go/server/ingest/pil"
 	"trie-trunk/go/server/store"
 )
 
@@ -73,7 +73,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	case http.MethodHead, http.MethodPut, http.MethodPost:
 		if !useJSON {
-			if err := cbor.ValidateRequest(r); err != nil {
+			if err := pil.ValidateRequest(r); err != nil {
 				http.Error(w, err.Error(), http.StatusBadRequest)
 				return
 			}
@@ -111,6 +111,6 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if useJSON {
 		t.json.ServeHTTP(w, r)
 	} else {
-		t.cbor.ServeHTTP(w, r)
+		t.pil.ServeHTTP(w, r)
 	}
 }

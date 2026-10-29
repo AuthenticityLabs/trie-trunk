@@ -49,11 +49,11 @@ func TestSummaryMatchedFootprint(t *testing.T) {
 			if crc32.Checksum(chunk, checksum) != crc {
 				return fmt.Errorf("CRC mismatch")
 			}
-			switch string(chunk[:8]) {
-			case "SUMROLL0":
+			switch {
+			case string(chunk[:8]) == "SUMROLL0":
 				totals["calendar_rollup_bytes"] += int64(n + 8)
 				totals["calendar_rollup_rows"] += int64((n - 24) / calendarRollupRowSize)
-			case "SUMDAY00":
+			case isSummaryPAC(chunk):
 				day, from, to, sums, e := decodeSummaryDay(chunk)
 				if e != nil {
 					return e
@@ -82,7 +82,7 @@ func TestSummaryMatchedFootprint(t *testing.T) {
 				totals["old_decoded_bytes"] += int64(order.Uint32(old[16:]))
 				totals["old_file_bytes"] += int64(8 + len(old))
 				byDay[day] += int64(n)
-			case "SUMCOL00":
+			case string(chunk[:8]) == "SUMCOL00":
 				var s Summary
 				if e = decodeSummary(chunk, &s); e != nil {
 					return e

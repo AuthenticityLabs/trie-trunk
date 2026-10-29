@@ -1,0 +1,4130 @@
+diff --git a/README.md b/README.md
+index 4bf7bd1..1669c4d 100644
+--- a/README.md
++++ b/README.md
+@@ -1,12 +1,394 @@
+ # Pill Packer
+ 
+-Portable codecs for **PIL (Positional Interchange Layout)** and **PIL PACs**.
++Portable codecs for **PIL (Positional Interchange Layout)** and **PAC (Packed Array Container)**.
+ Encode typed values by field position, distinguish absent fields from nulls,
+ and read packed records without expanding every field into an object.
+ 
+-[Format & Specification](https://trietrunk.com/PIL)
++[Format & Specification](https://github.com/AuthenticityLabs/pill-packer/blob/main/README.md)
+ 
+-## Libraries
++<a id="pack-proposal"></a>
++
++## Proposed Pack Conventions — Design for Review
++
++**Status: proposal, not an implementation announcement.** The APIs, named PAC
++headers, embedded offset directories, and fixed-width PAC mode in this section
++are being specified before refactoring. The existing libraries and wire format
++are documented below under [Current libraries](#current-libraries) and
++[Current format reference](#current-format-reference). Version zero remains
++under development; this document does not assign new wire identifiers or promise
++compatibility with proposed bytes that no implementation writes yet.
++
++PIL is **Positional Interchange Layout**. PAC is **Packed Array Container**.
++One Definition describes one PIL record. One PAC contains an ordered collection
++of PIL records bound to that exact Definition. A record can itself contain
++schema-defined arrays and child records. PAC member access addresses the outer
++PIL records; access inside a field follows that field's Definition.
++
++Pill Packer supplies layout encoding, packing, compression, and access primitives.
++The application chooses record shape, grouping, pack size, headers, validation
++policy, storage, and indexes. The same Definition can be used to pack any
++application-selected subset of its records. The library assigns no meaning to
++the contents or to application file names.
++
++### Definition and record preparation
++
++The following is language-neutral pseudocode. It proposes a shared contract
++across Rust, Go, and JavaScript/WASM, not currently callable package exports:
++
++```ts
++import * as pill from "pill-packer";
++
++const rxBytes = pill.rx.write(cddlJsonBytes);
++const cddlJsonAgain = pill.rx.read(rxBytes);
++const definition = pill.define(rxBytes); // prepare once, reuse
++
++const first = pill.fill(definition, [
++  field0Bytes,
++  field1Bytes,
++  pill.absent,
++  pill.null
++]);
++
++const pils = [first, externallyPreparedPilBytes]; // complete PIL byte sequences
++```
++
++- `rx.write` compiles supported CDDL schema JSON to a PIL-encoded `.rx` document.
++  `rx.read` renders that document's schema as JSON. CDDL source text remains an
++  authoring input supported by the existing CLI. JSON is outside the binary
++  record and PAC paths.
++- `define` retains the exact Definition bytes, digest, and reusable layout
++  information. Preparing a Definition is a separate cost from filling records.
++- `fill` accepts field payload bytes in Definition order. It writes the state
++  mask, integer selectors where applicable, DIRECT values, offsets, and variable
++  payloads. Explicit absent and null markers distinguish both states from present
++  empty bytes. It validates payload representation and schema constraints.
++- Encoded arrays and nested records follow their declared layouts. Generic
++  array/child-record helpers should be available through the same library.
++  A private byte block is opaque unless its structure is described in `.rx`.
++- Applications may prepare valid PIL bytes themselves and pass them directly to
++  `pack`. Calling `fill` is optional. Equivalent validation and record semantics
++  apply to either producer; performance measurements decide which is suitable.
++- A normal `fill` result owns its output bytes. A reusable-buffer variant is a
++  proposed optimization to measure separately; overwriting its buffer invalidates
++  any borrowed bytes. Borrowing and allocation must be explicit in each binding.
++
++The Definition governs the PIL representation. Choosing a PAC layout or codec
++does not change field meaning, synthesize absent values, or alter null semantics.
++
++### Packing API and application headers
++
++```ts
++const cpack = pill.pack(definition, pils, {
++  layout: { kind: "variable" },
++  packing: { commonValues: true },
++  compression: { algorithm: "gzip", level: compressionLevel },
++  headers: {
++    "Batch-Id": batchIdBytes,
++    "Producer": producerBytes
++  },
++  index: { addressBytes: 3 }
++});
++
++// The bytes can be stored or transmitted without a second serialization pass.
++const storedBytes = cpack.bytes;
++```
++
++Header names identify metadata fields; their values are opaque bytes. The object
++above represents ordinary named headers, such as `Batch-Id: <bytes>`. It is not a
++list of numeric extension descriptors. The library preserves custom header bytes
++and returns them when opening a pack. Their interpretation belongs to the caller.
++
++The proposed custom-header representation is a length-delimited collection of
++UTF-8 names and byte values. Names are nonempty and case-sensitive. Writers sort
++names by encoded bytes for deterministic output. Readers reject duplicate names,
++invalid lengths, invalid name encoding, and collisions with reserved structural
++names. Empty values are valid. Unknown custom headers are preserved. Applications
++enforce their own required custom-header names and value formats.
++
++Mandatory structural header fields describe the container:
++
++| Information | Supplied or computed |
++| --- | --- |
++| Exact Definition digest | Computed from the bound `.rx` bytes |
++| Record count and stored/decoded lengths | Computed from the completed pack |
++| Packing choices and compression codec/decoder parameters | Recorded from the requested options |
++| Member region boundaries and common-value metadata | Computed during packing |
++| Variable addressing mode and optional directory address width | Recorded from the requested options |
++| Fixed record width, when selected | Derived and verified, or checked against the supplied width |
++
++These fields have defined binary representations. Applications cannot overwrite
++them through custom headers. The exact byte offsets and discriminators for the
++proposed additions will be specified before codec changes.
++
++Minimal options mean variable members, no common-value factoring, no compression,
++no embedded index, and no custom headers. Full validation is the default.
++Applications explicitly enable the work and metadata they need.
++
++### Three addressing strategies
++
++All three strategies retain the same logical PIL values and record order.
++
++| Strategy | Requested options | Address metadata | Locating record `i` after opening |
++| --- | --- | --- | --- |
++| Variable, sequential | `layout: {kind: "variable"}, index: false` | Count and member extent | Traverse preceding record boundaries |
++| Variable, indexed | `layout: {kind: "variable"}, index: {addressBytes: 2 \| 3 \| 4}` | Count plus packed starting offsets | Read adjacent directory entries |
++| Fixed width | `layout: {kind: "fixed"}, index: false` | Record width and count | `memberStart + i * recordWidth` |
++
++Compression is an independent choice for every strategy. There is no requirement
++to index variable records, or to turn a fixed-width pack into an indexed pack.
++
++#### Variable records with an optional embedded index
++
++The directory stores one unsigned little-endian starting offset per member.
++Offsets are relative to the beginning of the **decoded member region**, after
++packing and common-value factoring. They never refer to compressed byte positions
++or to the original input buffer.
++
++For `N` members and address width `w`, the directory costs `N * w` bytes in the
++decoded pack. The next starting offset gives the current record's end; the last
++record ends at the member region's declared end. No extra terminal entry is needed.
++
++| Address width | Bytes per member | Largest representable starting offset |
++| --- | ---: | ---: |
++| 2 | 2 | 65,535 |
++| 3 | 3 | 16,777,215 |
++| 4 | 4 | 4,294,967,295 |
++
++The width must represent every stored starting offset, subject also to the
++container's overall length limits. The final member end is supplied by the member
++extent, not another narrow directory entry. Choose width from the final decoded
++offsets, not record count or compressed size. Overflow is an error; a requested
++width is never silently widened or split into multiple packs.
++
++The first offset is zero. Remaining offsets must increase strictly and stay
++within the member region; each range must contain exactly one member. An empty
++pack has an empty directory. Readers check directory length against record count
++and width, and enforce their chosen validation and resource limits.
++
++Normally the packer generates this table while writing final members. Common
++factoring can change member sizes, so input-PIL offsets are not sufficient.
++A caller-supplied table may be accepted as:
++
++```ts
++index: { addressBytes: 3, offsets: packedOffsetBytes }
++```
++
++Its bytes must match the final member layout exactly. The writer can check that
++during its existing member pass. Supplying a table cannot bypass bounds or
++consistency checks. Validation cost must be reported separately from generation
++cost in benchmarks.
++
++Applications may continue to use external directories. They must bind an external
++directory to the exact pack representation and offset base. An embedded directory
++removes that separate binding requirement; it does not replace application lookup
++indexes that map keys to a pack and record number.
++
++#### Fixed width: record width and record count
++
++```ts
++const upack = pill.pack(definition, pils, {
++  layout: { kind: "fixed", recordWidth: expectedWidth },
++  packing: { commonValues: false },
++  compression: { algorithm: "none" },
++  headers,
++  index: false
++});
++```
++
++`recordWidth` is the size of each **final stored member**, including its ordinary
++PIL masks and any field offsets. It excludes the PAC header and common frame.
++The packer verifies equal member lengths after all selected packing operations.
++It also verifies `memberBytes == recordWidth * recordCount` with checked arithmetic.
++A supplied width is a constraint, never an instruction to pad records.
++
++For nonempty packs, the width may be omitted and derived from the first final
++member, then verified against every remaining member. An empty fixed-width pack
++requires an explicit positive width. Width metadata and count are sufficient for
++addressing, so the lighter fixed strategy omits the directory. A caller may
++explicitly request a redundant directory for a uniform consumer interface; its
++offsets must agree with the verified width and its extra cost is measured.
++
++Fixed scalar types alone do not guarantee a fixed record size: presence states,
++adaptive integers, arrays, and variable payloads can change lengths. Conversely,
++records containing variable fields may qualify when their actual final lengths
++are equal. The fixed mode verifies bytes; it does not infer a presence contract
++or reserve false positions for absent fields.
++
++A failed fixed-width request is an error. The library does not pad, fabricate
++values, truncate, or silently switch to variable mode. Common-value factoring
++remains available when explicitly selected, but its final members must still
++satisfy the requested width.
++
++### Common values, compression, and UPack/CPack
++
++Common-value factoring is a generic packing operation. It compares encoded field
++states and bytes at corresponding positions under the same Definition. Equal
++fields can be stored once and inherited by members. It neither aggregates
++records nor assigns meaning to fields. Codec-specific transforms, if added, must
++be explicit, reversible, and described by generic metadata; opaque application
++payloads are not privately transformed by the packer.
++
++`UPack` means an uncompressed PAC representation. `CPack` means a compressed
++representation that expands to a UPack. These are representation names and handle
++types, not required filename extensions or different logical record collections.
++
++The proposed compressed representation wraps the complete UPack, following the
++current whole-container compression model. Its small outer control header records
++the codec and necessary framing/decoded-size controls. Named headers, common data,
++and any offset directory are inside the decoded UPack and become available on
++unpack. Compression cost and compression of directory/header metadata must be
++measured explicitly.
++
++The caller chooses compression through the pack request. Initially `none` and
++`gzip` are the implemented-codec targets for the proposed API. A generic codec
++registration mechanism should allow other algorithms without application-specific
++branches: a stable codec identifier, encoder, bounded decoder, and any required
++decoder parameters. Registering a codec is explicit; unknown codecs are rejected.
++
++A requested codec is honored even if it expands the input. Falling back to
++uncompressed output is allowed only through an explicit caller policy such as
++`onlyIfSmaller: true`. The returned handle and serialized discriminator identify
++the representation actually produced. Compression effort is selected by the
++caller; a codec has no hardcoded workload-specific level or threshold.
++
++### Opening and retrieving records
++
++```ts
++const { pack: upack, headers } = pill.unpack(definition, cpack.bytes);
++
++const record = upack.pop(17);                    // zero-based record number
++const sameRecord = upack.pop({ index: 17 });      // explicit equivalent
++const byAddress = upack.pop({ offset: offset }); // decoded member-relative start
++```
++
++`unpack` accepts compressed or uncompressed PAC bytes, verifies the Definition
++binding and framing, and returns an opened UPack plus its named headers. The
++compression discriminator selects the registered decoder; callers need not repeat
++the packing algorithm to decode a self-describing pack. Allowed codecs, limits,
++and validation policy can be supplied separately as reader options.
++
++An opened UPack retains its Definition, common data, member extent, and addressing
++information. It holds any reusable traversal state. Packing an uncompressed result
++can return an already opened handle, avoiding a serialize-and-rescan cycle.
++
++`pop` is the proposed extraction name: it returns a complete standalone PIL and
++does **not** remove or renumber records. An integer always means record number;
++byte-offset access is explicit. Offsets must identify actual member starts.
++For fixed members, alignment checks locate valid starts. With a directory, lookup
++can establish membership. Without one, verifying a supplied offset may require
++traversal. A position inside a member is invalid.
++
++Common fields must be restored when returning a standalone PIL. Locating a member
++can be constant time while reconstruction/copying still costs time proportional
++to the returned record size. A borrowed view API may expose common/member spans
++for readers that do not need standalone bytes; it must document lifetime and
++mutability instead of hiding copies.
++
++Full validation may scan all members when opening even an indexed or fixed pack.
++Trusted reception can use explicitly selected structural checks after establishing
++producer validation and integrity. Opening cost, validation cost, and subsequent
++member lookup cost must be measured separately.
++
++Opening an unindexed pack must not silently allocate a complete offset table.
++Validation can scan without retaining every boundary. Any auxiliary in-memory
++index is an explicit opt-in with its own allocation and construction costs.
++Fixed-width addressing likewise needs no allocation proportional to record count.
++
++Whole-pack compression requires expanding the pack before direct member access.
++An offset directory or fixed stride does not enable seeking within a gzip stream.
++`pop` on an opened UPack must not repeatedly decompress the original bytes.
++Independently compressed blocks would be a separate optional strategy requiring
++its own access, size, and CPU evaluation.
++
++Application indexes can store `(pack identity, record number)` instead of a full
++member byte address. Their record-number width depends on member count. It is
++independent of the PAC directory's byte-offset width. For example, 50,000 records
++fit two-byte ordinals while their member region may need three-byte offsets.
++
++### Baseline and cost evaluation before refactoring
++
++**No results for the proposed modes are claimed here.** Capture the current
++implementation baseline before changing behavior. Record the revision and exact
++working-tree source snapshot, toolchain versions, platform, build flags, fixtures,
++and deterministic input seeds. Existing Rust codec/reference benchmarks are
++starting points, not evidence that the proposed pack modes already exist.
++
++Build a generic benchmark harness in this repository. Application-specific
++integration measurements and data generators belong in their consuming projects.
++
++| Dimension | Cases |
++| --- | --- |
++| Producer | Existing external PIL builder; library `fill`; reused-output-buffer variant |
++| Record shape | Dense equal-width records; sparse records; variable strings/bytes; arrays and nested values |
++| Addressing | Variable scan; variable index at 2/3/4 bytes when representable; verified fixed width |
++| Packing | Common values disabled/enabled; low/high repetition; mixed presence states |
++| Compression | None; gzip-1; gzip-6; additional registered codecs only when implemented |
++| Read workload | Whole-pack traversal; first/middle/last lookup; seeded random lookups; repeated access to an opened pack |
++| Reader policy | Full validation; eligible structural/trusted reception, reported separately |
++| Pack size | Empty/singleton, small batches, tens of thousands, and large batches up to configured limits |
++
++Use identical logical records, ordering, headers, grouping, and codec effort for
++each valid comparison. Fixed-width comparisons use records that actually qualify;
++they must not introduce dummy values or drop fields to make a fixture fit.
++Inapplicable narrow-index cases are reported as inapplicable. Address-width
++boundary fixtures exercise offsets around 65,535/65,536 and
++16,777,215/16,777,216. Additional checks cover empty packs, arithmetic limits,
++malformed directories, absent/null/empty values, and exact integer preservation.
++
++Measure and report:
++
++- Definition preparation and schema compilation separately from record operations.
++- Fill, pack, and optional directory generation/validation time, including
++  allocations and allocated bytes per record or pack.
++- Header, common-data, directory, member, and total byte sizes before and after
++  compression. Indexed directory overhead starts at `recordCount * addressBytes`;
++  fixed width has constant width/count metadata and no member directory.
++- Decompression, opening/validation, traversal, index construction for an
++  unindexed opened pack if offered, lookup, and standalone-record reconstruction.
++- Throughput, repeated-sample latency distributions, retained memory, and peak
++  memory. Include data copies and temporary buffers in the cost.
++- Cold opening versus repeated lookups on one already opened pack. Separate
++  in-memory codec measurements from storage I/O, FFI/WASM crossings, and rendering.
++- Optional sidecar versus embedded directories, and short application ordinals
++  versus full byte addresses, in integration reports.
++
++Use optimized builds, warm-up where applicable, repeated runs, and retained raw
++results. Report measurement variability and any runtime/OS cache limitations.
++Exercise Rust, Go, and JavaScript/WASM for representation agreement and identify
++which binding each timing measures. Existing baseline commands include:
++
++```sh
++cargo bench --locked --manifest-path rust/Cargo.toml --bench codecs
++cargo bench --locked --manifest-path rust/Cargo.toml --bench shared_refs
++```
++
++The proposed PAC strategy benchmark harness is additional work; no new benchmark
++command is presented as runnable yet. Baseline capture must precede refactoring,
++and each implementation step should include targeted correctness checks and a
++comparable cost report. Avoid using historical payload-size examples below as
++performance evidence for a new addressing or compression strategy.
++
++### Proposed implementation sequence
++
++1. Review this API contract and specify the binary header, layout descriptors,
++   named-header encoding, directory placement, and codec identifiers.
++2. Capture a reproducible baseline of current behavior and build the comparison
++   fixtures without changing their record semantics.
++3. Implement the generic fill/pack/open/extract contract and optional addressing
++   modes in the existing Rust and Go codec layers. Expose matching FFI and
++   JavaScript/WASM APIs; reuse existing encoders, validators, and scanners.
++4. Check cross-binding round trips, header preservation, common-field restoration,
++   fixed-width verification, directory bounds, and explicit codec policies.
++5. Evaluate each strategy against the baseline before applications adopt it.
++   Applications then choose their own grouping, record construction, header
++   values, and indexing/compression policy.
++
++Named PAC headers, embedded indexes, and fixed-width PACs are all proposals in this
++section. Current numeric extensions, external directory helpers, and current
++compression behavior are described below as existing behavior, not as the agreed
++implementation of this proposed API.
++
++## Current Libraries
+ 
+ | Library | Location | Available APIs |
+ | --- | --- | --- |
+@@ -16,29 +398,104 @@ and read packed records without expanding every field into an object.
+ | Go Codec | `go/codec/` | PIL encode/decode and streaming writes, PAC factoring/writing/reading, compression and column transforms |
+ 
+ Definitions describe ordered fields, binary types, and string dictionaries.
+-Their CBOR structure is described by [CDDL](https://github.com/AuthenticityLabs/pill-packer/blob/main/schemas/definition.cddl); runtime
++They are stored as binary PIL files with the `.rx` extension, including their
++structured CDDL schema annotations. The fixed bootstrap is published as
++[`schemas/pil.rx`](schemas/pil.rx). Their structure is described by [CDDL](https://github.com/AuthenticityLabs/pill-packer/blob/main/schemas/definition.cddl); runtime
+ validators enforce semantic rules. The document API preserves unknown annotations.
+ Applications own routing, storage, delivery, and consistency policies.
+ 
+ This is an early implementation. Packages are not yet published to registries.
+-The Go codec is a portable Go implementation; it is not a Rust FFI wrapper.
++The Go scalar codec is implemented in Go; its compiled nested-schema support
++uses the shared Rust runtime through the native bindings.
+ Rust, Go and JavaScript APIs do not yet have full feature parity. Cross-language
+-fixtures verify their shared wire formats. Arbitrary CDDL-to-PIL compilation is
+-not supported.
++fixtures verify their shared wire formats. The optional Rust `schema` feature
++compiles a supported CDDL subset into PIL layouts and a JSON-editable schema.
++Unsupported constructs fail explicitly; full CDDL support is not claimed.
+ 
+ Pill Packer owns PIL field layouts, adaptive integers, arrays, PAC common-value
+ factoring, PAC headers, gzip compression/decompression, numeric base residuals,
+-and byte shuffling. Applications supply schemas and compression settings. Sealing
+-schedules, storage placement, aggregation semantics, retention, replication and
+-cache eviction remain application responsibilities. Numeric column transforms
+-are reusable codec primitives; using them does not make an application-specific
+-container a PIL PAC.
++and byte shuffling. Applications supply schemas and choose whether and when to
++compress. Version zero defines gzip as its only PAC compression codec; callers
++can select gzip effort through the compression API. Adding other PAC codecs
++requires a versioned discriminator and implementations in each binding. Sealing
++schedules, storage placement, aggregation, retention, replication, and eviction
++remain application responsibilities. Numeric column transforms are reusable
++codec primitives, while their use in an enclosing container is defined by that
++container's own format.
+ 
+ The Go codec import is `github.com/AuthenticityLabs/pill-packer/go/codec`.
+ JavaScript helpers are exported as `pill-packer/layout`, `pill-packer/pac`,
+-`pill-packer/compression`, `pill-packer/gzip`, `pill-packer/columns` and
++`pill-packer/gzip`, `pill-packer/columns`, `pill-packer/object`, and
+ `pill-packer/cbor`. The package root exposes the Rust/WASM reader.
+ 
++## Command-Line Reader
++
++Build and install the `rx` executable:
++
++```sh
++cargo install --path rust --locked --features cli --bin rx
++rx read definition.rx records.pil
++rx read definition.rx records.pac
++rx read definition.rx records.pac.gz --pretty
++rx read definition.rx
++rx definition.rx --pretty
++rx write definition.json definition.rx
++rx bootstrap pil.rx
++```
++
++`.rx` names a definition document; `.pil` names a record stream and `.pac`
++names a record pack. Every `.rx` document, including the structured CDDL schema
++inside its `cddl` annotation, is encoded entirely in PIL. JSON and `.cddl` files
++are editable authoring inputs. There is no JSON or CDDL text envelope in `.rx`.
++
++`schemas/pil.rx` describes the fixed seven-field `pil/value` layout used to encode
++all definition documents, including itself. Readers have this one small layout
++built in, so no network lookup or infinite chain of definitions is required.
++`rx bootstrap pil.rx` reproduces the published bytes; `rx read pil.rx --pretty`
++inspects it, and `rx read pil.rx pil.rx` reads its own PIL encoding through the
++layout it describes.
++
++Records print as JSONL by default. `--pretty` prints each record as indented
++JSON; omit the data path to print the Definition itself. Absent fields are
++omitted and explicit nulls remain null. Bytes are JSON octet arrays, UUIDs are
++dashed hexadecimal strings, timestamps retain their declared integer units,
++and integer output preserves the full signed/unsigned 64-bit range. PAC common
++fields are merged before rendering. The reader validates definition digests,
++required extensions, field values, framing, compression bounds and checksums.
++It accepts adjacent PACs, Go-compressed PACs, and external gzip streams. `-`
++reads records from stdin or writes binary definition bytes to stdout.
++
++`rx write` accepts a JSON layout Definition (including application annotations)
++or the JSON-editable CDDL schema model. It writes binary PIL; `--pretty` applies
++to JSON read output. To compile CDDL source, name its root rule explicitly:
++
++```sh
++rx write purchase.cddl purchase.rx --root purchase
++rx read purchase.rx --pretty > purchase.json
++# Edit the schema JSON, then compile it back to PIL:
++rx write purchase.json purchase.rx
++```
++
++The CDDL compiler supports named nonrecursive rules, closed text-keyed records,
++required/optional members, homogeneous arrays with occurrence bounds, choices,
++literals, uint, bool, float64, text, bytes, null, bounded 64-bit integer ranges,
++and supported `.size` constraints. It rejects recursive rules, dynamic maps,
++generics, group rules, tuple arrays, unbounded `int`/`nint`, and unsupported
++controls. JSON byte values are octet arrays. The PIL document contains an ordinary
++root Definition plus a `cddl` annotation with the editable schema. Rust, Go, and
++WASM load the same compiled schema runtime and validate nested layouts. The
++layouts are derived together; full schema checks run during encoding and
++ordinary decoding, while `decode_trusted_json` performs structural decoding
++only.
++
++A schema's `fixed_strings` map binds qualified field paths (for example,
++`purchase.customer.name`) to byte capacities. Bindings must cover a bounded
++CDDL text size. `STRING(n)` uses a 1/2/4-byte little-endian length prefix for
++capacities up to 255/65,535/U32 maximum, followed by exactly `n` UTF-8 bytes
++with zero padding. Shorter strings, trailing spaces and embedded NULs survive;
++overflow, malformed UTF-8 and nonzero padding are errors. This storage choice
++does not change the CDDL size constraint.
++
+ ## Validation and Trusted Reception
+ 
+ Full validation remains the default: Rust `FrameIndex::scan` and `PacIndex::scan`,
+@@ -59,45 +516,18 @@ shape and monotonic in-bounds offsets. The application verifies both the PAC and
+ the directory before using this path, binds them to the same definition and block,
+ and owns storage publication ordering. These APIs do not change the wire format.
+ 
+-## Fixed-Width PAC Design
+-
+-Planned, not yet a supported packing mode. A Definition may request
+-`"pac": {"layout": "fixed"}`. This is a packing contract, separate from scalar
+-field types. The byte stride belongs to each PAC because common-value factoring
+-can change member widths. Variable-length PACs remain the default.
+-
+-An optional `FixedStride` PAC header extension will carry a nonzero U32
+-little-endian `member_stride`. The extension appears in the decoded semantic
+-header, inside the compressed body when compression is used. Its type identifier
+-will be assigned with the implementation. No extra per-record header is needed.
+-
+-- Address member `i` as `members_start + i × member_stride`; require
+-  `member_count × member_stride == decoded_size − members_start`.
+-- Empty PACs have no addressable members; omit stride metadata unless a stride
+-  is supplied by the packing contract.
+-- This guarantees record offsets, not equal field offsets within every record.
+-  Fixed field positions require a stronger presence/layout contract.
+-- Every member remains a valid PIL frame. No implicit padding, changed field
+-  states, or new meaning for absent/null values.
+-- Verify equal encoded lengths after common-value factoring. If factoring breaks
+-  uniformity, omit factoring; if the original frames still differ, reject a
+-  fixed-width request. Never silently change it to variable-width packing.
+-- Fixed-width scalar types alone cannot guarantee fixed-width records: optional
+-  fields and adaptive integers can change encoded lengths. Variable fields can
+-  participate only when their encoded frame lengths satisfy the same contract.
+-- The Definition requests the contract; the PAC records the verified stride.
+-  Header validation and member validation must agree before exposing random access.
+-- Direct addressing is into the decoded PAC. Whole-PAC compression still requires
+-  decompression; compressed-byte seeking requires a separate block design.
+-
+-Readers without the optional optimization can scan the ordinary PIL frames.
+-Implementation must cover Go packing, Rust/WASM validation and random access,
+-JavaScript header parsing, malformed strides, common prefixes and compression.
+-
+-**TODO:** Explore a tool that accepts CDDL with PIL layout conventions or
+-annotations and generates a definition-specific WASM encoder/decoder. Preserve
+-wire compatibility and validation, and benchmark the potential performance gains
+-against the generalized codec.
++## Current Variable-Length Records
++
++PIL records and PAC members remain variable length. A Definition specifies field
++types, ordering, dictionaries and schema constraints; it does not imply that
++all fields occur in every record. ABSENT and NULL retain their distinct meanings,
++and absent fields do not receive fabricated values or reserved payload slots.
++Fixed-width scalar types and fixed-capacity strings remain supported when
++present, without imposing a fixed record stride.
++
++CDDL schema validation uses the shared runtime across language bindings.
++Application-specific validation remains the responsibility of the consuming
++system and is not duplicated in the CDDL compiler.
+ 
+ ## Nested-Object Experiment
+ 
+@@ -105,14 +535,15 @@ The Rust [nested-object example](rust/examples/nested_objects.rs) composes a
+ purchase, customer, address, and variable-length item list from existing PIL
+ frames. Their logical types are declared together in
+ [nested_objects.cddl](rust/examples/nested_objects.cddl), using named CDDL rules.
+-The layout bindings are handwritten for this experiment; this is not an
+-arbitrary CDDL importer or a supported public `OBJECT` wire type.
++This original experiment uses handwritten layout bindings. The `schema` feature
++now compiles the supported CDDL subset; `OBJECT` separately carries open values
++using the built-in native PIL value layout.
+ 
+ Nested objects occupy `BYTES` fields; object lists use `ARRAY<BYTES>`, with each
+ body containing another PIL frame. The containing layout supplies the child
+-layout, without a per-child definition identifier. Event payloads contain no
+-CBOR. The four existing definition documents still use CBOR. A production
+-implementation needs portable child-layout bindings and generic recursive
++layout, without a per-child definition identifier. Record payloads contain no
++CBOR. Definitions now also use native PIL. The CDDL compiler supplies portable
++child-layout bindings and generic recursive
+ validation before other codecs can interpret these byte fields as objects.
+ 
+ ```sh
+@@ -135,7 +566,8 @@ A deterministic 10,000-purchase sample (one to five items per purchase) produced
+ | Compact JSONL | 2,806,680 | 190,934 |
+ 
+ These are identical logical records, with no indexes, PAC factoring, or shared
+-compression dictionary. The four PIL layout documents add 450 bytes once; the
++compression dictionary. The original benchmark used 450 bytes for four layout
++documents; that older Definition encoding is not the current PIL wire size. The
+ CDDL source is 251 bytes. PIL reduced raw size substantially, but its compressed
+ advantage over JSONL was only about 6.2% on this sample. This is a codec experiment,
+ not a production storage or throughput claim. The example also prints a local
+@@ -161,12 +593,10 @@ npm --prefix npm install
+ npm --prefix npm run build
+ npm --prefix npm test
+ 
+-# Portable Go codec (no C toolchain required)
+-go -C go test ./codec
+-
+-# Native library and Go wrapper
++# Native library, Go codec, and Go wrapper
+ cargo build --locked --release --manifest-path rust/ffi/Cargo.toml
+ cargo test --locked --manifest-path rust/ffi/Cargo.toml
++go -C go test ./codec
+ go -C go test -race ./...
+ ```
+ 
+@@ -179,12 +609,14 @@ Close Go definition handles explicitly. Calls on one handle are serialized;
+ independent handles can run concurrently. WASM instances are worker-local.
+ Definitions must be supplied before their records can be decoded.
+ 
+-## Format Reference
++## Current Format Reference
+ 
+ **Project:** Version zero; not a frozen interoperability standard.
+ 
+-This is the primary PIL reference. It describes the implemented format unless
+-explicitly marked **proposed**. Trie-Trunk owns its replication and storage binding.
++This section describes the currently implemented format. The proposed pack
++conventions above add named headers and optional addressing modes that are not
++implemented by this layout yet. Applications own their storage and delivery
++bindings.
+ 
+ PIL exchanges structured state under a shared, immutable Definition. Field
+ positions replace names, dictionaries replace repeated strings, and cumulative
+@@ -194,22 +626,21 @@ prescribe storage, routing, subscriptions, or query execution.
+ 
+ ### 1. Definition
+ 
+-The wire Definition is CBOR. [definition.cddl](schemas/definition.cddl) describes its
++The wire Definition is PIL, using the built-in `pil/value` bootstrap layout. [definition.cddl](schemas/definition.cddl) describes its
+ portable structure and extensible annotations; codec validation additionally
+ enforces semantic rules. This JSON illustration uses the same data model:
+ 
+ ```json
+ {
+   "pil": 0,
+-  "definition": "payment/transactions",
++  "definition": "example/records",
+   "version": 0,
+   "fields": [
+-    { "name": "event_id", "type": "UUID" },
+     { "name": "id", "type": "UUID" },
+     { "name": "revision_id", "type": "U64" },
+     { "name": "state", "type": "STRING", "values": ["pending", "authorized", "canceled"] },
+     { "name": "description", "type": "STRING" },
+-    { "name": "@fields", "type": "CBOR" }
++    { "name": "@fields", "type": "OBJECT" }
+   ]
+ }
+ ```
+@@ -231,12 +662,14 @@ A frame contains no Definition identifier: its enclosing binding must supply the
+ exact Definition before decoding. A structurally compatible wrong Definition
+ cannot be detected from a standalone frame alone.
+ 
+-Applications may attach resource/transport/profile annotations. Generic PIL does
+-not require event IDs, object IDs, revisions, a trie, or a resource binding.
++Applications may attach resource/transport/profile annotations. Generic PIL
++does not prescribe application identities, revisions, tree structures, or
++resource bindings.
+ Bindings using a digest retain the exact original Definition document bytes;
+ reserializing a semantic equivalent need not preserve its digest. JSON imports
+-produce CBOR once at registration; they do not yet canonicalize differently
+-ordered but equivalent JSON sources to one digest.
++produce PIL once at registration. Bootstrap map entries are sorted by their
++encoded keys; ordered field arrays and dictionary arrays retain their order.
++Forwarding preserves the exact accepted document bytes and annotations.
+ 
+ ### 2. Types and Byte Conventions
+ 
+@@ -254,13 +687,14 @@ the generic UUID primitive does not require version 7.
+ | `TIMESTAMP_MS`, `TIMESTAMP_US`, `TIMESTAMP_NS` | Signed 8-byte Unix time; Definition supplies the unit |
+ | `REF16` | Opaque unsigned 2-byte shared-value reference, 0–65,535 |
+ | `STRING` | UTF-8 bytes, or a DIRECT dictionary ID |
++| `STRING(n)` | Fixed UTF-8 byte capacity, explicit length, then zero padding |
++| `OBJECT` | One native PIL bootstrap value, including nested objects and arrays |
+ | `BYTES` | Arbitrary bytes |
+-| `CBOR` | Exactly one complete CBOR data item |
+ | `ARRAY<T>` | Homogeneous scalar elements; layout in §6 |
+ 
+ There is no bare `TIMESTAMP` type or implicit unit inference. REF16's target and
+ scope must be supplied by the binding; PIL reserves no REF16 value and does not
+-assume that the target is a trie leaf. A dictionary ID instead refers to its own
++interpret the target. A dictionary ID instead refers to its own
+ field's Definition dictionary and uses the smallest width covering its largest ID:
+ 1–256 entries → U8; 257–65,536 → U16; up to 2³² → U32; larger → U64.
+ No dictionary ID is an extension sentinel. Out-of-range IDs are invalid.
+@@ -286,11 +720,12 @@ bits, first field in bits 7–6, then 5–4, 3–2, 1–0. Unused low bits are z
+ | `11` | OFFSET | One cumulative End Offset and a value in the variable section |
+ 
+ ABSENT and NULL are distinct. Applications decide how absence affects a complete
+-object or a patch; PIL does not turn NULL into deletion. Ordinary fields currently
+-permit both states; `@fields` forbids NULL. Required/nullable annotations are not
+-implemented (§10).
++object or a patch; PIL does not turn NULL into deletion. Ordinary scalar layouts
++permit both states; `@fields` forbids NULL. A compiled CDDL schema can further
++constrain presence and nullability. Arbitrary annotations do not add validation
++rules (§10).
+ 
+-Fixed-width types accept DIRECT, not OFFSET. Unmapped STRING, BYTES, CBOR, and
++Fixed-width types accept DIRECT, not OFFSET. Unmapped STRING, BYTES, OBJECT, and
+ arrays accept OFFSET, not DIRECT. A mapped STRING accepts either an in-range
+ DIRECT ID or a literal OFFSET string, including a string present in its dictionary.
+ The encoder does not automatically replace literal strings with dictionary IDs.
+@@ -371,25 +806,35 @@ Fixed-width T:   [extended count][value₁]...[valueₙ]
+ Variable T:     [extended count][extended end₁]...[extended endₙ][values...]
+ ```
+ 
+-For STRING/BYTES/CBOR elements, ends are cumulative byte offsets relative to the
++For STRING/BYTES/OBJECT elements, ends are cumulative byte offsets relative to the
+ **element-value section**, not the array start. The final end must equal that
+ section's length; fixed-width size must equal `encoded_count_size + count × width`.
+ 
+ Example STRING array: `[3][5][10][19][JasonSmithAlexander]` (conceptual integers).
+ An empty array is the two-byte count zero alone, distinct from ABSENT and NULL.
+-Elements cannot be absent or null; `ARRAY<CBOR>` rejects a top-level null element
+-but permits nulls inside complex items. Native arrays are not nested; CBOR supplies
+-complex/nested structures. There is no ARRAY<PIL> type: use a sequence or PAC for
++Elements cannot be absent or null; `ARRAY<OBJECT>` rejects a top-level native null element
++but permits nulls inside complex items. Use `OBJECT` for native nested structures,
++or CDDL-compiled nested frames in `BYTES`/`ARRAY<BYTES>`. There is no ARRAY<PIL> type: use a sequence or PAC for
+ Definition-bound PIL records. Native arrays do not require PAC.
+ 
+-### 7. CBOR and Dynamic Fields
++### 7. Native Objects and Dynamic Fields
+ 
+-Each CBOR range contains exactly one complete item, without trailing bytes.
+-Ordinary CBOR structure remains opaque to PIL beyond validation.
++`OBJECT` uses the same built-in `pil/value` layout as Definition documents.
++The ordered fields are `kind:U8`, `unsigned:U64`, `negative:I64`, `float:F64`,
++`text:STRING`, `bytes:BYTES`, and `children:ARRAY<BYTES>`. Kinds 0–9 represent
++null, false, true, unsigned integer, negative integer, float, text, bytes,
++array, and map. Only the payload selected by `kind` is present. Each child is
++another bootstrap value; maps alternate text/integer keys and values, reject
++duplicate keys, and sort encoded keys when writing. Codecs bound values to
++16 MiB and nesting to 64 levels. This layout needs no external Definition.
++
++CBOR is an external ingestion format only. `CBOR` and `ARRAY<CBOR>` are rejected
++as PIL field types; ingress adapters decode them to native PIL objects before
++storage or runtime processing.
+ 
+ Field names beginning with `@` are reserved. The only implemented reserved field
+-is explicitly declared `@fields: CBOR`; omitting it disallows dynamic root fields.
+-When present it must be an OFFSET CBOR map with unique text keys, none beginning
++is explicitly declared `@fields: OBJECT`; omitting it disallows dynamic root fields.
++When present it must be an OFFSET native PIL map with unique text keys, none beginning
+ with `@` or colliding with any defined field. Its entries represent additional
+ root attributes; `@fields` is not itself an application property.
+ 
+@@ -399,7 +844,7 @@ NULL is invalid. The codec validates the representation; applying patches is an
+ application responsibility. Promoting a dynamic key into a defined field requires
+ a new Definition and removal of that key from `@fields` for frames using it.
+ 
+-### 8. PAC — Prefixed Array Container
++### 8. PAC — Packed Array Container
+ 
+ PAC optionally groups ordered PIL records under one exact Definition. A common
+ frame can factor shared values at **arbitrary field positions**; positions need
+@@ -445,10 +890,10 @@ decoded extent and member lengths.
+ A packed member is structurally a PIL frame but needs its common frame to recover
+ the original logical object. Readers can borrow common/member field spans without
+ materializing maps or expanding repeated bytes. Standalone export must restore
+-inherited fields. A native storage projection may additionally need companion
+-index/trie data and must declare that requirement through its extension.
++inherited fields. A consumer may require companion indexes or metadata and must
++declare that requirement through its extension.
+ 
+-PAC is neither a pagination protocol nor proof of cache completeness. It does not
++PAC is not a pagination protocol or proof of delivery completeness. It does not
+ require compression or provide timestamp-base shortening.
+ 
+ #### Compressed Representation
+@@ -473,14 +918,14 @@ The library validates stored/decoded bounds, gzip CRC, absence of trailing data,
+ and agreement between wrapper length/count and the decoded header. Expansion
+ returns the original decoded PAC bytes exactly. The decoded header replaces the
+ wrapper; no wrapper fields are copied into or patched onto it. Borrowed PIL
+-scanners consume that decoded representation. The outer wrapper is not persisted
+-in uncompressed client storage.
++scanners consume that decoded representation. Applications choose whether to
++retain the compressed or uncompressed representation.
+ 
+ ### 9. Validation and Transport Boundaries
+ 
+ Reject invalid masks/padding, type-state combinations, dictionary IDs, integer
+ selectors, noncanonical lengths, decreasing/out-of-range offsets, invalid UTF-8,
+-malformed arrays/CBOR, extension collisions, PAC overrides, and inconsistent
++malformed arrays/objects, extension collisions, PAC overrides, and inconsistent
+ bindings/counts/lengths. Check arithmetic and resource limits before allocating
+ or reading. Distinguish truncated input that can receive more bytes from malformed
+ values within an already complete bounded frame.
+@@ -489,33 +934,28 @@ HTTP/JMS negotiation, storage addresses, and routing are application/transport
+ bindings. A transport must supply the exact definition before dependent data.
+ HTTP content compression applies to a transport representation; PAC compression
+ belongs to each container and is decoded by the library. Neither requires a
+-particular datastore, time partition, event identity, or subscription protocol.
++particular datastore, time partition, record identity, or subscription protocol.
+ Compression does not imply encryption.
+ 
+-### 10. Proposed, Not Implemented
+-
+-The core Definition currently has no `header`, `required`, `nullable`, or
+-application `property` annotation. These were discussed as follows:
+-
+-- **Message headers:** a contiguous leading group in the ordered Definition,
+-  covered by the ordinary state mask, with DIRECT bytes before the body.
+-  Only fixed-width representations; no variable pointers, arrays, or adaptive
+-  header integers. Mapped STRING headers would require dictionary-only encoding.
+-- **Header requirements:** optional headers could be ABSENT; `required` would
+-  require DIRECT even in partial messages. NULL/OFFSET would be invalid.
+-  Application properties would remain ordinary body fields.
+-- **Independent body compression:** keep the state mask and header values visible;
+-  encode the body codec and stored/decoded lengths before compressed body bytes.
+-  Body adaptive selectors, DIRECT values, offsets, and values would be inside.
+-  An outer transport could still compress everything.
+-- **Field validation:** nullable/required application contracts are not enforced
+-  by the current generic Definition; do not assume annotations change its layout.
+-- **Time-base packing:** shared epochs and shortened timestamps/UUIDv7 values
+-  remain deferred. Current PAC does not implement them.
+-
+-These are design directions, not accepted input features. Unknown annotations
+-must not be relied on for validation or wire-layout changes. Introducing any of
+-them requires coordinated codec/binding tests and performance measurements.
++### 10. Proposal Status
++
++The [proposed pack conventions](#pack-proposal)
++describe the API and optional addressing work under review. The current PAC
++format has numeric extensions, no embedded member-offset directory, and no
++verified fixed-width mode. The current Go compressor can return uncompressed
++bytes when gzip would increase the size; honoring a codec request with an
++explicit fallback policy is part of the proposal.
++
++Named PAC headers are container metadata supplied at packing time. They do not
++require leading header fields in each PIL Definition or a change to the PIL
++field-state mask. Generic Definition annotations have no implicit packing or
++validation effect. Supported CDDL schemas separately enforce their declared
++required members, nullability, and other implemented constraints.
++
++The old speculative per-record header/body-compression design is not part of
++this proposal. Any future format change requires coordinated codec/binding
++checks and measured costs. Existing readers must reject unsupported layout or
++codec identifiers rather than interpreting proposed bytes as the current format.
+ 
+ ### Public Rust APIs
+ 
+@@ -528,7 +968,7 @@ fields without materializing objects. `compression::inflate` is feature-gated.
+ Development schema checks can also validate consumer profiles:
+ 
+ ```sh
+-cargo run --locked --manifest-path rust/Cargo.toml --example check_definition -- schema.cddl definition.cbor
++cargo run --locked --manifest-path rust/Cargo.toml --example check_definition -- schema.cddl definition.rx
+ ```
+ 
+ This checks CDDL structure plus PIL layout semantics. It does not execute a
+@@ -537,3 +977,25 @@ consumer's additional semantic validators. The CDDL tool is a dev dependency.
+ ## License
+ 
+ [Apache-2.0](LICENSE).
++
++### Shared Nested Schema Runtime
++
++CDDL authoring compiles to binary PIL `.rx` documents containing their complete
++structured schema. Rust `DefinitionDocument`, the Go bindings and `go/codec`
++layouts, and the Rust WASM codec use the same interpreter for nested records,
++arrays, named types, choices, sparse members, and constraints. Registration
++rejects disagreement between the schema and its compiled root layout. Full
++frame and resolved PAC validation checks nested children; explicit structural
++APIs remain available for trusted, integrity-checked data.
++
++Go exposes `EncodeJSON` and `DecodeJSON`; WASM's `Codec` exposes `encodeJSON` and
++`decodeJSON`. Pass JSON text so 64-bit numbers never pass through a JavaScript
++floating-point object. Native `.rx` bytes and annotations remain digest-bound.
++Go's schema support links the Rust FFI library: build `rust/ffi` in release mode
++before testing or consuming the Go package. CDDL source parsing is a separate
++`schema` feature used by `rx`; runtime schema interpretation is enabled by
++default. Keep CDDL compiler tests in `rust/tests/schema.rs`, `.rx` CLI behavior
++in `rust/tests/rx.rs`, bootstrap Definition conformance in
++`rust/tests/documents.rs`, and binding parity in `go/codec/schema_test.go` plus
++`npm/test.mjs`. Application-specific profile tests belong with the application
++that owns those semantics.
+diff --git a/go/codec.go b/go/codec.go
+index b9db684..2ca3870 100644
+--- a/go/codec.go
++++ b/go/codec.go
+@@ -42,7 +42,7 @@ func from(bytes []byte, format C.uint8_t) (*Definition, error) {
+ 	runtime.SetFinalizer(d, (*Definition).Close)
+ 	return d, nil
+ }
+-func FromCBOR(bytes []byte) (*Definition, error) { return from(bytes, 0) }
++func FromPIL(bytes []byte) (*Definition, error)  { return from(bytes, 0) }
+ func FromJSON(bytes []byte) (*Definition, error) { return from(bytes, 1) }
+ 
+ func (d *Definition) failure(result C.int64_t) error {
+@@ -54,9 +54,9 @@ func (d *Definition) failure(result C.int64_t) error {
+ 	return errors.New(string(unsafe.Slice((*byte)(unsafe.Pointer(ptr)), int(size))))
+ }
+ 
+-// CBOR copies the complete document, preserving opaque annotations and exact
+-// original bytes for a CBOR import. Call once during registration/forwarding.
+-func (d *Definition) CBOR() ([]byte, error) {
++// PIL copies the complete document, preserving opaque annotations and exact
++// original bytes for a PIL import. Call once during registration/forwarding.
++func (d *Definition) PIL() ([]byte, error) {
+ 	d.mu.Lock()
+ 	defer d.mu.Unlock()
+ 	if d.ctx == nil {
+@@ -69,8 +69,8 @@ func (d *Definition) CBOR() ([]byte, error) {
+ 	return out, nil
+ }
+ 
+-// Scan returns the first frame's byte length. It validates frame structure;
+-// profile/business validation is separate. maximum bounds the decoded frame.
++// Scan returns the first frame's byte length. It validates frame structure and any registered nested CDDL schema;
++// application profile validation is separate. maximum bounds the decoded frame.
+ func (d *Definition) Scan(bytes []byte, maximum int) (int, error) {
+ 	d.mu.Lock()
+ 	defer d.mu.Unlock()
+@@ -98,3 +98,26 @@ func (d *Definition) Close() {
+ 	}
+ 	runtime.SetFinalizer(d, nil)
+ }
++
++// EncodeJSON validates a schema-defined object and encodes its nested PIL frames.
++func (d *Definition) EncodeJSON(bytes []byte) ([]byte, error) { return d.json(bytes, 0) }
++
++// DecodeJSON validates the complete record, including nested schema constraints.
++func (d *Definition) DecodeJSON(bytes []byte) ([]byte, error) { return d.json(bytes, 1) }
++func (d *Definition) json(bytes []byte, mode C.uint8_t) ([]byte, error) {
++	d.mu.Lock()
++	defer d.mu.Unlock()
++	if d.ctx == nil {
++		return nil, ErrClosed
++	}
++	result := C.pp_json(d.ctx, pointer(bytes), C.size_t(len(bytes)), mode)
++	runtime.KeepAlive(bytes)
++	if result < 0 {
++		return nil, d.failure(result)
++	}
++	var size C.size_t
++	ptr := C.pp_output(d.ctx, &size)
++	out := append([]byte(nil), unsafe.Slice((*byte)(unsafe.Pointer(ptr)), int(size))...)
++	runtime.KeepAlive(d)
++	return out, nil
++}
+diff --git a/go/codec/cbor_scan.go b/go/codec/cbor_scan.go
+index 6e7af34..3c5b27c 100644
+--- a/go/codec/cbor_scan.go
++++ b/go/codec/cbor_scan.go
+@@ -11,10 +11,10 @@ import (
+ 
+ // PositionalCBOR decodes a definite-length CBOR map with numeric field IDs
+ // directly into definition-bound scalar slots. It is an opt-in codec prototype,
+-// not a change to population storage. CBOR arrays, nested objects, tags, and
++// not a change to PIL record storage. CBOR arrays, nested objects, tags, and
+ // indefinite-length items are intentionally outside this scalar profile.
+ // Encoding details: https://www.rfc-editor.org/rfc/rfc8949.html#section-3.1
+-// Descriptors are compiled once, never inferred from a particular event.
++// Descriptors are compiled once, never inferred from a particular record.
+ // A reader may be shared; each concurrent caller must own its CBORFrame.
+ type PositionalCBOR struct{ fields []cborField }
+ type cborField struct {
+diff --git a/go/codec/compression.go b/go/codec/compression.go
+deleted file mode 100644
+index 83a44ec..0000000
+--- a/go/codec/compression.go
++++ /dev/null
+@@ -1,234 +0,0 @@
+-package codec
+-
+-// Per-event compression is a negotiated envelope, not a new PIL primitive.
+-// The reserved NULL event-identity mask cannot be a valid input event or a
+-// stripped population (whose event identity is ABSENT).
+-import (
+-	"bytes"
+-	"compress/gzip"
+-	"fmt"
+-	"io"
+-	"sync"
+-)
+-
+-const CompressionFeature = "event-gzip-v1"
+-const compressionHeader = 16 // PC, version, codec; identity/body/stored lengths (LE u32)
+-var gzipWriters = sync.Pool{New: func() any { w, _ := gzip.NewWriterLevel(io.Discard, 6); return w }}
+-var fastGzipWriters = sync.Pool{New: func() any { w, _ := gzip.NewWriterLevel(io.Discard, 1); return w }}
+-var gzipReaders sync.Pool
+-
+-func (l *Layout) compressedMarker(raw []byte) bool {
+-	m := (len(l.Widths) + 3) / 4
+-	if l.Identity.Primary < 0 || l.Identity.Primary >= len(l.Widths) || len(raw) < m {
+-		return false
+-	}
+-	for i, b := range raw[:m] {
+-		var want byte
+-		if i == l.Identity.Primary/4 {
+-			want = 1 << uint(6-2*(l.Identity.Primary%4))
+-		}
+-		if b != want {
+-			return false
+-		}
+-	}
+-	return true
+-}
+-func (l *Layout) IsCompressed(raw []byte) bool { return l.compressedMarker(raw) }
+-func (l *Layout) CompressionLengths(raw []byte) (head, identity, plain, stored int, err error) {
+-	head = (len(l.Widths)+3)/4 + compressionHeader
+-	if !l.compressedMarker(raw) || len(raw) < head {
+-		err = fmt.Errorf("short compressed event")
+-		return
+-	}
+-	h := raw[head-compressionHeader : head]
+-	if !bytes.Equal(h[:4], []byte{'P', 'C', 1, 1}) {
+-		err = fmt.Errorf("unsupported event compression")
+-		return
+-	}
+-	identity = int(order.Uint32(h[4:8]))
+-	plain = int(order.Uint32(h[8:12]))
+-	stored = int(order.Uint32(h[12:16]))
+-	if identity <= 0 || plain <= 0 || stored <= 0 || identity > MaxFrame || plain > MaxFrame-identity || stored > MaxFrame-head-identity {
+-		err = fmt.Errorf("invalid compressed event lengths")
+-	}
+-	return
+-}
+-func (l *Layout) IdentityField(i int) bool { return i == l.Identity.Primary || l.Identity.Fields[i] }
+-
+-// CompressEvent returns the original frame when the complete envelope would
+-// not save bytes. Only positional values are used; no semantic object map.
+-func (l *Layout) CompressEvent(raw []byte) ([]byte, error) { return l.CompressEventLevel(raw, 1) }
+-func (l *Layout) CompressEventLevel(raw []byte, level int) ([]byte, error) {
+-	if l.Identity.Primary < 0 {
+-		return nil, fmt.Errorf("compression requires an identity profile")
+-	}
+-	pool := &gzipWriters
+-	if level == 1 {
+-		pool = &fastGzipWriters
+-	} else if level != 6 {
+-		return nil, fmt.Errorf("event compression level must be 1 or 6")
+-	}
+-	if l.IsCompressed(raw) {
+-		return nil, fmt.Errorf("nested compression")
+-	}
+-	var f Frame
+-	if err := l.Scan(raw, &f); err != nil {
+-		return nil, err
+-	}
+-	if err := l.validateIdentity(f.Values[l.Identity.Primary]); err != nil {
+-		return nil, err
+-	}
+-	// Skip the compression attempt for tiny revisions: CPU savings take priority.
+-	if len(raw) < 80 {
+-		return raw, nil
+-	}
+-	ids := make([]Value, len(f.Values))
+-	for i := range ids {
+-		if l.IdentityField(i) {
+-			ids[i] = f.Values[i]
+-			f.Values[i] = Value{}
+-		}
+-	}
+-	identity, err := l.Encode(nil, ids)
+-	if err != nil {
+-		return nil, err
+-	}
+-	body, err := l.Encode(nil, f.Values)
+-	if err != nil {
+-		return nil, err
+-	}
+-	var buffer bytes.Buffer
+-	w := pool.Get().(*gzip.Writer)
+-	w.Reset(&buffer)
+-	_, err = w.Write(body)
+-	if err == nil {
+-		err = w.Close()
+-	}
+-	w.Reset(io.Discard)
+-	pool.Put(w)
+-	if err != nil {
+-		return nil, err
+-	}
+-	m := (len(l.Widths) + 3) / 4
+-	if m+compressionHeader+len(identity)+buffer.Len() >= len(raw) {
+-		return raw, nil
+-	}
+-	out := make([]byte, m, m+compressionHeader+len(identity)+buffer.Len())
+-	out[l.Identity.Primary/4] = 1 << uint(6-2*(l.Identity.Primary%4))
+-	out = append(out, 'P', 'C', 1, 1)
+-	out = order.AppendUint32(out, uint32(len(identity)))
+-	out = order.AppendUint32(out, uint32(len(body)))
+-	out = order.AppendUint32(out, uint32(buffer.Len()))
+-	out = append(out, identity...)
+-	out = append(out, buffer.Bytes()...)
+-	return out, nil
+-}
+-
+-func (l *Layout) scanCompressed(raw []byte, reuse *Frame) error {
+-	head, n, plain, stored, err := l.CompressionLengths(raw)
+-	if err != nil {
+-		return err
+-	}
+-	if len(raw) != head+n+stored {
+-		return fmt.Errorf("compressed event boundary mismatch")
+-	}
+-	if reuse.compressedIdentity == nil {
+-		reuse.compressedIdentity = &Frame{}
+-		reuse.compressedBody = &Frame{}
+-	}
+-	identity := reuse.compressedIdentity
+-	body := reuse.compressedBody
+-	if err = l.ScanPlain(raw[head:head+n], identity); err != nil {
+-		return err
+-	}
+-	if err = l.validateIdentity(identity.Values[l.Identity.Primary]); err != nil {
+-		return err
+-	}
+-	input := bytes.NewReader(raw[head+n:])
+-	var reader *gzip.Reader
+-	if pooled := gzipReaders.Get(); pooled != nil {
+-		reader = pooled.(*gzip.Reader)
+-		err = reader.Reset(input)
+-	} else {
+-		reader, err = gzip.NewReader(input)
+-	}
+-	if err != nil {
+-		return err
+-	}
+-	reader.Multistream(false)
+-	if cap(reuse.inflated) < plain+1 {
+-		reuse.inflated = make([]byte, plain+1)
+-	} else {
+-		reuse.inflated = reuse.inflated[:plain+1]
+-	}
+-	count, readErr := io.ReadFull(reader, reuse.inflated)
+-	reader.Close()
+-	remaining := input.Len()
+-	_ = reader.Reset(bytes.NewReader(nil)) // release the borrowed network/storage buffer
+-	gzipReaders.Put(reader)
+-	if readErr != io.ErrUnexpectedEOF || count != plain || remaining != 0 {
+-		return fmt.Errorf("invalid gzip event length or checksum: %v", readErr)
+-	}
+-	if err = l.ScanPlain(reuse.inflated[:plain], body); err != nil {
+-		return err
+-	}
+-	if cap(reuse.Values) < len(l.Widths) {
+-		reuse.Values = make([]Value, len(l.Widths))
+-	} else {
+-		reuse.Values = reuse.Values[:len(l.Widths)]
+-	}
+-	for i := range reuse.Values {
+-		if l.IdentityField(i) {
+-			if body.Values[i].State != Absent {
+-				return fmt.Errorf("compressed body duplicates identity")
+-			}
+-			reuse.Values[i] = identity.Values[i]
+-		} else {
+-			if identity.Values[i].State != Absent {
+-				return fmt.Errorf("non-identity in compression header")
+-			}
+-			reuse.Values[i] = body.Values[i]
+-		}
+-	}
+-	reuse.Bytes = raw
+-	return nil
+-}
+-
+-// ExpandEvent is the compatibility path for peers without envelope support.
+-// Negotiated peers receive the original envelope, without recompression.
+-func (l *Layout) ExpandEvent(raw []byte) ([]byte, error) {
+-	if !l.IsCompressed(raw) {
+-		return raw, nil
+-	}
+-	var frame Frame
+-	if err := l.Scan(raw, &frame); err != nil {
+-		return nil, err
+-	}
+-	return l.Encode(nil, frame.Values)
+-}
+-
+-// IdentityFrame reads only the clear prefix of an already validated event.
+-// Consumers can inspect identity fields without inflating the body.
+-func (l *Layout) IdentityFrame(raw []byte, reuse *Frame) error {
+-	if !l.IsCompressed(raw) {
+-		return l.Scan(raw, reuse)
+-	}
+-	head, n, _, stored, err := l.CompressionLengths(raw)
+-	if err != nil {
+-		return err
+-	}
+-	if len(raw) != head+n+stored {
+-		return fmt.Errorf("compressed identity boundary mismatch")
+-	}
+-	return l.ScanPlain(raw[head:head+n], reuse)
+-}
+-
+-func (l *Layout) validateIdentity(v Value) error {
+-	if l.Identity.Validate != nil {
+-		return l.Identity.Validate(v)
+-	}
+-	if v.State != Direct || len(v.Bytes) == 0 {
+-		return fmt.Errorf("missing compression identity")
+-	}
+-	return nil
+-}
+diff --git a/go/codec/definition.go b/go/codec/definition.go
+index 6ff574a..39fa70a 100644
+--- a/go/codec/definition.go
++++ b/go/codec/definition.go
+@@ -4,7 +4,9 @@ import (
+ 	"crypto/sha256"
+ 	"encoding/binary"
+ 	"fmt"
++	pillpacker "github.com/AuthenticityLabs/pill-packer/go"
+ 	"github.com/fxamacker/cbor/v2"
++	"strconv"
+ 	"strings"
+ 	"unicode/utf8"
+ )
+@@ -30,6 +32,7 @@ type IdentityProfile struct {
+ 	Validate func(Value) error
+ }
+ type Layout struct {
++	schema     *pillpacker.Definition
+ 	Definition Definition
+ 	Bytes      []byte
+ 	Digest     [32]byte
+@@ -42,7 +45,29 @@ var order = binary.LittleEndian
+ var encoder, _ = cbor.CoreDetEncOptions().EncMode()
+ var decoder, _ = (cbor.DecOptions{DupMapKey: cbor.DupMapKeyEnforcedAPF, IndefLength: cbor.IndefLengthForbidden, TagsMd: cbor.TagsForbidden, MaxNestedLevels: 32, MaxArrayElements: 65536, MaxMapPairs: 65536}).DecMode()
+ 
++func FixedStringCapacity(kind string) (int, bool) {
++	if !strings.HasPrefix(kind, "STRING(") || !strings.HasSuffix(kind, ")") {
++		return 0, false
++	}
++	n, err := strconv.ParseUint(kind[7:len(kind)-1], 10, 32)
++	return int(n), err == nil && n > 0
++}
++func StringLengthWidth(capacity int) int {
++	if capacity <= 255 {
++		return 1
++	}
++	if capacity <= 65535 {
++		return 2
++	}
++	return 4
++}
+ func Width(kind string) (int, error) {
++	if n, ok := FixedStringCapacity(kind); ok {
++		if n > MaxFrame-4 {
++			return 0, fmt.Errorf("STRING slot exceeds frame limit")
++		}
++		return n + StringLengthWidth(n), nil
++	}
+ 	switch kind {
+ 	case "BOOL", "I8", "U8":
+ 		return 1, nil
+@@ -54,7 +79,7 @@ func Width(kind string) (int, error) {
+ 		return 8, nil
+ 	case "UUID":
+ 		return 16, nil
+-	case "STRING", "BYTES", "CBOR":
++	case "STRING", "BYTES", "OBJECT":
+ 		return 0, nil
+ 	}
+ 	if strings.HasPrefix(kind, "ARRAY<") && strings.HasSuffix(kind, ">") {
+@@ -74,7 +99,7 @@ func Parse(raw []byte, identity IdentityProfile) (*Layout, error) {
+ 		return nil, fmt.Errorf("definition too large")
+ 	}
+ 	var d Definition
+-	if err := decoder.Unmarshal(raw, &d); err != nil {
++	if err := UnmarshalObject(raw, &d); err != nil {
+ 		return nil, err
+ 	}
+ 	adaptive := d.AdaptiveIntegers != "" && d.AdaptiveIntegers != "none"
+@@ -94,7 +119,7 @@ func Parse(raw []byte, identity IdentityProfile) (*Layout, error) {
+ 			return nil, fmt.Errorf("duplicate field %q", f.Name)
+ 		}
+ 		byName[f.Name] = i
+-		if strings.HasPrefix(f.Name, "@") && (f.Name != "@fields" || f.Type != "CBOR") {
++		if strings.HasPrefix(f.Name, "@") && (f.Name != "@fields" || f.Type != "OBJECT") {
+ 			return nil, fmt.Errorf("unsupported reserved field")
+ 		}
+ 		w, err := Width(f.Type)
+@@ -134,12 +159,22 @@ func Parse(raw []byte, identity IdentityProfile) (*Layout, error) {
+ 	if err != nil {
+ 		return nil, err
+ 	}
++	var annotations map[string]RawObject
++	if err := UnmarshalObject(raw, &annotations); err != nil {
++		return nil, err
++	}
++	if _, ok := annotations["cddl"]; ok {
++		l.schema, err = pillpacker.FromPIL(raw)
++		if err != nil {
++			return nil, err
++		}
++	}
+ 	l.Bytes = append([]byte(nil), raw...)
+ 	l.Digest = sha256.Sum256(raw)
+ 	return l, nil
+ }
+ func Compile(d Definition) (*Layout, error) {
+-	raw, err := encoder.Marshal(d)
++	raw, err := MarshalObject(d)
+ 	if err != nil {
+ 		return nil, err
+ 	}
+diff --git a/go/codec/frame.go b/go/codec/frame.go
+index 17ee36e..fefae32 100644
+--- a/go/codec/frame.go
++++ b/go/codec/frame.go
+@@ -3,7 +3,6 @@ package codec
+ import (
+ 	"encoding/binary"
+ 	"fmt"
+-	"github.com/fxamacker/cbor/v2"
+ 	"io"
+ 	"strings"
+ 	"unicode/utf8"
+@@ -23,21 +22,42 @@ type Value struct {
+ 	Bytes []byte `cbor:"1,keyasint"`
+ }
+ type Frame struct {
+-	Values                             []Value
+-	Bytes                              []byte
+-	Ends                               [][2]int
+-	compressedIdentity, compressedBody *Frame
+-	inflated                           []byte
++	Values []Value
++	Bytes  []byte
++	Ends   [][2]int
+ }
+ 
+ // Scan borrows scalar bytes from the frame. It never constructs an object map.
+ func (l *Layout) Scan(raw []byte, reuse *Frame) error {
+-	if l.IsCompressed(raw) {
+-		return l.scanCompressed(raw, reuse)
+-	}
+ 	return l.ScanPlain(raw, reuse)
+ }
++func (l *Layout) validateSchemaValues(values []Value) error {
++	if l.schema == nil {
++		return nil
++	}
++	raw, err := l.encodeFragment(nil, values)
++	if err != nil {
++		return err
++	}
++	_, err = l.schema.Scan(raw, MaxFrame)
++	return err
++}
+ func (l *Layout) ScanPlain(raw []byte, reuse *Frame) error {
++	if err := l.scanFragment(raw, reuse); err != nil {
++		return err
++	}
++	if l.schema != nil {
++		n, err := l.schema.Scan(raw, MaxFrame)
++		if err != nil {
++			return err
++		}
++		if n != len(raw) {
++			return fmt.Errorf("trailing frame bytes")
++		}
++	}
++	return nil
++}
++func (l *Layout) scanFragment(raw []byte, reuse *Frame) error {
+ 	if l.integers != nil {
+ 		return l.integers.scan(raw, reuse)
+ 	}
+@@ -76,6 +96,11 @@ func (l *Layout) ScanPlain(raw []byte, reuse *Frame) error {
+ 			}
+ 			v.Bytes = raw[at : at+w]
+ 			at += w
++			if capacity, ok := FixedStringCapacity(f.Type); ok {
++				if _, err := FixedString(v.Bytes, capacity); err != nil {
++					return err
++				}
++			}
+ 			if f.Type == "BOOL" && v.Bytes[0] > 1 {
+ 				return fmt.Errorf("invalid bool")
+ 			}
+@@ -179,6 +204,14 @@ func ValidateArray(kind string, b []byte) error {
+ 		if count > uint64((len(b)-at)/w) || uint64(len(b)-at) != count*uint64(w) {
+ 			return fmt.Errorf("array size mismatch")
+ 		}
++		if capacity, ok := FixedStringCapacity(kind); ok {
++			start := len(b) - int(count)*w
++			for at := start; at < len(b); at += w {
++				if _, err := FixedString(b[at:at+w], capacity); err != nil {
++					return err
++				}
++			}
++		}
+ 		if kind == "BOOL" {
+ 			for _, v := range b[at:] {
+ 				if v > 1 {
+@@ -215,10 +248,15 @@ func ValidateArray(kind string, b []byte) error {
+ 			if !utf8.Valid(v) {
+ 				return fmt.Errorf("invalid array UTF-8")
+ 			}
+-		case "CBOR":
+-			if err := cbor.Valid(v); err != nil {
++		case "OBJECT":
++			node, err := parseObject(v, 0)
++			if err != nil {
+ 				return err
+ 			}
++			if node.kind == 0 {
++				return fmt.Errorf("null array element")
++			}
++
+ 		}
+ 		prev = end
+ 	}
+@@ -227,6 +265,18 @@ func ValidateArray(kind string, b []byte) error {
+ 
+ // Encode preserves borrowed, already encoded primitive values and field states.
+ func (l *Layout) Encode(dst []byte, values []Value) ([]byte, error) {
++	raw, err := l.encodeFragment(dst, values)
++	if err != nil {
++		return nil, err
++	}
++	if l.schema != nil {
++		if _, err = l.schema.Scan(raw, MaxFrame); err != nil {
++			return nil, err
++		}
++	}
++	return raw, nil
++}
++func (l *Layout) encodeFragment(dst []byte, values []Value) ([]byte, error) {
+ 	if l.integers != nil {
+ 		return l.integers.encode(dst, values)
+ 	}
+@@ -276,14 +326,11 @@ func Text(s string) Value { return Value{Offset, []byte(s)} }
+ // ReadFrame discovers the boundary from the definition and final cumulative
+ // offset, using PIL's normal layout rather than an extra per-frame length tag.
+ func (l *Layout) ReadFrame(input io.Reader, dst []byte) ([]byte, error) {
+-	return l.ReadFrameEnvelope(input, dst, true)
+-}
+-func (l *Layout) ReadFrameEnvelope(input io.Reader, dst []byte, envelope bool) ([]byte, error) {
+-	return l.ReadFrameBuffer(input, dst, envelope, nil)
++	return l.ReadFrameBuffer(input, dst, nil)
+ }
+ 
+ // Native ingress supplies a resizer so no frame payload is allocated by Go.
+-func (l *Layout) ReadFrameBuffer(input io.Reader, dst []byte, envelope bool, resize func(int) ([]byte, error)) ([]byte, error) {
++func (l *Layout) ReadFrameBuffer(input io.Reader, dst []byte, resize func(int) ([]byte, error)) ([]byte, error) {
+ 	mask := (len(l.Widths) + 3) / 4
+ 	var e error
+ 	if resize != nil {
+@@ -318,19 +365,6 @@ func (l *Layout) ReadFrameBuffer(input io.Reader, dst []byte, envelope bool, res
+ 		_, err := io.ReadFull(input, dst[at:])
+ 		return err
+ 	}
+-	if envelope && l.compressedMarker(dst) {
+-		if e = appendN(compressionHeader); e != nil {
+-			return nil, e
+-		}
+-		_, identity, _, stored, err := l.CompressionLengths(dst)
+-		if err != nil {
+-			return nil, err
+-		}
+-		if e = appendN(identity + stored); e != nil {
+-			return nil, e
+-		}
+-		return dst, nil
+-	}
+ 	var plane []byte
+ 	bit := 0
+ 	if l.integers != nil {
+@@ -406,21 +440,24 @@ func (l *Layout) ValidateOffset(i int, raw []byte) error {
+ 		if !utf8.Valid(raw) {
+ 			return fmt.Errorf("invalid UTF-8")
+ 		}
+-	case "CBOR":
+-		if err := cbor.Valid(raw); err != nil {
++	case "OBJECT":
++		node, err := parseObject(raw, 0)
++		if err != nil {
+ 			return err
+ 		}
+ 		if f.Name == "@fields" {
+-			if len(raw) == 0 || raw[0]>>5 != 5 {
+-				return fmt.Errorf("@fields must be a map")
++			if node.kind != 9 {
++				return fmt.Errorf("@fields must be an object")
+ 			}
+-			var extra map[string]cbor.RawMessage
+-			if err := decoder.Unmarshal(raw, &extra); err != nil {
+-				return err
+-			}
+-			for _, field := range l.Definition.Fields {
+-				if _, ok := extra[field.Name]; ok {
+-					return fmt.Errorf("@fields shadows %s", field.Name)
++			for j := 0; j < len(node.children); j += 2 {
++				key, ok := node.children[j].value.(string)
++				if !ok || strings.HasPrefix(key, "@") {
++					return fmt.Errorf("invalid @fields key")
++				}
++				for _, field := range l.Definition.Fields {
++					if field.Name == key {
++						return fmt.Errorf("@fields shadows %s", key)
++					}
+ 				}
+ 			}
+ 		}
+@@ -451,6 +488,11 @@ func (l *Layout) ValidateValues(values []Value) error {
+ 			if l.Widths[i] == 0 || len(v.Bytes) != l.Widths[i] {
+ 				return fmt.Errorf("direct Width mismatch")
+ 			}
++			if capacity, ok := FixedStringCapacity(f.Type); ok {
++				if _, err := FixedString(v.Bytes, capacity); err != nil {
++					return err
++				}
++			}
+ 			if f.Type == "BOOL" && v.Bytes[0] > 1 {
+ 				return fmt.Errorf("invalid bool")
+ 			}
+diff --git a/go/codec/integers.go b/go/codec/integers.go
+index 7cdf2fd..120d296 100644
+--- a/go/codec/integers.go
++++ b/go/codec/integers.go
+@@ -249,10 +249,10 @@ func (l *Layout) ValidDirectWidth(i int, b []byte) bool {
+ 	return w == l.Widths[i]
+ }
+ 
+-// Identity postings/state keys span definition minors. Their representation must
+-// not change when a later definition enables shortening. Only identity paths
+-// normalize; ordinary scans/assembly continue to borrow encoded scalar spans.
+-func (l *Layout) IdentityValue(i int, v Value) Value {
++// NormalizeIntegerWidth expands an adaptively shortened direct integer to its
++// declared scalar width. Callers can use this when a stable-width value is
++// needed outside the encoded frame; ordinary scans continue to borrow its span.
++func (l *Layout) NormalizeIntegerWidth(i int, v Value) Value {
+ 	if i < 0 || l.integers == nil || !l.integers.fields[i].eligible || v.State != Direct || len(v.Bytes) == 0 || len(v.Bytes) >= l.Widths[i] {
+ 		return v
+ 	}
+@@ -338,6 +338,11 @@ func (a *integerLayout) scan(raw []byte, reuse *Frame) error {
+ 			if f.eligible && w > 1 && 1<<a.code(i, v.Bytes) != w {
+ 				return fmt.Errorf("noncanonical integer Width")
+ 			}
++			if capacity, ok := FixedStringCapacity(a.layout.Definition.Fields[i].Type); ok {
++				if _, err := FixedString(v.Bytes, capacity); err != nil {
++					return err
++				}
++			}
+ 			if f.boolean && v.Bytes[0] > 1 {
+ 				return fmt.Errorf("invalid bool")
+ 			}
+diff --git a/go/codec/pac.go b/go/codec/pac.go
+index 5564f3f..2f3b02b 100644
+--- a/go/codec/pac.go
++++ b/go/codec/pac.go
+@@ -32,11 +32,11 @@ type PAC struct {
+ 	Bytes      []byte
+ }
+ 
+-// TODO: Add the Definition-requested fixed-width/verified-stride mode described
+-// in README.md. Do not infer fixed-width records from scalar types alone.
++// Members remain variable length: field types do not require every field to be
++// present. Preserve ABSENT/NULL states without fabricated payload slots.
+ 
+-// PackPAC factors only equal, present positional values. No semantic map, trie
+-// expansion, reordered records, or changed ABSENT/NULL semantics.
++// PackPAC factors only equal, present positional values. It does not construct
++// semantic maps, reorder records, or change ABSENT/NULL semantics.
+ func PackPAC(l *Layout, frames [][]byte, extensions []PACExtension, prefix bool) (*PAC, error) {
+ 	p, err := FactorPAC(l, frames, extensions, prefix)
+ 	if err != nil {
+@@ -90,7 +90,7 @@ func FactorPAC(l *Layout, frames [][]byte, extensions []PACExtension, prefix boo
+ 	p := &PAC{Digest: l.Digest, Members: frames, Extensions: extensions}
+ 	if len(active) > 0 {
+ 		var err error
+-		p.Common, err = l.Encode(nil, common)
++		p.Common, err = l.encodeFragment(nil, common)
+ 		if err != nil {
+ 			return nil, err
+ 		}
+@@ -99,7 +99,7 @@ func FactorPAC(l *Layout, frames [][]byte, extensions []PACExtension, prefix boo
+ 		var scratch []byte
+ 		size := len(p.Common)
+ 		for i, raw := range frames {
+-			if err = l.ScanPlain(raw, &scan); err != nil {
++			if err = l.scanFragment(raw, &scan); err != nil {
+ 				return nil, err
+ 			}
+ 			for f, v := range common {
+@@ -107,7 +107,7 @@ func FactorPAC(l *Layout, frames [][]byte, extensions []PACExtension, prefix boo
+ 					scan.Values[f] = Value{}
+ 				}
+ 			}
+-			scratch, err = l.Encode(scratch, scan.Values)
++			scratch, err = l.encodeFragment(scratch, scan.Values)
+ 			if err != nil {
+ 				return nil, err
+ 			}
+@@ -233,7 +233,7 @@ func ParsePAC(l *Layout, raw []byte, supported map[uint32]bool) (*PAC, error) {
+ 	p.Common = raw[at:head]
+ 	var prefix Frame
+ 	if common > 0 {
+-		if e = l.ScanPlain(p.Common, &prefix); e != nil {
++		if e = l.scanFragment(p.Common, &prefix); e != nil {
+ 			return nil, e
+ 		}
+ 	}
+@@ -247,11 +247,11 @@ func ParsePAC(l *Layout, raw []byte, supported map[uint32]bool) (*PAC, error) {
+ 	var scratch []byte
+ 	for i := uint64(0); i < count; i++ {
+ 		start := len(raw) - r.Len()
+-		if scratch, e = l.ReadFrameEnvelope(r, scratch, false); e != nil {
++		if scratch, e = l.ReadFrame(r, scratch); e != nil {
+ 			return nil, e
+ 		}
+ 		member := raw[start : len(raw)-r.Len()]
+-		if e = l.ScanPlain(member, &scan); e != nil {
++		if e = l.scanFragment(member, &scan); e != nil {
+ 			return nil, e
+ 		}
+ 		for f, v := range prefix.Values {
+@@ -259,6 +259,11 @@ func ParsePAC(l *Layout, raw []byte, supported map[uint32]bool) (*PAC, error) {
+ 				return nil, fmt.Errorf("PAC common field overridden")
+ 			}
+ 		}
++		if l.schema != nil {
++			if _, err := ResolvePAC(l, p.Common, member); err != nil {
++				return nil, err
++			}
++		}
+ 		p.Members = append(p.Members, member)
+ 	}
+ 	if r.Len() != 0 {
+@@ -270,11 +275,11 @@ func ParsePAC(l *Layout, raw []byte, supported map[uint32]bool) (*PAC, error) {
+ // ResolvePAC is an explicit standalone export, not the presentation/storage path.
+ func ResolvePAC(l *Layout, common, member []byte) ([]byte, error) {
+ 	var c, m Frame
+-	if err := l.ScanPlain(member, &m); err != nil {
++	if err := l.scanFragment(member, &m); err != nil {
+ 		return nil, err
+ 	}
+ 	if len(common) > 0 {
+-		if err := l.ScanPlain(common, &c); err != nil {
++		if err := l.scanFragment(common, &c); err != nil {
+ 			return nil, err
+ 		}
+ 		for i, v := range c.Values {
+diff --git a/go/codec/pac_gzip.go b/go/codec/pac_gzip.go
+index 4036f71..36f60a2 100644
+--- a/go/codec/pac_gzip.go
++++ b/go/codec/pac_gzip.go
+@@ -27,10 +27,15 @@ func SealGzip(raw []byte) (*SealedGzip, error) {
+ 	return SealGzipLevel(raw, gzip.BestSpeed)
+ }
+ 
++var bestSpeedGzipWriters = sync.Pool{New: func() any {
++	w, _ := gzip.NewWriterLevel(io.Discard, gzip.BestSpeed)
++	return w
++}}
++
+ // Each pool retains its writer's level across Reset. Allocate writers lazily;
+ // policies that never use a level incur no compressor allocation for it.
+ var pacGzipWriters = func() (p [10]*sync.Pool) {
+-	p[gzip.BestSpeed] = &fastGzipWriters
++	p[gzip.BestSpeed] = &bestSpeedGzipWriters
+ 	for level := 2; level <= gzip.BestCompression; level++ {
+ 		p[level] = &sync.Pool{New: func() any {
+ 			w, _ := gzip.NewWriterLevel(io.Discard, level)
+diff --git a/go/codec/projection_values.go b/go/codec/projection_values.go
+index acb1fc7..d7462d1 100644
+--- a/go/codec/projection_values.go
++++ b/go/codec/projection_values.go
+@@ -11,8 +11,19 @@ func FieldCBOR(f Field, v Value) ([]byte, error) {
+ 	if v.State == Null {
+ 		return []byte{0xf6}, nil
+ 	}
+-	if f.Type == "CBOR" {
+-		return v.Bytes, nil
++	if capacity, ok := FixedStringCapacity(f.Type); ok {
++		text, err := FixedString(v.Bytes, capacity)
++		if err != nil {
++			return nil, err
++		}
++		return encoder.Marshal(string(text))
++	}
++	if f.Type == "OBJECT" {
++		var value any
++		if err := UnmarshalObject(v.Bytes, &value); err != nil {
++			return nil, err
++		}
++		return encoder.Marshal(value)
+ 	}
+ 	if strings.HasPrefix(f.Type, "ARRAY<") {
+ 		element := f.Type[6 : len(f.Type)-1]
+@@ -79,7 +90,7 @@ func FieldCBOR(f Field, v Value) ([]byte, error) {
+ }
+ 
+ // ValueFromCBOR converts one extension value to a declared PIL field. It does
+-// not decode an entire event or infer a definition. The caller must keep raw
++// not decode an entire record or infer a definition. The caller must keep raw
+ // alive while using the returned value, which may borrow its bytes.
+ func (l *Layout) ValueFromCBOR(index int, raw []byte) (Value, error) {
+ 	if index < 0 || index >= len(l.Definition.Fields) {
+@@ -89,11 +100,27 @@ func (l *Layout) ValueFromCBOR(index int, raw []byte) (Value, error) {
+ }
+ 
+ func ValueFromCBOR(f Field, w int, raw []byte) (Value, error) {
++	if capacity, ok := FixedStringCapacity(f.Type); ok {
++		if len(raw) == 1 && raw[0] == 0xf6 {
++			return Value{State: Null}, nil
++		}
++		var text string
++		if err := decoder.Unmarshal(raw, &text); err != nil {
++			return Value{}, err
++		}
++		return FixedText(text, capacity)
++	}
++
+ 	if len(raw) == 1 && raw[0] == 0xf6 {
+ 		return Value{State: Null}, nil
+ 	}
+-	if f.Type == "CBOR" {
+-		return Value{Offset, raw}, nil
++	if f.Type == "OBJECT" {
++		var value any
++		if err := decoder.Unmarshal(raw, &value); err != nil {
++			return Value{}, err
++		}
++		body, err := MarshalObject(value)
++		return Value{Offset, body}, err
+ 	}
+ 	if strings.HasPrefix(f.Type, "ARRAY<") {
+ 		var items []cbor.RawMessage
+diff --git a/go/codec/restore.go b/go/codec/restore.go
+index 08093f9..65b44ac 100644
+--- a/go/codec/restore.go
++++ b/go/codec/restore.go
+@@ -31,7 +31,7 @@ func (l *Layout) RestoreDirect(dst, raw []byte, fields []DirectField) ([]byte, e
+ 	dst = append(dst[:0], raw[:mask]...)
+ 	for _, f := range fields {
+ 		if State(raw[f.Index/4]>>uint(6-2*(f.Index%4))&3) != Absent {
+-			return nil, fmt.Errorf("population shadows restored field")
++			return nil, fmt.Errorf("restored field shadows an existing value")
+ 		}
+ 		dst[f.Index/4] |= byte(Direct) << uint(6-2*(f.Index%4))
+ 	}
+diff --git a/go/codec_test.go b/go/codec_test.go
+index 1307e0e..a960c29 100644
+--- a/go/codec_test.go
++++ b/go/codec_test.go
+@@ -13,16 +13,16 @@ func TestRustDefinitionAndBorrowedFrames(t *testing.T) {
+ 		t.Fatal(err)
+ 	}
+ 	defer d.Close()
+-	encoded, err := d.CBOR()
++	encoded, err := d.PIL()
+ 	if err != nil {
+ 		t.Fatal(err)
+ 	}
+-	next, err := FromCBOR(encoded)
++	next, err := FromPIL(encoded)
+ 	if err != nil {
+ 		t.Fatal(err)
+ 	}
+ 	defer next.Close()
+-	forwarded, _ := next.CBOR()
++	forwarded, _ := next.PIL()
+ 	if !bytes.Equal(encoded, forwarded) || !bytes.Contains(encoded, []byte("vendor")) {
+ 		t.Fatal("lost annotation")
+ 	}
+diff --git a/include/pill_packer.h b/include/pill_packer.h
+index 7717845..5c1f500 100644
+--- a/include/pill_packer.h
++++ b/include/pill_packer.h
+@@ -11,6 +11,8 @@ void pp_free(pp_context *ctx);
+ int64_t pp_define(pp_context *ctx, const uint8_t *bytes, size_t length, uint8_t format);
+ int64_t pp_scan(pp_context *ctx, const uint8_t *bytes, size_t length, size_t maximum);
+ const uint8_t *pp_document(const pp_context *ctx, size_t *length);
++int64_t pp_json(pp_context *ctx, const uint8_t *bytes, size_t length, uint8_t mode);
++const uint8_t *pp_output(const pp_context *ctx, size_t *length);
+ const uint8_t *pp_error(const pp_context *ctx, size_t *length);
+ #ifdef __cplusplus
+ }
+diff --git a/npm/fixtures/portable.json b/npm/fixtures/portable.json
+index 109d0ce..e6a3b9e 100644
+--- a/npm/fixtures/portable.json
++++ b/npm/fixtures/portable.json
+@@ -1,7 +1,7 @@
+ {
+-  "Definition": "pGNwaWwAZmZpZWxkc4KiZG5hbWVoc2VxdWVuY2VkdHlwZWNVMTaiZG5hbWVnbWVzc2FnZWR0eXBlZlNUUklOR2d2ZXJzaW9uAGpkZWZpbml0aW9ucHBvcnRhYmxlL2V4YW1wbGU=",
+-  "PAC": "EAQAAAEAAAAQBAAAAAAAAAcEAAAAAAAAAwAAAAAAAAAbAGNyasDPCruZyxq6yTxMSso0i1y154ELTS3G1ElsHgAAwwMwwANwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyCAAACAAQCAAgA=",
+-  "Compressed": "ggAAAAIAAAAQBAAAAwAAAB+LCAAAAAAAAP8SYGFgYGRgYADRIMAOpZkhFIM0Q3JR1oHzXLtnnpbaddLGx+uUSXfM1ueN3L66x6545sgxMBxmNjjAXJBfVJKYlJOqkJyfkpqsMMod5Y5yhxC3gYGhgZGhgYkBEAAA//+SVxQiEAQAAA==",
++  "Definition": "gAwJ5AAIAAgAEwAeAJcAowCuAL0A0gCAwAYDAHBpbKAAAwAAAAAAAAAAgMAGBgBmaWVsZHOADAh0AAIANgBuAIAMCTEABAAJABYAHwAnAIDABgQAbmFtZYDABggAc2VxdWVuY2WAwAYEAHR5cGWAwAYDAFUxNoAMCTMABAAJABUAHgApAIDABgQAbmFtZYDABgcAbWVzc2FnZYDABgQAdHlwZYDABgYAU1RSSU5HgMAGBwB2ZXJzaW9uoAADAAAAAAAAAACAwAYKAGRlZmluaXRpb26AwAYQAHBvcnRhYmxlL2V4YW1wbGU=",
++  "PAC": "EAQAAAEAAAAQBAAAAAAAAAcEAAAAAAAAAwAAAAAAAABh19NZe9HZD+nKVz2S9GP9OzKo8yZDHdTO7hpD5XDLIQAAwwMwwANwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyCAAACAAQCAAgA=",
++  "Compressed": "gwAAAAIAAAAQBAAAAwAAAB+LCAAAAAAAAP8SYGFgYGRgYADRIMAOpZkhFEPi9cuR1Rdv8r88FW476UvyX2ujFZ/VnGWvnHsn5fy04LQiA8NhZoMDzAX5RSWJSTmpCsn5KanJCqPcUe4odwhxGxgYGhgZGpgYAAEAAP//h7h8ihAEAAA=",
+   "Frames": [
+     "sAAAwANwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyA=",
+     "sAEAwANwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyBwb3J0YWJsZSBjb2RlYyA=",
+diff --git a/npm/index.d.ts b/npm/index.d.ts
+index ba5acb3..19475b3 100644
+--- a/npm/index.d.ts
++++ b/npm/index.d.ts
+@@ -3,6 +3,8 @@ export class Codec {
+   upload(bytes: Uint8Array): void;
+   define(bytes: Uint8Array): number;
+   definitionFromJSON(text: string | Uint8Array): Uint8Array;
++  encodeJSON(id:number,text:string|Uint8Array):Uint8Array;
++  decodeJSON(id:number,bytes:Uint8Array):string;
+   scan(id: number, offset: number, length: number): number;
+   pac(id: number, offset: number, length: number, count: number, additionalExtension?: number): Uint32Array;
+   scanStructural(id:number,offset:number,length:number):number;
+diff --git a/npm/index.js b/npm/index.js
+index c812754..88e44a0 100644
+--- a/npm/index.js
++++ b/npm/index.js
+@@ -27,6 +27,15 @@ export class Codec {
+     const n = this.check(this.api.json_definition());
+     return new Uint8Array(this.api.memory.buffer, this.api.document_ptr(), n).slice();
+   }
++  encodeJSON(id, text) {
++    this.upload(typeof text === 'string' ? new TextEncoder().encode(text) : text);
++    const n=this.check(this.api.schema_json(id,0));
++    return new Uint8Array(this.api.memory.buffer,this.api.document_ptr(),n).slice();
++  }
++  decodeJSON(id, bytes) {
++    this.upload(bytes);const n=this.check(this.api.schema_json(id,1));
++    return new TextDecoder().decode(new Uint8Array(this.api.memory.buffer,this.api.document_ptr(),n));
++  }
+   scan(id, offset, length) { return this.check(this.api.scan(id, offset, length)); }
+   scanStructural(id, offset, length) { return this.check(this.api.scan_structural(id, offset, length)); }
+   verifyCRC32C(bytes, expected) {
+diff --git a/npm/package.json b/npm/package.json
+index c6e61d0..9d2e24d 100644
+--- a/npm/package.json
++++ b/npm/package.json
+@@ -22,10 +22,6 @@
+       "types": "./portable/layout.d.ts",
+       "import": "./portable/layout.js"
+     },
+-    "./compression": {
+-      "types": "./portable/compression.d.ts",
+-      "import": "./portable/compression.js"
+-    },
+     "./gzip": {
+       "types": "./portable/gzip.d.ts",
+       "import": "./portable/gzip.js"
+@@ -33,7 +29,8 @@
+     "./columns": {
+       "types": "./portable/columns.d.ts",
+       "import": "./portable/columns.js"
+-    }
++    },
++    "./object": "./portable/object.js"
+   },
+   "files": [
+     "index.js",
+@@ -45,7 +42,7 @@
+   ],
+   "scripts": {
+     "build": "npm run build:portable && node ../scripts/build-wasm.mjs",
+-    "test": "node --test test.mjs portable.test.mjs",
++    "test": "node --test test.mjs portable.test.mjs object.test.mjs",
+     "prepack": "npm run build",
+     "build:portable": "tsc -p tsconfig.json"
+   },
+@@ -57,7 +54,7 @@
+     "url": "git+https://github.com/AuthenticityLabs/pill-packer.git",
+     "directory": "npm"
+   },
+-  "homepage": "https://trietrunk.com/PIL",
++  "homepage": "https://github.com/AuthenticityLabs/pill-packer",
+   "bugs": {
+     "url": "https://github.com/AuthenticityLabs/pill-packer/issues"
+   },
+diff --git a/npm/portable.test.mjs b/npm/portable.test.mjs
+index 193ed59..3921d35 100644
+--- a/npm/portable.test.mjs
++++ b/npm/portable.test.mjs
+@@ -1,16 +1,15 @@
+ import {test} from 'node:test';
+ import assert from 'node:assert/strict';
+ import {readFile} from 'node:fs/promises';
+-import {cbor} from 'pill-packer/cbor';
++import {decodeObject} from 'pill-packer/object';
+ import {span,read} from 'pill-packer/layout';
+-import {pacHeader,expandPAC,indexedPACBounds} from 'pill-packer/pac';
+-import {mergeFrames} from 'pill-packer/compression';
++import {pacHeader,expandPAC,indexedPACBounds,mergeFrames} from 'pill-packer/pac';
+ import {inflateGzip} from 'pill-packer/gzip';
+ import {unsignedBig,unsignedNumber,shuffleColumns} from 'pill-packer/columns';
+ import {createCodec} from './index.js';
+ const bytes=s=>Uint8Array.from(Buffer.from(s,'base64'));
+ const f=JSON.parse(await readFile(new URL('./fixtures/portable.json',import.meta.url),'utf8'));
+-const definition=bytes(f.Definition),def=cbor(definition);
++const definition=bytes(f.Definition),def=decodeObject(definition);
+ test('Go PAC compression interoperates with standalone browser and Rust/WASM readers',async()=>{
+  const packed=bytes(f.Compressed),expanded=await expandPAC(packed,0,16*1024*1024);
+  assert.deepEqual(expanded.bytes,bytes(f.PAC));
+diff --git a/npm/src/cbor.ts b/npm/src/cbor.ts
+index 8b56340..048723f 100644
+--- a/npm/src/cbor.ts
++++ b/npm/src/cbor.ts
+@@ -1,5 +1,5 @@
+ // CBOR is opened only for definitions and individual requested field values.
+-// Events themselves remain PIL byte ranges. Integer precision is never rounded.
++// Records themselves remain PIL byte ranges. Integer precision is never rounded.
+ const decoder = new TextDecoder("utf-8", { fatal: true });
+ export function cbor(bytes: Uint8Array): unknown {
+   let at = 0;
+diff --git a/npm/src/compression.ts b/npm/src/compression.ts
+deleted file mode 100644
+index 45ff702..0000000
+--- a/npm/src/compression.ts
++++ /dev/null
+@@ -1,71 +0,0 @@
+-import {inflateGzip} from "./gzip.ts";
+-import { span, width, type PILDefinition } from './layout.ts';
+-
+-export type Inflater = (bytes:Uint8Array,length:number)=>Uint8Array;
+-export const compressionFeature = 'event-gzip-v1';
+-const maximum = 64 * 1024 * 1024;
+-export type IdentityProfile = {primary:number;fields:readonly number[];validate?:(value:Uint8Array)=>void};
+-export function identityKeys(profile:IdentityProfile):number[]{return [profile.primary,...profile.fields.filter(i=>i!==profile.primary)];}
+-export function compressedMarker(raw:Uint8Array,def:PILDefinition,profile:IdentityProfile):boolean{
+- const event=profile.primary,mask=Math.ceil(def.fields.length/4);
+- if(event===undefined||event<0||raw.length<mask)return false;
+- for(let i=0;i<mask;i++)if(raw[i]!== (i===Math.floor(event/4)?1<<(6-2*(event%4)):0))return false;
+- return true;
+-}
+-export function envelopeLength(raw:Uint8Array,def:PILDefinition,profile:IdentityProfile):number|undefined{
+- const m=Math.ceil(def.fields.length/4),h=m+16;
+- if(raw.length<h)return;
+- if(!compressedMarker(raw,def,profile)||raw[m]!==80||raw[m+1]!==67||raw[m+2]!==1||raw[m+3]!==1)throw Error('Unsupported compressed event');
+- const view=new DataView(raw.buffer,raw.byteOffset,raw.length),id=view.getUint32(m+4,true),plain=view.getUint32(m+8,true),stored=view.getUint32(m+12,true);
+- if(!id||!plain||!stored||id+plain>maximum||h+id+stored>maximum)throw Error('Invalid compressed event lengths');
+- return h+id+stored;
+-}
+-function appendExtended(out:number[],n:number){if(n<65535)out.push(n&255,n>>>8);else out.push(255,255,n&255,(n>>>8)&255,(n>>>16)&255,n>>>24);}
+-// Copies encoded primitive spans. It does not decode values into JS objects.
+-export function mergeFrames(parts:Uint8Array[],def:PILDefinition,omit=new Set<number>()):Uint8Array{
+- const m=Math.ceil(def.fields.length/4),mask=new Uint8Array(m);
+- const fields=def.fields.map((f,i)=>{
+-  if(omit.has(i))return {state:0,bytes:new Uint8Array(),bits:0};
+-  const found=parts.map(raw=>({raw,s:span(raw,def,i)})).filter(v=>v.s.state!==0);
+-  if(found.length>1)throw Error('Overlapping compressed event fields');
+-  const v=found[0],state=v?.s.state??0;
+-  const bytes=v? v.raw.subarray(v.s.start,v.s.end):new Uint8Array();
+-  if(v&&(v.s.end>v.raw.length||v.s.start>v.s.end))throw Error('Invalid encoded field');
+-  mask[Math.floor(i/4)]|=state<<(6-2*(i%4));
+-  const adaptive=!f.values?.length&&['16','32'].includes(def.adaptive_integers??'');
+-  const bits=state===2&&adaptive?(/^[IU](32|64)$/.test(f.type)?2:def.adaptive_integers==='16'&&/^[IU]16$/.test(f.type)?1:0):0;
+-  if(state===2&&(![1,2,4,8,16].includes(bytes.length)||bytes.length>width(f)))throw Error('Invalid direct field width');
+-  return {state,bytes,bits};
+- });
+- const plane=new Uint8Array(Math.ceil(fields.reduce((n,f)=>n+f.bits,0)/8));let bit=0;
+- const offsets:number[]=[];let end=0;
+- for(const f of fields){
+-  if(f.bits){const code=Math.log2(f.bytes.length);for(let b=f.bits-1;b>=0;b--){plane[Math.floor(bit/8)]|=((code>>b)&1)<<(7-bit%8);bit++;}}
+-  if(f.state===3){end+=f.bytes.length;appendExtended(offsets,end);}
+- }
+- const length=m+plane.length+offsets.length+fields.reduce((n,f)=>n+f.bytes.length,0);
+- if(length>maximum)throw Error('Expanded event exceeds limit');
+- const out=new Uint8Array(length);out.set(mask);out.set(plane,m);let at=m+plane.length;
+- for(const f of fields)if(f.state===2){out.set(f.bytes,at);at+=f.bytes.length;}
+- out.set(offsets,at);at+=offsets.length;
+- for(const f of fields)if(f.state===3){out.set(f.bytes,at);at+=f.bytes.length;}
+- return out;
+-}
+-export async function expandEvent(raw:Uint8Array,def:PILDefinition,profile:IdentityProfile,validate?:(b:Uint8Array)=>void,inflate?:Inflater):Promise<Uint8Array>{
+- if(!compressedMarker(raw,def,profile))return raw;
+- if(envelopeLength(raw,def,profile)!==raw.length)throw Error('Compressed event boundary mismatch');
+- const m=Math.ceil(def.fields.length/4),h=m+16,view=new DataView(raw.buffer,raw.byteOffset,raw.length);
+- const idLength=view.getUint32(m+4,true),plainLength=view.getUint32(m+8,true);
+- const identity=raw.subarray(h,h+idLength);validate?.(identity);
+- let body:Uint8Array;
+- if(inflate){body=inflate(raw.subarray(h+idLength),plainLength);}
+- else body=await inflateGzip(raw.subarray(h+idLength),plainLength,maximum);
+- if(body.length!==plainLength)throw Error('Expanded event length mismatch');validate?.(body);
+- const ids=new Set(identityKeys(profile));
+- for(let i=0;i<def.fields.length;i++){
+-  if(span(ids.has(i)?body:identity,def,i).state!==0)throw Error('Compressed identity/body overlap');
+- }
+- const event=profile.primary,s=span(identity,def,event),id=identity.subarray(s.start,s.end);
+- if(s.state!==2||id.length===0)throw Error('Invalid compressed identity');profile.validate?.(id);
+- const full=mergeFrames([identity,body],def);validate?.(full);return full;
+-}
+\ No newline at end of file
+diff --git a/npm/src/layout.ts b/npm/src/layout.ts
+index 1226457..8b2d362 100644
+--- a/npm/src/layout.ts
++++ b/npm/src/layout.ts
+@@ -1,4 +1,4 @@
+-import { cbor } from "./cbor.ts";
++import { decodeObject } from "./object.ts";
+ export type PILField = { name: string; type: string; values?: string[] };
+ export type PILDefinition = {
+   pil: number;
+@@ -27,7 +27,18 @@ const widths: Record<string, number> = {
+   TIMESTAMP_NS: 8,
+ };
+ export const textDecoder = new TextDecoder("utf-8", { fatal: true });
++export function fixedStringCapacity(type: string): number | undefined {
++  const match = /^STRING\(([1-9][0-9]*)\)$/.exec(type);
++  if (!match) return undefined;
++  const capacity = Number(match[1]);
++  if (!Number.isSafeInteger(capacity) || capacity > 0xffffffff) throw Error("Invalid STRING byte capacity");
++  return capacity;
++}
++export function stringLengthWidth(capacity: number): number { return capacity <= 255 ? 1 : capacity <= 65535 ? 2 : 4; }
+ export function width(field: PILField): number {
++ if(field.type.includes("CBOR"))throw Error("CBOR is an ingress format, not a PIL field type");
++  const capacity = fixedStringCapacity(field.type);
++  if (capacity !== undefined) return capacity + stringLengthWidth(capacity);
+   const n = field.values?.length ?? 0;
+   return n
+     ? n <= 256
+@@ -70,7 +81,7 @@ function selectors(def: PILDefinition): Uint8Array {
+ }
+ export type Span = { state: number; start: number; end: number };
+ // The WASM validator has already checked this frame. Resolve just one position,
+-// without allocating a field/value array for each retained event.
++// without allocating a field/value array for each retained record.
+ export function span(
+   bytes: Uint8Array,
+   def: PILDefinition,
+@@ -160,7 +171,17 @@ export function read(
+ }
+ export function scalar(value: Uint8Array, type: string): unknown {
+   const view = new DataView(value.buffer, value.byteOffset, value.length);
+-  if (type === "CBOR") return cbor(value);
++  const capacity = fixedStringCapacity(type);
++  if (capacity !== undefined) {
++    const prefix = stringLengthWidth(capacity);
++    if (value.length !== capacity + prefix) throw Error("Wrong fixed STRING width");
++    const length = prefix === 1 ? view.getUint8(0) : prefix === 2 ? view.getUint16(0, true) : view.getUint32(0, true);
++    if (length > capacity) throw Error("STRING length exceeds capacity");
++    for (let i = prefix + length; i < value.length; i++) if (value[i]) throw Error("Nonzero STRING padding");
++    return textDecoder.decode(value.subarray(prefix, prefix + length));
++  }
++
++  if (type === "OBJECT") return decodeObject(value);
+   if (type === "STRING") return textDecoder.decode(value);
+   if (type === "UUID" || type === "BYTES") return value;
+   if (type === "BOOL") return value[0] === 1;
+@@ -168,7 +189,7 @@ export function scalar(value: Uint8Array, type: string): unknown {
+   if (type === "F64") return view.getFloat64(0, true);
+   if (type.startsWith("ARRAY<")) {
+     const element = type.slice(6, -1);
+-    const w = widths[element] ?? 0;
++    const w = width({name: "", type: element});
+     const [count, offset] = extended(view, 0);
+     if (w) {
+       return Array.from({ length: count }, (_, i) =>
+diff --git a/npm/src/pac.ts b/npm/src/pac.ts
+index 415d2fa..4a0b6ca 100644
+--- a/npm/src/pac.ts
++++ b/npm/src/pac.ts
+@@ -1,7 +1,40 @@
+ import {inflateGzip} from "./gzip.ts";
++import {span, width, type PILDefinition} from "./layout.ts";
+ // Version-zero PAC: decoded semantic header, or a small compression wrapper.
+ export type PACExtension={type:number;required:boolean;version:number;bytes:Uint8Array};
+ export type PACHeader={digest:string;source?:string;count:number;start:number;end:number;common:Uint8Array;extensions:PACExtension[]};
++function appendExtended(out:number[],n:number){if(n<65535)out.push(n&255,n>>>8);else out.push(255,255,n&255,(n>>>8)&255,(n>>>16)&255,n>>>24);}
++
++/** Reconstruct one logical PIL record from its PAC common frame and member. */
++export function mergeFrames(parts:Uint8Array[],def:PILDefinition,omit=new Set<number>()):Uint8Array{
++ const m=Math.ceil(def.fields.length/4),mask=new Uint8Array(m);
++ const fields=def.fields.map((f,i)=>{
++  if(omit.has(i))return {state:0,bytes:new Uint8Array(),bits:0};
++  const found=parts.map(raw=>({raw,s:span(raw,def,i)})).filter(v=>v.s.state!==0);
++  if(found.length>1)throw Error('Overlapping PAC common/member fields');
++  const v=found[0],state=v?.s.state??0;
++  const bytes=v?v.raw.subarray(v.s.start,v.s.end):new Uint8Array();
++  if(v&&(v.s.end>v.raw.length||v.s.start>v.s.end))throw Error('Invalid encoded field');
++  mask[Math.floor(i/4)]|=state<<(6-2*(i%4));
++  const adaptive=!f.values?.length&&['16','32'].includes(def.adaptive_integers??'');
++  const bits=state===2&&adaptive?(/^[IU](32|64)$/.test(f.type)?2:def.adaptive_integers==='16'&&/^[IU]16$/.test(f.type)?1:0):0;
++  if(state===2&&(![1,2,4,8,16].includes(bytes.length)||bytes.length>width(f)))throw Error('Invalid direct field width');
++  return {state,bytes,bits};
++ });
++ const plane=new Uint8Array(Math.ceil(fields.reduce((n,f)=>n+f.bits,0)/8));let bit=0;
++ const offsets:number[]=[];let end=0;
++ for(const f of fields){
++  if(f.bits){const code=Math.log2(f.bytes.length);for(let b=f.bits-1;b>=0;b--){plane[Math.floor(bit/8)]|=((code>>b)&1)<<(7-bit%8);bit++;}}
++  if(f.state===3){end+=f.bytes.length;appendExtended(offsets,end);}
++ }
++ const length=m+plane.length+offsets.length+fields.reduce((n,f)=>n+f.bytes.length,0);
++ if(length>64*1024*1024)throw Error('Merged record exceeds limit');
++ const out=new Uint8Array(length);out.set(mask);out.set(plane,m);let at=m+plane.length;
++ for(const f of fields)if(f.state===2){out.set(f.bytes,at);at+=f.bytes.length;}
++ out.set(offsets,at);at+=offsets.length;
++ for(const f of fields)if(f.state===3){out.set(f.bytes,at);at+=f.bytes.length;}
++ return out;
++}
+ export function pacHeader(bytes:Uint8Array,offset:number,maximum=0xffffffff,supported:ReadonlySet<number>=new Set([1])):PACHeader|undefined {
+  if(bytes.length-offset<64)return;
+  const view=new DataView(bytes.buffer,bytes.byteOffset,bytes.byteLength);
+diff --git a/npm/test.mjs b/npm/test.mjs
+index 8a20597..c4e422e 100644
+--- a/npm/test.mjs
++++ b/npm/test.mjs
+@@ -1,6 +1,8 @@
+ import {test} from 'node:test';
+ import assert from 'node:assert/strict';
+ import {readFile} from 'node:fs/promises';
++import {readFileSync} from 'node:fs';
++import {createHash} from 'node:crypto';
+ import {createCodec} from './index.js';
+ const wasm = await readFile(new URL('./codec.wasm', import.meta.url));
+ test('JSON import, standalone PIL scan, explicit definition release', async () => {
+@@ -17,7 +19,7 @@ test('JSON import, standalone PIL scan, explicit definition release', async () =
+ test('PAC fixture and explicit host extension support', async () => {
+   const c = await createCodec(wasm);
+   const base = new URL('../rust/tests/fixtures/pac/', import.meta.url);
+-  const id = c.define(await readFile(new URL('definition.cbor', base)));
++  const id = c.define(await readFile(new URL('definition.rx', base)));
+   const pac = await readFile(new URL('packed.pac', base));
+   c.upload(pac);
+   assert.equal(c.pac(id, 0, pac.length, 16).length, 32);
+@@ -39,3 +41,26 @@ test('CRC32C verification handles corruption and the complete input extent',asyn
+  raw[3]^=1;assert.throws(()=>c.verifyCRC32C(raw,0xe3069283),/checksum/);
+  assert.throws(()=>c.verifyCRC32C(raw,-1),/Invalid CRC/);
+ });
++
++test('nested CDDL schemas share exact Rust/Go encoding and reject invalid children', async () => {
++  const read=name=>new Uint8Array(readFileSync(new URL(`../rust/tests/fixtures/schema/${name}`,import.meta.url)));
++  const codec=await createCodec(readFileSync(new URL('./codec.wasm',import.meta.url)));
++  const id=codec.define(read('purchase.rx'));
++  try {
++    const frame=codec.encodeJSON(id,read('record.json'));
++    assert.deepEqual(frame,read('record.pil'));
++    assert.match(codec.decodeJSON(id,frame),/18446744073709551615/);
++    codec.upload(frame);assert.equal(codec.scan(id,0,frame.length),frame.length);
++    const invalid=read('invalid-child.pil');codec.upload(invalid);
++    assert.throws(()=>codec.scan(id,0,invalid.length),/schema/);
++    assert.throws(()=>codec.decodeJSON(id,invalid),/schema/);
++    const pac=body=>{
++      const raw=new Uint8Array(68+body.length),v=new DataView(raw.buffer);
++      v.setUint32(0,raw.length,true);v.setBigUint64(8,BigInt(raw.length),true);v.setBigUint64(16,68n,true);v.setBigUint64(24,1n,true);
++      raw.set(createHash('sha256').update(read('purchase.rx')).digest(),32);raw.set(body,68);return raw;
++    };
++    const good=pac(frame);codec.upload(good);codec.pac(id,0,good.length,1);
++    const bad=pac(invalid);codec.upload(bad);assert.throws(()=>codec.pac(id,0,bad.length,1),/schema/);
++    assert.throws(()=>codec.encodeJSON(id,'{"id":1,"customer":{},"items":[],"kind":"purchase"}'));
++  } finally {codec.release(id)}
++});
+diff --git a/rust/Cargo.lock b/rust/Cargo.lock
+index 0363b65..36325d0 100644
+--- a/rust/Cargo.lock
++++ b/rust/Cargo.lock
+@@ -157,6 +157,15 @@ dependencies = [
+  "base64",
+ ]
+ 
++[[package]]
++name = "block-buffer"
++version = "0.10.4"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "3078c7629b62d3f0439517fa394996acacc5cbc91c5a20d8c658e77abd503a71"
++dependencies = [
++ "generic-array",
++]
++
+ [[package]]
+ name = "bumpalo"
+ version = "3.20.3"
+@@ -338,6 +347,15 @@ version = "0.8.7"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "773648b94d0e5d620f64f280777445740e61fe701025087ec8b57f45c791888b"
+ 
++[[package]]
++name = "cpufeatures"
++version = "0.2.17"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "59ed5838eebb26a2bb2e58f6d5b5316989ae9d08bab10e0e6d103e656d1b0280"
++dependencies = [
++ "libc",
++]
++
+ [[package]]
+ name = "crc32fast"
+ version = "1.5.2"
+@@ -353,6 +371,16 @@ version = "0.2.4"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "460fbee9c2c2f33933d720630a6a0bac33ba7053db5344fac858d4b8952d77d5"
+ 
++[[package]]
++name = "crypto-common"
++version = "0.1.7"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "78c8292055d1c1df0cce5d180393dc8cce0abec0a7102adb6c7b1eef6016d60a"
++dependencies = [
++ "generic-array",
++ "typenum",
++]
++
+ [[package]]
+ name = "data-encoding"
+ version = "2.11.1"
+@@ -365,6 +393,16 @@ version = "0.5.9"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "9e9de72ce2ad1f90dc62fa25f0f430ef85eb4b0d8fa0be4f30373bc40a21d28e"
+ 
++[[package]]
++name = "digest"
++version = "0.10.7"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "9ed9a281f7bc9b7576e61468ba615a66a5c8cfdff42420a70aa82701a3b1e292"
++dependencies = [
++ "block-buffer",
++ "crypto-common",
++]
++
+ [[package]]
+ name = "displaydoc"
+ version = "0.2.7"
+@@ -428,6 +466,16 @@ dependencies = [
+  "slab",
+ ]
+ 
++[[package]]
++name = "generic-array"
++version = "0.14.7"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "85649ca51fd72272d7821adaf274ad91c288277713d9c18820d8499a7ff69e9a"
++dependencies = [
++ "typenum",
++ "version_check",
++]
++
+ [[package]]
+ name = "half"
+ version = "2.7.1"
+@@ -718,7 +766,9 @@ dependencies = [
+  "ciborium",
+  "ciborium-ll",
+  "flate2",
++ "serde",
+  "serde_json",
++ "sha2",
+ ]
+ 
+ [[package]]
+@@ -870,6 +920,17 @@ dependencies = [
+  "zmij",
+ ]
+ 
++[[package]]
++name = "sha2"
++version = "0.10.9"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "a7507d819769d01a365ab707794a4084392c824f54a7a6a7862f8c3d0892b283"
++dependencies = [
++ "cfg-if",
++ "cpufeatures",
++ "digest",
++]
++
+ [[package]]
+ name = "shlex"
+ version = "2.0.1"
+@@ -996,6 +1057,12 @@ version = "2.0.2"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "6af6ae20167a9ece4bcb41af5b80f8a1f1df981f6391189ce00fd257af04126a"
+ 
++[[package]]
++name = "typenum"
++version = "1.20.1"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "b6f5e870be6c3b371b77fe0ee0bafb859fa4964b4404c27de1d380043c4dda20"
++
+ [[package]]
+ name = "ucd-trie"
+ version = "0.1.7"
+@@ -1036,6 +1103,12 @@ version = "0.2.2"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "06abde3611657adf66d383f00b093d7faecc7fa57071cce2578660c9f1010821"
+ 
++[[package]]
++name = "version_check"
++version = "0.9.5"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "0b928f33d975fc6ad9f86c8f283853ad26bdd5b10b7f1542aa2fa15e2289105a"
++
+ [[package]]
+ name = "walkdir"
+ version = "2.5.0"
+diff --git a/rust/Cargo.toml b/rust/Cargo.toml
+index a8c5bc3..77ff119 100644
+--- a/rust/Cargo.toml
++++ b/rust/Cargo.toml
+@@ -6,14 +6,21 @@ rust-version = "1.88"
+ license = "Apache-2.0"
+ description = "Portable PIL encoding, decoding, and PAC reading"
+ repository = "https://github.com/AuthenticityLabs/pill-packer"
+-homepage = "https://trietrunk.com/PIL"
++homepage = "https://github.com/AuthenticityLabs/pill-packer"
+ publish = false
+ 
+ [features]
++default = ["schema-runtime"]
+ gzip = ["dep:flate2"]
+ json = ["dep:serde_json"]
++schema-runtime = ["json", "dep:serde"]
++schema = ["schema-runtime", "dep:cddl"]
++cli = ["schema", "gzip", "dep:sha2"]
+ 
+ [dependencies]
++serde = { version = "1", features = ["derive"], optional = true }
++sha2 = { version = "0.10", optional = true }
++cddl = { version = "=0.10.7", default-features = false, features = ["std", "cbor", "json", "additional-controls", "ast-span"], optional = true }
+ flate2 = { version = "1.1.10", optional = true, default-features = false, features = ["rust_backend"] }
+ ciborium = "0.2.2"
+ ciborium-ll = "0.2.2"
+@@ -22,6 +29,11 @@ serde_json = { version = "1.0", optional = true }
+ [lib]
+ name = "pil_codec"
+ 
++[[bin]]
++name = "rx"
++path = "src/bin/rx.rs"
++required-features = ["cli"]
++
+ [dev-dependencies]
+ cddl = { version = "=0.10.7", default-features = false, features = ["std", "cbor", "json", "additional-controls", "ast-span"] }
+ 
+diff --git a/rust/benches/codecs.rs b/rust/benches/codecs.rs
+index 10132b0..a3c9821 100644
+--- a/rust/benches/codecs.rs
++++ b/rust/benches/codecs.rs
+@@ -332,7 +332,7 @@ fn main() {
+     let maximum = flag("--max").unwrap_or("1000000").parse::<usize>().unwrap();
+     let only = flag("--shape");
+     println!(
+-        "shape,reference_bits,events,operation,codec,encoded_bytes,median_ns_per_event,min_ns,max_ns,samples_ns"
++        "shape,reference_bits,records,operation,codec,encoded_bytes,median_ns_per_record,min_ns,max_ns,samples_ns"
+     );
+     for (shape, width, present) in [
+         ("dense16", 16, 16),
+@@ -343,7 +343,7 @@ fn main() {
+             continue;
+         }
+         eprintln!(
+-            "Preparing {shape}: {maximum} events, {bits}-bit reference; definitions outside timings"
++            "Preparing {shape}: {maximum} records, {bits}-bit reference; definitions outside timings"
+         );
+         let d = definition(width, bits);
+         let records = records(&d, present, maximum);
+@@ -381,7 +381,7 @@ fn main() {
+             sizes.push(maximum);
+         }
+         for count in sizes {
+-            eprintln!("Measuring {shape}, {count} events");
++            eprintln!("Measuring {shape}, {count} records");
+             let times = measure(
+                 |repeats| {
+                     for _ in 0..repeats {
+diff --git a/rust/benches/shared_refs.rs b/rust/benches/shared_refs.rs
+index 928da03..6ac0a39 100644
+--- a/rust/benches/shared_refs.rs
++++ b/rust/benches/shared_refs.rs
+@@ -31,13 +31,13 @@ struct Node {
+     key: usize,
+     code: u64,
+ }
+-struct Trie {
++struct PrefixTree {
+     nodes: Vec<Node>,
+     paths: Vec<Vec<(usize, Value<'static>)>>,
+     leaves: Vec<u16>,
+     values: Vec<Vec<Value<'static>>>,
+ }
+-impl Trie {
++impl PrefixTree {
+     fn new(depth: usize) -> Self {
+         let mut t = Self {
+             nodes: vec![Node {
+@@ -170,13 +170,13 @@ impl Layout {
+ }
+ fn records(
+     layout: &Layout,
+-    trie: &Trie,
++    prefix_tree: &PrefixTree,
+     present_shared: usize,
+     present_dynamic: usize,
+     full: bool,
+     count: usize,
+ ) -> Vec<Record> {
+-    let leaves: Vec<_> = trie
++    let leaves: Vec<_> = prefix_tree
+         .paths
+         .iter()
+         .enumerate()
+@@ -211,15 +211,15 @@ fn records(
+ }
+ fn pil_encode<'a>(
+     layout: &Layout,
+-    trie: &Trie,
++    prefix_tree: &PrefixTree,
+     row: &Record,
+     refs: bool,
+     encoder: &'a mut FrameEncoder,
+ ) -> &'a [u8] {
+-    let values = trie
++    let values = prefix_tree
+         .values
+         .get(usize::from(row.leaf))
+-        .expect("unknown shared reference"); // cached group, not a timed trie walk
++        .expect("unknown shared reference"); // cached group, not a timed prefix_tree walk
+     let mut dynamic = row.dynamic.iter().peekable();
+     encoder
+         .encode_with(layout.definition(refs), |wire| {
+@@ -271,8 +271,8 @@ fn cbor_pair(key: usize, v: Value<'_>, out: &mut Vec<u8>) {
+     head(Header::Positive(key as u64), out);
+     cbor_value(v, out)
+ }
+-fn cbor_encode(layout: &Layout, trie: &Trie, row: &Record, refs: bool, out: &mut Vec<u8>) {
+-    let path = trie.path(row.leaf);
++fn cbor_encode(layout: &Layout, prefix_tree: &PrefixTree, row: &Record, refs: bool, out: &mut Vec<u8>) {
++    let path = prefix_tree.path(row.leaf);
+     out.clear();
+     head(
+         Header::Map(Some(
+@@ -340,7 +340,7 @@ fn cbor_read<'a>(field: &Field, b: &mut &'a [u8]) -> Value<'a> {
+ #[allow(clippy::too_many_arguments)]
+ fn cbor_decode<'a>(
+     layout: &Layout,
+-    trie: &Trie,
++    prefix_tree: &PrefixTree,
+     mut b: &'a [u8],
+     refs: bool,
+     expand: bool,
+@@ -368,7 +368,7 @@ fn cbor_decode<'a>(
+             let Value::Ref16(id) = value else {
+                 panic!("invalid shared reference")
+             };
+-            let path = trie.path(id);
++            let path = prefix_tree.path(id);
+             reference = Some(id);
+             if expand {
+                 out.extend_from_slice(path)
+@@ -412,7 +412,7 @@ fn pil_read<'a>(definition: &Definition, b: &'a [u8], key: usize, span: [u32; 2]
+ }
+ fn pil_decode<'a>(
+     layout: &Layout,
+-    trie: &Trie,
++    prefix_tree: &PrefixTree,
+     b: &'a [u8],
+     refs: bool,
+     expand: bool,
+@@ -425,7 +425,7 @@ fn pil_decode<'a>(
+         match pil_read(d, b, 1, index.spans()[1]) {
+             Value::Absent => None,
+             Value::Ref16(id) => {
+-                black_box(trie.path(id));
++                black_box(prefix_tree.path(id));
+                 Some(id)
+             }
+             _ => panic!("invalid shared reference"),
+@@ -442,7 +442,7 @@ fn pil_decode<'a>(
+             continue;
+         }
+         if refs && key == 1 {
+-            out.extend_from_slice(trie.path(reference.unwrap()));
++            out.extend_from_slice(prefix_tree.path(reference.unwrap()));
+             continue;
+         }
+         out.push((layout.logical(key, refs), pil_read(d, b, key, span)));
+@@ -505,15 +505,15 @@ fn report(
+         ns[6]
+     );
+ }
+-fn verify(layout: &Layout, trie: &Trie, row: &Record, p: &[u8], c: &[u8], refs: bool) {
++fn verify(layout: &Layout, prefix_tree: &PrefixTree, row: &Record, p: &[u8], c: &[u8], refs: bool) {
+     let mut expected: Output = row.dynamic.iter().map(|(k, v)| (*k, v.value())).collect();
+-    expected.extend_from_slice(trie.path(row.leaf));
++    expected.extend_from_slice(prefix_tree.path(row.leaf));
+     expected.sort_unstable_by_key(|(key, _)| *key);
+     let mut index = FrameIndex::default();
+     let (mut po, mut co) = (vec![], vec![]);
+     let mut seen = vec![0; layout.full.fields().len()];
+-    pil_decode(layout, trie, p, refs, true, &mut index, &mut po);
+-    cbor_decode(layout, trie, c, refs, true, &mut seen, 1, &mut co);
++    pil_decode(layout, prefix_tree, p, refs, true, &mut index, &mut po);
++    cbor_decode(layout, prefix_tree, c, refs, true, &mut seen, 1, &mut co);
+     assert_eq!(po, expected);
+     assert_eq!(co, expected);
+     let decoded = pil_codec::decode_exact(layout.definition(refs), p).unwrap();
+@@ -534,13 +534,13 @@ fn verify(layout: &Layout, trie: &Trie, row: &Record, p: &[u8], c: &[u8], refs:
+             + if refs {
+                 usize::from(row.leaf != 0)
+             } else {
+-                trie.path(row.leaf).len()
++                prefix_tree.path(row.leaf).len()
+             }
+     );
+-    pil_decode(layout, trie, p, refs, false, &mut index, &mut po);
++    pil_decode(layout, prefix_tree, p, refs, false, &mut index, &mut po);
+     for &(key, value) in &expected {
+         let observed = if refs && (1..=layout.shared).contains(&key) {
+-            trie.path(row.leaf)
++            prefix_tree.path(row.leaf)
+                 .iter()
+                 .find(|(k, _)| *k == key)
+                 .map_or(Value::Absent, |(_, v)| *v)
+@@ -561,7 +561,7 @@ fn main() {
+     let maximum = arg("--max").unwrap_or("1000000").parse::<usize>().unwrap();
+     let reverse = args.iter().any(|x| x == "--reverse");
+     println!(
+-        "shape,representation,events,codec,operation,encoded_bytes,median_ns,min_ns,max_ns,samples_ns"
++        "shape,representation,records,codec,operation,encoded_bytes,median_ns,min_ns,max_ns,samples_ns"
+     );
+     for (shape, count, shared, present_shared, present, full) in [
+         ("object8_full", 8, 4, 4, 4, true),
+@@ -579,12 +579,12 @@ fn main() {
+             continue;
+         }
+         let layout = Layout::new(count, shared);
+-        let trie = Trie::new(shared);
+-        trie.check();
+-        let records = records(&layout, &trie, present_shared, present, full, maximum);
++        let prefix_tree = PrefixTree::new(shared);
++        prefix_tree.check();
++        let records = records(&layout, &prefix_tree, present_shared, present, full, maximum);
+         eprintln!(
+-            "{shape}: {maximum} events, {present_shared}/{shared} shared fields, {present} supplied dynamic fields, {} trie nodes; definitions and paths cached",
+-            trie.nodes.len()
++            "{shape}: {maximum} records, {present_shared}/{shared} shared fields, {present} supplied dynamic fields, {} prefix_tree nodes; definitions and paths cached",
++            prefix_tree.nodes.len()
+         );
+         let mut sizes: Vec<_> = [1000, 10000, 50000, 100000, 1000000]
+             .into_iter()
+@@ -602,16 +602,16 @@ fn main() {
+             let mut pe = FrameEncoder::default();
+             let mut ce = vec![];
+             for (i, row) in records.iter().enumerate() {
+-                let p = pil_encode(&layout, &trie, row, refs, &mut pe);
+-                cbor_encode(&layout, &trie, row, refs, &mut ce);
++                let p = pil_encode(&layout, &prefix_tree, row, refs, &mut pe);
++                cbor_encode(&layout, &prefix_tree, row, refs, &mut ce);
+                 if i < 1024 || i.is_multiple_of(10007) || i + 1 == maximum {
+-                    verify(&layout, &trie, row, p, &ce, refs)
++                    verify(&layout, &prefix_tree, row, p, &ce, refs)
+                 }
+                 pil.push(p);
+                 cbor.push(&ce);
+             }
+             // Root and internal-prefix references preserve shared-field absence.
+-            for leaf in 0..u16::try_from(trie.nodes.len()).unwrap() {
++            for leaf in 0..u16::try_from(prefix_tree.nodes.len()).unwrap() {
+                 let row = Record {
+                     leaf,
+                     dynamic: vec![
+@@ -619,9 +619,9 @@ fn main() {
+                         (count - 1, Atom::Scalar(Value::Null)),
+                     ],
+                 };
+-                let p = pil_encode(&layout, &trie, &row, refs, &mut pe);
+-                cbor_encode(&layout, &trie, &row, refs, &mut ce);
+-                verify(&layout, &trie, &row, p, &ce, refs);
++                let p = pil_encode(&layout, &prefix_tree, &row, refs, &mut pe);
++                cbor_encode(&layout, &prefix_tree, &row, refs, &mut ce);
++                verify(&layout, &prefix_tree, &row, p, &ce, refs);
+             }
+             for &n in &sizes {
+                 eprintln!("{shape} {} {n}", if refs { "REF16" } else { "no_REF" });
+@@ -638,7 +638,7 @@ fn main() {
+                                     if codec == "PIL" {
+                                         black_box(pil_encode(
+                                             black_box(&layout),
+-                                            black_box(&trie),
++                                            black_box(&prefix_tree),
+                                             black_box(row),
+                                             refs,
+                                             &mut pe,
+@@ -646,7 +646,7 @@ fn main() {
+                                     } else {
+                                         cbor_encode(
+                                             black_box(&layout),
+-                                            black_box(&trie),
++                                            black_box(&prefix_tree),
+                                             black_box(row),
+                                             refs,
+                                             &mut ce,
+@@ -671,7 +671,7 @@ fn main() {
+                                         if codec == "PIL" {
+                                             black_box(pil_decode(
+                                                 black_box(&layout),
+-                                                black_box(&trie),
++                                                black_box(&prefix_tree),
+                                                 black_box(b.frame(i)),
+                                                 refs,
+                                                 expand,
+@@ -683,7 +683,7 @@ fn main() {
+                                             epoch += 1;
+                                             black_box(cbor_decode(
+                                                 black_box(&layout),
+-                                                black_box(&trie),
++                                                black_box(&prefix_tree),
+                                                 black_box(b.frame(i)),
+                                                 refs,
+                                                 expand,
+diff --git a/rust/examples/cache_interop.rs b/rust/examples/cache_interop.rs
+deleted file mode 100644
+index 816a337..0000000
+--- a/rust/examples/cache_interop.rs
++++ /dev/null
+@@ -1,26 +0,0 @@
+-//! Validate frames emitted by the Go collection-native prototype against the
+-//! existing shared Rust/WASM codec. The storage extension stays in the same map.
+-use pil_codec::{Definition, decode_exact, read_frame_bytes};
+-use std::{
+-    env, fs,
+-    io::{self, BufReader},
+-};
+-fn main() -> Result<(), Box<dyn std::error::Error>> {
+-    let args: Vec<_> = env::args().collect();
+-    if args.len() != 3 {
+-        return Err("usage: cache_interop resource.map frames.pil".into());
+-    }
+-    let definition = Definition::from_cbor(&fs::read(&args[1])?)?;
+-    let mut input = BufReader::new(fs::File::open(&args[2])?);
+-    let mut count = 0;
+-    while let Some(frame) = read_frame_bytes(&definition, &mut input, 16 << 20)? {
+-        decode_exact(&definition, &frame)
+-            .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))?;
+-        count += 1;
+-    }
+-    println!(
+-        "Validated {count} frames with {} fields using the shared Rust PIL codec",
+-        definition.fields().len()
+-    );
+-    Ok(())
+-}
+diff --git a/rust/examples/check_definition.rs b/rust/examples/check_definition.rs
+index c7ff627..3fc772e 100644
+--- a/rust/examples/check_definition.rs
++++ b/rust/examples/check_definition.rs
+@@ -5,7 +5,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
+     let mut args = std::env::args().skip(1);
+     let schema = std::fs::read_to_string(
+         args.next()
+-            .ok_or("usage: check_definition schema.cddl input.cbor ...")?,
++            .ok_or("usage: check_definition schema.cddl input.rx ...")?,
+     )?;
+     let paths: Vec<_> = args.collect();
+     if paths.is_empty() {
+@@ -13,8 +13,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
+     }
+     for path in paths {
+         let bytes = std::fs::read(&path)?;
+-        cddl::validate_cbor_from_slice(&schema, &bytes, None)?;
+-        DefinitionDocument::from_cbor(&bytes)?;
++        let value = pil_codec::object::decode_value(&bytes)?;
++        let mut oracle = Vec::new();
++        ciborium::ser::into_writer(&value, &mut oracle)?;
++        cddl::validate_cbor_from_slice(&schema, &oracle, None)?;
++        DefinitionDocument::from_pil(&bytes)?;
+         println!("Valid structure and PIL layout: {path}");
+     }
+     Ok(())
+diff --git a/rust/examples/nested_objects.rs b/rust/examples/nested_objects.rs
+index 7405695..d7f5c32 100644
+--- a/rust/examples/nested_objects.rs
++++ b/rust/examples/nested_objects.rs
+@@ -1,6 +1,6 @@
+ //! Experimental composition: nested PIL frames in BYTES / ARRAY<BYTES> fields.
+ //! Hand-bound to nested_objects.cddl, not a CDDL compiler or a public OBJECT type.
+-//! Definition documents still use CBOR; event payloads here contain no CBOR.
++//! Definitions and record payloads use PIL; CBOR is only a comparison baseline.
+ use ciborium::Value as Cbor;
+ use pil_codec::{
+     ABSENT, Array, ArrayView, Definition, Error, Field, FrameIndex, NULL, Scalar, Type, Value,
+@@ -337,10 +337,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
+     }
+     let definitions = [&d.purchase, &d.customer, &d.address, &d.item]
+         .iter()
+-        .map(|d| d.to_cbor().unwrap().len())
++        .map(|d| d.to_pil().unwrap().len())
+         .sum::<usize>();
+     println!(
+-        "One-time four-layout metadata: {definitions} bytes (existing CBOR definition documents; CDDL source {} bytes)",
++        "One-time four-layout metadata: {definitions} bytes (native PIL definition documents; CDDL source {} bytes)",
+         SCHEMA.len()
+     );
+     let mut reader = Reader::default();
+diff --git a/rust/examples/roundtrip.rs b/rust/examples/roundtrip.rs
+index e7f6c2e..4c6dd64 100644
+--- a/rust/examples/roundtrip.rs
++++ b/rust/examples/roundtrip.rs
+@@ -2,7 +2,7 @@ use pil_codec::{Array, Definition, Field, Frames, Scalar, Type, Value, encode};
+ 
+ fn main() -> Result<(), Box<dyn std::error::Error>> {
+     let definition = Definition::new(
+-        "event",
++        "record",
+         1,
+         vec![
+             Field::new("id", Scalar::Uuid),
+@@ -12,8 +12,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
+             Field::new("durations", Type::Array(Scalar::U16)),
+         ],
+     )?;
+-    let definition_bytes = definition.to_cbor()?;
+-    let negotiated = Definition::from_cbor(&definition_bytes)?;
++    let definition_bytes = definition.to_pil()?;
++    let negotiated = Definition::from_pil(&definition_bytes)?;
+     let durations = [Value::U16(100), Value::U16(200), Value::U16(300)];
+     let first = encode(
+         &definition,
+diff --git a/rust/ffi/Cargo.lock b/rust/ffi/Cargo.lock
+index 193d2bc..a8ef35a 100644
+--- a/rust/ffi/Cargo.lock
++++ b/rust/ffi/Cargo.lock
+@@ -70,6 +70,7 @@ version = "0.1.0"
+ dependencies = [
+  "ciborium",
+  "ciborium-ll",
++ "serde",
+  "serde_json",
+ ]
+ 
+diff --git a/rust/ffi/Cargo.toml b/rust/ffi/Cargo.toml
+index f889f71..a77f6d6 100644
+--- a/rust/ffi/Cargo.toml
++++ b/rust/ffi/Cargo.toml
+@@ -6,11 +6,11 @@ rust-version = "1.88"
+ license = "Apache-2.0"
+ description = "Native C ABI for the Pill Packer codec"
+ repository = "https://github.com/AuthenticityLabs/pill-packer"
+-homepage = "https://trietrunk.com/PIL"
++homepage = "https://github.com/AuthenticityLabs/pill-packer"
+ publish = false
+ 
+ [lib]
+ crate-type = ["staticlib", "cdylib"]
+ 
+ [dependencies]
+-pil-codec = { package = "pill-packer", path = "..", features = ["json"] }
++pil-codec = { package = "pill-packer", path = "..", features = ["schema-runtime"] }
+diff --git a/rust/ffi/src/lib.rs b/rust/ffi/src/lib.rs
+index 855e421..467fcc7 100644
+--- a/rust/ffi/src/lib.rs
++++ b/rust/ffi/src/lib.rs
+@@ -8,6 +8,7 @@ pub struct Context {
+     document: Option<DefinitionDocument>,
+     index: FrameIndex,
+     error: String,
++    output: Vec<u8>,
+ }
+ 
+ #[unsafe(no_mangle)]
+@@ -51,7 +52,7 @@ unsafe fn input<'a>(bytes: *const u8, length: usize) -> Result<&'a [u8], Error>
+ 
+ /// # Safety
+ /// ctx is live and exclusively borrowed; bytes points to length readable bytes.
+-/// format: 0 = CBOR, 1 = JSON. No pointer into input survives the call.
++/// format: 0 = PIL, 1 = JSON. No pointer into input survives the call.
+ #[unsafe(no_mangle)]
+ pub unsafe extern "C" fn pp_define(
+     ctx: *mut Context,
+@@ -65,7 +66,7 @@ pub unsafe extern "C" fn pp_define(
+     invoke(ctx, |ctx| {
+         let bytes = unsafe { input(bytes, length)? };
+         let document = match format {
+-            0 => DefinitionDocument::from_cbor(bytes)?,
++            0 => DefinitionDocument::from_pil(bytes)?,
+             1 => DefinitionDocument::from_json(bytes)?,
+             _ => return Err(Error::Invalid("unknown definition format")),
+         };
+@@ -93,7 +94,7 @@ pub unsafe extern "C" fn pp_scan(
+             .document
+             .as_ref()
+             .ok_or(Error::Invalid("definition not loaded"))?;
+-        Ok(ctx.index.scan(d.definition(), bytes, maximum)? as i64)
++        Ok(d.scan(&mut ctx.index, bytes, maximum)? as i64)
+     })
+ }
+ 
+@@ -114,9 +115,9 @@ pub unsafe extern "C" fn pp_document(ctx: *const Context, length: *mut usize) ->
+         return std::ptr::null();
+     };
+     unsafe {
+-        *length = d.as_cbor().len();
++        *length = d.as_pil().len();
+     }
+-    d.as_cbor().as_ptr()
++    d.as_pil().as_ptr()
+ }
+ 
+ /// # Safety
+@@ -138,3 +139,49 @@ pub unsafe extern "C" fn pp_error(ctx: *const Context, length: *mut usize) -> *c
+     }
+     ctx.error.as_ptr()
+ }
++
++/// # Safety
++/// Same input and handle requirements as pp_scan. Output is borrowed until the
++/// next mutation. mode 0 encodes JSON, mode 1 decodes a complete PIL record.
++#[unsafe(no_mangle)]
++pub unsafe extern "C" fn pp_json(
++    ctx: *mut Context,
++    bytes: *const u8,
++    length: usize,
++    mode: u8,
++) -> i64 {
++    let Some(ctx) = (unsafe { ctx.as_mut() }) else {
++        return -1;
++    };
++    invoke(ctx, |ctx| {
++        let input = unsafe { input(bytes, length)? };
++        let d = ctx
++            .document
++            .as_ref()
++            .ok_or(Error::Invalid("definition not loaded"))?;
++        ctx.output = match mode {
++            0 => d.encode_json(input)?,
++            1 => d.decode_json(input)?,
++            _ => return Err(Error::Invalid("unknown JSON operation")),
++        };
++        Ok(ctx.output.len() as i64)
++    })
++}
++/// # Safety
++/// A live handle and writable length pointer are required. Copy before mutation.
++#[unsafe(no_mangle)]
++pub unsafe extern "C" fn pp_output(ctx: *const Context, length: *mut usize) -> *const u8 {
++    if length.is_null() {
++        return std::ptr::null();
++    }
++    unsafe {
++        *length = 0;
++    }
++    let Some(ctx) = (unsafe { ctx.as_ref() }) else {
++        return std::ptr::null();
++    };
++    unsafe {
++        *length = ctx.output.len();
++    }
++    ctx.output.as_ptr()
++}
+diff --git a/rust/src/array.rs b/rust/src/array.rs
+index e5d38d8..3dc5ce3 100644
+--- a/rust/src/array.rs
++++ b/rust/src/array.rs
+@@ -1,4 +1,4 @@
+-use crate::{Error, Scalar, Value, cbor, uint, value};
++use crate::{Error, Scalar, Value, uint, value};
+ 
+ #[derive(Debug, Clone, Copy, PartialEq)]
+ pub enum Array<'a> {
+@@ -77,8 +77,8 @@ impl<'a> ArrayView<'a> {
+             values_start: cursor,
+         };
+         for element in view.iter() {
+-            if let Value::Cbor(bytes) = element?
+-                && matches!(cbor::parse(bytes)?, ciborium::Value::Null)
++            if let Value::Object(bytes) = element?
++                && matches!(crate::object::decode_value(bytes)?, ciborium::Value::Null)
+             {
+                 return Err(Error::Invalid("null array element"));
+             }
+@@ -158,27 +158,20 @@ pub(crate) fn encode(kind: Scalar, array: Array<'_>, output: &mut Vec<u8>) -> Re
+     uint::write(items.len() as u64, output);
+     let mut payload = Vec::new();
+     for &item in items {
+-        if item.scalar() != Some(kind) {
++        if !kind.accepts(item) {
+             return Err(Error::Invalid(
+                 "array element type mismatch or null element",
+             ));
+         }
+         if kind.width().is_some() {
+-            value::write(item, output)?;
++            value::write_as(kind, item, output)?;
+         } else {
+-            if let Value::ValidatedCbor(value) = item {
+-                if value.is_null() {
+-                    return Err(Error::Invalid("null array element"));
+-                }
+-                payload.extend_from_slice(value.as_bytes());
+-            } else if let Value::Cbor(bytes) = item {
+-                if matches!(cbor::parse(bytes)?, ciborium::Value::Null) {
+-                    return Err(Error::Invalid("null array element"));
+-                }
+-                payload.extend_from_slice(bytes);
+-            } else {
+-                value::write(item, &mut payload)?;
++            if let Value::Object(bytes) = item
++                && matches!(crate::object::decode_value(bytes)?, ciborium::Value::Null)
++            {
++                return Err(Error::Invalid("null array element"));
+             }
++            value::write(item, &mut payload)?;
+             uint::write(payload.len() as u64, output);
+         }
+     }
+diff --git a/rust/src/cbor.rs b/rust/src/cbor.rs
+index e96fed1..b4fe0a3 100644
+--- a/rust/src/cbor.rs
++++ b/rust/src/cbor.rs
+@@ -1,6 +1,5 @@
+-use crate::{Definition, Error};
++use crate::Error;
+ use ciborium::Value;
+-use std::collections::HashSet;
+ 
+ pub(crate) fn parse(bytes: &[u8]) -> Result<Value, Error> {
+     let mut remaining = bytes;
+@@ -11,24 +10,3 @@ pub(crate) fn parse(bytes: &[u8]) -> Result<Value, Error> {
+     }
+     Ok(value)
+ }
+-
+-pub(crate) fn dynamic_fields(bytes: &[u8], definition: &Definition) -> Result<(), Error> {
+-    let Value::Map(entries) = parse(bytes)? else {
+-        return Err(Error::Invalid("@fields must contain a CBOR map"));
+-    };
+-    let mut names = HashSet::new();
+-    for (key, _) in entries {
+-        let Value::Text(name) = key else {
+-            return Err(Error::Invalid("@fields keys must be text"));
+-        };
+-        if !names.insert(name.clone()) {
+-            return Err(Error::Invalid("duplicate @fields key"));
+-        }
+-        if name.starts_with('@') || definition.fields().iter().any(|field| field.name == name) {
+-            return Err(Error::Invalid(
+-                "dynamic attribute collides with a defined or reserved field",
+-            ));
+-        }
+-    }
+-    Ok(())
+-}
+diff --git a/rust/src/compression.rs b/rust/src/compression.rs
+index e904f50..a165d72 100644
+--- a/rust/src/compression.rs
++++ b/rust/src/compression.rs
+@@ -1,4 +1,4 @@
+-//! Bounded, single-member gzip decoding for the negotiated event envelope.
++//! Bounded, single-member gzip decoding for compressed payloads.
+ //! Does not change PIL primitive/frame semantics. Output capacity is reused.
+ use std::io::{self, Read};
+ const MAX: usize = u32::MAX as usize - 1;
+@@ -6,7 +6,7 @@ pub fn inflate(input: &[u8], length: usize, output: &mut Vec<u8>) -> io::Result<
+     if length == 0 || length > MAX || input.len() > MAX {
+         return Err(io::Error::new(
+             io::ErrorKind::InvalidData,
+-            "invalid gzip event length",
++            "invalid gzip payload length",
+         ));
+     }
+     let mut decoder = flate2::bufread::GzDecoder::new(input);
+@@ -19,7 +19,7 @@ pub fn inflate(input: &[u8], length: usize, output: &mut Vec<u8>) -> io::Result<
+     if decoder.read(&mut tail)? != 0 || !decoder.into_inner().is_empty() {
+         return Err(io::Error::new(
+             io::ErrorKind::InvalidData,
+-            "gzip event trailing bytes or length mismatch",
++            "gzip payload trailing bytes or length mismatch",
+         ));
+     }
+     Ok(())
+diff --git a/rust/src/definition.rs b/rust/src/definition.rs
+index 666f761..f1f0693 100644
+--- a/rust/src/definition.rs
++++ b/rust/src/definition.rs
+@@ -1,4 +1,4 @@
+-use crate::{AdaptiveIntegers, Error, Scalar, Type, adaptive::IntegerField, cbor};
++use crate::{AdaptiveIntegers, Error, Scalar, Type, adaptive::IntegerField};
+ use ciborium::Value;
+ use std::collections::HashSet;
+ 
+@@ -40,9 +40,8 @@ impl Field {
+     }
+ }
+ 
+-//TODO: Explore compiling CDDL plus PIL layout conventions/annotations into a
+-// definition-specific WASM encoder/decoder. Preserve wire format and validation;
+-// benchmark against the generalized codec to establish any performance benefit.
++// CDDL schemas compile into the shared runtime layout in schema.rs. Keep the
++// same compiled representation for Rust, Go, and WASM so validation stays equal.
+ #[derive(Debug, Clone, PartialEq, Eq)]
+ pub struct Definition {
+     identity: String,
+@@ -73,10 +72,10 @@ impl Definition {
+                 ));
+             }
+             if field.name.starts_with('@')
+-                && (field.name != "@fields" || field.kind != Scalar::Cbor.into())
++                && (field.name != "@fields" || !matches!(field.kind, Type::Scalar(Scalar::Object)))
+             {
+                 return Err(Error::Definition(
+-                    "only @fields:CBOR is a supported reserved field".into(),
++                    "only @fields:OBJECT is a supported reserved field".into(),
+                 ));
+             }
+             if !field.values.is_empty() && field.kind != Scalar::String.into() {
+@@ -138,7 +137,7 @@ impl Definition {
+         &self.fields
+     }
+ 
+-    pub fn to_cbor(&self) -> Result<Vec<u8>, Error> {
++    pub fn to_pil(&self) -> Result<Vec<u8>, Error> {
+         let fields = self
+             .fields
+             .iter()
+@@ -179,14 +178,11 @@ impl Definition {
+             ))
+         }
+         let value = Value::Map(entries);
+-        let mut bytes = Vec::new();
+-        ciborium::ser::into_writer(&value, &mut bytes)
+-            .map_err(|_| Error::Invalid("cannot encode Definition CBOR"))?;
+-        Ok(bytes)
++        crate::object::encode_value(&value)
+     }
+ 
+-    pub fn from_cbor(bytes: &[u8]) -> Result<Self, Error> {
+-        let value = cbor::parse(bytes)?;
++    pub fn from_pil(bytes: &[u8]) -> Result<Self, Error> {
++        let value = crate::object::decode_value(bytes)?;
+         let map = map(&value)?;
+         let mode = match get(map, "adaptive_integers") {
+             Some(v) => AdaptiveIntegers::parse(text(v)?)?,
+@@ -234,7 +230,7 @@ fn map(value: &Value) -> Result<&[(Value, Value)], Error> {
+             }
+             Ok(entries)
+         }
+-        _ => Err(Error::Definition("expected CBOR map".into())),
++        _ => Err(Error::Definition("expected Definition map".into())),
+     }
+ }
+ 
+diff --git a/rust/src/document.rs b/rust/src/document.rs
+index b4bbf96..868f926 100644
+--- a/rust/src/document.rs
++++ b/rust/src/document.rs
+@@ -1,6 +1,6 @@
+ //! Definition registration is separate from the per-record codec. Keep the
+ //! original document for forwarding; compiled fields are only its wire layout.
+-use crate::{Definition, Error, cbor};
++use crate::{Definition, Error};
+ use ciborium::Value;
+ 
+ #[derive(Debug, Clone)]
+@@ -8,6 +8,8 @@ pub struct DefinitionDocument {
+     encoded: Vec<u8>,
+     value: Value,
+     definition: Definition,
++    #[cfg(feature = "schema-runtime")]
++    schema: Option<crate::schema::CompiledSchema>,
+ }
+ 
+ /// Application and transport profiles validate at registration, not during
+@@ -17,36 +19,118 @@ pub trait DefinitionValidator {
+ }
+ 
+ impl DefinitionDocument {
+-    pub fn from_cbor(bytes: &[u8]) -> Result<Self, Error> {
+-        let value = cbor::parse(bytes)?;
+-        let definition = Definition::from_cbor(bytes)?;
++    pub fn from_pil(bytes: &[u8]) -> Result<Self, Error> {
++        let value = crate::object::decode_value(bytes)?;
++        let definition = Definition::from_pil(bytes)?;
++        #[cfg(not(feature = "schema-runtime"))]
++        if value
++            .as_map()
++            .is_some_and(|m| m.iter().any(|(k, _)| k.as_text() == Some("cddl")))
++        {
++            return Err(Error::Definition(
++                "CDDL definitions require schema-runtime support".into(),
++            ));
++        }
++
++        #[cfg(feature = "schema-runtime")]
++        let schema = if value
++            .as_map()
++            .is_some_and(|m| m.iter().any(|(k, _)| k.as_text() == Some("cddl")))
++        {
++            Some(crate::schema::SchemaDocument::from_value(&value, &definition)?.compile()?)
++        } else {
++            None
++        };
+         Ok(Self {
+             encoded: bytes.to_vec(),
+             value,
+             definition,
++            #[cfg(feature = "schema-runtime")]
++            schema,
+         })
+     }
+ 
+     /// JSON is an authoring format. Convert once at registration; forwarding
+-    /// subsequently uses the exact returned CBOR bytes, including annotations.
++    /// subsequently uses the exact returned PIL bytes, including annotations.
+     #[cfg(feature = "json")]
+     pub fn from_json(bytes: &[u8]) -> Result<Self, Error> {
+         let value: Value =
+             serde_json::from_slice(bytes).map_err(|e| Error::Definition(format!("JSON: {e}")))?;
+         validate_json_maps(&value)?;
+-        let mut encoded = Vec::new();
+-        ciborium::ser::into_writer(&value, &mut encoded)
+-            .map_err(|_| Error::Invalid("cannot encode Definition CBOR"))?;
+-        Self::from_cbor(&encoded)
++        let encoded = crate::object::encode_value(&value)?;
++        Self::from_pil(&encoded)
+     }
+ 
++    /// Validate the complete schema after indexing the outer frame. Trusted callers
++    /// may use FrameIndex directly once ingress has accepted the record.
++    pub fn scan(
++        &self,
++        index: &mut crate::FrameIndex,
++        bytes: &[u8],
++        maximum: usize,
++    ) -> Result<usize, Error> {
++        let n = index.scan(&self.definition, bytes, maximum)?;
++        #[cfg(feature = "schema-runtime")]
++        if let Some(schema) = &self.schema {
++            schema.decode_json(&bytes[..n])?;
++        }
++        Ok(n)
++    }
++    #[cfg(feature = "schema-runtime")]
++    pub fn encode_json(&self, bytes: &[u8]) -> Result<Vec<u8>, Error> {
++        let schema = self
++            .schema
++            .as_ref()
++            .ok_or(Error::Invalid("definition has no CDDL schema"))?;
++        let value = serde_json::from_slice(bytes).map_err(|e| Error::Definition(e.to_string()))?;
++        schema.encode_json(&value)
++    }
++    #[cfg(feature = "schema-runtime")]
++    pub fn decode_json(&self, bytes: &[u8]) -> Result<Vec<u8>, Error> {
++        let schema = self
++            .schema
++            .as_ref()
++            .ok_or(Error::Invalid("definition has no CDDL schema"))?;
++        serde_json::to_vec(&schema.decode_json(bytes)?)
++            .map_err(|e| Error::Definition(e.to_string()))
++    }
++    pub fn validate_pac(&self, index: &crate::pac::PacIndex, bytes: &[u8]) -> Result<(), Error> {
++        #[cfg(feature = "schema-runtime")]
++        if let Some(schema) = &self.schema {
++            let [s, e] = index.common();
++            let common = if e > s {
++                Some(crate::decode_exact(
++                    &self.definition,
++                    &bytes[s as usize..e as usize],
++                )?)
++            } else {
++                None
++            };
++            for &[s, e] in index.members() {
++                let frame = crate::decode_exact(&self.definition, &bytes[s as usize..e as usize])?;
++                let mut values = frame.values().to_vec();
++                if let Some(common) = &common {
++                    for (i, value) in common.values().iter().enumerate() {
++                        if *value != crate::Value::Absent {
++                            if values[i] != crate::Value::Absent {
++                                return Err(Error::Invalid("PAC override"));
++                            };
++                            values[i] = *value
++                        }
++                    }
++                }
++                schema.decode_json(&crate::encode(&self.definition, &values)?)?;
++            }
++        }
++        Ok(())
++    }
+     pub fn definition(&self) -> &Definition {
+         &self.definition
+     }
+     pub fn value(&self) -> &Value {
+         &self.value
+     }
+-    pub fn as_cbor(&self) -> &[u8] {
++    pub fn as_pil(&self) -> &[u8] {
+         &self.encoded
+     }
+     pub fn annotation(&self, key: &str) -> Option<&Value> {
+diff --git a/rust/src/frame.rs b/rust/src/frame.rs
+index 33d6296..6751d3a 100644
+--- a/rust/src/frame.rs
++++ b/rust/src/frame.rs
+@@ -1,4 +1,4 @@
+-use crate::{Array, ArrayView, Definition, Error, Type, Value, array, cbor, uint, value};
++use crate::{Array, ArrayView, Definition, Error, Type, Value, array, uint, value};
+ 
+ pub fn encode(definition: &Definition, values: &[Value<'_>]) -> Result<Vec<u8>, Error> {
+     let mut encoder = FrameEncoder::default();
+@@ -80,12 +80,12 @@ impl FrameEncoder {
+                     let Type::Scalar(kind) = field.kind else {
+                         return Err(Error::Invalid("scalar supplied to array field"));
+                     };
+-                    if scalar.scalar() != Some(kind) {
++                    if !kind.accepts(scalar) {
+                         return Err(Error::Invalid("field value type mismatch"));
+                     }
+                     if kind.width().is_some() {
+                         let start = direct.len();
+-                        value::write(scalar, direct)?;
++                        value::write_as(kind, scalar, direct)?;
+                         let f = definition.integers[index];
+                         if f.bits != 0 {
+                             let code = f.code(&direct[start..]);
+@@ -98,11 +98,10 @@ impl FrameEncoder {
+                     } else {
+                         if field.name == "@fields" {
+                             let bytes = match scalar {
+-                                Value::Cbor(bytes) => bytes,
+-                                Value::ValidatedCbor(value) => value.as_bytes(),
++                                Value::Object(bytes) => bytes,
+                                 _ => unreachable!(),
+                             };
+-                            cbor::dynamic_fields(bytes, definition)?;
++                            crate::object::dynamic_fields(bytes, definition)?;
+                             variable.extend_from_slice(bytes);
+                         } else {
+                             value::write(scalar, variable)?;
+@@ -249,7 +248,7 @@ pub fn decode<'a>(definition: &'a Definition, input: &'a [u8]) -> Result<Frame<'
+         values[index] = match field.kind {
+             Type::Scalar(kind) => {
+                 if field.name == "@fields" {
+-                    cbor::dynamic_fields(bytes, definition)?;
++                    crate::object::dynamic_fields(bytes, definition)?;
+                     value::read(kind, bytes, false)?
+                 } else {
+                     value::read(kind, bytes, true)?
+diff --git a/rust/src/index.rs b/rust/src/index.rs
+index f1cc46a..9bccb19 100644
+--- a/rust/src/index.rs
++++ b/rust/src/index.rs
+@@ -1,6 +1,6 @@
+-use crate::{ArrayView, CborRef, Definition, Error, Scalar, Type, uint, value};
++use crate::{ArrayView, Definition, Error, Scalar, Type, uint, value};
+ 
+-/// Reusable offsets into an encoded frame. No decoded event or owned CBOR tree.
++/// Reusable offsets into an encoded frame. No decoded record or owned CBOR tree.
+ #[derive(Default)]
+ pub struct FrameIndex {
+     spans: Vec<[u32; 2]>,
+@@ -125,11 +125,11 @@ impl FrameIndex {
+             }
+             let bytes = &input[span[0] as usize..span[1] as usize];
+             match field.kind {
+-                Type::Scalar(Scalar::Cbor) => {
+-                    if validate && field.name == "@fields" {
+-                        crate::cbor::dynamic_fields(bytes, definition)?;
++                Type::Scalar(Scalar::Object) => {
++                    if field.name == "@fields" {
++                        crate::object::dynamic_fields(bytes, definition)?;
+                     } else {
+-                        CborRef::parse(bytes)?;
++                        crate::object::decode_value(bytes)?;
+                     }
+                 }
+                 Type::Scalar(k) => {
+diff --git a/rust/src/lib.rs b/rust/src/lib.rs
+index 5de16df..2037a3d 100644
+--- a/rust/src/lib.rs
++++ b/rust/src/lib.rs
+@@ -42,3 +42,11 @@ pub use adaptive::AdaptiveIntegers;
+ pub mod compression;
+ 
+ pub mod checksum;
++
++pub mod object;
++
++#[cfg(feature = "schema-runtime")]
++pub mod schema;
++
++mod borrowed_object;
++pub use borrowed_object::{ObjectMap, ObjectRef};
+diff --git a/rust/src/types.rs b/rust/src/types.rs
+index 59919a4..6db9d78 100644
+--- a/rust/src/types.rs
++++ b/rust/src/types.rs
+@@ -21,11 +21,31 @@ pub enum Scalar {
+     TimestampUs,
+     TimestampNs,
+     String,
++    /// UTF-8 slot with a length prefix and zero-padded byte capacity.
++    FixedString(u32),
+     Bytes,
+-    Cbor,
++    Object,
+ }
+ 
+ impl Scalar {
++    pub fn string_length_width(capacity: u32) -> usize {
++        if capacity <= u8::MAX as u32 {
++            1
++        } else if capacity <= u16::MAX as u32 {
++            2
++        } else {
++            4
++        }
++    }
++
++    pub fn accepts(self, value: crate::Value<'_>) -> bool {
++        value.scalar() == Some(self)
++            || matches!(
++                (self, value),
++                (Self::FixedString(_), crate::Value::String(_))
++            )
++    }
++
+     pub fn width(self) -> Option<usize> {
+         match self {
+             Self::Bool | Self::I8 | Self::U8 => Some(1),
+@@ -38,13 +58,19 @@ impl Scalar {
+             | Self::TimestampUs
+             | Self::TimestampNs => Some(8),
+             Self::Uuid => Some(16),
+-            Self::String | Self::Bytes | Self::Cbor => None,
++            Self::FixedString(capacity) => {
++                Some(capacity as usize + Self::string_length_width(capacity))
++            }
++            Self::String | Self::Bytes | Self::Object => None,
+         }
+     }
+ }
+ 
+ impl fmt::Display for Scalar {
+     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
++        if let Self::FixedString(capacity) = self {
++            return write!(f, "STRING({capacity})");
++        }
+         f.write_str(match self {
+             Self::Bool => "BOOL",
+             Self::I8 => "I8",
+@@ -63,8 +89,9 @@ impl fmt::Display for Scalar {
+             Self::TimestampUs => "TIMESTAMP_US",
+             Self::TimestampNs => "TIMESTAMP_NS",
+             Self::String => "STRING",
++            Self::FixedString(_) => unreachable!(),
+             Self::Bytes => "BYTES",
+-            Self::Cbor => "CBOR",
++            Self::Object => "OBJECT",
+         })
+     }
+ }
+@@ -72,6 +99,20 @@ impl fmt::Display for Scalar {
+ impl FromStr for Scalar {
+     type Err = Error;
+     fn from_str(text: &str) -> Result<Self, Error> {
++        if let Some(capacity) = text
++            .strip_prefix("STRING(")
++            .and_then(|s| s.strip_suffix(')'))
++        {
++            let capacity: u32 = capacity
++                .parse()
++                .map_err(|_| Error::Definition("invalid STRING byte capacity".into()))?;
++            if capacity == 0 {
++                return Err(Error::Definition(
++                    "use STRING for variable-capacity text".into(),
++                ));
++            }
++            return Ok(Self::FixedString(capacity));
++        }
+         Ok(match text {
+             "BOOL" => Self::Bool,
+             "I8" => Self::I8,
+@@ -91,7 +132,7 @@ impl FromStr for Scalar {
+             "TIMESTAMP_NS" => Self::TimestampNs,
+             "STRING" => Self::String,
+             "BYTES" => Self::Bytes,
+-            "CBOR" => Self::Cbor,
++            "OBJECT" => Self::Object,
+             _ => return Err(Error::Definition(format!("unsupported scalar type {text}"))),
+         })
+     }
+diff --git a/rust/src/value.rs b/rust/src/value.rs
+index c10cae9..46b7d6d 100644
+--- a/rust/src/value.rs
++++ b/rust/src/value.rs
+@@ -1,4 +1,4 @@
+-use crate::{Error, Scalar, array::Array, cbor};
++use crate::{Error, Scalar, array::Array};
+ 
+ #[derive(Debug, Clone, Copy, PartialEq)]
+ pub enum Value<'a> {
+@@ -23,8 +23,7 @@ pub enum Value<'a> {
+     Mapped(u64),
+     String(&'a str),
+     Bytes(&'a [u8]),
+-    Cbor(&'a [u8]),
+-    ValidatedCbor(crate::CborRef<'a>),
++    Object(&'a [u8]),
+     Array(Array<'a>),
+ }
+ 
+@@ -49,12 +48,37 @@ impl Value<'_> {
+             Self::TimestampNs(_) => Scalar::TimestampNs,
+             Self::String(_) => Scalar::String,
+             Self::Bytes(_) => Scalar::Bytes,
+-            Self::Cbor(_) | Self::ValidatedCbor(_) => Scalar::Cbor,
++            Self::Object(_) => Scalar::Object,
+             Self::Absent | Self::Null | Self::Mapped(_) | Self::Array(_) => return None,
+         })
+     }
+ }
+ 
++pub(crate) fn write_as(kind: Scalar, value: Value<'_>, output: &mut Vec<u8>) -> Result<(), Error> {
++    if let Scalar::FixedString(capacity) = kind {
++        let Value::String(text) = value else {
++            return Err(Error::Invalid("fixed STRING requires text"));
++        };
++        if text.len() > capacity as usize {
++            return Err(Error::Invalid("STRING exceeds byte capacity"));
++        }
++        let end = output
++            .len()
++            .checked_add(capacity as usize + Scalar::string_length_width(capacity))
++            .ok_or(Error::Overflow)?;
++        output
++            .try_reserve(end - output.len())
++            .map_err(|_| Error::Overflow)?;
++        output.extend_from_slice(
++            &(text.len() as u32).to_le_bytes()[..Scalar::string_length_width(capacity)],
++        );
++        output.extend_from_slice(text.as_bytes());
++        output.resize(end, 0);
++        return Ok(());
++    }
++    write(value, output)
++}
++
+ pub(crate) fn write(value: Value<'_>, output: &mut Vec<u8>) -> Result<(), Error> {
+     macro_rules! fixed {
+         ($($kind:ident),* $(,)?) => {
+@@ -64,8 +88,7 @@ pub(crate) fn write(value: Value<'_>, output: &mut Vec<u8>) -> Result<(), Error>
+                 Value::Uuid(v) => output.extend_from_slice(&v),
+                 Value::String(v) => output.extend_from_slice(v.as_bytes()),
+                 Value::Bytes(v) => output.extend_from_slice(v),
+-                Value::Cbor(v) => { crate::CborRef::parse(v)?; output.extend_from_slice(v); },
+-                Value::ValidatedCbor(v) => output.extend_from_slice(v.as_bytes()),
++                Value::Object(v) => { crate::object::decode_value(v)?; output.extend_from_slice(v); },
+                 _ => return Err(Error::Invalid("expected a scalar value")),
+             }
+         };
+@@ -89,7 +112,7 @@ pub(crate) fn write(value: Value<'_>, output: &mut Vec<u8>) -> Result<(), Error>
+     Ok(())
+ }
+ 
+-pub(crate) fn read(kind: Scalar, bytes: &[u8], validate_cbor: bool) -> Result<Value<'_>, Error> {
++pub(crate) fn read(kind: Scalar, bytes: &[u8], validate_object: bool) -> Result<Value<'_>, Error> {
+     macro_rules! fixed {
+         ($($kind:ident : $native:ty),* $(,)?) => {
+             match kind {
+@@ -100,11 +123,19 @@ pub(crate) fn read(kind: Scalar, bytes: &[u8], validate_cbor: bool) -> Result<Va
+                 },
+                 Scalar::Uuid => Value::Uuid(bytes.try_into().map_err(|_| Error::Invalid("wrong UUID width"))?),
+                 Scalar::String => Value::String(std::str::from_utf8(bytes).map_err(|_| Error::Invalid("invalid UTF-8"))?),
+-                Scalar::Bytes => Value::Bytes(bytes),
+-                Scalar::Cbor => {
+-                    if validate_cbor { cbor::parse(bytes)?; }
+-                    Value::Cbor(bytes)
++                Scalar::FixedString(capacity) => {
++                    let prefix = Scalar::string_length_width(capacity);
++                    if bytes.len() != capacity as usize + prefix { return Err(Error::Invalid("wrong fixed STRING width")); }
++                    let mut length = [0u8; 4];
++                    length[..prefix].copy_from_slice(&bytes[..prefix]);
++                    let length = u32::from_le_bytes(length) as usize;
++                    if length > capacity as usize { return Err(Error::Invalid("STRING length exceeds capacity")); }
++                    if bytes[prefix + length..].iter().any(|&b| b != 0) { return Err(Error::Invalid("nonzero STRING padding")); }
++                    Value::String(std::str::from_utf8(&bytes[prefix..prefix + length]).map_err(|_| Error::Invalid("invalid UTF-8"))?)
+                 },
++                Scalar::Bytes => Value::Bytes(bytes),
++                Scalar::Object => {if validate_object {crate::object::decode_value(bytes)?;} Value::Object(bytes)},
++
+             }
+         };
+     }
+diff --git a/rust/tests/adaptive.rs b/rust/tests/adaptive.rs
+index e277953..9849d51 100644
+--- a/rust/tests/adaptive.rs
++++ b/rust/tests/adaptive.rs
+@@ -8,14 +8,14 @@ fn golden_exhaustive_signed_unsigned_and_streams() {
+         "test",
+         1,
+         vec![
+-            Field::new("event_id", S::Uuid),
++            Field::new("id", S::Uuid),
+             Field::new("u", S::U16),
+             Field::new("i", S::I16),
+         ],
+     )
+     .unwrap()
+     .with_adaptive_integers(A::From16);
+-    assert_eq!(Definition::from_cbor(&d.to_cbor().unwrap()).unwrap(), d);
++    assert_eq!(Definition::from_pil(&d.to_pil().unwrap()).unwrap(), d);
+     let mut index = FrameIndex::default();
+     for u in 0..=u16::MAX {
+         let values = [V::Absent, V::U16(u), V::I16(u as i16)];
+@@ -98,7 +98,7 @@ fn reject_noncanonical_and_bad_widths() {
+     let d = Definition::new(
+         "test",
+         1,
+-        vec![Field::new("event_id", S::Uuid), Field::new("u", S::U16)],
++        vec![Field::new("id", S::Uuid), Field::new("u", S::U16)],
+     )
+     .unwrap()
+     .with_adaptive_integers(A::From16);
+diff --git a/rust/tests/borrowed_cbor.rs b/rust/tests/borrowed_cbor.rs
+index c410391..84e159e 100644
+--- a/rust/tests/borrowed_cbor.rs
++++ b/rust/tests/borrowed_cbor.rs
+@@ -126,7 +126,7 @@ fn reusable_encoder_matches_wire_and_recovers_after_error() {
+         vec![
+             Field::new("text", Scalar::String),
+             Field::mapped("level", ["INFO", "ERROR"]),
+-            Field::new("data", Scalar::Cbor),
++            Field::new("data", Scalar::Object),
+             Field::new("array", Type::Array(Scalar::U16)),
+         ],
+     )
+@@ -138,12 +138,13 @@ fn reusable_encoder_matches_wire_and_recovers_after_error() {
+         let values = [
+             Value::String(&text),
+             Value::Mapped(1),
+-            Value::Cbor(b"\xa1\x01\x02"),
++            Value::Object(&native(b"\xa1\x01\x02")),
+             Value::Array(Array::Items(&array)),
+         ];
+         let expected = encode(&definition, &values).unwrap();
+         let mut direct = values;
+-        direct[2] = Value::ValidatedCbor(CborRef::parse(b"\xa1\x01\x02").unwrap());
++        let object = native(b"\xa1\x01\x02");
++        direct[2] = Value::Object(&object);
+         assert_eq!(
+             encoder.encode_with(&definition, |i| Ok(direct[i])).unwrap(),
+             expected
+@@ -163,16 +164,19 @@ fn reusable_encoder_matches_wire_and_recovers_after_error() {
+ 
+ #[test]
+ fn validated_cbor_still_observes_array_and_dynamic_field_rules() {
+-    let array =
+-        Definition::new("array", 1, vec![Field::new("v", Type::Array(Scalar::Cbor))]).unwrap();
+-    let values = [Value::ValidatedCbor(CborRef::parse(&[0xf6]).unwrap())];
++    let array = Definition::new(
++        "array",
++        1,
++        vec![Field::new("v", Type::Array(Scalar::Object))],
++    )
++    .unwrap();
++    let values = [Value::Object(&native(&[0xf6]))];
+     assert!(encode(&array, &[Value::Array(Array::Items(&values))]).is_err());
+-    let fields = Definition::new("fields", 1, vec![Field::new("@fields", Scalar::Cbor)]).unwrap();
+-    assert!(
+-        encode(
+-            &fields,
+-            &[Value::ValidatedCbor(CborRef::parse(&[0]).unwrap())]
+-        )
+-        .is_err()
+-    );
++    let fields = Definition::new("fields", 1, vec![Field::new("@fields", Scalar::Object)]).unwrap();
++    assert!(encode(&fields, &[Value::Object(&native(&[0]))]).is_err());
++}
++
++fn native(raw: &[u8]) -> Vec<u8> {
++    let value: ciborium::Value = ciborium::from_reader(raw).unwrap();
++    pil_codec::object::encode_value(&value).unwrap()
+ }
+diff --git a/rust/tests/codec.rs b/rust/tests/codec.rs
+index cd88117..fa4956c 100644
+--- a/rust/tests/codec.rs
++++ b/rust/tests/codec.rs
+@@ -266,7 +266,7 @@ fn variable_array_matches_addendum_and_borrows_payload() {
+ 
+ #[test]
+ fn arrays_distinguish_absent_null_empty_and_empty_elements() {
+-    for kind in [Scalar::U16, Scalar::String, Scalar::Bytes, Scalar::Cbor] {
++    for kind in [Scalar::U16, Scalar::String, Scalar::Bytes, Scalar::Object] {
+         let def = single(Type::Array(kind));
+         assert_wire(&def, &[Value::Absent], &[0]);
+         assert_wire(&def, &[Value::Null], &[0x40]);
+@@ -307,17 +307,27 @@ fn arrays_preserve_timestamp_units_and_uuid_bytes() {
+ }
+ 
+ #[test]
+-fn cbor_array_allows_complex_values_but_not_null_elements() {
+-    let def = single(Type::Array(Scalar::Cbor));
+-    let items = [Value::Cbor(b"\xa1\x61x\xf6"), Value::Cbor(b"\x82\x01\x02")];
++fn object_array_allows_complex_values_but_not_null_elements() {
++    let def = single(Type::Array(Scalar::Object));
++    let items = [
++        Value::Object(&native(b"\xa1\x61x\xf6")),
++        Value::Object(&native(b"\x82\x01\x02")),
++    ];
+     let bytes = encode(&def, &[Value::Array(Array::Items(&items))]).unwrap();
+     assert_eq!(array_values(&decode_exact(&def, &bytes).unwrap()), items);
+-    for invalid in [&b"\xf6"[..], &b"\x01\x02"[..], &b"\xa1"[..]] {
+-        assert!(encode(&def, &[Value::Array(Array::Items(&[Value::Cbor(invalid)]))]).is_err());
++    let null = native(b"\xf6");
++    for invalid in [null.as_slice(), &b"\x01\x02"[..], &b"\xa1"[..]] {
++        assert!(
++            encode(
++                &def,
++                &[Value::Array(Array::Items(&[Value::Object(invalid)]))]
++            )
++            .is_err()
++        );
+         let mut array = vec![1, 0];
+         encode_extended(invalid.len() as u64, &mut array);
+         array.extend_from_slice(invalid);
+-        assert!(ArrayView::parse(Scalar::Cbor, &array).is_err());
++        assert!(ArrayView::parse(Scalar::Object, &array).is_err());
+     }
+ }
+ 
+@@ -376,7 +386,7 @@ fn large_offsets_and_counts_switch_to_extended_forms() {
+ }
+ 
+ #[test]
+-fn definition_cbor_preserves_order_dictionaries_and_types() {
++fn definition_pil_preserves_order_dictionaries_and_types() {
+     let def = Definition::new(
+         "users",
+         42,
+@@ -384,21 +394,21 @@ fn definition_cbor_preserves_order_dictionaries_and_types() {
+             Field::new("z", Scalar::Uuid),
+             Field::mapped("status", ["active", "pending"]),
+             Field::new("a", Type::Array(Scalar::TimestampNs)),
+-            Field::new("@fields", Scalar::Cbor),
++            Field::new("@fields", Scalar::Object),
+         ],
+     )
+     .unwrap();
+-    let bytes = def.to_cbor().unwrap();
+-    let decoded = Definition::from_cbor(&bytes).unwrap();
++    let bytes = def.to_pil().unwrap();
++    let decoded = Definition::from_pil(&bytes).unwrap();
+     assert_eq!(decoded, def);
+     assert_eq!(decoded.identity(), "users");
+     assert_eq!(decoded.version(), 42);
+     assert_eq!(decoded.fields()[0].name, "z");
+     assert_eq!(decoded.fields()[1].values[1], "pending");
+-    assert_eq!(decoded.to_cbor().unwrap(), bytes);
++    assert_eq!(decoded.to_pil().unwrap(), bytes);
+     let mut trailing = bytes;
+     trailing.push(0);
+-    assert!(Definition::from_cbor(&trailing).is_err());
++    assert!(Definition::from_pil(&trailing).is_err());
+ }
+ 
+ #[test]
+@@ -420,26 +430,41 @@ fn invalid_definitions_fail_before_frames_are_decoded() {
+         assert!(Definition::new("bad", 0, fields).is_err());
+     }
+     assert!("ARRAY<ARRAY<U16>>".parse::<Type>().is_err());
+-    assert!("OBJECT".parse::<Type>().is_err());
+-    assert!(Definition::from_cbor(b"\xa2\x63pil\x00\x63pil\x00").is_err());
++    assert_eq!(
++        "OBJECT".parse::<Type>().unwrap(),
++        Type::Scalar(Scalar::Object)
++    );
++    assert!("CBOR".parse::<Type>().is_err());
++    assert!("ARRAY<CBOR>".parse::<Type>().is_err());
++    assert!(Definition::from_pil(b"\xa2\x63pil\x00\x63pil\x00").is_err());
+ }
+ 
+ #[test]
+ fn dynamic_fields_require_unique_text_keys_without_collisions() {
+     let def = definition(vec![
+         Field::new("id", Scalar::U8),
+-        Field::new("@fields", Scalar::Cbor),
++        Field::new("@fields", Scalar::Object),
+     ]);
+     assert_wire(&def, &[Value::Absent, Value::Absent], &[0]);
+     assert_wire(
+         &def,
+-        &[Value::U8(1), Value::Cbor(b"\xa0")],
+-        &[0xb0, 1, 1, 0, 0xa0],
++        &[Value::U8(1), Value::Object(&native(b"\xa0"))],
++        &[
++            &[0xb0, 1][..],
++            &(native(b"\xa0").len() as u16).to_le_bytes(),
++            &native(b"\xa0"),
++        ]
++        .concat(),
+     );
+     assert_wire(
+         &def,
+-        &[Value::Absent, Value::Cbor(b"\xa1\x61x\x01")],
+-        b"\x30\x04\x00\xa1\x61x\x01",
++        &[Value::Absent, Value::Object(&native(b"\xa1\x61x\x01"))],
++        &[
++            &[0x30][..],
++            &(native(b"\xa1\x61x\x01").len() as u16).to_le_bytes(),
++            &native(b"\xa1\x61x\x01"),
++        ]
++        .concat(),
+     );
+     assert!(encode(&def, &[Value::Absent, Value::Null]).is_err());
+     assert!(decode_exact(&def, &[0x10]).is_err());
+@@ -451,7 +476,7 @@ fn dynamic_fields_require_unique_text_keys_without_collisions() {
+         &b"\xa1\x62@x\x01"[..],
+         &b"\xa2\x61x\x01\x61x\x02"[..],
+     ] {
+-        assert!(encode(&def, &[Value::Absent, Value::Cbor(invalid)]).is_err());
++        assert!(encode(&def, &[Value::Absent, Value::Object(invalid)]).is_err());
+         let mut wire = vec![0x30];
+         encode_extended(invalid.len() as u64, &mut wire);
+         wire.extend_from_slice(invalid);
+@@ -460,11 +485,20 @@ fn dynamic_fields_require_unique_text_keys_without_collisions() {
+ }
+ 
+ #[test]
+-fn cbor_fields_require_exactly_one_item_and_enforce_depth_limit() {
+-    let def = single(Scalar::Cbor);
+-    assert_wire(&def, &[Value::Cbor(b"\xf6")], b"\xc0\x01\x00\xf6");
++fn object_fields_require_exactly_one_item_and_enforce_depth_limit() {
++    let def = single(Scalar::Object);
++    assert_wire(
++        &def,
++        &[Value::Object(&native(b"\xf6"))],
++        &[
++            &[0xc0][..],
++            &(native(b"\xf6").len() as u16).to_le_bytes(),
++            &native(b"\xf6"),
++        ]
++        .concat(),
++    );
+     for payload in [&b""[..], &b"\x01\x02"[..], &b"\xff"[..], &b"\xa1"[..]] {
+-        assert!(encode(&def, &[Value::Cbor(payload)]).is_err());
++        assert!(encode(&def, &[Value::Object(payload)]).is_err());
+         let mut bytes = vec![0xc0];
+         encode_extended(payload.len() as u64, &mut bytes);
+         bytes.extend_from_slice(payload);
+@@ -472,7 +506,7 @@ fn cbor_fields_require_exactly_one_item_and_enforce_depth_limit() {
+     }
+     let mut deep = vec![0x81; 65];
+     deep.push(1);
+-    assert!(encode(&def, &[Value::Cbor(&deep)]).is_err());
++    assert!(encode(&def, &[Value::Object(&deep)]).is_err());
+ }
+ 
+ #[test]
+@@ -558,3 +592,8 @@ fn concatenated_frames_preserve_absence_and_null() {
+     assert!(matches!(broken.next().unwrap(), Err(Error::Incomplete)));
+     assert!(broken.next().is_none());
+ }
++
++fn native(raw: &[u8]) -> Vec<u8> {
++    let value: ciborium::Value = ciborium::from_reader(raw).unwrap();
++    pil_codec::object::encode_value(&value).unwrap()
++}
+diff --git a/rust/tests/documents.rs b/rust/tests/documents.rs
+index 231e6d5..7ab77a3 100644
+--- a/rust/tests/documents.rs
++++ b/rust/tests/documents.rs
+@@ -13,22 +13,22 @@ fn emitted_definition_conforms_to_cddl() {
+         ],
+     )
+     .unwrap();
+-    cddl::validate_cbor_from_slice(SCHEMA, &d.to_cbor().unwrap(), None).unwrap();
++    validate(SCHEMA, &d.to_pil().unwrap()).unwrap();
+     let adaptive = d.with_adaptive_integers(pil_codec::AdaptiveIntegers::From16);
+-    cddl::validate_cbor_from_slice(SCHEMA, &adaptive.to_cbor().unwrap(), None).unwrap();
++    validate(SCHEMA, &adaptive.to_pil().unwrap()).unwrap();
+ }
+ 
+ #[cfg(feature = "json")]
+ #[test]
+ fn annotations_survive_and_profiles_are_explicit() {
+-    let json = br#"{"pil":0,"definition":"test","version":0,"fields":[{"name":"id","type":"UUID","ui":{"label":"Identity"}}],"resource":{"roles":{"id":"id"}},"vendor":{"transport":"jms"}}"#;
++    let json = br#"{"pil":0,"definition":"test","version":0,"fields":[{"name":"id","type":"UUID","ui":{"label":"Identity"}}],"profile":{"identity":"id"},"vendor":{"transport":"jms"}}"#;
+     cddl::validate_json_from_str(SCHEMA, std::str::from_utf8(json).unwrap(), None).unwrap();
+     let doc = DefinitionDocument::from_json(json).unwrap();
+-    cddl::validate_cbor_from_slice(SCHEMA, doc.as_cbor(), None).unwrap();
+-    let forwarded = DefinitionDocument::from_cbor(doc.as_cbor()).unwrap();
+-    assert_eq!(forwarded.as_cbor(), doc.as_cbor());
++    validate(SCHEMA, doc.as_pil()).unwrap();
++    let forwarded = DefinitionDocument::from_pil(doc.as_pil()).unwrap();
++    assert_eq!(forwarded.as_pil(), doc.as_pil());
+     assert_eq!(forwarded.value(), doc.value());
+-    assert!(forwarded.annotation("resource").is_some());
++    assert!(forwarded.annotation("profile").is_some());
+     struct NeedsTimezone;
+     impl DefinitionValidator for NeedsTimezone {
+         fn validate(&self, doc: &DefinitionDocument) -> Result<(), Error> {
+@@ -76,3 +76,11 @@ fn json_preserves_u64_without_javascript_rounding() {
+     let doc = DefinitionDocument::from_json(br#"{"pil":0,"definition":"test","version":18446744073709551615,"fields":[{"name":"x","type":"U64"}]}"#).unwrap();
+     assert_eq!(doc.definition().version(), u64::MAX);
+ }
++
++fn validate(schema: &str, pil: &[u8]) -> Result<(), Box<dyn std::error::Error>> {
++    let value = pil_codec::object::decode_value(pil)?;
++    let mut oracle = Vec::new();
++    ciborium::ser::into_writer(&value, &mut oracle)?;
++    cddl::validate_cbor_from_slice(schema, &oracle, None)?;
++    Ok(())
++}
+diff --git a/rust/tests/fixtures/pac/definition.cbor b/rust/tests/fixtures/pac/definition.cbor
+deleted file mode 100644
+index dbd2b63896c2157d719f25748a667c189ebe3471..0000000000000000000000000000000000000000
+GIT binary patch
+literal 0
+HcmV?d00001
+
+literal 517
+zcmZWlyG{c!5Ih=cYCeKAh#m<ErAYy#po$iI{7C#bt$hbchY;dFcoh64_sCr?LUOUQ
+zyPlnyA5mIYC}rVf`uLQAJPc}tys}c}Z3($t&Tsm`)Bo0nQQKr=7}mw|>T*vbE2i9x
+zI-0is)zKqm%IKQv{^4%ExK%Z|3h7Ok2+{_<rYf7rb_Zz$1px=yb83&2NFV*~CyIQm
+zLLP7F8r<qSFV2d>FjA~o;8&KE&1)|Kp4O31;BAOpfTKhDZag;64B8LH5XzX&)cUkm
+zDzc}1suQ@j0=lHFZvq`fxXct1i8h;Lvh~=-fb!adt)STg&#TAC8%J6*bQfWIhiL7E
+fLDxkG-3U|V51=tL0raw#P&U~1UfzqDO*Q-hlxxxH
+
+diff --git a/rust/tests/fixtures/pac/native.pac b/rust/tests/fixtures/pac/native.pac
+index ff2a0c6536f80898dba44197e0a2d9fd0201f488..066813d3cf4ef28b460d46faf070cf57eba2ddc3 100644
+GIT binary patch
+delta 79
+zcmdnWzLkA~f`ZRGM(atjA+;A8Ta!GRcSZ$VQS&$_c(<A7^orEu87JmXbdVvaW@C*d
+FGXQSQBkceH
+
+delta 79
+zcmdnWzLkA~g2F|Ug%i#8PM!GW^Ay{P8?28z;vY*yx2-MwyO}XP;_RZ1i4HOZ)oiS>
+GWCj2(>L<?t
+
+diff --git a/rust/tests/fixtures/pac/packed.pac b/rust/tests/fixtures/pac/packed.pac
+index 14612bd50d83f7bf0f93507576f7d54dd9606f82..177c54f4d728106ef9d7c58c8283015f78f4bac0 100644
+GIT binary patch
+delta 43
+zcmV+`0M!4@1<eJJARtWc0XvdiRDIBag<?p9xmr-vCP>Z^-GdCvsAb1!$e*!5jRKhr
+B6N~@=
+
+delta 43
+zcmV+`0M!4@1<eJJARy5+p^-Mdm67!Gls$OZ1>=Zc;}~0pt#SRc0cTjvqKL6TjRMvo
+B6@35z
+
+diff --git a/rust/tests/fixtures/pac/packed.pac.gz b/rust/tests/fixtures/pac/packed.pac.gz
+index 1d019f140bc7e0c9978164246eeb72b62ea41a83..34de14d24e0475d47e2ae996ac76875e8a48e7ff 100644
+GIT binary patch
+literal 335
+zcmV-V0kHlbiwFP!00004|2)vWN;^Rm1@JSQ?_`tw^Y^<878ZgAJHZ!7VPRn<Sggr_
+z0r$h*QLzw|U}I@7w!VT-pdgBct+k!cAfxBrDfSH9-*Sfg8UO}>Pk-+G2f#o70kHjT
+zwr=-#FW#@N4~Emny`7Jh;al%>8ooT(r^Dxa1OK-_%NW}@9c0mYY!f$dd6X2<$W79u
+zSU=quoaGZ|*U;aD$H;K`n^^rS{at#<?eU2%Tz{0t*^za2d_$vHPg8CrMv0O4v`7p|
+zpd<)53Yh^(NlA&1LYqX2%1X**jyg;!swk;cIO;N`sH&t|<wzDTMKvY08cB~SMRg_h
+zI!FJRQq)k=XmB*cl%l4RrfhYVM2cEUTC&wS5-AFmgtFCn5-DmcY0Fj@NTjHvq$68h
+hB$1-7lCErZ2><}#2LJ&7{{a91|Nr#Bv+2zO003@Vo`e7Z
+
+literal 333
+zcmV-T0kZxdiwFP!00004|2)t;OFKan1@JSQY~GK5{=Q-tECmgMh>hPvu#k`p5^x{c
+z9bcW51iOHi7TQ}``w>#u*{ARWXe-F*xp#^^1NXO_;m!lV0PyM0gZ}{d=RW}6b{}VZ
+zulKXB&%1-m_i!;iUUZLco+sZg=HzhxG&S&l`?G<Ojgo#kxQcA-`Ys#9`C#bANt|z=
+z@ANOSv9nv~?ZacFxc*ISeiZ&L9b|TLW^>mYCQ*87ogLlMDArSx8;Mb3<UMr~LlP(n
+z0*)HYfTW<Lz(=7;B1J_d#Ue*7rWA!r!jPjjQ;JGTN+phD;ZjsqQZAEpm{L?xQmJtC
+zpD9IECDkfNOH3)MDXGa;mr10kuB0woT_KU8hLVPCb(KVlno63o)in|+YAI>SR=Xrp
+f)K=1#t*!$A0Q>*|0RR6100960rlPX7%>n=bKWLlb
+
+diff --git a/rust/tests/fixtures/pac/spliced-pacs.gz b/rust/tests/fixtures/pac/spliced-pacs.gz
+index 7f079d028ed191f353ef4bf4e72b253eb7d98122..e61262cb09ec0e4dcae4a2aea4f1a97e3f45ab5f 100644
+GIT binary patch
+literal 647
+zcmb2|=3oGW|27x)dRaS)uzoO}{XS*#pU>ZSbBl>Ju~{D!_ee}kRE=13vVrmY;k$tw
+z1*Rk<XX<a;*W|xIp{sT6*16{u7C*nI`Hkn!{i3$tQVeVj{`K$vuphAh&$!`l?zX(|
+z<@)#5uj6mKe0=ZR{;3b6-xo{mv$?VS@bhZs|J&_POWd}QO}SW^BWzw!IYs2+3ExXg
+zBJA%<%y}xDe*MDzmg6T1e$I~gtMxaw>crcRow_mgQ;yx7SXx%&yg0%?I8Vi`bK>_c
+z9z324R5&cSW-@wudUp0Z&35TJ<#j5x&&o%0mBz{ti&sWVSFBnR_0&U5&(&0QtCVNI
+zrfaF{S1b4bGlQ-KT*@dgIXq?2vPsKwN~gJWMR`SSx@sw;$u+fQ)745L%`ENA(_!Ks
+tOI9piq8uHoGI7zmN$YY-IT;upuro0H9}PD$!;KLXc<esmma|wH7yv1lGNJ$g
+
+literal 643
+zcmb2|=3oGW|27w_y{#QZSU(ug&bilL|8HNCxDG3CQ%CQ8=M57k@CX&i-;|A?JC$X3
+z!!)s5(UHFegKpeh{((6|`^1Z#<z2SS-?z_sc#io1!-tpWoBuQXcy7;duS`C@dj0p!
+z>(B3QKK;GG&^E55KX0D;ef?)o3jUdxeyIPwxp89eq&lk|T{&-l=}8~?negJ6=bZfc
+z@4x78+PFFT#oNQlOLqM8&8ZXlrze|IR+LtJU0N-$Dr>In-AfwRf+tIN1|~hREfsPW
+z(%@w3lRDF|WWkaH?h8GYTwPU<D!J<}6KVB2G-0t>aF>^tmug?i!=R9`Aic>YGlD__
+zgH{%NnXl;@s(Mw+-P=cVmFCKmVbeXAtXQ{1FFICn;-a=mZ8@b=UAks@&DwO;R7f*R
+qGxKEFZk3=bVV9<@UB}G8@CO)d|3^cOtWaYF1>FV4>lL$D85jUS$S>Of
+
+diff --git a/rust/tests/frame_index.rs b/rust/tests/frame_index.rs
+index 637165b..0f7366e 100644
+--- a/rust/tests/frame_index.rs
++++ b/rust/tests/frame_index.rs
+@@ -15,7 +15,7 @@ fn borrowed_index_matches_codec_and_rejects_every_truncation() {
+             Field::new("text", Scalar::String),
+             Field::new("bytes", Scalar::Bytes),
+             Field::new("array", Type::Array(Scalar::U16)),
+-            Field::new("object", Scalar::Cbor),
++            Field::new("object", Scalar::Object),
+         ],
+     )
+     .unwrap();
+@@ -29,7 +29,7 @@ fn borrowed_index_matches_codec_and_rejects_every_truncation() {
+             Value::String("aλ"),
+             Value::Bytes(&[]),
+             Value::Array(Array::Items(&[Value::U16(4), Value::U16(6)])),
+-            Value::Cbor(&[0xa1, 0x00, 0x18, 0x2a]),
++            Value::Object(&native(&[0xa1, 0x00, 0x18, 0x2a])),
+         ],
+     )
+     .unwrap();
+@@ -57,12 +57,16 @@ fn extended_offsets_empty_arrays_and_cbormaps_are_validated() {
+         1,
+         vec![
+             Field::new("payload", Scalar::Bytes),
+-            Field::new("end", Scalar::Cbor),
++            Field::new("end", Scalar::Object),
+         ],
+     )
+     .unwrap();
+     let payload = vec![42; 65535];
+-    let data = encode(&d, &[Value::Bytes(&payload), Value::Cbor(&[0xf6])]).unwrap();
++    let data = encode(
++        &d,
++        &[Value::Bytes(&payload), Value::Object(&native(&[0xf6]))],
++    )
++    .unwrap();
+     let mut index = FrameIndex::default();
+     assert_eq!(index.scan(&d, &data, 1 << 20).unwrap(), data.len());
+     let mut corrupt = data.clone();
+@@ -78,7 +82,7 @@ fn structural_scan_skips_values_but_preserves_safe_boundaries() {
+         vec![
+             Field::mapped("code", ["one"]),
+             Field::new("text", Scalar::String),
+-            Field::new("object", Scalar::Cbor),
++            Field::new("object", Scalar::Object),
+         ],
+     )
+     .unwrap();
+@@ -87,7 +91,7 @@ fn structural_scan_skips_values_but_preserves_safe_boundaries() {
+         &[
+             Value::Mapped(0),
+             Value::String("text"),
+-            Value::Cbor(&[0xf6]),
++            Value::Object(&native(&[0xf6])),
+         ],
+     )
+     .unwrap();
+@@ -112,3 +116,8 @@ fn structural_scan_skips_values_but_preserves_safe_boundaries() {
+     }
+     assert!(fast.scan_structural(&d, &good, good.len() - 1).is_err());
+ }
++
++fn native(raw: &[u8]) -> Vec<u8> {
++    let value: ciborium::Value = ciborium::from_reader(raw).unwrap();
++    pil_codec::object::encode_value(&value).unwrap()
++}
+diff --git a/rust/tests/pac.rs b/rust/tests/pac.rs
+index ce6037b..07605b6 100644
+--- a/rust/tests/pac.rs
++++ b/rust/tests/pac.rs
+@@ -6,7 +6,7 @@ use pil_codec::{
+ #[test]
+ fn go_prefix_fixture_borrowed_roundtrip_and_malformed() {
+     let raw = include_bytes!("fixtures/pac/packed.pac");
+-    let d = Definition::from_cbor(include_bytes!("fixtures/pac/definition.cbor")).unwrap();
++    let d = Definition::from_pil(include_bytes!("fixtures/pac/definition.rx")).unwrap();
+     let digest: [u8; 32] = raw[32..64].try_into().unwrap();
+     let mut pac = PacIndex::default();
+     assert_eq!(
+@@ -28,8 +28,8 @@ fn go_prefix_fixture_borrowed_roundtrip_and_malformed() {
+         assert_eq!(m.spans()[1][0], ABSENT);
+         let (_, id) = pil_codec::pac::field(common, &c, member, &m, 1).unwrap();
+         assert_eq!(id, [0, 0, 0, 0, 0, 0, 0x70, 0, 0x80, 0, 0, 0, 0, 0, 0, 42]);
+-        let (_, event) = pil_codec::pac::field(common, &c, member, &m, 0).unwrap();
+-        assert_eq!(event.len(), 16);
++        let (_, value) = pil_codec::pac::field(common, &c, member, &m, 0).unwrap();
++        assert_eq!(value.len(), 16);
+     }
+     for end in 0..raw.len() {
+         assert!(
+@@ -54,7 +54,7 @@ fn go_prefix_fixture_borrowed_roundtrip_and_malformed() {
+ #[test]
+ fn structural_pac_retains_full_bounds_and_binding_checks() {
+     let raw = include_bytes!("fixtures/pac/packed.pac");
+-    let d = Definition::from_cbor(include_bytes!("fixtures/pac/definition.cbor")).unwrap();
++    let d = Definition::from_pil(include_bytes!("fixtures/pac/definition.rx")).unwrap();
+     let digest: [u8; 32] = raw[32..64].try_into().unwrap();
+     let mut full = PacIndex::default();
+     full.scan(&d, raw, &digest, &[SOURCE_EXTENSION], 64 << 20)
+diff --git a/rust/tests/reference.rs b/rust/tests/reference.rs
+index d285a9d..8458cf2 100644
+--- a/rust/tests/reference.rs
++++ b/rust/tests/reference.rs
+@@ -5,7 +5,7 @@ fn references_keep_all_sixteen_bits_and_presence_states() {
+     let definition =
+         Definition::new("shared", 1, vec![Field::new("reference", Scalar::Ref16)]).unwrap();
+     assert_eq!(
+-        Definition::from_cbor(&definition.to_cbor().unwrap()).unwrap(),
++        Definition::from_pil(&definition.to_pil().unwrap()).unwrap(),
+         definition
+     );
+     for (value, bytes) in [
+diff --git a/rust/wasm/Cargo.lock b/rust/wasm/Cargo.lock
+index e5b8c92..a2d54c6 100644
+--- a/rust/wasm/Cargo.lock
++++ b/rust/wasm/Cargo.lock
+@@ -160,6 +160,7 @@ dependencies = [
+  "ciborium",
+  "ciborium-ll",
+  "flate2",
++ "serde",
+  "serde_json",
+ ]
+ 
+diff --git a/rust/wasm/Cargo.toml b/rust/wasm/Cargo.toml
+index 0697f30..53d3858 100644
+--- a/rust/wasm/Cargo.toml
++++ b/rust/wasm/Cargo.toml
+@@ -6,12 +6,12 @@ rust-version = "1.88"
+ license = "Apache-2.0"
+ description = "WebAssembly bindings for the Pill Packer codec"
+ repository = "https://github.com/AuthenticityLabs/pill-packer"
+-homepage = "https://trietrunk.com/PIL"
++homepage = "https://github.com/AuthenticityLabs/pill-packer"
+ publish = false
+ [lib]
+ crate-type = ["cdylib"]
+ [dependencies]
+-pil-codec = { package = "pill-packer", path = "..", features = ["gzip", "json"] }
++pil-codec = { package = "pill-packer", path = "..", features = ["gzip", "schema-runtime"] }
+ sha2 = "0.10"
+ 
+ [profile.release]
+diff --git a/rust/wasm/src/lib.rs b/rust/wasm/src/lib.rs
+index dab9b1a..4823209 100644
+--- a/rust/wasm/src/lib.rs
++++ b/rust/wasm/src/lib.rs
+@@ -36,9 +36,9 @@ pub extern "C" fn input(length: usize) -> *mut u8 {
+ }
+ #[unsafe(no_mangle)]
+ pub extern "C" fn definition() -> u32 {
+-    CODEC.with_borrow_mut(|c| match DefinitionDocument::from_cbor(&c.input) {
++    CODEC.with_borrow_mut(|c| match DefinitionDocument::from_pil(&c.input) {
+         Ok(d) => {
+-            let digest: [u8; 32] = Sha256::digest(d.as_cbor()).into();
++            let digest: [u8; 32] = Sha256::digest(d.as_pil()).into();
+             let d = (d, digest);
+             if let Some(i) = c.definitions.iter().position(Option::is_none) {
+                 c.definitions[i] = Some(d);
+@@ -92,7 +92,7 @@ fn scan_mode(handle: usize, start: usize, length: usize, structural: bool) -> u3
+                 if structural {
+                     index.scan_structural(d.0.definition(), b, MAX)
+                 } else {
+-                    index.scan(d.0.definition(), b, MAX)
++                    d.0.scan(index, b, MAX)
+                 }
+             });
+         match result {
+@@ -178,7 +178,11 @@ fn scan_pac_mode(
+             if extra {
+                 supported.pop();
+             }
+-            result
++            let n = result?;
++            if !structural {
++                d.0.validate_pac(pac, b)?;
++            }
++            Ok(n)
+         })();
+         match result {
+             Ok(n) => n as u32,
+@@ -244,7 +248,7 @@ pub extern "C" fn json_definition() -> u32 {
+     CODEC.with_borrow_mut(|c| match DefinitionDocument::from_json(&c.input) {
+         Ok(d) => {
+             c.document.clear();
+-            c.document.extend_from_slice(d.as_cbor());
++            c.document.extend_from_slice(d.as_pil());
+             c.document.len() as u32
+         }
+         Err(e) => {
+@@ -280,3 +284,31 @@ pub extern "C" fn verify_crc32c(start: usize, length: usize, expected: u32) -> u
+         }
+     })
+ }
++
++/// Convert JSON to nested PIL (mode 0) or a complete nested PIL record to JSON
++/// (mode 1). Input and output use the existing reusable ABI buffers.
++#[unsafe(no_mangle)]
++pub extern "C" fn schema_json(handle: usize, mode: u32) -> u32 {
++    CODEC.with_borrow_mut(|c| {
++        let result = c
++            .definitions
++            .get(handle)
++            .and_then(Option::as_ref)
++            .ok_or(Error::Invalid("definition handle"))
++            .and_then(|d| match mode {
++                0 => d.0.encode_json(&c.input),
++                1 => d.0.decode_json(&c.input),
++                _ => Err(Error::Invalid("JSON mode")),
++            });
++        match result {
++            Ok(b) => {
++                c.document = b;
++                c.document.len() as u32
++            }
++            Err(e) => {
++                c.error = e.to_string();
++                u32::MAX
++            }
++        }
++    })
++}
+diff --git a/schemas/definition.cddl b/schemas/definition.cddl
+index 837d14c..81c9c1e 100644
+--- a/schemas/definition.cddl
++++ b/schemas/definition.cddl
+@@ -17,9 +17,14 @@ pil-field = {
+ pil-scalar = "BOOL" / "I8" / "I16" / "I32" / "I64"
+            / "U8" / "U16" / "U32" / "U64" / "F32" / "F64"
+            / "UUID" / "TIMESTAMP_MS" / "TIMESTAMP_US" / "TIMESTAMP_NS"
+-           / "REF16" / "STRING" / "BYTES" / "CBOR"
++           / "REF16" / "STRING" / pil-fixed-string / "BYTES" / "OBJECT"
+ pil-array = "ARRAY<BOOL>" / "ARRAY<I8>" / "ARRAY<I16>" / "ARRAY<I32>" / "ARRAY<I64>"
+           / "ARRAY<U8>" / "ARRAY<U16>" / "ARRAY<U32>" / "ARRAY<U64>"
+           / "ARRAY<F32>" / "ARRAY<F64>" / "ARRAY<UUID>"
+           / "ARRAY<TIMESTAMP_MS>" / "ARRAY<TIMESTAMP_US>" / "ARRAY<TIMESTAMP_NS>"
+-          / "ARRAY<REF16>" / "ARRAY<STRING>" / "ARRAY<BYTES>" / "ARRAY<CBOR>"
++          / "ARRAY<REF16>" / "ARRAY<STRING>" / "ARRAY<BYTES>" / "ARRAY<OBJECT>" / "ARRAY<CBOR>"
++          / pil-fixed-string-array
++
++; Capacities are positive UTF-8 byte counts; codecs validate their numeric bounds.
++pil-fixed-string = tstr .regexp "STRING\\([1-9][0-9]*\\)"
++pil-fixed-string-array = tstr .regexp "ARRAY<STRING\\([1-9][0-9]*\\)>"

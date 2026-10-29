@@ -4,7 +4,6 @@ pub type Result<T> = std::result::Result<T, Box<dyn std::error::Error>>;
 mod collector;
 mod query;
 mod schema;
-pub use collector::CancelCollector;
 pub use query::{predicate, search, text_query};
 pub use schema::{document, schema};
 #[derive(Default, Deserialize)]
@@ -36,3 +35,6 @@ pub struct QueryPlan<'a> {
     pub text: &'a str,
     pub mode: &'a str,
 }
+
+#[cfg(test)]
+mod tests;

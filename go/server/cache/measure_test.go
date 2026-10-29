@@ -263,7 +263,7 @@ func TestMeasureAggregateStorage(t *testing.T) {
 	})
 	decode := timed(t, 9, func() error {
 		for _, raw := range rawRecords {
-			if len(raw) >= 8 && string(raw[:8]) == "SUMDAY00" {
+			if isSummaryPAC(raw) {
 				_, _, _, _, e := decodeSummaryDay(raw)
 				if e != nil {
 					return e
@@ -279,7 +279,7 @@ func TestMeasureAggregateStorage(t *testing.T) {
 	})
 	read := timed(t, 9, func() error {
 		return boundedRecords(b.sum, maxSummaryDay+32, func(raw []byte) error {
-			if len(raw) >= 8 && string(raw[:8]) == "SUMDAY00" {
+			if isSummaryPAC(raw) {
 				_, _, _, _, e := decodeSummaryDay(raw)
 				return e
 			}

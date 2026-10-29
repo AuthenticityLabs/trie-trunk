@@ -106,7 +106,7 @@ func readNativeTest(t *testing.T, raw []byte) ([]Manifest, []NativeChunk) {
 		case 2:
 			l = nativeControl("U32", "BYTES", "STRING")
 		case 4:
-			l = nativeControl("U32", "CBOR")
+			l = nativeControl("U32", "OBJECT")
 		case 5:
 			l = nativeControl("U32", "U8", "U64", "BYTES", "BYTES")
 		case 6:
@@ -137,7 +137,7 @@ func readNativeTest(t *testing.T, raw []byte) ([]Manifest, []NativeChunk) {
 			if !open {
 				t.Fatal("chunk outside package")
 			}
-			kinds := []string{"map", "trie", "state", "index", "population"}
+			kinds := []string{"map", "trie", "state", "index"}
 			kind := int(f.Values[1].Bytes[0])
 			if kind >= len(kinds) {
 				t.Fatal("kind")
@@ -159,7 +159,7 @@ func readNativeTest(t *testing.T, raw []byte) ([]Manifest, []NativeChunk) {
 	return manifests, chunks
 }
 
-func TestNativeCollectHTTPGapOnlyAndLazyPopulation(t *testing.T) {
+func TestNativeCollectHTTPGapOnlyAndLazyPayload(t *testing.T) {
 	l := testLayout(t, false)
 	at := time.Date(2026, 10, 16, 12, 0, 0, 0, time.UTC)
 	p, e := OpenEndpoint(Config{Root: t.TempDir(), Cache: "demo", Tenant: "test", Layout: l, Now: func() time.Time { return at.Add(2 * time.Hour) }})
@@ -181,7 +181,7 @@ func TestNativeCollectHTTPGapOnlyAndLazyPopulation(t *testing.T) {
 		r.Header.Set("Accept", "application/pil")
 		r.Header.Set("Accept-Encoding", "gzip")
 		if capability {
-			r.Header.Set("PIL-Features", "event-gzip-v1,native-ranges,adaptive-integers")
+			r.Header.Set("PIL-Features", "native-ranges,adaptive-integers")
 		}
 		if have != nil {
 			raw, _ := json.Marshal([]Coverage{*have})
@@ -203,28 +203,28 @@ func TestNativeCollectHTTPGapOnlyAndLazyPopulation(t *testing.T) {
 	if len(ms) != 1 || ms[0].Provisional || len(ms[0].Index) != 1 || ms[0].Index[0] != (Span{1, 7}) {
 		t.Fatal("not complete hourly index", ms)
 	}
-	var idx, pop []byte
+	var idx, pods []byte
 	for _, c := range chunks {
 		if c.Kind == "index" {
 			idx = append(idx, c.Data...)
 		}
 		if c.Kind == "pac" {
-			pop = append(pop, c.Data...)
+			pods = append(pods, c.Data...)
 		}
 	}
 	if !bytes.Equal(idx, s.branches[Write].rows[IndexRowSize:]) {
 		t.Fatal("index was reencoded")
 	}
-	lo, hi, e := s.branches[Write].populationRange(2, s.row)
+	lo, hi, e := s.branches[Write].podsRange(2, s.row)
 	if e != nil {
 		t.Fatal(e)
 	}
-	source, e := readBytes(s.branches[Write].pop, lo, hi)
-	if e != nil || !bytes.Equal(source, pop) {
-		t.Fatal("not exact lazy population", e)
+	source, e := readBytes(s.branches[Write].pods, lo, hi)
+	if e != nil || !bytes.Equal(source, pods) {
+		t.Fatal("not exact lazy payload", e)
 	}
 	m := ms[0]
-	have := Coverage{Definition: m.Definition, Generation: m.Generation, Index: m.Index, Population: m.Population, TrieNodes: m.TrieNodes}
+	have := Coverage{Definition: m.Definition, Generation: m.Generation, Index: m.Index, MemberRanges: m.MemberRanges, TrieNodes: m.TrieNodes}
 	warm := request(&have, true)
 	_, chunks = readNativeTest(t, warm.Body.Bytes())
 	for _, c := range chunks {
@@ -244,7 +244,7 @@ func TestNativeCollectHTTPGapOnlyAndLazyPopulation(t *testing.T) {
 		if e = os.MkdirAll(dir, 0755); e != nil {
 			t.Fatal(e)
 		}
-		for name, raw := range map[string][]byte{"ranges.pil": ungzipTest(t, cold.Body.Bytes()), "definition.cbor": l.Bytes, "index.bin": idx, "population.bin": pop} {
+		for name, raw := range map[string][]byte{"ranges.pil": ungzipTest(t, cold.Body.Bytes()), "definition.rx": l.Bytes, "index.bin": idx, "pods.bin": pods} {
 			if e = os.WriteFile(filepath.Join(dir, name), raw, 0644); e != nil {
 				t.Fatal(e)
 			}

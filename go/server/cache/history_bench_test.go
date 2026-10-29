@@ -8,7 +8,7 @@ import (
 )
 
 // Both paths use the same store, optional object postings, cached map and PIL
-// population reader. Snapshot cost buys unlocked network callbacks; no IPC or
+// payload reader. Snapshot cost buys unlocked network callbacks; no IPC or
 // encoding format change is included in this comparison.
 func BenchmarkHistorySnapshot(b *testing.B) {
 	for _, count := range []int{10, 1000, 10000} {

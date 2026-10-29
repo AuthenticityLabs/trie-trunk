@@ -190,7 +190,7 @@ func TestTantivyTypedValuesAndLiteralDictionaryEscapes(t *testing.T) {
 	requireSearch(t)
 	base := testLayout(t, false)
 	d := base.Definition
-	d.Fields = append(d.Fields, Field{Name: "ratio", Type: "F32"}, Field{Name: "signed", Type: "I64"}, Field{Name: "enabled", Type: "BOOL"}, Field{Name: "tags", Type: "ARRAY<STRING>"}, Field{Name: "@fields", Type: "CBOR"})
+	d.Fields = append(d.Fields, Field{Name: "ratio", Type: "F32"}, Field{Name: "signed", Type: "I64"}, Field{Name: "enabled", Type: "BOOL"}, Field{Name: "tags", Type: "ARRAY<STRING>"}, Field{Name: "@fields", Type: "OBJECT"})
 	l, e := Compile(d)
 	if e != nil {
 		t.Fatal(e)
@@ -374,5 +374,48 @@ func TestIndexSnapshotCannotFinalizeAnUncollectedHour(t *testing.T) {
 	}
 	if _, e = s.Append(Write, testFrame(t, l, at.Add(time.Hour), 2, false)); e != nil {
 		t.Fatal("indexing rejected a previously acceptable event", e)
+	}
+}
+
+// Identical text exists on both sides of each bound, across an empty hour,
+// and in live staging. The time/UUID index owns [from,to), not Tantivy IDs.
+func TestTantivyCandidateTimeClipping(t *testing.T) {
+	l := testLayout(t, false)
+	at := time.Date(2026, 9, 1, 12, 0, 0, 0, time.UTC)
+	now := at.Add(4*time.Hour + 30*time.Minute)
+	s, err := Open(Config{Root: t.TempDir(), Cache: "demo", Tenant: "test", Layout: l, Now: func() time.Time { return now }})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer s.Close()
+	off, on := false, true
+	s.policy.SearchIndex = &off
+	offsets := []time.Duration{0, 100 * time.Millisecond, 200 * time.Millisecond,
+		2 * time.Hour, 2*time.Hour + 100*time.Millisecond, 4 * time.Hour, 4*time.Hour + 100*time.Millisecond}
+	for i, offset := range offsets {
+		if _, err = s.Append(Write, testFrame(t, l, at.Add(offset), uint32(i+1), false)); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err = s.Flush(); err != nil {
+		t.Fatal(err)
+	}
+	s.policy.SearchIndex = &on
+	for _, c := range []struct {
+		from, to time.Duration
+		count    int
+	}{
+		{100 * time.Millisecond, 200 * time.Millisecond, 1},
+		{time.Hour, 2 * time.Hour, 0},
+		{200 * time.Millisecond, 2*time.Hour + 100*time.Millisecond, 2},
+		{4 * time.Hour, 4*time.Hour + 100*time.Millisecond, 1},
+		{100 * time.Millisecond, 4*time.Hour + 100*time.Millisecond, 5},
+	} {
+		from, to := at.Add(c.from), at.Add(c.to)
+		want := searchRows(t, s, from, to, QueryPlan{Order: "asc"})
+		got := searchRows(t, s, from, to, QueryPlan{Search: &QueryText{"request completed", "phrase"}, Order: "asc"})
+		if len(got) != c.count || !reflect.DeepEqual(got, want) {
+			t.Fatalf("%s..%s: indexed=%v time-trie=%v want-count=%d", c.from, c.to, got, want, c.count)
+		}
 	}
 }

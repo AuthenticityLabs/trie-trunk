@@ -88,7 +88,7 @@ func chooseSummaryEncoding(sums []Summary, based bool) (summaryEncoding, error) 
 			}
 		}
 	}
-	// Counts cover an entire hourly population, including all events in a single
+	// Counts cover an entire hourly payload, including all events in a single
 	// bucket. No divide-by-twelve assumption or U24 truncation; widen when needed.
 	return e, nil
 }

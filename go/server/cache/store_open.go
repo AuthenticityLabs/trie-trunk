@@ -2,7 +2,6 @@ package cache
 
 // Open, validate and recover canonical files before publishing the store.
 import (
-	"bytes"
 	"crypto/rand"
 	"fmt"
 	"hash/crc32"
@@ -73,6 +72,14 @@ func Open(c Config) (s *Store, err error) {
 			cleanup.release()
 		}
 	}()
+	// Version-zero fixtures are recreated when their storage names change.
+	// Never open an empty signature trie beside an old one: index references
+	// would silently lose their meaning.
+	if _, e := os.Stat(filepath.Join(s.dir, "resource.tri")); e == nil {
+		return nil, fmt.Errorf("obsolete version-zero resource.tri in %s; recreate the cache using state.tri", s.dir)
+	} else if !os.IsNotExist(e) {
+		return nil, e
+	}
 	if err = s.removeSwapTemps(); err != nil {
 		return nil, err
 	}
@@ -114,7 +121,7 @@ func Open(c Config) (s *Store, err error) {
 		if p.domain != n.Service || p.collection != n.Resource || p.major != n.Major || p.minor == n.Minor {
 			continue
 		}
-		raw, e := os.ReadFile(filepath.Join(s.root, binding, "resource.map"))
+		raw, e := os.ReadFile(filepath.Join(s.root, binding, "resource.rx"))
 		if e != nil {
 			return nil, e
 		}
@@ -132,7 +139,7 @@ func Open(c Config) (s *Store, err error) {
 			}
 		}
 	}
-	if err = ensureMap(filepath.Join(s.dir, "resource.map"), l.Bytes); err != nil {
+	if err = ensureMap(filepath.Join(s.dir, "resource.rx"), l.Bytes); err != nil {
 		return nil, err
 	}
 	catalog.Definitions[key] = l.Digest
@@ -177,10 +184,10 @@ func Open(c Config) (s *Store, err error) {
 	if e != nil {
 		return nil, e
 	}
-	if err = replace(filepath.Join(s.root, "registry.tri"), b); err != nil {
+	if err = replace(filepath.Join(s.root, "resource.tri"), b); err != nil {
 		return nil, err
 	}
-	s.shared, err = openFile(filepath.Join(s.dir, "resource.tri"), "NUTSTRI6", l.Digest, [16]byte{}, 0)
+	s.shared, err = openFile(filepath.Join(s.dir, "state.tri"), "NUTSTRI6", l.Digest, [16]byte{}, 0)
 	if err != nil {
 		return nil, err
 	}
@@ -240,7 +247,7 @@ func (s *Store) openBranch(branch Branch) (b *branchStore, err error) {
 	if b = s.branches[branch]; b != nil {
 		return b, nil
 	}
-	b = &branchStore{branch: branch, layout: s.layout, popEnd: headerSize, sumEnd: headerSize}
+	b = &branchStore{branch: branch, layout: s.layout, podsEnd: headerSize, sumEnd: headerSize}
 	base := filepath.Join(s.dir, s.prefix(branch))
 	raw, e := os.ReadFile(base + ".journal")
 	if e == nil {
@@ -268,7 +275,7 @@ func (s *Store) openBranch(branch Branch) (b *branchStore, err error) {
 	if b.idx, err = openFile(base+".idx", "NUTSIDX6", s.layout.Digest, b.generation, s.row.Width); err != nil {
 		return nil, err
 	}
-	if b.pop, err = openFile(base+".pods", "PILPOD00", s.layout.Digest, b.generation, 0); err != nil {
+	if b.pods, err = openFile(base+".pods", "PILPOD00", s.layout.Digest, b.generation, 0); err != nil {
 		return nil, err
 	}
 	if branch.Aggregates() && len(s.layout.Definition.Resource.Aggregations) > 0 {
@@ -276,12 +283,12 @@ func (s *Store) openBranch(branch Branch) (b *branchStore, err error) {
 			return nil, err
 		}
 	}
-	b.popRetired, err = retiredBytes(b.pop)
+	b.podsRetired, err = retiredBytes(b.pods)
 	if err != nil {
 		return nil, err
 	}
-	b.popEnd += b.popRetired
-	var lastID []byte
+	b.podsEnd += b.podsRetired
+	var lastMS int64 = -1
 	err = records(b.journal, func(raw []byte) error {
 		var commit Commit
 		if e := decoder.Unmarshal(raw, &commit); e != nil {
@@ -304,18 +311,18 @@ func (s *Store) openBranch(branch Branch) (b *branchStore, err error) {
 		if len(b.runs) > 0 {
 			tail = b.runs[len(b.runs)-1].End
 		}
-		if run.Start != tail+IndexHeaderSlots || run.End <= run.Start || run.End > IndexCapacity || run.End-run.Start > uint64(PACMaximumMembers) || run.PopStart != b.popEnd || run.PopEnd < run.PopStart || run.TrieSize > len(s.trie.nodes) || run.TrieSize < 1 {
+		if run.Start != tail+IndexHeaderSlots || run.End <= run.Start || run.End > IndexCapacity || run.End-run.Start > uint64(PACMaximumMembers) || run.PodsStart != b.podsEnd || run.PodsEnd < run.PodsStart || run.TrieSize > len(s.trie.nodes) || run.TrieSize < 1 {
 			return fmt.Errorf("invalid committed run")
 		}
 		idx, e := readBytes(b.idx, headerSize+(run.Start-b.baseRows)*uint64(s.row.Width), headerSize+(run.End-b.baseRows)*uint64(s.row.Width))
 		if e != nil {
 			return e
 		}
-		pop, e := readBytes(b.pop, run.PopStart-b.popRetired, run.PopEnd-b.popRetired)
+		pods, e := readBytes(b.pods, run.PodsStart-b.podsRetired, run.PodsEnd-b.podsRetired)
 		if e != nil {
 			return e
 		}
-		if crc32.Checksum(idx, checksum) != run.IndexCRC || crc32.Checksum(pop, checksum) != run.PopCRC {
+		if crc32.Checksum(idx, checksum) != run.IndexCRC || crc32.Checksum(pods, checksum) != run.PodsCRC {
 			return fmt.Errorf("committed data checksum mismatch")
 		}
 		memberStart := b.memberEnd
@@ -323,7 +330,7 @@ func (s *Store) openBranch(branch Branch) (b *branchStore, err error) {
 			prior := b.runs[len(b.runs)-1].PAC.Placement
 			memberStart = prior.MemberStart + prior.MemberBytes
 		}
-		if run.PAC == nil || run.PAC.Placement.MemberStart != memberStart+4 || run.PAC.Placement.Block != b.blockBase+uint32(len(b.runs)) {
+		if run.PAC == nil || run.PAC.Placement.MemberStart != memberStart+4+4*(run.End-run.Start) || run.PAC.Placement.Block != b.blockBase+uint32(len(b.runs)) {
 			return fmt.Errorf("noncontiguous PAC block directory")
 		}
 		head, e := readBytes(b.idx, headerSize+(run.Start-IndexHeaderSlots-b.baseRows)*IndexRowSize, headerSize+(run.Start-b.baseRows)*IndexRowSize)
@@ -333,17 +340,17 @@ func (s *Store) openBranch(branch Branch) (b *branchStore, err error) {
 		if e = validateIndexHeader(head, run); e != nil {
 			return e
 		}
-		firstID := unpackIndexID(idx, run.PAC.Placement.From)
-		if lastID != nil && bytes.Compare(lastID, firstID[:]) >= 0 {
-			return fmt.Errorf("unordered committed index")
+		firstMS := indexTime(idx, run.PAC.Placement.From)
+		if lastMS >= firstMS {
+			return fmt.Errorf("unordered committed hours")
 		}
-		finalID := unpackIndexID(idx[len(idx)-s.row.Width:], run.PAC.Placement.From)
-		lastID = append(lastID[:0], finalID[:]...)
+		lastMS = indexTime(idx[len(idx)-s.row.Width:], run.PAC.Placement.From)
+
 		if e := validateBlock(run, idx, s.row, b.generation); e != nil {
 			return e
 		}
 
-		b.popEnd = run.PopEnd
+		b.podsEnd = run.PodsEnd
 		b.runs = append(b.runs, run)
 		return nil
 	})
@@ -364,7 +371,7 @@ func (s *Store) openBranch(branch Branch) (b *branchStore, err error) {
 	if err = b.idx.Truncate(headerSize + int64(tail-b.baseRows)*int64(s.row.Width)); err != nil {
 		return nil, err
 	}
-	if err = b.pop.Truncate(int64(b.popEnd - b.popRetired)); err != nil {
+	if err = b.pods.Truncate(int64(b.podsEnd - b.podsRetired)); err != nil {
 		return nil, err
 	}
 	if err = s.loadSummaries(b); err != nil {

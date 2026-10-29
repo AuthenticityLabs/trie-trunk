@@ -1,0 +1,1277 @@
+{
+  "baseline": {
+    "trie_trunk": "42ebf755222b88108cff2c3d0576642389355ce7",
+    "pill_packer": "e663e8960acb71239992422b09714d224bdfe38d"
+  },
+  "scope": [
+    "Same deterministic 1,048,576 events in 256 hourly packs; full 74-bit pseudorandom UUID entropy; event identity hashes agree.",
+    "Whole isolated resource store including definitions, state/time tries, event index, packs, summaries, journals and configuration. Tantivy and collection.idx disabled in both; not an optional-index footprint comparison.",
+    "Five alternating real Chrome production-storage-worker replication runs; response bytes resident before timing. Includes checksum, inflate, durable OPFS writes and completion publication. Excludes HTTP download, DOM rendering and GPU paint.",
+    "Readback verifies all 1,048,576 records; 100-event page UUID hashes match before/after. Five read/materialization passes per replication.",
+    "Go lower-bound lookup: 5 sequential benchmark samples per format, 500ms/sample, warm OS cache. 1M and 16M rows.",
+    "Codec attribution removes entropy and/or directory only in disposable PACs. These are not valid standalone Trunk stores. Same-byte inflate compares old/new pill-packer; 256 repetitions of a 4096-record hour, seven samples.",
+    "Before/after includes all intervening working-copy changes, not solely row-width changes. No live data, server, or deployment changed."
+  ],
+  "summary": {
+    "before": {
+      "decode_ms": 95.39999985694885,
+      "decode_and_durable_replication_ms": 415.7000000476837,
+      "page_100_including_dependencies_ms": 21.5,
+      "materialize_100_fields_ms": 0.5,
+      "client_logical_bytes": 39043400,
+      "index_lookup_ns": {
+        "1000000": 176.3,
+        "16000000": 481.2
+      }
+    },
+    "after": {
+      "decode_ms": 221.79999995231628,
+      "decode_and_durable_replication_ms": 701.2000000476837,
+      "page_100_including_dependencies_ms": 27.200000047683716,
+      "materialize_100_fields_ms": 0.7000000476837158,
+      "client_logical_bytes": 46473284,
+      "index_lookup_ns": {
+        "1000000": 145.6,
+        "16000000": 364.7
+      }
+    }
+  },
+  "before_store": {
+    "allocated_bytes": 23023616,
+    "events": 1048576,
+    "files": 14,
+    "from": "2026-09-01T00:00:00Z",
+    "headers": {
+      "Content-Type": "application/pil",
+      "Definition-Version": "d134a19136bd9591f4f3943d78d805e3885fe3185b86ad71fdb3016758cda288",
+      "PIL-Version": "2",
+      "Trunk-Completion": "body",
+      "Trunk-Format": "native-pac/0"
+    },
+    "hours": 256,
+    "identity_sha256": "a70f951cdc6d1517b369257bef353f29e3548b8ca5c45bfe093c76044a3ad2f6",
+    "index_row_bytes": 16,
+    "logical_bytes": {
+      ".cfg": 42,
+      ".idx": 16781384,
+      ".journal": 72132,
+      ".lock": 0,
+      ".map": 636,
+      ".pods": 5275686,
+      ".seed": 88,
+      ".state": 72,
+      ".stats": 157,
+      ".sum": 306378,
+      ".tri": 149525
+    },
+    "native_memory": {
+      "Used": 7356416,
+      "Peak": 7356416,
+      "Limit": 33554432
+    },
+    "reopen_ms": 155.597292,
+    "scope": "Entire isolated resource store; summaries enabled; Tantivy and collection index disabled; deterministic full 74-bit UUID entropy",
+    "seal_ms": 6586.679666,
+    "tap": "demo/payment/transactions.v1/error",
+    "to": "2026-09-11T16:00:00Z",
+    "total_logical_bytes": 22586100,
+    "wireBytes": 22153536
+  },
+  "after_store": {
+    "allocated_bytes": 28536832,
+    "events": 1048576,
+    "files": 14,
+    "from": "2026-09-01T00:00:00Z",
+    "headers": {
+      "Content-Type": "application/pil",
+      "Definition-Version": "2756055955c48bd6da08f5cc25f2eb189f076d974c49e27205e4c070f6097155",
+      "PIL-Version": "2",
+      "Trunk-Completion": "body",
+      "Trunk-Format": "native-pac/0"
+    },
+    "hours": 256,
+    "identity_sha256": "a70f951cdc6d1517b369257bef353f29e3548b8ca5c45bfe093c76044a3ad2f6",
+    "index_row_bytes": 6,
+    "logical_bytes": {
+      ".cfg": 42,
+      ".idx": 6293064,
+      ".journal": 196680,
+      ".lock": 0,
+      ".map": 205,
+      ".pods": 20817745,
+      ".rx": 1188,
+      ".seed": 88,
+      ".state": 72,
+      ".stats": 491,
+      ".sum": 306951,
+      ".tri": 140970
+    },
+    "native_memory": {
+      "Used": 9355264,
+      "Peak": 9355264,
+      "Limit": 33554432
+    },
+    "reopen_ms": 232.663375,
+    "scope": "Entire isolated resource store; summaries enabled; Tantivy and collection index disabled; deterministic full 74-bit UUID entropy",
+    "seal_ms": 7049.581917,
+    "tap": "demo/payment/transactions.v1/error",
+    "to": "2026-09-11T16:00:00Z",
+    "total_logical_bytes": 27757496,
+    "wireBytes": 27351073
+  },
+  "browser": {
+    "environment": {
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36",
+      "hardwareConcurrency": 10
+    },
+    "preparations": {
+      "before": {
+        "wireBytes": 22153536,
+        "downloadMs": 20.799999952316284
+      },
+      "after": {
+        "wireBytes": 27351073,
+        "downloadMs": 18.5
+      }
+    },
+    "paired": {
+      "before": [
+        {
+          "decode": {
+            "decodeMs": 108.30000019073486,
+            "hours": 256,
+            "events": 1048576,
+            "payloadBytes": 19997232,
+            "codec": {
+              "uploadMs": 3.700000286102295,
+              "uploadedBytes": 93824774,
+              "uploads": 3308,
+              "scanMs": 0,
+              "scanStructuralMs": 0.8999998569488525,
+              "pacMs": 0,
+              "pacStructuralMs": 0,
+              "pacs": 0,
+              "inflateMs": 55.500001430511475,
+              "inflates": 256,
+              "verifyCRC32CMs": 3.9999992847442627,
+              "checksums": 256
+            }
+          },
+          "write": {
+            "mode": "production-worker-port",
+            "namespace": "aac41d6df5f9f4812e31839d853599c3e30130bea67d4f16e446c9033a83d70d",
+            "elapsedMs": 433.7999999523163,
+            "archiveMs": 327.39999985694885,
+            "commands": {
+              "native-begin": 1,
+              "native-coverage": 1,
+              "native-records": 10,
+              "native-finish": 1
+            },
+            "stages": {
+              "checksum": {
+                "ms": 9.299998044967651,
+                "calls": 259
+              }
+            },
+            "codec": {
+              "uploadMs": 3.9000015258789062,
+              "uploadedBytes": 76882958,
+              "uploads": 2065,
+              "scanMs": 0,
+              "scanStructuralMs": 0.39999961853027344,
+              "pacMs": 0,
+              "pacStructuralMs": 0,
+              "pacs": 0,
+              "inflateMs": 56.90000295639038,
+              "inflates": 256,
+              "verifyCRC32CMs": 3.6999998092651367,
+              "checksums": 256
+            },
+            "sources": 1,
+            "coverageRows": 1048576,
+            "sampleRows": 10,
+            "retrieval": [
+              {
+                "elapsedMs": 23.899999856948853,
+                "readMs": 12.300000190734863,
+                "materializeMs": 1.3999998569488525,
+                "events": 100
+              },
+              {
+                "elapsedMs": 22.5,
+                "readMs": 12.5,
+                "materializeMs": 0.5,
+                "events": 100
+              },
+              {
+                "elapsedMs": 22,
+                "readMs": 13.399999856948853,
+                "materializeMs": 0.7000000476837158,
+                "events": 100
+              },
+              {
+                "elapsedMs": 20.40000009536743,
+                "readMs": 12.200000047683716,
+                "materializeMs": 0.7000000476837158,
+                "events": 100
+              },
+              {
+                "elapsedMs": 21.59999990463257,
+                "readMs": 12,
+                "materializeMs": 0.5999999046325684,
+                "events": 100
+              }
+            ],
+            "uuidHash": "a45cbf6fb04ac1fae58fb8420602baea084b4dd2f5d6042d174cec83152b522c",
+            "verifiedHours": 256,
+            "verifiedEvents": 1048576
+          }
+        },
+        {
+          "decode": {
+            "decodeMs": 96.29999995231628,
+            "hours": 256,
+            "events": 1048576,
+            "payloadBytes": 19997232,
+            "codec": {
+              "uploadMs": 3.5000007152557373,
+              "uploadedBytes": 93824774,
+              "uploads": 3308,
+              "scanMs": 0,
+              "scanStructuralMs": 0.8999998569488525,
+              "pacMs": 0,
+              "pacStructuralMs": 0,
+              "pacs": 0,
+              "inflateMs": 55.40000081062317,
+              "inflates": 256,
+              "verifyCRC32CMs": 3.1999988555908203,
+              "checksums": 256
+            }
+          },
+          "write": {
+            "mode": "production-worker-port",
+            "namespace": "aac41d6df5f9f4812e31839d853599c3e30130bea67d4f16e446c9033a83d70d",
+            "elapsedMs": 415,
+            "archiveMs": 317.30000042915344,
+            "commands": {
+              "native-begin": 1,
+              "native-coverage": 1,
+              "native-records": 10,
+              "native-finish": 1
+            },
+            "stages": {
+              "checksum": {
+                "ms": 9.499998807907104,
+                "calls": 259
+              }
+            },
+            "codec": {
+              "uploadMs": 3.600001096725464,
+              "uploadedBytes": 76882958,
+              "uploads": 2065,
+              "scanMs": 0,
+              "scanStructuralMs": 0.19999980926513672,
+              "pacMs": 0,
+              "pacStructuralMs": 0,
+              "pacs": 0,
+              "inflateMs": 54.90000104904175,
+              "inflates": 256,
+              "verifyCRC32CMs": 2.6999993324279785,
+              "checksums": 256
+            },
+            "sources": 1,
+            "coverageRows": 1048576,
+            "sampleRows": 10,
+            "retrieval": [
+              {
+                "elapsedMs": 22.399999856948853,
+                "readMs": 12.299999952316284,
+                "materializeMs": 0.5,
+                "events": 100
+              },
+              {
+                "elapsedMs": 21.5,
+                "readMs": 11.899999856948853,
+                "materializeMs": 0.6000001430511475,
+                "events": 100
+              },
+              {
+                "elapsedMs": 21.399999856948853,
+                "readMs": 13.399999856948853,
+                "materializeMs": 0.5,
+                "events": 100
+              },
+              {
+                "elapsedMs": 19.700000047683716,
+                "readMs": 11.900000095367432,
+                "materializeMs": 0.5,
+                "events": 100
+              },
+              {
+                "elapsedMs": 20.90000009536743,
+                "readMs": 12,
+                "materializeMs": 0.5,
+                "events": 100
+              }
+            ],
+            "uuidHash": "a45cbf6fb04ac1fae58fb8420602baea084b4dd2f5d6042d174cec83152b522c",
+            "verifiedHours": 0,
+            "verifiedEvents": 0
+          }
+        },
+        {
+          "decode": {
+            "decodeMs": 93.70000004768372,
+            "hours": 256,
+            "events": 1048576,
+            "payloadBytes": 19997232,
+            "codec": {
+              "uploadMs": 2.5999999046325684,
+              "uploadedBytes": 93824774,
+              "uploads": 3308,
+              "scanMs": 0,
+              "scanStructuralMs": 0.8999998569488525,
+              "pacMs": 0,
+              "pacStructuralMs": 0,
+              "pacs": 0,
+              "inflateMs": 54.3999981880188,
+              "inflates": 256,
+              "verifyCRC32CMs": 3.700000286102295,
+              "checksums": 256
+            }
+          },
+          "write": {
+            "mode": "production-worker-port",
+            "namespace": "aac41d6df5f9f4812e31839d853599c3e30130bea67d4f16e446c9033a83d70d",
+            "elapsedMs": 414.2000000476837,
+            "archiveMs": 317.4999997615814,
+            "commands": {
+              "native-begin": 1,
+              "native-coverage": 1,
+              "native-records": 10,
+              "native-finish": 1
+            },
+            "stages": {
+              "checksum": {
+                "ms": 7.499999523162842,
+                "calls": 259
+              }
+            },
+            "codec": {
+              "uploadMs": 4.19999885559082,
+              "uploadedBytes": 76882958,
+              "uploads": 2065,
+              "scanMs": 0,
+              "scanStructuralMs": 0.5,
+              "pacMs": 0,
+              "pacStructuralMs": 0,
+              "pacs": 0,
+              "inflateMs": 55.09999990463257,
+              "inflates": 256,
+              "verifyCRC32CMs": 3.6999993324279785,
+              "checksums": 256
+            },
+            "sources": 1,
+            "coverageRows": 1048576,
+            "sampleRows": 10,
+            "retrieval": [
+              {
+                "elapsedMs": 22.90000009536743,
+                "readMs": 12,
+                "materializeMs": 0.6000001430511475,
+                "events": 100
+              },
+              {
+                "elapsedMs": 21.700000047683716,
+                "readMs": 12.099999904632568,
+                "materializeMs": 0.5,
+                "events": 100
+              },
+              {
+                "elapsedMs": 20.90000009536743,
+                "readMs": 13.200000047683716,
+                "materializeMs": 0.5,
+                "events": 100
+              },
+              {
+                "elapsedMs": 19.699999809265137,
+                "readMs": 11.700000047683716,
+                "materializeMs": 0.5999999046325684,
+                "events": 100
+              },
+              {
+                "elapsedMs": 20.90000009536743,
+                "readMs": 12.099999904632568,
+                "materializeMs": 0.5,
+                "events": 100
+              }
+            ],
+            "uuidHash": "a45cbf6fb04ac1fae58fb8420602baea084b4dd2f5d6042d174cec83152b522c",
+            "verifiedHours": 0,
+            "verifiedEvents": 0
+          }
+        },
+        {
+          "decode": {
+            "decodeMs": 95.39999985694885,
+            "hours": 256,
+            "events": 1048576,
+            "payloadBytes": 19997232,
+            "codec": {
+              "uploadMs": 2.900000810623169,
+              "uploadedBytes": 93824774,
+              "uploads": 3308,
+              "scanMs": 0,
+              "scanStructuralMs": 0.5999996662139893,
+              "pacMs": 0,
+              "pacStructuralMs": 0,
+              "pacs": 0,
+              "inflateMs": 57.10000228881836,
+              "inflates": 256,
+              "verifyCRC32CMs": 2.3999996185302734,
+              "checksums": 256
+            }
+          },
+          "write": {
+            "mode": "production-worker-port",
+            "namespace": "aac41d6df5f9f4812e31839d853599c3e30130bea67d4f16e446c9033a83d70d",
+            "elapsedMs": 415.7000000476837,
+            "archiveMs": 320.2999997138977,
+            "commands": {
+              "native-begin": 1,
+              "native-coverage": 1,
+              "native-records": 10,
+              "native-finish": 1
+            },
+            "stages": {
+              "checksum": {
+                "ms": 9.900001049041748,
+                "calls": 259
+              }
+            },
+            "codec": {
+              "uploadMs": 2.9999992847442627,
+              "uploadedBytes": 76882958,
+              "uploads": 2065,
+              "scanMs": 0,
+              "scanStructuralMs": 0.20000004768371582,
+              "pacMs": 0,
+              "pacStructuralMs": 0,
+              "pacs": 0,
+              "inflateMs": 53.29999923706055,
+              "inflates": 256,
+              "verifyCRC32CMs": 3.1000008583068848,
+              "checksums": 256
+            },
+            "sources": 1,
+            "coverageRows": 1048576,
+            "sampleRows": 10,
+            "retrieval": [
+              {
+                "elapsedMs": 24.40000009536743,
+                "readMs": 13.400000095367432,
+                "materializeMs": 0.5,
+                "events": 100
+              },
+              {
+                "elapsedMs": 22.09999990463257,
+                "readMs": 13.900000095367432,
+                "materializeMs": 0.5999999046325684,
+                "events": 100
+              },
+              {
+                "elapsedMs": 19.700000047683716,
+                "readMs": 11.799999952316284,
+                "materializeMs": 0.5,
+                "events": 100
+              },
+              {
+                "elapsedMs": 21,
+                "readMs": 11.799999952316284,
+                "materializeMs": 0.5,
+                "events": 100
+              },
+              {
+                "elapsedMs": 21.59999990463257,
+                "readMs": 13.399999856948853,
+                "materializeMs": 0.40000009536743164,
+                "events": 100
+              }
+            ],
+            "uuidHash": "a45cbf6fb04ac1fae58fb8420602baea084b4dd2f5d6042d174cec83152b522c",
+            "verifiedHours": 0,
+            "verifiedEvents": 0
+          }
+        },
+        {
+          "decode": {
+            "decodeMs": 92.10000014305115,
+            "hours": 256,
+            "events": 1048576,
+            "payloadBytes": 19997232,
+            "codec": {
+              "uploadMs": 2.999999761581421,
+              "uploadedBytes": 93824774,
+              "uploads": 3308,
+              "scanMs": 0,
+              "scanStructuralMs": 0.4999995231628418,
+              "pacMs": 0,
+              "pacStructuralMs": 0,
+              "pacs": 0,
+              "inflateMs": 54.00000023841858,
+              "inflates": 256,
+              "verifyCRC32CMs": 4.299999713897705,
+              "checksums": 256
+            }
+          },
+          "write": {
+            "mode": "production-worker-port",
+            "namespace": "aac41d6df5f9f4812e31839d853599c3e30130bea67d4f16e446c9033a83d70d",
+            "elapsedMs": 417.30000019073486,
+            "archiveMs": 321.50000047683716,
+            "commands": {
+              "native-begin": 1,
+              "native-coverage": 1,
+              "native-records": 10,
+              "native-finish": 1
+            },
+            "stages": {
+              "checksum": {
+                "ms": 7.900000333786011,
+                "calls": 259
+              }
+            },
+            "codec": {
+              "uploadMs": 2.700000047683716,
+              "uploadedBytes": 76882958,
+              "uploads": 2065,
+              "scanMs": 0,
+              "scanStructuralMs": 0.5000002384185791,
+              "pacMs": 0,
+              "pacStructuralMs": 0,
+              "pacs": 0,
+              "inflateMs": 54.59999990463257,
+              "inflates": 256,
+              "verifyCRC32CMs": 3.499999761581421,
+              "checksums": 256
+            },
+            "sources": 1,
+            "coverageRows": 1048576,
+            "sampleRows": 10,
+            "retrieval": [
+              {
+                "elapsedMs": 22.399999856948853,
+                "readMs": 12.099999904632568,
+                "materializeMs": 0.5,
+                "events": 100
+              },
+              {
+                "elapsedMs": 22.399999856948853,
+                "readMs": 12.5,
+                "materializeMs": 0.5999999046325684,
+                "events": 100
+              },
+              {
+                "elapsedMs": 20.90000009536743,
+                "readMs": 13.200000047683716,
+                "materializeMs": 0.5,
+                "events": 100
+              },
+              {
+                "elapsedMs": 19.700000047683716,
+                "readMs": 11.800000190734863,
+                "materializeMs": 0.5,
+                "events": 100
+              },
+              {
+                "elapsedMs": 20.700000047683716,
+                "readMs": 12,
+                "materializeMs": 0.40000009536743164,
+                "events": 100
+              }
+            ],
+            "uuidHash": "a45cbf6fb04ac1fae58fb8420602baea084b4dd2f5d6042d174cec83152b522c",
+            "verifiedHours": 0,
+            "verifiedEvents": 0
+          }
+        }
+      ],
+      "after": [
+        {
+          "decode": {
+            "decodeMs": 236.79999995231628,
+            "hours": 256,
+            "events": 1048576,
+            "payloadBytes": 37825280,
+            "codec": {
+              "uploadMs": 2.1000001430511475,
+              "uploadedBytes": 61197353,
+              "uploads": 1846,
+              "scanMs": 0,
+              "scanStructuralMs": 0.5999996662139893,
+              "pacMs": 0,
+              "pacStructuralMs": 0,
+              "pacs": 0,
+              "inflateMs": 146.39999985694885,
+              "inflates": 256,
+              "verifyCRC32CMs": 12.900000810623169,
+              "checksums": 256
+            }
+          },
+          "write": {
+            "mode": "production-worker-port",
+            "namespace": "aac41d6df5f9f4812e31839d853599c3e30130bea67d4f16e446c9033a83d70d",
+            "elapsedMs": 707.5999999046326,
+            "archiveMs": 470.4999997615814,
+            "commands": {
+              "native-begin": 1,
+              "native-coverage": 1,
+              "native-records": 12,
+              "native-finish": 1
+            },
+            "stages": {
+              "checksum": {
+                "ms": 4.799998998641968,
+                "calls": 259
+              }
+            },
+            "codec": {
+              "uploadMs": 3.1999995708465576,
+              "uploadedBytes": 57899033,
+              "uploads": 1554,
+              "scanMs": 0,
+              "scanStructuralMs": 0.4999997615814209,
+              "pacMs": 0,
+              "pacStructuralMs": 0,
+              "pacs": 0,
+              "inflateMs": 146.80000066757202,
+              "inflates": 256,
+              "verifyCRC32CMs": 13.899999380111694,
+              "checksums": 256
+            },
+            "sources": 1,
+            "coverageRows": 1048576,
+            "sampleRows": 10,
+            "retrieval": [
+              {
+                "elapsedMs": 29.700000047683716,
+                "readMs": 15.900000095367432,
+                "materializeMs": 1.7999999523162842,
+                "events": 100
+              },
+              {
+                "elapsedMs": 28.899999856948853,
+                "readMs": 15.900000095367432,
+                "materializeMs": 0.8999998569488525,
+                "events": 100
+              },
+              {
+                "elapsedMs": 28.299999952316284,
+                "readMs": 16.5,
+                "materializeMs": 0.7999999523162842,
+                "events": 100
+              },
+              {
+                "elapsedMs": 26.5,
+                "readMs": 15.100000143051147,
+                "materializeMs": 0.7999999523162842,
+                "events": 100
+              },
+              {
+                "elapsedMs": 26.200000047683716,
+                "readMs": 14.900000095367432,
+                "materializeMs": 0.7999999523162842,
+                "events": 100
+              }
+            ],
+            "uuidHash": "a45cbf6fb04ac1fae58fb8420602baea084b4dd2f5d6042d174cec83152b522c",
+            "verifiedHours": 256,
+            "verifiedEvents": 1048576
+          }
+        },
+        {
+          "decode": {
+            "decodeMs": 221.79999995231628,
+            "hours": 256,
+            "events": 1048576,
+            "payloadBytes": 37825280,
+            "codec": {
+              "uploadMs": 1.8999998569488525,
+              "uploadedBytes": 61197353,
+              "uploads": 1846,
+              "scanMs": 0,
+              "scanStructuralMs": 0.10000014305114746,
+              "pacMs": 0,
+              "pacStructuralMs": 0,
+              "pacs": 0,
+              "inflateMs": 141.00000262260437,
+              "inflates": 256,
+              "verifyCRC32CMs": 13.800003290176392,
+              "checksums": 256
+            }
+          },
+          "write": {
+            "mode": "production-worker-port",
+            "namespace": "aac41d6df5f9f4812e31839d853599c3e30130bea67d4f16e446c9033a83d70d",
+            "elapsedMs": 704.7999999523163,
+            "archiveMs": 475.2000000476837,
+            "commands": {
+              "native-begin": 1,
+              "native-coverage": 1,
+              "native-records": 12,
+              "native-finish": 1
+            },
+            "stages": {
+              "checksum": {
+                "ms": 4.5000011920928955,
+                "calls": 259
+              }
+            },
+            "codec": {
+              "uploadMs": 3.0000009536743164,
+              "uploadedBytes": 57899033,
+              "uploads": 1554,
+              "scanMs": 0,
+              "scanStructuralMs": 0.5,
+              "pacMs": 0,
+              "pacStructuralMs": 0,
+              "pacs": 0,
+              "inflateMs": 142.10000157356262,
+              "inflates": 256,
+              "verifyCRC32CMs": 12.5,
+              "checksums": 256
+            },
+            "sources": 1,
+            "coverageRows": 1048576,
+            "sampleRows": 10,
+            "retrieval": [
+              {
+                "elapsedMs": 27.199999809265137,
+                "readMs": 14.900000095367432,
+                "materializeMs": 0.8999998569488525,
+                "events": 100
+              },
+              {
+                "elapsedMs": 27.299999952316284,
+                "readMs": 14.600000143051147,
+                "materializeMs": 0.7999999523162842,
+                "events": 100
+              },
+              {
+                "elapsedMs": 28.299999952316284,
+                "readMs": 15.899999856948853,
+                "materializeMs": 0.7000000476837158,
+                "events": 100
+              },
+              {
+                "elapsedMs": 26.699999809265137,
+                "readMs": 15.300000190734863,
+                "materializeMs": 0.6999998092651367,
+                "events": 100
+              },
+              {
+                "elapsedMs": 25.200000047683716,
+                "readMs": 13.599999904632568,
+                "materializeMs": 0.7999999523162842,
+                "events": 100
+              }
+            ],
+            "uuidHash": "a45cbf6fb04ac1fae58fb8420602baea084b4dd2f5d6042d174cec83152b522c",
+            "verifiedHours": 0,
+            "verifiedEvents": 0
+          }
+        },
+        {
+          "decode": {
+            "decodeMs": 221.70000004768372,
+            "hours": 256,
+            "events": 1048576,
+            "payloadBytes": 37825280,
+            "codec": {
+              "uploadMs": 1.9000000953674316,
+              "uploadedBytes": 61197353,
+              "uploads": 1846,
+              "scanMs": 0,
+              "scanStructuralMs": 0.5999994277954102,
+              "pacMs": 0,
+              "pacStructuralMs": 0,
+              "pacs": 0,
+              "inflateMs": 143.10000085830688,
+              "inflates": 256,
+              "verifyCRC32CMs": 12.69999885559082,
+              "checksums": 256
+            }
+          },
+          "write": {
+            "mode": "production-worker-port",
+            "namespace": "aac41d6df5f9f4812e31839d853599c3e30130bea67d4f16e446c9033a83d70d",
+            "elapsedMs": 701.2000000476837,
+            "archiveMs": 475.30000042915344,
+            "commands": {
+              "native-begin": 1,
+              "native-coverage": 1,
+              "native-records": 12,
+              "native-finish": 1
+            },
+            "stages": {
+              "checksum": {
+                "ms": 4.099999904632568,
+                "calls": 259
+              }
+            },
+            "codec": {
+              "uploadMs": 2.8999998569488525,
+              "uploadedBytes": 57899033,
+              "uploads": 1554,
+              "scanMs": 0,
+              "scanStructuralMs": 0.09999990463256836,
+              "pacMs": 0,
+              "pacStructuralMs": 0,
+              "pacs": 0,
+              "inflateMs": 140.80000162124634,
+              "inflates": 256,
+              "verifyCRC32CMs": 13.100000381469727,
+              "checksums": 256
+            },
+            "sources": 1,
+            "coverageRows": 1048576,
+            "sampleRows": 10,
+            "retrieval": [
+              {
+                "elapsedMs": 28.40000009536743,
+                "readMs": 15.799999952316284,
+                "materializeMs": 0.7999999523162842,
+                "events": 100
+              },
+              {
+                "elapsedMs": 27.700000047683716,
+                "readMs": 15.299999952316284,
+                "materializeMs": 0.5999999046325684,
+                "events": 100
+              },
+              {
+                "elapsedMs": 28.799999952316284,
+                "readMs": 16.799999952316284,
+                "materializeMs": 0.7999999523162842,
+                "events": 100
+              },
+              {
+                "elapsedMs": 26.59999990463257,
+                "readMs": 15.400000095367432,
+                "materializeMs": 0.5999999046325684,
+                "events": 100
+              },
+              {
+                "elapsedMs": 24.899999856948853,
+                "readMs": 14.100000143051147,
+                "materializeMs": 0.5999999046325684,
+                "events": 100
+              }
+            ],
+            "uuidHash": "a45cbf6fb04ac1fae58fb8420602baea084b4dd2f5d6042d174cec83152b522c",
+            "verifiedHours": 0,
+            "verifiedEvents": 0
+          }
+        },
+        {
+          "decode": {
+            "decodeMs": 223,
+            "hours": 256,
+            "events": 1048576,
+            "payloadBytes": 37825280,
+            "codec": {
+              "uploadMs": 1.6000001430511475,
+              "uploadedBytes": 61197353,
+              "uploads": 1846,
+              "scanMs": 0,
+              "scanStructuralMs": 0.7999999523162842,
+              "pacMs": 0,
+              "pacStructuralMs": 0,
+              "pacs": 0,
+              "inflateMs": 143.5999984741211,
+              "inflates": 256,
+              "verifyCRC32CMs": 11.200001001358032,
+              "checksums": 256
+            }
+          },
+          "write": {
+            "mode": "production-worker-port",
+            "namespace": "aac41d6df5f9f4812e31839d853599c3e30130bea67d4f16e446c9033a83d70d",
+            "elapsedMs": 699.9000000953674,
+            "archiveMs": 475.39999985694885,
+            "commands": {
+              "native-begin": 1,
+              "native-coverage": 1,
+              "native-records": 12,
+              "native-finish": 1
+            },
+            "stages": {
+              "checksum": {
+                "ms": 4.1000001430511475,
+                "calls": 259
+              }
+            },
+            "codec": {
+              "uploadMs": 4.099999904632568,
+              "uploadedBytes": 57899033,
+              "uploads": 1554,
+              "scanMs": 0,
+              "scanStructuralMs": 0.20000004768371582,
+              "pacMs": 0,
+              "pacStructuralMs": 0,
+              "pacs": 0,
+              "inflateMs": 142.7000014781952,
+              "inflates": 256,
+              "verifyCRC32CMs": 13.599997758865356,
+              "checksums": 256
+            },
+            "sources": 1,
+            "coverageRows": 1048576,
+            "sampleRows": 10,
+            "retrieval": [
+              {
+                "elapsedMs": 27.799999952316284,
+                "readMs": 15.600000143051147,
+                "materializeMs": 0.6999998092651367,
+                "events": 100
+              },
+              {
+                "elapsedMs": 27.200000047683716,
+                "readMs": 14.700000047683716,
+                "materializeMs": 0.7000000476837158,
+                "events": 100
+              },
+              {
+                "elapsedMs": 27.59999990463257,
+                "readMs": 16,
+                "materializeMs": 0.7000000476837158,
+                "events": 100
+              },
+              {
+                "elapsedMs": 26.200000047683716,
+                "readMs": 15.199999809265137,
+                "materializeMs": 0.7000000476837158,
+                "events": 100
+              },
+              {
+                "elapsedMs": 25.799999952316284,
+                "readMs": 14.700000047683716,
+                "materializeMs": 0.5999999046325684,
+                "events": 100
+              }
+            ],
+            "uuidHash": "a45cbf6fb04ac1fae58fb8420602baea084b4dd2f5d6042d174cec83152b522c",
+            "verifiedHours": 0,
+            "verifiedEvents": 0
+          }
+        },
+        {
+          "decode": {
+            "decodeMs": 217.5,
+            "hours": 256,
+            "events": 1048576,
+            "payloadBytes": 37825280,
+            "codec": {
+              "uploadMs": 1.4999995231628418,
+              "uploadedBytes": 61197353,
+              "uploads": 1846,
+              "scanMs": 0,
+              "scanStructuralMs": 0.40000009536743164,
+              "pacMs": 0,
+              "pacStructuralMs": 0,
+              "pacs": 0,
+              "inflateMs": 141.60000038146973,
+              "inflates": 256,
+              "verifyCRC32CMs": 11.300002098083496,
+              "checksums": 256
+            }
+          },
+          "write": {
+            "mode": "production-worker-port",
+            "namespace": "aac41d6df5f9f4812e31839d853599c3e30130bea67d4f16e446c9033a83d70d",
+            "elapsedMs": 698.4000000953674,
+            "archiveMs": 474.90000009536743,
+            "commands": {
+              "native-begin": 1,
+              "native-coverage": 1,
+              "native-records": 12,
+              "native-finish": 1
+            },
+            "stages": {
+              "checksum": {
+                "ms": 5.400000810623169,
+                "calls": 259
+              }
+            },
+            "codec": {
+              "uploadMs": 2.4000000953674316,
+              "uploadedBytes": 57899033,
+              "uploads": 1554,
+              "scanMs": 0,
+              "scanStructuralMs": 0.09999990463256836,
+              "pacMs": 0,
+              "pacStructuralMs": 0,
+              "pacs": 0,
+              "inflateMs": 141.8999993801117,
+              "inflates": 256,
+              "verifyCRC32CMs": 13.000000715255737,
+              "checksums": 256
+            },
+            "sources": 1,
+            "coverageRows": 1048576,
+            "sampleRows": 10,
+            "retrieval": [
+              {
+                "elapsedMs": 27.799999952316284,
+                "readMs": 15.100000143051147,
+                "materializeMs": 0.7999999523162842,
+                "events": 100
+              },
+              {
+                "elapsedMs": 27.09999990463257,
+                "readMs": 14.700000047683716,
+                "materializeMs": 0.5999999046325684,
+                "events": 100
+              },
+              {
+                "elapsedMs": 27.299999952316284,
+                "readMs": 15.899999856948853,
+                "materializeMs": 0.7000000476837158,
+                "events": 100
+              },
+              {
+                "elapsedMs": 26.800000190734863,
+                "readMs": 15.399999856948853,
+                "materializeMs": 0.6000001430511475,
+                "events": 100
+              },
+              {
+                "elapsedMs": 24.299999952316284,
+                "readMs": 13.700000047683716,
+                "materializeMs": 0.5999999046325684,
+                "events": 100
+              }
+            ],
+            "uuidHash": "a45cbf6fb04ac1fae58fb8420602baea084b4dd2f5d6042d174cec83152b522c",
+            "verifiedHours": 0,
+            "verifiedEvents": 0
+          }
+        }
+      ],
+      "beforeFiles": {
+        "totalLogicalBytes": 39043400,
+        "count": 8,
+        "byType": {
+          "cbor": 96069,
+          "tri": 149417,
+          "map": 517,
+          "sods": 20971528,
+          "idx": 17825800,
+          "state": 69
+        },
+        "estimate": {
+          "quota": 10776463880,
+          "usage": 39045640,
+          "usageDetails": {
+            "fileSystem": 39045640
+          }
+        }
+      },
+      "afterFiles": {
+        "totalLogicalBytes": 46473284,
+        "count": 8,
+        "byType": {
+          "pil": 184979,
+          "tri": 149600,
+          "rx": 1188,
+          "sods": 38797320,
+          "idx": 7340040,
+          "state": 157
+        },
+        "estimate": {
+          "quota": 10783893756,
+          "usage": 46475516,
+          "usageDetails": {
+            "fileSystem": 46475516
+          }
+        }
+      }
+    },
+    "variants": {
+      "before": [
+        {
+          "name": "entropy-false-directory-false",
+          "compressed_bytes": 18730,
+          "decoded_bytes": 82217,
+          "events": 4096,
+          "samples_256_hours_ms": [
+            58.700000047683716,
+            56.39999985694885,
+            56,
+            56.60000014305115,
+            56.5,
+            55.700000047683716,
+            55.69999980926514
+          ]
+        },
+        {
+          "name": "entropy-false-directory-true",
+          "compressed_bytes": 31239,
+          "decoded_bytes": 98601,
+          "events": 4096,
+          "samples_256_hours_ms": [
+            74.29999995231628,
+            74.5,
+            74.29999995231628,
+            74.5,
+            74.40000009536743,
+            75.59999990463257,
+            73.90000009536743
+          ]
+        },
+        {
+          "name": "entropy-true-directory-false",
+          "compressed_bytes": 69728,
+          "decoded_bytes": 131369,
+          "events": 4096,
+          "samples_256_hours_ms": [
+            122.09999990463257,
+            122.90000009536743,
+            122.29999995231628,
+            123.39999985694885,
+            122.30000019073486,
+            120.69999980926514,
+            119.5
+          ]
+        },
+        {
+          "name": "entropy-true-directory-true",
+          "compressed_bytes": 81383,
+          "decoded_bytes": 147753,
+          "events": 4096,
+          "samples_256_hours_ms": [
+            144.20000004768372,
+            144.20000004768372,
+            144.59999990463257,
+            144.5,
+            143.90000009536743,
+            143.5,
+            143.79999995231628
+          ]
+        }
+      ],
+      "after": [
+        {
+          "name": "entropy-false-directory-false",
+          "compressed_bytes": 18730,
+          "decoded_bytes": 82217,
+          "events": 4096,
+          "samples_256_hours_ms": [
+            55.90000009536743,
+            55.799999952316284,
+            55.90000009536743,
+            56.39999985694885,
+            56.700000047683716,
+            54.40000009536743,
+            55.5
+          ]
+        },
+        {
+          "name": "entropy-false-directory-true",
+          "compressed_bytes": 31239,
+          "decoded_bytes": 98601,
+          "events": 4096,
+          "samples_256_hours_ms": [
+            74.20000004768372,
+            73.70000004768372,
+            72.29999995231628,
+            72,
+            71.40000009536743,
+            72.69999980926514,
+            70.5
+          ]
+        },
+        {
+          "name": "entropy-true-directory-false",
+          "compressed_bytes": 69728,
+          "decoded_bytes": 131369,
+          "events": 4096,
+          "samples_256_hours_ms": [
+            120.40000009536743,
+            120.70000004768372,
+            121.79999995231628,
+            121,
+            121.09999990463257,
+            119.90000009536743,
+            121
+          ]
+        },
+        {
+          "name": "entropy-true-directory-true",
+          "compressed_bytes": 81383,
+          "decoded_bytes": 147753,
+          "events": 4096,
+          "samples_256_hours_ms": [
+            141.89999985694885,
+            142.20000004768372,
+            142,
+            142.79999995231628,
+            142.60000014305115,
+            137.79999995231628,
+            138.29999995231628
+          ]
+        }
+      ]
+    }
+  },
+  "artifacts": {
+    "before_fixture": {
+      "sha256": "fadb5ecb2422fb94c37904a47e2e297029c07013d81dad0d7e74f2e6a9901dcb",
+      "bytes": 22153536
+    },
+    "after_fixture": {
+      "sha256": "e15366f47478b7bc60d7185dc14d97db65f44e6099f04d8b717b0b162e178e3c",
+      "bytes": 27351073
+    },
+    "before_codec": {
+      "sha256": "655aacef341278cfa867fc2a4ebbca569949e98a80f1dd222775f208e54edc6a",
+      "bytes": 211806
+    },
+    "after_codec": {
+      "sha256": "f7375ccbcf2c71258c1558ed6fab66481078999871ddfa1c61e85551548e6bc5",
+      "bytes": 366827
+    },
+    "before_worker": {
+      "sha256": "68a202727d76d81a6d1850f442915137c8dec7c3f10a2c8fc7bd4a5e9c3682d5",
+      "bytes": 89318
+    },
+    "after_worker": {
+      "sha256": "b468f5764d4c4d556944d4e3c63d5ae560dd4ece4ad538caef0715b4bc174686",
+      "bytes": 110548
+    }
+  },
+  "replica_byte_audit": {
+    "before_member_bytes": 19,
+    "after_member_bytes": 32,
+    "before_row_bytes": 16,
+    "after_row_bytes": 6,
+    "before_pac_directory_bytes_per_record": 0,
+    "after_pac_directory_bytes_per_record": 4,
+    "net_data_bytes_per_record": 7,
+    "events": 1048576,
+    "net_data_file_bytes": 7340032,
+    "net_metadata_bytes": 89852,
+    "net_total_bytes": 7429884,
+    "after_member_width_counts": {
+      "32": 1048576
+    },
+    "findings": [
+      "Original event UUID and @time are absent from all sealed members and common frames. Entropy is present once per event.",
+      "The state field is still present in all members even though the new branch index carries its state-trie leaf.",
+      "All measured members are exactly 32 bytes; the current mandatory offset directory is unnecessary for this particular dataset.",
+      "SODS retains decoded records. The client footprint is not compressed PAC size.",
+      "The client index and SODS files allocate 1 MiB pages. The exact combined growth is 7 MiB of data files plus 89,852 bytes of metadata."
+    ]
+  }
+}

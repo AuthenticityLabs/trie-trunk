@@ -14,12 +14,9 @@ import (
 const (
 	TimeTrieHeader          = 64
 	TimeTrieDayBytes        = 24 * 16
-	TimeTrieYearBytes       = 366*TimeTrieDayBytes + 366*24
+	TimeTrieYearBytes       = 366 * TimeTrieDayBytes
 	TimeHourMS        int64 = 3600000
-	TimeBlank               = 0
-	TimeKnown               = 1
 	TimeComplete            = 2
-	TimeSearch              = 4 // Client has committed the immutable Tantivy index.
 )
 
 var timeTrieMagic = []byte("TTTIME00")
@@ -34,7 +31,6 @@ type TimeLeaf struct {
 	Start, End uint64
 	Segments   uint32
 	State      byte
-	Flags      byte
 	Pods, Sods uint64
 }
 
@@ -46,8 +42,8 @@ func (t *timeDirectory) baseYear() int { return time.UnixMilli(t.first()).UTC().
 func (t *timeDirectory) leafBytes() int {
 	return int(t.raw[40]) + int(t.raw[41]) + int(t.raw[42]) + int(t.raw[43])
 }
-func (t *timeDirectory) yearBytes() int { return 366 * 24 * (t.leafBytes() + 1) }
-func (t *timeDirectory) positions(at time.Time) (year, day, hour, state int, ok bool) {
+func (t *timeDirectory) yearBytes() int { return 366 * 24 * t.leafBytes() }
+func (t *timeDirectory) positions(at time.Time) (year, day, hour int, ok bool) {
 	if len(t.raw) < TimeTrieHeader {
 		return
 	}
@@ -61,8 +57,6 @@ func (t *timeDirectory) positions(at time.Time) (year, day, hour, state int, ok 
 	d := at.YearDay() - 1
 	day = year + d*24*t.leafBytes()
 	hour = day + at.Hour()*t.leafBytes()
-	n := d*24 + at.Hour()
-	state = year + 366*24*t.leafBytes() + n
 	ok = true
 	return
 }
@@ -71,13 +65,8 @@ func (t *timeDirectory) leaf(ms int64) (TimeLeaf, bool) {
 	if len(t.raw) < TimeTrieHeader || ms < t.first() || ms >= t.sealed() {
 		return TimeLeaf{}, false
 	}
-	_, _, h, s, ok := t.positions(time.UnixMilli(ms))
+	_, _, h, ok := t.positions(time.UnixMilli(ms))
 	if !ok {
-		return TimeLeaf{}, false
-	}
-	flags := t.raw[s]
-	state := flags & 3
-	if state == TimeBlank || state == 3 || flags & ^byte(7) != 0 {
 		return TimeLeaf{}, false
 	}
 	at := h
@@ -89,7 +78,9 @@ func (t *timeDirectory) leaf(ms int64) (TimeLeaf, bool) {
 		end += IndexHeaderSlots + count
 		segments = 1
 	}
-	return TimeLeaf{From: ms, To: ms + TimeHourMS, Start: start, End: end, Segments: segments, State: state, Flags: flags, Pods: pods, Sods: sods}, true
+	// Every hour within the published bounds is sealed, including empty hours.
+	// Client file-replication masks are never stored in this server directory.
+	return TimeLeaf{From: ms, To: ms + TimeHourMS, Start: start, End: end, Segments: segments, State: TimeComplete, Pods: pods, Sods: sods}, true
 }
 func (t *timeDirectory) boundary(ms int64) (uint64, byte, bool) {
 	if len(t.raw) < TimeTrieHeader {
@@ -121,7 +112,7 @@ func buildHourDirectory(runs []Run, first, sealed int64, tail uint64, source [16
 		if r.PAC == nil || r.End <= r.Start {
 			return timeDirectory{}, fmt.Errorf("invalid hourly segment")
 		}
-		grow(1, r.PopStart)
+		grow(1, r.PodsStart)
 		grow(2, r.PAC.Placement.MemberStart)
 		grow(3, r.End-r.Start)
 		grow(5, r.End-r.Start)
@@ -149,7 +140,7 @@ func buildHourDirectory(runs []Run, first, sealed int64, tail uint64, source [16
 	}
 	i := 0
 	for ms := first; ms < sealed; ms += TimeHourMS {
-		_, _, h, s, _ := t.positions(time.UnixMilli(ms))
+		_, _, h, _ := t.positions(time.UnixMilli(ms))
 		pods, sods, count := uint64(0), uint64(0), uint64(0)
 		start := row
 		if i < len(runs) && runs[i].PAC.Placement.From == ms {
@@ -157,7 +148,7 @@ func buildHourDirectory(runs []Run, first, sealed int64, tail uint64, source [16
 			if r.Start != row+IndexHeaderSlots || r.PAC.Placement.To != ms+TimeHourMS {
 				return timeDirectory{}, fmt.Errorf("noncontiguous hourly segment")
 			}
-			pods, sods, count = r.PopStart, r.PAC.Placement.MemberStart-4, r.End-r.Start
+			pods, sods, count = r.PodsStart, r.PAC.Placement.MemberStart-4-4*(r.End-r.Start), r.End-r.Start
 			row = r.End
 			i++
 			if i < len(runs) && runs[i].PAC.Placement.From == ms {
@@ -170,7 +161,6 @@ func buildHourDirectory(runs []Run, first, sealed int64, tail uint64, source [16
 			putUintWidth(t.raw[at:at+w], v)
 			at += w
 		}
-		t.raw[s] = TimeComplete
 	}
 	if i != len(runs) || row != tail {
 		return timeDirectory{}, fmt.Errorf("segments outside sealed directory")
@@ -264,28 +254,26 @@ func (t *timeDirectory) preserveBases(old *timeDirectory) error {
 	return nil
 }
 
-// A replication patch includes every selected hour's leaf and its actual state.
-// A blank is not interchangeable with a complete leaf whose record count is zero.
+// A replication patch carries server leaves only. Header bounds distinguish
+// sealed empty hours from unavailable hours; clients add their own receipt byte.
 func (t *timeDirectory) window(from, to int64, retired bool) ([]byte, error) {
 	if from != utcHour(from) || to != utcHour(to) || from >= to || to > t.sealed() || retired && from < t.first() {
 		return nil, fmt.Errorf("invalid time window")
 	}
 	raw := append([]byte(nil), t.raw[:TimeTrieHeader]...)
-	order.PutUint64(raw[8:16], uint64(min(from, t.first())))
 	raw = order.AppendUint64(raw, uint64(from))
 	raw = order.AppendUint64(raw, uint64(to))
 	for ms := from; ms < to; ms += TimeHourMS {
 		if ms < t.first() {
-			raw = append(raw, make([]byte, t.leafBytes()+1)...)
+			raw = append(raw, make([]byte, t.leafBytes())...)
 			continue
 		}
 		l, ok := t.leaf(ms)
 		if !ok || l.State != TimeComplete {
 			return nil, fmt.Errorf("incomplete time hour")
 		}
-		_, _, h, _, _ := t.positions(time.UnixMilli(ms))
+		_, _, h, _ := t.positions(time.UnixMilli(ms))
 		raw = append(raw, t.raw[h:h+t.leafBytes()]...)
-		raw = append(raw, l.State)
 	}
 	return raw, nil
 }

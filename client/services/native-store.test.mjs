@@ -14,8 +14,8 @@ import {NativeTrie,NativeEvent} from "./pil/native-event.ts";
 import {compile} from "./pil/metadata.ts";
 import {valueAt} from "./dictionary.ts";
 import {collectNative} from "./pil/native-collect.ts";
-import { cbor } from "./pil/cbor.ts";
-import { cb, le } from "./pil-fixtures.mjs";
+import {decodeObject} from "./pil/control.ts";
+import { pilObject, le } from "./pil-fixtures.mjs";
 const wire=new Uint8Array(readFileSync(new URL("./fixtures/native-ranges/ranges.pil",import.meta.url)));
 const wasm=await WebAssembly.compile(readFileSync(new URL("../assets/pil.wasm",import.meta.url)));
 async function fixture(){
@@ -124,9 +124,9 @@ async function stateRecords(f, pages) {
    result.push(copy);continue;
   }
   if(record.kind!=="chunk"||record.file!=="state"){result.push(record);continue;}
-  const old=cbor(record.bytes);
+  const old=decodeObject(record.bytes);
   for(const {start=0,...page} of pages){
-   const bytes=cb({...old,...page});
+   const bytes=pilObject({...old,...page});
    result.push({...record,start,bytes,digest:Buffer.from(await crypto.subtle.digest("SHA-256",bytes)).toString("hex")});
   }
  }
@@ -231,12 +231,12 @@ test("native file ranges persist original bytes and only publish completed respo
  await ingest(store,session,f);
  assert.deepEqual(await store.coverage(),[]);
  await store.finish(session);
- const [source]=await b.list(),native=parts(f),index={bytes:native.index},pop=native;
- assert.deepEqual(await store.read(source.key,"index",{Start:16,End:16+index.bytes.length}),index.bytes);
- assert.deepEqual(await store.read(source.key,"population",{Start:pop.start,End:pop.start+pop.bytes.length}),pop.bytes);
+ const [source]=await b.list(),native=parts(f),index={bytes:native.index},payloadRecord=native;
+ assert.deepEqual(await store.read(source.key,"index",{Start:6,End:6+index.bytes.length}),index.bytes);
+ assert.deepEqual(await store.read(source.key,"sods",{Start:payloadRecord.start,End:payloadRecord.start+payloadRecord.bytes.length}),payloadRecord.bytes);
  const reloaded=new NativeStore(b),[coverage]=await reloaded.coverage();
  assert.deepEqual(coverage.Index,[{Start:1,End:7}]);
- assert.equal(source.files.population.end,(1<<20)+8); // no fake holes before lazy payload
+ assert.equal(source.files.sods.end,(1<<20)+8); // no fake holes before lazy payload
  const size=[...b.files.values()].reduce((n,v)=>n+v.getSize(),0),retry=reloaded.begin();
  await ingest(reloaded,retry,f);await reloaded.finish(retry);
  assert.equal([...b.files.values()].reduce((n,v)=>n+v.getSize(),0),size); // retry is byte-for-byte deduped
@@ -256,9 +256,9 @@ test("failed metadata publication recovers the orphan file tail",async()=>{
  const before=f.records.slice(1).filter(r=>r.kind!=="pac"&&r.kind!=="package-end");await ingest(s,session,f,before);
  const pac=f.records.find(r=>r.kind==="pac");
  b.fail=true;await assert.rejects(s.record(session,pac),/crash/);
- const [source]=await b.list();assert.equal(source.files.population.end,0);
+ const [source]=await b.list();assert.equal(source.files.sods.end,0);
  await s.record(session,pac);
- assert.equal((await b.file(source.key,"population")).getSize(),(1<<20)+8);
+ assert.equal((await b.file(source.key,"sods")).getSize(),(1<<20)+8);
 
 });
 test("interleaved responses reload shared metadata and retain both commits",async()=>{
@@ -292,25 +292,26 @@ test("interval difference and extent resolution support interlaced gap fills",()
  assert.deepEqual(resolve([{Start:10,End:20,local:0},{Start:0,End:10,local:10}],{Start:5,End:15}),[{Start:5,End:10,local:15},{Start:10,End:15,local:0}]);
  assert.throws(()=>resolve([{Start:0,End:3,local:0}],{Start:0,End:4}),/gap/);
 });
-test("native view reads index identity, shared trie values and original PIL population without assembly",async()=>{
+test("native view reads index identity, shared trie values and original PIL payload without assembly",async()=>{
  const f=await fixture(),binding=f.records[0].binding,metadata=f.definitions.get(binding.digest),mapping=compile(metadata,binding.tap);
  const trie=new NativeTrie(mapping);
  for(const r of f.records)if(r.kind==="chunk"&&r.file==="trie")trie.append(r.start,r.bytes);
  const index=f.records.find(r=>r.kind==="chunk"&&r.file==="index").bytes;
- const native=parts(f),bounds=native.record.bounds;const pop={bytes:native.record.bytes.subarray(bounds[4],bounds[5])};
+ const native=parts(f),bounds=native.record.bounds;const payloadRecord={bytes:native.record.bytes.subarray(bounds[4],bounds[5])};
  const codec=new Codec(await WebAssembly.instantiate(wasm)),h=codec.define(metadata.pil);
- codec.upload(pop.bytes);assert.equal(codec.scan(h,0,pop.bytes.length),pop.bytes.length);
- // Lazy population is the third event (20 minutes into the hour).
- const row=index.subarray(2*16,3*16),event=new NativeEvent(row,pop.bytes,trie,native.common,Date.UTC(2026,9,16,12));
+ codec.upload(payloadRecord.bytes);assert.equal(codec.scan(h,0,payloadRecord.bytes.length),payloadRecord.bytes.length);
+ // Lazy payload is the third event (20 minutes into the hour).
+ const row=index.subarray(2*6,3*6),event=new NativeEvent(row,payloadRecord.bytes,trie,native.common,Date.UTC(2026,9,16,12));
  assert.equal(event.millis,Date.UTC(2026,9,16,12,20));
- assert.equal(event.uuid,String.fromCharCode(...indexUUID(row,Date.UTC(2026,9,16,12))));
+ assert.equal(event.uuid,String.fromCharCode(...indexUUID(row,Date.UTC(2026,9,16,12),Number(valueAt(event,"@event_id")))));
  assert.equal(valueAt(event,"state"),"pending");
  assert.equal(valueAt(event,"message"),"request completed");
  assert.equal(valueAt(event,"duration"),13);
  assert.equal(valueAt(event,"id"),objectUUID(42));
- assert.ok(event.orderedKeys().includes(mapping.dictionary.id.key));
+ assert.ok(!event.orderedKeys().includes(mapping.dictionary.id.key));assert.equal(event.read(mapping.dictionary.id.key),undefined);assert.equal(valueAt(event,"@event_id"),2);assert.equal(valueAt(event,"@leaf"),event.stateLeaf);
  assert.ok(event.orderedKeys().length>3);
- assert.equal(row.length,16); // No implicit trie reference in the index.
+ assert.equal(row.length,6); // Low millisecond word and explicit two-byte state leaf.
+ assert.equal(event.stateLeaf,new DataView(row.buffer,row.byteOffset,row.length).getUint16(4,true));
  codec.release(h);
 });
 test("native pages binary-search cached index rows and demand only exact payload ranges",async()=>{
@@ -318,13 +319,13 @@ test("native pages binary-search cached index rows and demand only exact payload
  await ingest(store,session,f);await store.finish(session);
  const [source]=await b.list(),from=Date.UTC(2026,9,16,12,12),to=Date.UTC(2026,9,16,12,28);
  const page=await store.page(source.key,from,to);
- assert.equal(page.rows.length,16);assert.equal(page.after,3);assert.equal(page.done,true);
- const native=parts(f);assert.deepEqual(page.population,native.record.bytes.subarray(native.record.bounds[4],native.record.bounds[5]));
+ assert.equal(page.rows.length,6);assert.equal(page.after,3);assert.equal(page.done,true);
+ const native=parts(f);assert.deepEqual(page.payload,native.record.bytes.subarray(native.record.bounds[4],native.record.bounds[5]));
  const deps=await store.dependencies(source.key),trie=new NativeTrie(compile(deps.definition,source.tap));
  for(const chunk of deps.trie)trie.append(chunk.start,chunk.bytes);
- assert.equal(valueAt(new NativeEvent(page.rows,page.population,trie,page.common[0],page.bases[0]),"revision_id"),3);
+ assert.equal(valueAt(new NativeEvent(page.rows,page.payload,trie,page.common[0],page.bases[0]),"revision_id"),3);
  const next=await store.page(source.key,from,to,page.after);assert.equal(next.rows.length,0);assert.equal(next.done,true);
- assert.equal((await store.page(source.key,from-12*60000,to)).rows.length,3*16);
+ assert.equal((await store.page(source.key,from-12*60000,to)).rows.length,3*6);
 });
 test("Record starts cross sparse page boundaries with a retained header",async()=>{
  const f=await fixture(),backend=new Backend(),store=new NativeStore(backend),session=store.begin();
@@ -333,20 +334,20 @@ test("Record starts cross sparse page boundaries with a retained header",async()
  const expected=await store.page(source.key,from,to);
  assert.equal(source.contexts.length,1);
  assert.equal(source.contexts[0].placement.firstRow,1n);
- const tail=committedRanges(source).index.at(-1).End,raw=await store.read(source.key,"index",{Start:0,End:tail*16});
- const header=new DataView(raw.buffer,raw.byteOffset,16);
- assert.equal(header.getBigInt64(4,true),source.contexts[0].placement.from);
- assert.equal(header.getUint8(12),2);
+ const tail=committedRanges(source).index.at(-1).End,raw=await store.read(source.key,"index",{Start:0,End:tail*6});
+ const header=new DataView(raw.buffer,raw.byteOffset,6);
+ assert.equal(header.getUint32(0,true),Number(source.contexts[0].placement.from>>32n));
+ assert.equal(header.getUint16(4,true),0);
  // Place the first event on a logical 1 MiB boundary, with its header in the
  // preceding page. Reverse physical pages to model out-of-order collection.
- const size=1<<20,shift=size/16-1,start=shift*16,index=await backend.file(source.key,"index");
+ const size=1<<20,shift=Math.floor(size/6)-1,start=shift*6,split=size-start,index=await backend.file(source.key,"index");
  index.truncate(2*size+8);
  index.data.fill(0);
  new DataView(index.data.buffer).setBigUint64(0,BigInt(start),true);
- index.write(raw.subarray(0,16),{at:8+2*size-16});
- index.write(raw.subarray(16),{at:8});
+ index.write(raw.subarray(0,split),{at:8+2*size-split});
+ index.write(raw.subarray(split),{at:8});
  source.files.index={...source.files.index,end:2*size+8,retired:start,pages:{0:size+8,1:8},extents:[
-  {Start:start,End:size,local:8+2*size-16},
+  {Start:start,End:size,local:8+2*size-split},
   {Start:size,End:start+raw.length,local:8},
  ]};
  source.retiredRows=shift;
@@ -354,13 +355,13 @@ test("Record starts cross sparse page boundaries with a retained header",async()
  await backend.put([source]);
  const actual=await new NativeStore(backend).page(source.key,from,to);
  assert.deepEqual(actual.rows,expected.rows);
- assert.deepEqual(actual.population,expected.population);
+ assert.deepEqual(actual.payload,expected.payload);
  assert.deepEqual(actual.offsets,expected.offsets);
  assert.equal(actual.after,expected.after+shift);
 });
 test("known-empty packages and provisional status survive reload without inventing rows",async()=>{
- const f=await fixture(),records=structuredClone(f.records.filter(r=>r.kind!=="pac"&&(r.kind!=="chunk"||!["index","population"].includes(r.file))));
- records[0].manifest.Index=[];records[0].manifest.Population=[];records[0].manifest.IndexBases=[];records[0].manifest.Provisional=true;delete records[0].manifest.TimeTrie;
+ const f=await fixture(),records=structuredClone(f.records.filter(r=>r.kind!=="pac"&&(r.kind!=="chunk"||!["index","sods"].includes(r.file))));
+ records[0].manifest.Index=[];records[0].manifest.MemberRanges=[];records[0].manifest.IndexBases=[];records[0].manifest.Provisional=true;delete records[0].manifest.TimeTrie;
  const backend=new Backend(),store=new NativeStore(backend),session=store.begin();
  await ingest(store,session,f,records);await store.finish(session);
  const [source]=await backend.list();assert.equal(source.timeTrie,undefined);assert.deepEqual(committedRanges(source),{index:[],sods:[]});
@@ -416,8 +417,8 @@ test("committed sources retain a time trie without package manifests or redundan
  });
  await ingest(store,session,f,records);await store.finish(session);
  for(const source of await backend.list()){
-  assert.equal(source.packages,undefined);assert.equal(source.index,undefined);assert.equal(source.population,undefined);
-  assert.equal(source.timeTrie.buffer.byteLength,source.timeTrie.byteLength);
+  assert.equal(source.packages,undefined);assert.equal(source.index,undefined);assert.equal(source.payload,undefined);
+  assert.equal(source.timeTrie.bytes.buffer.byteLength,source.timeTrie.bytes.byteLength);
  }
  const restored=new NativeStore(backend);assert((await restored.coverage()).length>0);
 });
@@ -431,12 +432,11 @@ test("positional completeness publishes atomically and distinguishes empty from 
  assert.equal((await store.missingTime(pending.key,m.From*1000,m.To*1000)).length,1);
  await store.finish(session);
  assert.deepEqual(await new NativeStore(backend).missingTime(pending.key,m.From*1000,m.To*1000),[]);
- const records=structuredClone(f.records.filter(r=>r.kind!=="pac"&&(r.kind!=="chunk"||!["index","population"].includes(r.file))));
+ const records=structuredClone(f.records.filter(r=>r.kind!=="pac"&&(r.kind!=="chunk"||!["index","sods"].includes(r.file))));
  const empty=records.find(r=>r.kind==="manifest").manifest;
- empty.Index=[];empty.Population=[];empty.Tail=0;
+ empty.Index=[];empty.MemberRanges=[];empty.Tail=0;
  const patch=empty.TimeTrie,v=new DataView(patch.buffer,patch.byteOffset,patch.byteLength);
  v.setBigUint64(24,0n,true);patch.fill(0,80);
- const stride=patch.slice(40,44).reduce((a,b)=>a+b,0)+1;for(let at=80;at<patch.length;at+=stride)patch[at+stride-1]=2;
  const other=new Backend(),target=new NativeStore(other),tx=target.begin();
  await ingest(target,tx,f,records);await target.finish(tx);
  const source=(await other.list())[0];
@@ -513,4 +513,38 @@ test('range collection publishes every confirmed zero hour after durable data wr
  const {missingHours}=await import('./store/time-trie.ts');
  assert.deepEqual(missingHours(source.timeTrie,from,to),[],'including the three zero-event hours');
  assert.equal(missingHours(source.timeTrie,to,to+3600000).length,1,'unreceived hour stays blank');
+});
+
+
+test("index-only replication commits indexes without certifying event bytes; later whole PAC fills the same hour",async()=>{
+ const f=await fixture(),b=new Backend(),store=new NativeStore(b),session=store.begin();
+ const indexes=structuredClone(f.records).filter(r=>r.kind!=="pac");
+ for(const r of indexes)if(r.kind==="manifest"){r.manifest.IndexOnly=true;r.manifest.MemberRanges=[];}
+ await ingest(store,session,f,indexes);await store.finish(session);
+ const [source]=await b.list(),coverage=await store.coverage();
+ assert.ok(coverage[0].Index.length);assert.deepEqual(coverage[0].MemberRanges,[]);
+ assert.equal(source.files.sods.end,0);
+ const restart=new NativeStore(b),bounds=source.timeTrie.ranges[0];
+ assert.ok((await restart.missingTime(source.key,bounds.from,bounds.to)).length);
+ assert.equal(await restart.resolveHour({tap:source.tap,digest:source.digest,generation:source.generation,...bounds}),undefined);
+ const next=restart.begin();await ingest(restart,next,f);await restart.finish(next);
+ assert.ok((await restart.coverage())[0].MemberRanges.length);
+ assert.deepEqual(await restart.missingTime(source.key,bounds.from,bounds.to),[]);
+});
+test("incomplete index-only collection never publishes coverage",async()=>{
+ const f=await fixture(),b=new Backend(),store=new NativeStore(b),session=store.begin();
+ const indexes=structuredClone(f.records).filter(r=>r.kind!=="pac"&&!(r.kind==="chunk"&&r.file==="index"));
+ for(const r of indexes)if(r.kind==="manifest"){r.manifest.IndexOnly=true;r.manifest.MemberRanges=[];}
+ await ingest(store,session,f,indexes);await assert.rejects(store.finish(session),/gap/);
+ for(const item of await store.coverage()){assert.deepEqual(item.Index,[]);assert.deepEqual(item.MemberRanges,[]);}
+});
+
+test("manifest omission cannot certify nonempty hours without their actual indexes and SODS",async()=>{
+ for(const indexOnly of [false,true]){
+  const f=await fixture(),b=new Backend(),store=new NativeStore(b),session=store.begin();
+  const records=structuredClone(f.records).filter(r=>r.kind!=="pac"&&!(r.kind==='chunk'&&r.file==='index'));
+  for(const r of records)if(r.kind==='manifest'){r.manifest.Index=[];r.manifest.MemberRanges=[];if(indexOnly)r.manifest.IndexOnly=true;}
+  await ingest(store,session,f,records);await assert.rejects(store.finish(session),/gap|Missing complete hourly payload/);
+  for(const s of await b.list()){assert.deepEqual(committedRanges(s),{index:[],sods:[]});}
+ }
 });

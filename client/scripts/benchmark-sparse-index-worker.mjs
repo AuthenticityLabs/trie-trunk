@@ -2,7 +2,7 @@
 // Never opens the application's OPFS directories.
 const WIDTH = 26;
 const epoch = 1792454400000;
-let root, dir, idx, pop, chunks, active;
+let root, dir, idx, sodsFile, chunks, active;
 const check = (ok, message) => { if (!ok) throw Error(message); };
 const writeAll = (file, bytes, at) => {
   let n = 0;
@@ -35,7 +35,7 @@ async function persist() {
 async function append(start, count) {
   if (chunks.some(c => c.start === start && c.count === count)) return false;
   check(!chunks.some(c => start < c.start + c.count && start + count > c.start), "overlap");
-  const base = pop.getSize(), rows = new Uint8Array(count * WIDTH);
+  const base = sodsFile.getSize(), rows = new Uint8Array(count * WIDTH);
   const view = new DataView(rows.buffer);
   let end = base;
   const payloads = [];
@@ -53,9 +53,9 @@ async function append(start, count) {
   const payload = new Uint8Array(end - base);
   let offset = 0;
   for (const bytes of payloads) { payload.set(bytes, offset); offset += bytes.length; }
-  writeAll(pop, payload, base);
+  writeAll(sodsFile, payload, base);
   writeAll(idx, rows, start * WIDTH);
-  pop.flush(); idx.flush();
+  sodsFile.flush(); idx.flush();
   chunks.push({start, count, base});
   chunks.sort((a, b) => a.start - b.start);
   await persist();
@@ -67,7 +67,7 @@ function resolve(row) {
   const end = Number(new DataView(read(idx, row * WIDTH + 18, 8).buffer).getBigUint64(0, true));
   const start = row === c.start ? c.base :
     Number(new DataView(read(idx, (row - 1) * WIDTH + 18, 8).buffer).getBigUint64(0, true));
-  return read(pop, start, end - start);
+  return read(sodsFile, start, end - start);
 }
 function lower(c, target) {
   let lo = c.start, hi = c.start + c.count;
@@ -92,7 +92,7 @@ function verify(total) {
   for (const c of chunks) for (let row = c.start; row < c.start + c.count; row++) {
     const bytes = resolve(row);
     check(timeAt(row) === epoch + row, "source row identity changed");
-    check(bytes.length === lengthAt(row), "bad population boundary");
+    check(bytes.length === lengthAt(row), "bad payload boundary");
     check(bytes.every((b, i) => b === byteAt(row, i)), "wrong payload");
     records++;
   }
@@ -102,7 +102,7 @@ function verify(total) {
     "negative control did not expose ordinary binary search across holes");
   const filled = chunks.find(c => c.start === 2000);
   const precedingEnd = Number(new DataView(read(idx, 1999 * WIDTH + 18, 8).buffer).getBigUint64(0, true));
-  check(precedingEnd !== filled.base, "negative control did not expose the chunk population boundary");
+  check(precedingEnd !== filled.base, "negative control did not expose the chunk payload boundary");
   let seed = 7;
   const next = () => (seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0);
   const begin = performance.now();
@@ -120,12 +120,12 @@ function verify(total) {
     search(epoch + c.start + 100, epoch + c.start + 110);
   }
   return {recordsVerified: records, rangeChecks: 1000, validationMs,
-    ordinaryBinarySearchAcrossHolesIncorrect: true, chunkPopulationBaseRequired: true,
+    ordinaryBinarySearchAcrossHolesIncorrect: true, chunkPayloadBaseRequired: true,
     populatedRangeLookupUs: (performance.now() - start) * 1000 / 1000};
 }
 async function open() {
   idx = await (await dir.getFileHandle("index", {create: true})).createSyncAccessHandle();
-  pop = await (await dir.getFileHandle("population", {create: true})).createSyncAccessHandle();
+  sodsFile = await (await dir.getFileHandle("sods", {create: true})).createSyncAccessHandle();
 }
 onmessage = async ({data}) => {
   try {
@@ -155,15 +155,15 @@ onmessage = async ({data}) => {
       const fillMs = performance.now() - fill;
       const retainedAfter = read(idx, (data.total - 1000) * WIDTH, 1000 * WIDTH);
       check(retainedBefore.every((b, i) => b === retainedAfter[i]), "gap fill moved existing references");
-      const sizes = [idx.getSize(), pop.getSize()];
+      const sizes = [idx.getSize(), sodsFile.getSize()];
       check(await append(2000, 1000) === false, "duplicate range appended");
-      check(sizes[0] === idx.getSize() && sizes[1] === pop.getSize(), "duplicate grew files");
+      check(sizes[0] === idx.getSize() && sizes[1] === sodsFile.getSize(), "duplicate grew files");
       const result = verify(data.total);
       const after = await navigator.storage.estimate();
-      idx.close(); pop.close();
+      idx.close(); sodsFile.close();
       const closed = await navigator.storage.estimate();
       postMessage({result: {...result, mode: data.mode, totalRows: data.total, paddingMs, ingestMs, fillMs,
-        indexBytes: sizes[0], populationBytes: sizes[1], receivedIndexBytes: 4000 * WIDTH,
+        indexBytes: sizes[0], payloadBytes: sizes[1], receivedIndexBytes: 4000 * WIDTH,
         quotaUsageBefore: before.usage, quotaUsageAfter: after.usage,
         quotaDelta: after.usage - before.usage, usageDetails: after.usageDetails,
         closedQuotaUsage: closed.usage, closedQuotaDelta: closed.usage - before.usage}});
@@ -176,7 +176,7 @@ onmessage = async ({data}) => {
       await open();
       const result = verify(data.total);
       const opened = await navigator.storage.estimate();
-      idx.close(); pop.close();
+      idx.close(); sodsFile.close();
       const estimate = await navigator.storage.estimate();
       postMessage({result: {...result, quotaUsage: estimate.usage,
         quotaBeforeOpen: before.usage, quotaWhileOpen: opened.usage}});

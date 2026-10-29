@@ -647,6 +647,8 @@ version = "0.1.0"
 dependencies = [
  "ciborium",
  "ciborium-ll",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]

@@ -50,7 +50,7 @@ func FuzzDirectEntryEncoding(f *testing.F) {
 		if raw[0]&4 != 0 {
 			e.Fields = map[string]codec.Value{"text": codec.String(text), "n": codec.Uint(n), "nested": codec.List(codec.Int(-1), codec.Bool(false))}
 		}
-		for _, format := range []codec.Format{codec.CBOR, codec.CompactJSON} {
+		for _, format := range []codec.Format{codec.PIL, codec.CompactJSON} {
 			got, err := e.Encode(format, nil)
 			if err != nil {
 				t.Fatal(err)
@@ -59,9 +59,9 @@ func FuzzDirectEntryEncoding(f *testing.F) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			if format == codec.CBOR {
+			if format == codec.PIL {
 				if !bytes.Equal(got, want) {
-					t.Fatalf("CBOR mismatch:\n%x\n%x", got, want)
+					t.Fatalf("PIL mismatch:\n%x\n%x", got, want)
 				}
 			} else {
 				// JSON object key order differs; numbers must retain their exact precision.

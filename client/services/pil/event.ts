@@ -1,3 +1,4 @@
+import {objectView} from "./control.ts";
 import { pack, type LogEvent } from "../dictionary.ts";
 import { read, span } from "./layout.ts";
 import type { Mapping } from "./metadata.ts";
@@ -12,12 +13,16 @@ export class PILEvent {
   private bytes: Uint8Array;
   private mapping: Mapping;
   private common?: Uint8Array;
+  private ordinalIdentity = false;
   constructor(bytes: Uint8Array, mapping: Mapping, common?: Uint8Array) {
     this.bytes = bytes;
     this.common = common;
     this.mapping = mapping;
     this.dictionary = mapping.dictionary;
     this.fields = this.dictionary.fields;
+    const recordIndex = mapping.definition.fields.findIndex(f => f.name === "@event_id");
+    this.ordinalIdentity = !!mapping.native && recordIndex >= 0 &&
+      span(this.fieldBytes(recordIndex), mapping.definition, recordIndex).state !== 0;
     const idIndex = mapping.keys.indexOf(this.dictionary.id.key);
     const id = read(this.fieldBytes(idIndex), mapping.definition, idIndex);
     if (
@@ -37,13 +42,15 @@ export class PILEvent {
   prefix():Uint8Array|undefined { return this.common; }
   private fallback(): Record<string, unknown> | undefined {
     if (this.mapping.native) return undefined;
-    return read(
+    return objectView(read(
       this.fieldBytes(this.mapping.keys.length + 1),
       this.mapping.definition,
       this.mapping.keys.length + 1,
-    ) as Record<string, unknown> | undefined;
+    )) as Record<string, unknown> | undefined;
   }
   read(key: number): unknown {
+    // The internal live key is not the producer's UUID. Expose @event_id instead.
+    if (this.ordinalIdentity && key === this.dictionary.id.key) return undefined;
     const { keys, definition, codes } = this.mapping;
     const index = keys.indexOf(key);
     let value: unknown;
@@ -63,7 +70,7 @@ export class PILEvent {
   }
   orderedKeys(): number[] {
     const { keys, definition } = this.mapping;
-    if (this.mapping.native) return keys.filter((_,i)=>span(this.fieldBytes(i),definition,i).state!==0);
+    if (this.mapping.native) return keys.filter((key,i)=>(!this.ordinalIdentity || key !== this.dictionary.id.key) && span(this.fieldBytes(i),definition,i).state!==0);
     const lineage = read(this.fieldBytes(keys.length), definition, keys.length);
     if (!Array.isArray(lineage)) throw Error("Missing PIL lineage");
     const present = keys.filter(

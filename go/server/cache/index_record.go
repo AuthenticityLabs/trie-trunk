@@ -1,49 +1,38 @@
 package cache
 
 import (
-	"encoding/binary"
 	"fmt"
 )
 
 // IndexRowSize is identical on disk, on the wire and in the browser.
-// 96-bit hour-relative UUIDv7 | decoded member start U32 LE.
-const IndexRowSize = 16
-
-// Directory slot columns widen as needed. Keep byte coordinates exact in browser Numbers.
+// Low epoch-millisecond word U32 LE | state leaf U16 LE. Record ordinal is implicit in the index position.
+const IndexRowSize = 6
 const IndexCapacity uint64 = 1 << 48
 
-func indexDelta(row []byte) int64 {
-	return int64(uint32(row[0])<<14 | uint32(row[1])<<6 | uint32(row[2])>>2)
+func indexTime(row []byte, base int64) int64 {
+	ms := (base & ^int64(0xffffffff)) | int64(order.Uint32(row[:4]))
+	if ms < base {
+		ms += 1 << 32
+	}
+	return ms
 }
 func packIndexID(row []byte, id [16]byte, base int64) error {
-	delta := eventTime(id[:]) - base
-	if delta < 0 || delta >= 1<<22 || id[6]>>4 != 7 || id[8]>>6 != 2 {
+	ms := eventTime(id[:])
+	if ms < base || ms >= base+TimeHourMS || id[6]>>4 != 7 || id[8]>>6 != 2 {
 		return fmt.Errorf("UUID outside hourly segment")
 	}
-	// 22 timestamp bits, 12 rand_a bits, 62 rand_b bits. Network bit order
-	// preserves UUID ordering within the segment without discarding random bits.
-	hi := uint64(delta)<<42 | uint64(id[6]&15)<<38 | uint64(id[7])<<30 |
-		uint64(id[8]&63)<<24 | uint64(id[9])<<16 | uint64(id[10])<<8 | uint64(id[11])
-	binary.BigEndian.PutUint64(row[:8], hi)
-	copy(row[8:12], id[12:16])
+	order.PutUint32(row[:4], uint32(ms))
 	return nil
 }
-func unpackIndexID(row []byte, base int64) [16]byte {
-	var id [16]byte
-	ms := uint64(base + indexDelta(row))
+
+// Time-only ordering keys are not event identities. Source and row break ties.
+func timeKey(ms int64) []byte {
+	raw := make([]byte, 16)
 	for i := 5; i >= 0; i-- {
-		id[i] = byte(ms)
+		raw[i] = byte(ms)
 		ms >>= 8
 	}
-	hi := binary.BigEndian.Uint64(row[:8])
-	id[6] = 0x70 | byte(hi>>38)&15
-	id[7] = byte(hi >> 30)
-	id[8] = 0x80 | byte(hi>>24)&63
-	id[9] = byte(hi >> 16)
-	id[10] = byte(hi >> 8)
-	id[11] = byte(hi)
-	copy(id[12:], row[8:12])
-	return id
+	return raw
 }
 
 // Sealed references are source-bound logical record numbers, preserved by retention.
@@ -52,36 +41,18 @@ func (b *branchStore) searchRow(ref uint64) (uint64, error) {
 	return b.time.resolveReference(unpackCollection(ref))
 }
 
-// Each segment starts with one 16-byte slot. Event references count this slot,
+// Each segment starts with one index-width slot. Event references count this slot,
 // but never point to it. The file header is outside the logical slot address space.
 const IndexHeaderSlots = 1
 
 func indexHeader(base int64, counts ...uint64) []byte {
 	raw := make([]byte, IndexRowSize)
-	count := uint64(0)
-	if len(counts) > 0 {
-		count = counts[0]
-	}
-	w := uintWidth(count, 2)
-	putUintWidth(raw[:w], count)
-	raw[12] = byte(w)
-	order.PutUint64(raw[4:12], uint64(base))
-	// A literal count is widened independently of event coordinates.
+	order.PutUint32(raw, uint32(uint64(base)>>32))
 	return raw
 }
 func validateIndexHeader(raw []byte, run Run) error {
-	if len(raw) != IndexRowSize || raw[12] < 2 || raw[12] > 4 || getUintWidth(raw[:raw[12]]) != run.End-run.Start || int64(order.Uint64(raw[4:12])) != run.PAC.Placement.From {
-		return fmt.Errorf("invalid index segment header")
-	}
-	for _, v := range raw[13:] {
-		if v != 0 {
-			return fmt.Errorf("nonzero index header reserve")
-		}
-	}
-	for _, v := range raw[raw[12]:4] {
-		if v != 0 {
-			return fmt.Errorf("nonzero count padding")
-		}
+	if len(raw) != IndexRowSize || order.Uint32(raw) != uint32(uint64(run.PAC.Placement.From)>>32) || raw[4] != 0 || raw[5] != 0 {
+		return fmt.Errorf("invalid index hour prefix")
 	}
 	return nil
 }
@@ -99,6 +70,7 @@ func (b *branchStore) nextRecord(row uint64) uint64 {
 type recordContext struct {
 	branch *branchStore
 	run    *Run
+	reader *podsReader
 }
 
 func (c *recordContext) segment(b *branchStore, row uint64) *Run {
@@ -108,9 +80,27 @@ func (c *recordContext) segment(b *branchStore, row uint64) *Run {
 	}
 	return c.run
 }
-func (c *recordContext) identity(b *branchStore, row uint64) []byte {
-	id := unpackIndexID(b.row(row), c.segment(b, row).PAC.Placement.From)
-	return id[:]
+func (c *recordContext) identity(b *branchStore, row uint64) ([]byte, error) {
+	run := c.segment(b, row)
+	if row < run.Start || row-run.Start >= maxHourRecords {
+		return nil, fmt.Errorf("record outside hour")
+	}
+	id, err := seedKey(b.rowTime(row), uint32(row-run.Start))
+	return id[:], err
+}
+func (l *Layout) seedIdentity(raw []byte, ms int64) ([]byte, error) {
+	var f Frame
+	if err := l.Scan(raw, &f); err != nil {
+		return nil, err
+	}
+	if f.Values[l.Record].State != Direct || len(f.Values[l.Record].Bytes) != 3 {
+		return nil, fmt.Errorf("missing fixed U24 event record")
+	}
+	id, err := seedKey(ms, uint32(unsigned(f.Values[l.Record].Bytes)))
+	if err != nil {
+		return nil, err
+	}
+	return id[:], nil
 }
 
 func (c *recordContext) resolve(b *branchStore, ref uint64) (uint64, error) { return b.searchRow(ref) }

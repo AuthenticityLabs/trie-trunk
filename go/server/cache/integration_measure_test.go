@@ -114,7 +114,7 @@ func TestMeasureIntegratedCollection(t *testing.T) {
 		t.Fatal(err)
 	}
 	b := s.branches[Write]
-	known := Coverage{Definition: l.Digest, Generation: b.generation, Index: []Span{{0, uint64(n)}}, Population: []Span{{headerSize, b.popEnd}}, TrieNodes: len(s.trie.nodes), StateKnown: true, StateEpoch: s.state.epoch, StateSequence: s.state.sequence}
+	known := Coverage{Definition: l.Digest, Generation: b.generation, Index: []Span{{0, uint64(n)}}, MemberRanges: []Span{{headerSize, b.podsEnd}}, TrieNodes: len(s.trie.nodes), StateKnown: true, StateEpoch: s.state.epoch, StateSequence: s.state.sequence}
 	coverage, _ := json.Marshal([]Coverage{known})
 	handler := &HTTP{Store: s}
 	results := map[string]any{}
@@ -132,7 +132,7 @@ func TestMeasureIntegratedCollection(t *testing.T) {
 				q.Set("format", "native")
 			}
 			if mode == "native-index-only" {
-				q.Set("population", "none")
+				q.Set("data", "none")
 			}
 			req := httptest.NewRequest("GET", "/collect?"+q.Encode(), nil)
 			req.Header.Set("Accept", "application/pil")
@@ -177,24 +177,24 @@ func TestMeasureIntegratedCollection(t *testing.T) {
 						if !bytes.Equal(chunk.Data, b.rows[chunk.Start*IndexRowSize:chunk.Start*IndexRowSize+uint64(len(chunk.Data))]) {
 							t.Fatal("index bytes changed")
 						}
-					case "population":
+					case "sods":
 						want := make([]byte, len(chunk.Data))
-						if _, e := b.pop.ReadAt(want, int64(chunk.Start)); e != nil || !bytes.Equal(chunk.Data, want) {
-							t.Fatal("population bytes changed", e)
+						if _, e := b.pods.ReadAt(want, int64(chunk.Start)); e != nil || !bytes.Equal(chunk.Data, want) {
+							t.Fatal("payload bytes changed", e)
 						}
 					}
 				}
 				if mode != "native-warm" && payload["index"] != queryCount*IndexRowSize {
 					t.Fatal("incomplete hourly index delivery", payload["index"], queryCount)
 				}
-				if mode == "native-cold" && window.name == "all" && uint64(payload["population"]) != b.popEnd-headerSize {
-					t.Fatal("incomplete full population delivery")
+				if mode == "native-cold" && window.name == "all" && uint64(payload["sods"]) != b.podsEnd-headerSize {
+					t.Fatal("incomplete full payload delivery")
 				}
-				if mode == "native-warm" && (payload["index"] != 0 || payload["population"] != 0 || payload["trie"] != 0) {
+				if mode == "native-warm" && (payload["index"] != 0 || payload["sods"] != 0 || payload["trie"] != 0) {
 					t.Fatal("cached bytes retransmitted")
 				}
-				if mode == "native-index-only" && payload["population"] != 0 {
-					t.Fatal("eager population in lazy request")
+				if mode == "native-index-only" && payload["sods"] != 0 {
+					t.Fatal("eager payload in lazy request")
 				}
 			}
 			size := response.Body.Len()

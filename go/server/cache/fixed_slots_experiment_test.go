@@ -114,7 +114,7 @@ func BenchmarkFixedSegmentAddressExperiment(b *testing.B) {
 	const count = 8192
 	var branch branchStore
 	for i := 0; i < count; i++ {
-		branch.runs = append(branch.runs, Run{Start: uint64(i*513 + 1), End: uint64((i + 1) * 513), PopStart: uint64(i) * (64 << 20)})
+		branch.runs = append(branch.runs, Run{Start: uint64(i*513 + 1), End: uint64((i + 1) * 513), PodsStart: uint64(i) * (64 << 20)})
 	}
 	for _, mode := range []string{"current_scattered_directory", "fixed_segment_arithmetic"} {
 		b.Run(mode, func(b *testing.B) {
@@ -126,7 +126,7 @@ func BenchmarkFixedSegmentAddressExperiment(b *testing.B) {
 				segment := uint64((state >> 16) % count)
 				record := uint64(state%512 + 1)
 				if mode == "current_scattered_directory" {
-					experimentalAddressSink = c.segment(&branch, segment*513+record).PopStart + record*16
+					experimentalAddressSink = c.segment(&branch, segment*513+record).PodsStart + record*16
 				} else {
 					experimentalAddressSink = segment*(64<<20) + record*16
 				}

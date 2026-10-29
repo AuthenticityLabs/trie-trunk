@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"compress/gzip"
 	"fmt"
-	"io"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -55,15 +54,19 @@ func TestSummaryCompressionPolicy(t *testing.T) {
 		if e != nil || !reflect.DeepEqual(got, []Summary{sum}) {
 			t.Fatal("level roundtrip", level, e)
 		}
-		plain, e := encodeSummaryDayFiltered(0, 0, summaryDayMS, []Summary{sum}, false, level, true, true)
+		plain, e := expandPAC(raw)
 		if e != nil {
 			t.Fatal(e)
 		}
 		var out bytes.Buffer
 		z, _ := gzip.NewWriterLevel(&out, level)
-		z.Write(plain[32:])
+		z.Write(plain)
 		z.Close()
-		if !bytes.Equal(out.Bytes(), raw[32:]) {
+		if out.Len()+PACCompressedHeaderSize >= len(plain) {
+			if !bytes.Equal(raw, plain) {
+				t.Fatal("compression fallback changed the PAC", level)
+			}
+		} else if len(raw) < PACCompressedHeaderSize || order.Uint32(raw[4:8]) != PACGzip || !bytes.Equal(out.Bytes(), raw[PACCompressedHeaderSize:]) {
 			t.Fatal("encoder ignored level", level)
 		}
 	}
@@ -80,16 +83,11 @@ func BenchmarkSavedSummaryCompression(b *testing.B) {
 		if e != nil {
 			b.Fatal(e)
 		}
-		z, e := gzip.NewReader(bytes.NewReader(raw[32:]))
+		body, e := expandPAC(raw)
 		if e != nil {
 			b.Fatal(e)
 		}
-		body, e := io.ReadAll(z)
-		z.Close()
-		if e != nil {
-			b.Fatal(e)
-		}
-		for _, level := range []int{6, 9} {
+		for _, level := range []int{1, 6, 9} {
 			b.Run(fmt.Sprintf("sample%d/gzip%d", i, level), func(b *testing.B) {
 				b.ReportAllocs()
 				for n := 0; n < b.N; n++ {
@@ -97,7 +95,7 @@ func BenchmarkSavedSummaryCompression(b *testing.B) {
 					w, _ := gzip.NewWriterLevel(&out, level)
 					w.Write(body)
 					w.Close()
-					b.ReportMetric(float64(out.Len()+32), "bytes/packet")
+					b.ReportMetric(float64(out.Len()+PACCompressedHeaderSize), "bytes/packet")
 				}
 			})
 		}

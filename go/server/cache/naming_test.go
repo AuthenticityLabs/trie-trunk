@@ -6,9 +6,42 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 )
+
+func TestObsoleteSharedTrieNameCannotSilentlyResetReferences(t *testing.T) {
+	c := Config{Root: t.TempDir(), Cache: "demo", Tenant: "owner", Layout: testLayout(t, false)}
+	s, err := Open(c)
+	if err != nil {
+		t.Fatal(err)
+	}
+	dir, root := s.dir, s.root
+	if err := s.Close(); err != nil {
+		t.Fatal(err)
+	}
+	before, err := os.ReadFile(filepath.Join(root, "registry.map"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Rename(filepath.Join(dir, "state.tri"), filepath.Join(dir, "resource.tri")); err != nil {
+		t.Fatal(err)
+	}
+	if s, err := Open(c); err == nil {
+		s.Close()
+		t.Fatal("opened obsolete shared trie as a fresh state trie")
+	} else if !strings.Contains(err.Error(), "recreate the cache") {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(filepath.Join(dir, "state.tri")); !os.IsNotExist(err) {
+		t.Fatal("created a replacement state trie", err)
+	}
+	after, err := os.ReadFile(filepath.Join(root, "registry.map"))
+	if err != nil || !bytes.Equal(before, after) {
+		t.Fatal("failed open changed the catalog", err)
+	}
+}
 
 func TestResourceLayoutAndLocalLoss(t *testing.T) {
 	l := testLayout(t, false)
@@ -39,8 +72,8 @@ func TestResourceLayoutAndLocalLoss(t *testing.T) {
 	if _, err = s.Append(Write, lost); !errors.As(err, &late) {
 		t.Fatal(err)
 	}
-	paths := []string{"registry.cfg", "registry.map", "registry.tri", "payment/transactions.v1/collection.idx", "payment/transactions.v1/collection.state"}
-	for _, name := range []string{"resource.map", "resource.tri", "resource.stats", "lost.log"} {
+	paths := []string{"registry.cfg", "registry.map", "resource.tri", "payment/transactions.v1/collection.idx", "payment/transactions.v1/collection.state"}
+	for _, name := range []string{"resource.rx", "state.tri", "resource.stats", "lost.log"} {
 		paths = append(paths, "payment/transactions.v1/0/"+name)
 	}
 	for b := Read; b <= Trace; b++ {

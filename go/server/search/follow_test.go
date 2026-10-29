@@ -172,16 +172,16 @@ func TestFollowWaitsForCompleteBlock(t *testing.T) {
 	if _, err := index.ReadAt(previous[:], stat.Size()-36); err != nil {
 		t.Fatal(err)
 	}
-	population, err := os.OpenFile(filepath.Join(dir, "log.pop"), os.O_WRONLY|os.O_APPEND, 0600)
+	podsFile, err := os.OpenFile(filepath.Join(dir, "log.pods"), os.O_WRONLY|os.O_APPEND, 0600)
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer population.Close()
-	stat, err = population.Stat()
+	defer podsFile.Close()
+	stat, err = podsFile.Stat()
 	if err != nil {
 		t.Fatal(err)
 	}
-	tail, err := codec.MarshalCompact(codec.Record{12: uint64(2234)}, codec.CBOR)
+	tail, err := codec.MarshalCompact(codec.Record{12: uint64(2234)}, codec.PIL)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -192,7 +192,7 @@ func TestFollowWaitsForCompleteBlock(t *testing.T) {
 		copy(out[8:], data)
 		return out
 	}
-	if _, err := population.Write(block(tail)); err != nil {
+	if _, err := podsFile.Write(block(tail)); err != nil {
 		t.Fatal(err)
 	}
 	id, err := codec.NewUUIDv7(now.Add(time.Millisecond))

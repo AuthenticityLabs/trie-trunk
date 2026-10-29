@@ -10,11 +10,11 @@ import (
 const FrameHeaderSize = 2
 const MaxFramePayload = 1<<16 - 1
 
-var ErrFrameSize = errors.New("invalid or oversized CBOR frame length")
+var ErrFrameSize = errors.New("invalid or oversized PIL frame length")
 
-// AppendFrame appends [uint16 big-endian payload length][CBOR payload]. The
+// AppendFrame appends [uint16 big-endian payload length][PIL payload]. The
 // length excludes the header. Reusing dst avoids an allocation when capacity
-// suffices. CBOR validity is the encoder/decoder's responsibility.
+// suffices. PIL validity is the encoder/decoder's responsibility.
 func AppendFrame(dst, payload []byte) ([]byte, error) {
 	n := len(payload)
 	if n == 0 || n > MaxFramePayload || uint64(len(dst))+FrameHeaderSize+uint64(n) > uint64(^uint(0)>>1) {

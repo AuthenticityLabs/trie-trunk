@@ -141,8 +141,8 @@ func TestCollectionWriteContractAndRebuild(t *testing.T) {
 	if len(s.branches[Write].pendingWindow(testObject(42).Bytes, time.UnixMilli(0), time.UnixMilli((1<<48)-1))) != 1 {
 		t.Fatal("revision-less write entered pending replay")
 	}
-	if duplicate, err := s.Append(Write, first); err != nil || !duplicate {
-		t.Fatal("identical retry rejected", duplicate, err)
+	if duplicate, err := s.Append(Write, first); err == nil || duplicate {
+		t.Fatal("duplicate revision accepted after ingress identity removal", duplicate, err)
 	}
 	if err = s.Close(); err != nil {
 		t.Fatal(err)

@@ -1,43 +1,14 @@
+import { encodeObject } from "pill-packer/object";
 import { createHash } from "node:crypto";
 export const bytes = (...parts) =>
   Uint8Array.from(parts.flatMap((p) => [...p]));
-export function cb(value) {
-  const head = (major, n) =>
-    n < 24
-      ? [major * 32 + n]
-      : n < 256
-        ? [major * 32 + 24, n]
-        : n < 65536
-          ? [major * 32 + 25, n >> 8, n & 255]
-          : [
-              major * 32 + 26,
-              (n >>> 24) & 255,
-              (n >>> 16) & 255,
-              (n >>> 8) & 255,
-              n & 255,
-            ];
-  if (value === null) return Uint8Array.of(246);
-  if (value === true || value === false)
-    return Uint8Array.of(value ? 245 : 244);
-  if (typeof value === "number")
-    return Uint8Array.from(
-      head(value < 0 ? 1 : 0, value < 0 ? -1 - value : value),
-    );
-  if (typeof value === "string") {
-    const b = new TextEncoder().encode(value);
-    return bytes(head(3, b.length), b);
-  }
-  if (value instanceof Uint8Array) return bytes(head(2, value.length), value);
-  if (Array.isArray(value))
-    return bytes(head(4, value.length), ...value.map(cb));
-  const entries = Object.entries(value);
-  return bytes(
-    head(5, entries.length),
-    ...entries.flatMap(([k, v]) => [
-      cb(/^\d+$/.test(k) ? Number(k) : k),
-      cb(v),
-    ]),
-  );
+export function pilObject(value) {
+ const native=v=>{
+  if(Array.isArray(v))return v.map(native);
+  if(v instanceof Uint8Array||v===null||typeof v!=='object')return v;
+  const entries=Object.entries(v).map(([k,x])=>[/^\d+$/.test(k)?Number(k):k,native(x)]);
+  return entries.some(([k])=>typeof k==='number')?new Map(entries):Object.fromEntries(entries);
+ };return encodeObject(native(value));
 }
 export const le = (n, width) => {
   const b = new Uint8Array(width);
@@ -69,7 +40,7 @@ export function frame(states, values) {
 }
 export const magic = Uint8Array.of(84, 80, 73, 76, 2);
 export function fixture(version = 42, message = "unauthorized λ") {
-  const store = cb({
+  const store = pilObject({
     0: version,
     1: {
       3: { 0: "level", 2: { 5: "ERROR" } },
@@ -93,13 +64,13 @@ export function fixture(version = 42, message = "unauthorized λ") {
       { name: "service", type: "STRING", values: ["vault", "billing"] },
       { name: "id", type: "UUID" },
       { name: "duration", type: "U64" },
-      { name: "message", type: "CBOR" },
-      { name: "error", type: "CBOR" },
+      { name: "message", type: "OBJECT" },
+      { name: "error", type: "OBJECT" },
       { name: "trunk_lineage", type: "ARRAY<U16>" },
-      { name: "trunk_fallback", type: "CBOR" },
+      { name: "trunk_fallback", type: "OBJECT" },
     ],
   };
-  const pil = cb(definition),
+  const pil = encodeObject(definition),
     hash = Uint8Array.from(Buffer.from(digest, "hex"));
   const define = bytes([1], frame([3, 3, 3], [hash, store, pil]));
   const bind = (tap = "test", stream = 0) =>
@@ -118,8 +89,8 @@ export function fixture(version = 42, message = "unauthorized λ") {
         le(0, 1),
         uuid,
         le(2237, 8),
-        cb(text),
-        cb({ 0: 1 }),
+        pilObject(text),
+        pilObject({ 0: 1 }),
         bytes(extended(2), le(4, 2), le(3, 2)),
         [],
       ],

@@ -1,3 +1,4 @@
+import {FittedNumber} from './fitted-number';
 import { For, Show, createEffect, createMemo, createSignal, onCleanup, onMount } from 'solid-js';
 import { init, use, type EChartsCoreOption } from 'echarts/core';
 import { LineChart, BarChart } from 'echarts/charts';
@@ -63,7 +64,7 @@ function FastPanel(props:{panel:PanelDefinition;data:FastResult}) {
   };
   return <article class="card fast-panel" style={{'--panel-span':p.span}}>
     <div class="fast-panel-heading"><h4>{p.title}</h4><Show when={p.view.kind==='table'}><button class="text-button" onClick={download}>Export CSV</button></Show></div>
-    <Show when={p.view.kind==='value'}><div class="fast-statistic"><div class="fast-number">{number(metric(),p.view.unit)}</div><Show when={p.view.indicator==='trend'}><TrendArrow panel={p} data={props.data}/></Show><Show when={p.view.indicator==='sparkline'}><Sparkline values={props.data.time.map(t=>t[p.data.metric])} label={`${p.title} Sparkline`} description={`${date(props.data.from)} – ${date(props.data.to-1)} UTC; gaps indicate missing data.`}/></Show></div></Show>
+    <Show when={p.view.kind==='value'}><div class="fast-statistic"><FittedNumber text={number(metric(),p.view.unit)}/><Show when={p.view.indicator==='trend'}><TrendArrow panel={p} data={props.data}/></Show><Show when={p.view.indicator==='sparkline'}><Sparkline values={props.data.time.map(t=>t[p.data.metric])} label={`${p.title} Sparkline`} description={`${date(props.data.from)} – ${date(props.data.to-1)} UTC; gaps indicate missing data.`}/></Show></div></Show>
     <Show when={p.view.kind==='status'}><div class="fast-status" classList={{'has-errors':(metric()??0)>(p.data.test?.value??0)}}><span aria-hidden="true"/>{(metric()??0)>(p.data.test?.value??0)?'Yes':'No'}</div><span class="fast-secondary">{number(metric())} Errors</span></Show>
     <Show when={p.view.kind==='timechart'||p.view.kind==='bars'}><FastChart option={option()} title={p.title}/></Show>
     <Show when={p.view.kind==='tags'}><ul class="fast-tags"><For each={rows()}>{r=><li><span>{r.label}</span><strong>{number(r.events)}</strong></li>}</For></ul></Show>

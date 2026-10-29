@@ -1,6 +1,7 @@
+import {apiFetch} from './connections.ts';
 import { validSource, matchesSource } from "./source.ts";
 
-export async function lostEventsAvailable(token:string,signal:AbortSignal,fetcher:typeof fetch=fetch):Promise<boolean> {
+export async function lostEventsAvailable(token:string,signal:AbortSignal,fetcher:typeof fetch=apiFetch):Promise<boolean> {
   signal.throwIfAborted();
   const response=await fetcher('/rejections?format=availability',{
     signal,cache:'no-store',headers:{Accept:'application/json',...(token.trim()?{Authorization:`Bearer ${token.trim()}`}:{})},
@@ -20,7 +21,7 @@ export type RejectedEvent = {
 // Audit inspection is an explicit single-event display path. event_json stays
 // text so JSON parsing never rounds an original 64-bit scalar.
 export async function streamRejections(source:string, token:string, signal:AbortSignal,
-  receive:(records:RejectedEvent[])=>void, fetcher:typeof fetch=fetch):Promise<number> {
+  receive:(records:RejectedEvent[])=>void, fetcher:typeof fetch=apiFetch):Promise<number> {
   signal.throwIfAborted();
   const response=await fetcher(`/rejections?${new URLSearchParams({format:"inspection",...(source?{tap:source}:{})})}`,{
     signal,cache:"no-store",headers:{Accept:"application/x-ndjson",...(token.trim()?{Authorization:`Bearer ${token.trim()}`}:{})},

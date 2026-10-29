@@ -1,6 +1,7 @@
+import { decodeObject, encodeObject } from "../pil/control.ts";
 import { NativeStore, type NativeBackend, type NativeSource, type NativeControl } from './native.ts';
-import { cbor, encodeCBOR } from '../pil/cbor.ts';
 import { directory, handle, entries } from './files.ts';
+import {timeFileRanges,type ClientTimeTrie,type TimeRange} from './time-trie.ts';
 
 type Commit = { serial:number; sources:Record<string,number>; control:NativeControl };
 const empty = ():Commit=>({serial:0,sources:{},control:{serial:0,scopes:{}}});
@@ -8,30 +9,30 @@ const optional=async(dir:FileSystemDirectoryHandle,name:string):Promise<Uint8Arr
  try{return new Uint8Array(await (await (await dir.getFileHandle(name)).getFile()).arrayBuffer());}
  catch(e){if(e instanceof DOMException&&e.name==='NotFoundError')return;throw e;}
 };
-export async function atomicFile(dir:FileSystemDirectoryHandle,name:string,bytes:Uint8Array){
- const file=await dir.getFileHandle(name,{create:true}), writer=await file.createWritable();
- try{await writer.write(bytes as Uint8Array<ArrayBuffer>);await writer.close();}
- catch(e){await writer.abort().catch(()=>{});throw e;}
+export {atomicFile} from './atomic-file.ts';
+import {atomicFile,atomicReplace} from './atomic-file.ts';
+async function atomicTimeFile(dir:FileSystemDirectoryHandle,name:string,tree:ClientTimeTrie|undefined){
+ return tree?atomicReplace(dir,name,tree.bytes.length,timeFileRanges(tree)):atomicFile(dir,name,new Uint8Array());
 }
 /** The surrounding worker holds the origin-wide file lease. Immutable branch
  * snapshots are published together by one atomic commit-root replacement.
  * Create a backend per leased command; cached roots never cross a lease.
- * branch.tri is the raw time trie; layout.cbor stores allocation and decoding
+ * branch.tri is the raw time trie; layout.pil stores allocation and decoding
  * context only. No package manifests or duplicate coverage ranges are retained. */
 export function nativeBackend(root:FileSystemDirectoryHandle):NativeBackend {
  let committed:Promise<Commit>|undefined;
- const load=():Promise<Commit>=>committed??=(async()=>{const raw=await optional(root,'commit.cbor');return raw?.length?cbor(raw) as Commit:empty();})();
+ const load=():Promise<Commit>=>committed??=(async()=>{const raw=await optional(root,'commit.pil');return raw?.length?decodeObject(raw) as Commit:empty();})();
  const dirs=new Map<string,Promise<FileSystemDirectoryHandle>>();
  const branch=(key:string)=>{if(!/^[a-f0-9]{64}$/.test(key))throw Error('Invalid native source');let dir=dirs.get(key);if(!dir){dir=directory(root,'branches',key);dirs.set(key,dir);}return dir;};
  const snapshots=new Map<string,Promise<NativeSource>>();
  const readFileSource=async(key:string,revision:number):Promise<NativeSource>=>{
-  const dir=await branch(key),raw=await optional(dir,`layout.${revision}.cbor`);
+  const dir=await branch(key),raw=await optional(dir,`layout.${revision}.pil`);
   if(!raw)throw Error('Missing committed branch layout');
-  const source=cbor(raw) as NativeSource;
+  const {timeRanges,...source}=decodeObject(raw) as NativeSource & {timeRanges?:TimeRange[]};
   if(source.key!==key)throw Error('Branch identity mismatch');
-  const trie=await optional(dir,`branch.${revision}.tri`);if(!trie)throw Error('Missing committed time trie');if(trie.length)source.timeTrie=trie;
+  const trie=await optional(dir,`branch.${revision}.tri`);if(!trie)throw Error('Missing committed time trie');if(trie.length)source.timeTrie={bytes:trie,ranges:timeRanges??[]};
   for(const context of source.contexts??[]){const p=context.placement;
-   for(const name of ['from','to','firstRow','rows','memberStart','memberBytes','retiredRows','retiredMembers','retiredPopulation'] as const)
+   for(const name of ['from','to','firstRow','rows','memberStart','memberBytes','retiredRows','retiredMembers','retiredPods'] as const)
     if(name in p)(p as unknown as Record<string,unknown>)[name]=BigInt((p as unknown as Record<string,number|bigint>)[name]);
    for(const page of p.pages){page.row=BigInt(page.row);page.page=BigInt(page.page);}
   }
@@ -47,26 +48,26 @@ export function nativeBackend(root:FileSystemDirectoryHandle):NativeBackend {
    if(!Number.isSafeInteger(next.serial))throw Error('Local commit sequence exhausted');
    for(const source of sources){
     const dir=await branch(source.key),{timeTrie,...layout}=source;
-    await atomicFile(dir,`layout.${next.serial}.cbor`,encodeCBOR(layout));
-    await atomicFile(dir,`branch.${next.serial}.tri`,timeTrie??new Uint8Array());
+    await atomicFile(dir,`layout.${next.serial}.pil`,encodeObject({...layout,...(timeTrie?{timeRanges:timeTrie.ranges}:{})}));
+    await atomicTimeFile(dir,`branch.${next.serial}.tri`,timeTrie);
     next.sources[source.key]=next.serial;
    }
-   await atomicFile(root,'commit.cbor',encodeCBOR(next));
+   await atomicFile(root,'commit.pil',encodeObject(next));
    committed=Promise.resolve(next);
    for(const source of sources)snapshots.set(`${source.key}:${next.serial}`,Promise.resolve(structuredClone(source)));
    // Only remove unreachable metadata after publication. Data-file reclamation
    // remains ordered by the selected branch state.
    for(const source of sources){
     const dir=await branch(source.key),keep=next.sources[source.key];
-    for await(const entry of entries(dir))if(/^(layout\.\d+\.cbor|branch\.\d+\.tri)$/.test(entry.name)&&entry.name!==`layout.${keep}.cbor`&&entry.name!==`branch.${keep}.tri`)
+    for await(const entry of entries(dir))if(/^(layout\.\d+\.pil|branch\.\d+\.tri)$/.test(entry.name)&&entry.name!==`layout.${keep}.pil`&&entry.name!==`branch.${keep}.tri`)
      await dir.removeEntry(entry.name).catch(()=>{});
    }
   },
   async file(key,kind,revision=0){
-   const names={map:'resource.map',trie:'resource.tri',state:'collection.state',index:'events.idx',population:'events.sods'};
+   const names={map:'resource.rx',trie:'state.tri',state:'collection.state',index:'events.idx',sods:'events.sods',sum:'branch.sum'};
    return handle(await branch(key),names[kind]+(kind==='state'&&revision?`.${revision}`:''));
   },
-  async removeFiles(key){const dir=await branch(key);for await(const entry of entries(dir))if(!/^(layout\.\d+\.cbor|branch\.\d+\.tri)$/.test(entry.name))await dir.removeEntry(entry.name,{recursive:true});},
+  async removeFiles(key){const dir=await branch(key);for await(const entry of entries(dir))if(!/^(layout\.\d+\.pil|branch\.\d+\.tri)$/.test(entry.name))await dir.removeEntry(entry.name,{recursive:true});},
   async removeOldStateFiles(key,revision){const dir=await branch(key),keep=revision?`collection.state.${revision}`:'collection.state';for await(const entry of entries(dir))if(/^collection\.state(?:\.\d+)?$/.test(entry.name)&&entry.name!==keep)await dir.removeEntry(entry.name);},
  };
 }

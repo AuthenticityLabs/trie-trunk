@@ -1,15 +1,16 @@
+import { decodeObject, encodeObject } from "pill-packer/object";
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { Codec } from "./pil/wasm.ts";
 import { read } from "./pil/layout.ts";
-import { cb } from "./pil-fixtures.mjs";
+import { pilObject } from "./pil-fixtures.mjs";
 
 test("REF16 uses two bytes in WASM and the view, preserving absence and null", async () => {
   const module = await WebAssembly.compile(readFileSync(new URL("../assets/pil.wasm", import.meta.url)));
   const codec = new Codec(await WebAssembly.instantiate(module));
   const definition = { pil: 0, definition: "reference-test", version: 1, fields: [{ name: "shared", type: "REF16" }] };
-  const handle = codec.define(cb(definition));
+  const handle = codec.define(encodeObject(definition));
   for (const [data, expected] of [[[0], undefined], [[64], null], [[128, 0, 0], 0], [[128, 255, 255], 65535]]) {
     const bytes = new Uint8Array(data);
     codec.upload(bytes);

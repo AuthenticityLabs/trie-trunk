@@ -16,8 +16,8 @@ type invalidation struct {
 	Sequence      uint64
 	Objects       [][]byte
 	Collection    bool
-	Snapshot      *statePage `cbor:",omitempty"`
-	SnapshotStart uint64     `cbor:",omitempty"`
+	Snapshot      *statePage `pil:",omitempty"`
+	SnapshotStart uint64     `pil:",omitempty"`
 }
 type objectState struct {
 	file                        *os.File
@@ -153,7 +153,7 @@ func (s *Store) invalidate(objects [][]byte, collection bool) error {
 }
 func (s *Store) token(id Value) StateToken {
 	if s.layout.Object >= 0 {
-		id = s.layout.IdentityValue(s.layout.Object, id)
+		id = s.layout.NormalizeIntegerWidth(s.layout.Object, id)
 	}
 	return StateToken{Epoch: s.state.epoch, Collection: s.state.collection, Object: s.state.objects[string(id.Bytes)]}
 }

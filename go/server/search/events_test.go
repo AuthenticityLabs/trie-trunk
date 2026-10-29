@@ -104,7 +104,7 @@ func testEventsCompactPredecessorSurvivesSparseMatch(t *testing.T, format uint32
 	m := mustOpen(t, c, rev, data)
 	defer m.Close()
 	for i := 0; i < 600; i++ {
-		appendSearchRecord(t, m, rev, now.Add(-2*time.Hour+time.Duration(i)*time.Millisecond), codec.Record{14: uint64(400 + i%3), 19: "different population length " + string(rune('a'+i%20))})
+		appendSearchRecord(t, m, rev, now.Add(-2*time.Hour+time.Duration(i)*time.Millisecond), codec.Record{14: uint64(400 + i%3), 19: "different payload length " + string(rune('a'+i%20))})
 	}
 	if err = m.Flush(); err != nil {
 		t.Fatal(err)

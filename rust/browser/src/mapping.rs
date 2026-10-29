@@ -1,13 +1,14 @@
 use crate::{Result, bad};
 use ciborium::Value as Cbor;
 use pil_codec::{
-    ABSENT, Array, ArrayView, CborMap, CborRef, Definition, Field, FrameEncoder, FrameIndex, NULL,
-    Scalar, Type, Value,
+    Array, ArrayView, Definition, Field, FrameEncoder, FrameIndex, ObjectMap, ObjectRef, Scalar,
+    Type, Value,
 };
 use std::collections::{BTreeMap, HashSet};
 
 pub struct Mapping {
     pub definition: Definition,
+    document: pil_codec::DefinitionDocument,
     native: bool,
     keys: Vec<u16>,
     codes: Vec<Vec<u16>>,
@@ -39,12 +40,7 @@ fn labels(v: &Cbor) -> Result<BTreeMap<u16, String>> {
 }
 impl Mapping {
     pub fn new(schema: &[u8], pil: &[u8]) -> Result<Self> {
-        let mut source = schema;
-        let value: Cbor = ciborium::de::from_reader_with_recursion_limit(&mut source, 32)
-            .map_err(|e| e.to_string())?;
-        if !source.is_empty() {
-            return bad("trailing schema bytes");
-        }
+        let value = pil_codec::object::decode_value(schema).map_err(|e| e.to_string())?;
         if value
             .as_map()
             .is_some_and(|m| m.iter().any(|(k, _)| k.as_text() == Some("resource")))
@@ -52,7 +48,9 @@ impl Mapping {
             if schema != pil {
                 return bad("PIL/resource maps must be identical");
             }
-            let definition = Definition::from_cbor(pil).map_err(|e| e.to_string())?;
+            let document =
+                pil_codec::DefinitionDocument::from_pil(pil).map_err(|e| e.to_string())?;
+            let definition = document.definition().clone();
             let get = |v: &Cbor, name: &str| {
                 v.as_map().and_then(|m| {
                     m.iter()
@@ -72,6 +70,7 @@ impl Mapping {
                 .ok_or("invalid event role")?;
             return Ok(Self {
                 definition,
+                document,
                 native: true,
                 keys: Vec::new(),
                 codes: Vec::new(),
@@ -164,7 +163,7 @@ impl Mapping {
                     } else if dur {
                         Scalar::U64
                     } else {
-                        Scalar::Cbor
+                        Scalar::Object
                     },
                 )
             });
@@ -195,7 +194,7 @@ impl Mapping {
         }
         for (base, kind) in [
             ("trunk_lineage", Type::Array(Scalar::U16)),
-            ("trunk_fallback", Type::Scalar(Scalar::Cbor)),
+            ("trunk_fallback", Type::Scalar(Scalar::Object)),
         ] {
             let mut name = base.to_owned();
             while fields.iter().any(|f| f.name == name) {
@@ -203,12 +202,14 @@ impl Mapping {
             }
             fields.push(Field::new(name, kind));
         }
-        let definition = Definition::from_cbor(pil).map_err(|e| e.to_string())?;
+        let document = pil_codec::DefinitionDocument::from_pil(pil).map_err(|e| e.to_string())?;
+        let definition = document.definition().clone();
         if definition.version() != u64::from(version) || definition.fields() != fields {
             return bad("PIL definition does not match tap schema");
         }
         Ok(Self {
             definition,
+            document,
             native: false,
             keys,
             codes,
@@ -224,8 +225,9 @@ impl Mapping {
         bytes: &[u8],
         index: &mut FrameIndex,
     ) -> Result<([u8; 16], Vec<(u16, u64)>, Vec<u8>)> {
-        if index
-            .scan(&self.definition, bytes, 64 * 1024 * 1024)
+        if self
+            .document
+            .scan(index, bytes, 64 * 1024 * 1024)
             .map_err(|e| e.to_string())?
             != bytes.len()
         {
@@ -244,96 +246,42 @@ impl Mapping {
         if self.native {
             return Ok((uuid, Vec::new(), bytes.to_vec()));
         }
-        // Only offsets and small direct values are materialized. CBOR payloads
-        // remain borrowed slices and are copied directly into the population map.
-        let mut scalars = Vec::with_capacity(self.keys.len());
-        for (i, f) in self.definition.fields()[..self.keys.len()]
-            .iter()
-            .enumerate()
-        {
-            if i == self.id {
-                scalars.push(None);
-                continue;
-            }
-            let [s, e] = spans[i];
-            let mut value = Vec::new();
-            if s == ABSENT {
-                scalars.push(None);
-                continue;
-            }
-            if s == NULL {
-                value.push(0xf6);
-            } else {
-                let b = &bytes[s as usize..e as usize];
-                match f.kind {
-                    Type::Scalar(Scalar::Cbor) => {
-                        scalars.push(Some((b, Vec::new())));
-                        continue;
-                    }
-                    Type::Scalar(Scalar::Uuid) => {
-                        head(2, b.len() as u64, &mut value);
-                        value.extend_from_slice(b);
-                    }
-                    Type::Scalar(Scalar::U64) => {
-                        let mut n = [0; 8];
-                        n[..b.len()].copy_from_slice(b);
-                        head(0, u64::from_le_bytes(n), &mut value)
-                    }
-                    Type::Scalar(Scalar::String) => {
-                        let state = (bytes[i / 4] >> (6 - 2 * (i % 4))) & 3;
-                        if state == 2 {
-                            let mut n = [0; 8];
-                            n[..b.len()].copy_from_slice(b);
-                            head(
-                                0,
-                                u64::from(self.codes[i][u64::from_le_bytes(n) as usize]),
-                                &mut value,
-                            );
-                        } else {
-                            head(3, b.len() as u64, &mut value);
-                            value.extend_from_slice(b);
-                        }
-                    }
-                    _ => return bad("unsupported PIL storage field"),
-                }
-            }
-            scalars.push(Some((&[][..], value)));
-        }
+        let frame = pil_codec::decode_exact(&self.definition, bytes).map_err(|e| e.to_string())?;
         let mut values = BTreeMap::new();
-        for (i, v) in scalars.iter().enumerate() {
-            if let Some((raw, owned)) = v {
-                values.insert(
-                    self.keys[i],
-                    if owned.is_empty() {
-                        *raw
-                    } else {
-                        owned.as_slice()
-                    },
-                );
+        for (i, key) in self.keys.iter().enumerate() {
+            if i == self.id {
+                continue;
             }
+            let value = match frame.values()[i] {
+                Value::Absent => continue,
+                Value::Null => Cbor::Null,
+                Value::Object(b) => {
+                    pil_codec::object::decode_value(b).map_err(|e| e.to_string())?
+                }
+                Value::Uuid(b) => Cbor::Bytes(b.to_vec()),
+                Value::U64(n) => Cbor::Integer(n.into()),
+                Value::Mapped(n) => Cbor::Integer(self.codes[i][n as usize].into()),
+                Value::String(s) => Cbor::Text(s.into()),
+                _ => return bad("unsupported PIL storage field"),
+            };
+            values.insert(*key, value);
         }
-        let [s, e] = spans[self.keys.len() + 1];
-        if s != ABSENT {
-            if s == NULL {
-                return bad("null fallback");
-            }
-            for entry in
-                CborMap::new(&bytes[s as usize..e as usize], 64).map_err(|e| e.to_string())?
-            {
-                let (key, value) = entry.map_err(|e| e.to_string())?;
-                let key = u16::try_from(key.unsigned().ok_or("invalid fallback key")?)
-                    .map_err(|_| "invalid fallback key")?;
-                if key == self.keys[self.id] || values.insert(key, value.as_bytes()).is_some() {
-                    return bad("duplicate fallback key");
+        match frame.values()[self.keys.len() + 1] {
+            Value::Absent => (),
+            Value::Object(b) => {
+                for (key, value) in
+                    map(&pil_codec::object::decode_value(b).map_err(|e| e.to_string())?)?
+                {
+                    if key == self.keys[self.id] || values.insert(key, value.clone()).is_some() {
+                        return bad("duplicate fallback key");
+                    }
                 }
             }
+            _ => return bad("invalid fallback"),
         }
-        let [s, e] = spans[self.keys.len()];
-        if s >= NULL {
+        let Value::Array(Array::Encoded(lineage)) = frame.values()[self.keys.len()] else {
             return bad("missing lineage");
-        }
-        let lineage = ArrayView::parse(Scalar::U16, &bytes[s as usize..e as usize])
-            .map_err(|e| e.to_string())?;
+        };
         let mut chain = Vec::new();
         let mut next = 0;
         for value in lineage.iter() {
@@ -345,31 +293,32 @@ impl Mapping {
                 .position(|k| *k == key)
                 .ok_or("lineage differs from schema path")?;
             next += position + 1;
-            let raw = values.remove(&key).ok_or("missing lineage value")?;
-            let value = CborRef::parse(raw)
-                .map_err(|e| e.to_string())?
-                .unsigned()
+            let n = values
+                .remove(&key)
+                .and_then(|v| v.as_integer())
+                .and_then(|n| u64::try_from(n).ok())
                 .ok_or("lineage must be unsigned")?;
-            chain.push((key, value));
+            chain.push((key, n));
         }
         values.remove(&self.keys[self.id]);
-        let mut pop = Vec::new();
-        head(5, values.len() as u64, &mut pop);
-        for (k, v) in values {
-            head(0, u64::from(k), &mut pop);
-            pop.extend_from_slice(v);
+        let payload = pil_codec::object::encode_value(&Cbor::Map(
+            values
+                .into_iter()
+                .map(|(k, v)| (Cbor::Integer(k.into()), v))
+                .collect(),
+        ))
+        .map_err(|e| e.to_string())?;
+        if payload.len() > 65535 {
+            return bad("payload exceeds native store limit");
         }
-        if pop.len() > 65535 {
-            return bad("population exceeds native store limit");
-        }
-        Ok((uuid, chain, pop))
+        Ok((uuid, chain, payload))
     }
-    fn value<'a>(&self, i: usize, v: CborRef<'a>) -> Option<Value<'a>> {
+    fn value<'a>(&self, i: usize, v: ObjectRef<'a>) -> Option<Value<'a>> {
         if v.is_null() {
             return Some(Value::Null);
         }
         Some(match self.definition.fields()[i].kind {
-            Type::Scalar(Scalar::Cbor) => Value::ValidatedCbor(v),
+            Type::Scalar(Scalar::Object) => Value::Object(v.as_bytes()),
             Type::Scalar(Scalar::Uuid) => Value::Uuid(v.bytes()?.try_into().ok()?),
             Type::Scalar(Scalar::U64) => Value::U64(v.unsigned()?),
             Type::Scalar(Scalar::String) => {
@@ -390,7 +339,7 @@ impl Mapping {
         &self,
         uuid: [u8; 16],
         chain: &[(u16, u64)],
-        pop: &[u8],
+        payload: &[u8],
         encoder: &mut FrameEncoder,
         index: &mut FrameIndex,
     ) -> Result<Vec<u8>> {
@@ -399,38 +348,37 @@ impl Mapping {
                 return bad("unexpected native lineage");
             }
             // Validate offsets once per requested frame; never reconstruct values.
-            if index
-                .scan(&self.definition, pop, 64 * 1024 * 1024)
+            if self
+                .document
+                .scan(index, payload, 64 * 1024 * 1024)
                 .map_err(|e| e.to_string())?
-                != pop.len()
+                != payload.len()
             {
                 return bad("invalid native frame");
             }
             let [start, end] = index.spans()[self.id];
-            if pop.get(start as usize..end as usize) != Some(uuid.as_slice()) {
+            if payload.get(start as usize..end as usize) != Some(uuid.as_slice()) {
                 return bad("event identity mismatch");
             }
-            return Ok(pop.to_vec());
+            return Ok(payload.to_vec());
         }
         let mut values = BTreeMap::new();
-        for item in CborMap::new(pop, 64).map_err(|e| e.to_string())? {
+        for item in ObjectMap::new(payload, 64).map_err(|e| e.to_string())? {
             let (k, v) = item.map_err(|e| e.to_string())?;
-            let key = u16::try_from(k.unsigned().ok_or("invalid population key")?)
-                .map_err(|_| "invalid population key")?;
+            let key = u16::try_from(k.unsigned().ok_or("invalid payload key")?)
+                .map_err(|_| "invalid payload key")?;
             if key == self.keys[self.id] || values.insert(key, v).is_some() {
-                return bad("duplicate population field");
+                return bad("duplicate payload field");
             }
         }
         let raw: Vec<_> = chain
             .iter()
             .map(|(_, v)| {
-                let mut b = Vec::new();
-                head(0, *v, &mut b);
-                b
+                pil_codec::object::encode_value(&Cbor::Integer((*v).into())).expect("trie integer")
             })
             .collect();
         for ((key, _), v) in chain.iter().zip(&raw) {
-            if values.insert(*key, CborRef::parse(v).unwrap()).is_some() {
+            if values.insert(*key, ObjectRef::parse(v).unwrap()).is_some() {
                 return bad("duplicate lineage field");
             }
         }
@@ -446,11 +394,17 @@ impl Mapping {
             })
             .collect();
         if !fallback.is_empty() {
-            head(5, fallback.len() as u64, &mut extra);
-            for (k, v) in fallback {
-                head(0, u64::from(*k), &mut extra);
-                extra.extend_from_slice(v.as_bytes());
-            }
+            let pairs = fallback
+                .into_iter()
+                .map(|(k, v)| {
+                    Ok((
+                        Cbor::Integer((*k).into()),
+                        pil_codec::object::decode_value(v.as_bytes()).map_err(|e| e.to_string())?,
+                    ))
+                })
+                .collect::<Result<Vec<_>>>()?;
+            extra =
+                pil_codec::object::encode_value(&Cbor::Map(pairs)).map_err(|e| e.to_string())?;
         }
         let mut lineage = Vec::new();
         pil_codec::encode_extended(chain.len() as u64, &mut lineage);
@@ -468,7 +422,7 @@ impl Mapping {
                     if extra.is_empty() {
                         Value::Absent
                     } else {
-                        Value::ValidatedCbor(CborRef::parse(&extra)?)
+                        Value::Object(&extra)
                     }
                 } else {
                     values
@@ -479,22 +433,5 @@ impl Mapping {
             })
             .map(|b| b.to_vec())
             .map_err(|e| e.to_string())
-    }
-}
-pub fn head(major: u8, n: u64, out: &mut Vec<u8>) {
-    let p = major << 5;
-    if n < 24 {
-        out.push(p | n as u8)
-    } else if n <= u8::MAX as u64 {
-        out.extend_from_slice(&[p | 24, n as u8])
-    } else if n <= u16::MAX as u64 {
-        out.push(p | 25);
-        out.extend_from_slice(&(n as u16).to_be_bytes())
-    } else if n <= u32::MAX as u64 {
-        out.push(p | 26);
-        out.extend_from_slice(&(n as u32).to_be_bytes())
-    } else {
-        out.push(p | 27);
-        out.extend_from_slice(&n.to_be_bytes())
     }
 }

@@ -82,7 +82,7 @@ func seedWithStorageProfile(root string, count, days int, end time.Time, clock f
 	r = report{Synthetic: true, Cache: "demo", Tenant: "local", From: start, To: end, Events: count}
 	// Persist replay enablement for every collection; a per-open flag alone is
 	// lost when the coordinator later reopens the cache with its default config.
-	policy := "version = 1\ntimezone = \"America/New_York\"\n\n[defaults.replication]\nindex_period = \"1h\"\npopulation = \"lazy\"\nprovisional_tail = \"15m\"\n"
+	policy := "version = 1\ntimezone = \"America/New_York\"\n\n[defaults.replication]\nindex_period = \"1h\"\ndata = \"lazy\"\nprovisional_tail = \"15m\"\n"
 	for _, spec := range scenarios {
 		policy += fmt.Sprintf("\n[resources.%q]\nobject_index = %t\n", spec.service+"/"+spec.resource+".v1", objectIndex)
 	}

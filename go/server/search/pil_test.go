@@ -161,7 +161,7 @@ func TestPILFollowIntroducesNewDefinitionBeforeNewEvents(t *testing.T) {
 	}
 }
 
-func TestPILDirectSearchPreservesPopulationAndFilterSemantics(t *testing.T) {
+func TestPILDirectSearchPreservesPayloadAndFilterSemantics(t *testing.T) {
 	for _, maxNodes := range []int{1, 65536} {
 		t.Run(fmt.Sprint(maxNodes), func(t *testing.T) {
 			c, _, _, now := fixture(t)

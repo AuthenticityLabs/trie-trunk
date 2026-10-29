@@ -16,7 +16,7 @@ import (
 	"trie-trunk/go/codec"
 )
 
-func TestWhereAcrossLineagesPopulationAndVersions(t *testing.T) {
+func TestWhereAcrossLineagesPayloadAndVersions(t *testing.T) {
 	for _, maxNodes := range []int{1, 65536} {
 		t.Run(fmt.Sprint(maxNodes), func(t *testing.T) {
 			c, _, _, now := fixture(t)
@@ -164,14 +164,14 @@ func TestWhereFollowRejectsThenAcceptsAndRebinds(t *testing.T) {
 	}
 }
 
-func TestWhereDoesNotReadExcludedPopulation(t *testing.T) {
+func TestWhereDoesNotReadExcludedPayload(t *testing.T) {
 	c, rev, data, now := fixture(t)
 	m := mustOpen(t, c, rev, data)
 	appendSearchRecord(t, m, rev, *now, nil)
 	if err := m.Close(); err != nil {
 		t.Fatal(err)
 	}
-	path := filepath.Join(c.Root, "0", fmt.Sprint(rev.Version), now.Format("2006/002"), "log.pop")
+	path := filepath.Join(c.Root, "0", fmt.Sprint(rev.Version), now.Format("2006/002"), "log.pods")
 	data, err := os.ReadFile(path)
 	if err != nil {
 		t.Fatal(err)
@@ -186,7 +186,7 @@ func TestWhereDoesNotReadExcludedPopulation(t *testing.T) {
 	}
 	q.Where = []string{`level=="ERROR"`}
 	var output bytes.Buffer
-	if err := Run(context.Background(), q, &output); err == nil || !strings.Contains(err.Error(), "population checksum") {
+	if err := Run(context.Background(), q, &output); err == nil || !strings.Contains(err.Error(), "payload checksum") {
 		t.Fatal(err)
 	}
 }
@@ -199,18 +199,40 @@ func TestWhereExplicitNull(t *testing.T) {
 	if err := m.Close(); err != nil {
 		t.Fatal(err)
 	}
-	path := filepath.Join(c.Root, "0", fmt.Sprint(rev.Version), now.Format("2006/002"), "log.pop")
-	data, err := os.ReadFile(path)
+	// The older log-ingress profile rejects null fields. Construct a native
+	// PIL fixture at rest to exercise the search evaluator's null semantics.
+	dir := filepath.Join(c.Root, "0", fmt.Sprint(rev.Version), now.Format("2006/002"))
+	pods, err := os.ReadFile(filepath.Join(dir, "log.pods"))
 	if err != nil {
 		t.Fatal(err)
 	}
-	position := bytes.Index(data[16:], []byte{16, 0xa0})
-	if position < 0 {
-		t.Fatal("missing error field")
+	fields, err := codec.Decode(pods[16:], codec.PIL)
+	if err != nil {
+		t.Fatal(err)
 	}
-	data[16+position+1] = 0xf6
-	binary.BigEndian.PutUint32(data[12:16], crc32.Checksum(data[16:], crc32.MakeTable(crc32.Castagnoli)))
-	if err := os.WriteFile(path, data, 0600); err != nil {
+	fields[16] = nil
+	payload, err := codec.MarshalCompact(fields, codec.PIL)
+	if err != nil {
+		t.Fatal(err)
+	}
+	block := make([]byte, 8+len(payload))
+	binary.BigEndian.PutUint32(block, uint32(len(payload)))
+	binary.BigEndian.PutUint32(block[4:], crc32.Checksum(payload, crc32.MakeTable(crc32.Castagnoli)))
+	copy(block[8:], payload)
+	pods = append(pods[:8:8], block...)
+	if err = os.WriteFile(filepath.Join(dir, "log.pods"), pods, 0600); err != nil {
+		t.Fatal(err)
+	}
+	index, err := os.ReadFile(filepath.Join(dir, "log.idx"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(index) != 56 || binary.BigEndian.Uint32(index[16:20]) != 1 {
+		t.Fatal("expected one native index record")
+	}
+	binary.BigEndian.PutUint64(index[len(index)-8:], uint64(len(pods)))
+	binary.BigEndian.PutUint32(index[12:16], crc32.Checksum(index[16:], crc32.MakeTable(crc32.Castagnoli)))
+	if err = os.WriteFile(filepath.Join(dir, "log.idx"), index, 0600); err != nil {
 		t.Fatal(err)
 	}
 	q := Config{Root: c.Root, Start: *now, End: now.Add(time.Second), Where: []string{`error is null`}}

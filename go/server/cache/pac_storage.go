@@ -1,27 +1,26 @@
 package cache
 
 import (
-	"bytes"
 	"crypto/sha256"
 	"fmt"
 	"math"
 	"time"
 )
 
-// StoredPAC is the block directory entry in the companion commit journal. Population
+// StoredPAC is the block directory entry in the companion commit journal. MemberRanges
 // addresses are encoded extents; placement addresses count decoded members only.
-// Index rows keep decoded member starts; the segment directory owns compressed extents.
+// PAC directories keep decoded member starts; the segment directory owns compressed extents.
 type StoredPAC struct {
-	Placement PACPlacement `cbor:"0,keyasint"`
-	Decoded   uint64       `cbor:"1,keyasint"`
-	Gzip      bool         `cbor:"2,keyasint"`
+	Placement PACPlacement `pil:"0"`
+	Decoded   uint64       `pil:"1"`
+	Gzip      bool         `pil:"2"`
 }
 
 const NativePageSize = 1 << 20
 
 func (s *Store) packBlock(b *branchStore, first uint64, batch []pending, frames [][]byte, rows []byte) ([]byte, *StoredPAC, error) {
 	if uint64(b.blockBase)+uint64(len(b.runs)) > math.MaxUint32 {
-		return nil, nil, fmt.Errorf("population block number exhausted")
+		return nil, nil, fmt.Errorf("payload block number exhausted")
 	}
 	p, err := factorPAC(s.layout, frames, nil, true)
 	if err != nil {
@@ -41,7 +40,7 @@ func (s *Store) packBlock(b *branchStore, first uint64, batch []pending, frames 
 	place, err := PlacePAC(p, PACPlacement{
 		Source: b.generation, Trie: sha256.Sum256(trie), Block: b.blockBase + uint32(len(b.runs)),
 		PageSize: NativePageSize, From: from.UnixMilli(), To: to.UnixMilli(),
-		FirstRow: first, MemberStart: start + 4,
+		FirstRow: first, MemberStart: start + 4 + uint64(len(p.Members))*4,
 	})
 	if err != nil {
 		return nil, nil, err
@@ -54,21 +53,18 @@ func (s *Store) packBlock(b *branchStore, first uint64, batch []pending, frames 
 		return nil, nil, err
 	}
 	p.Extensions = []PACExtension{{Type: PACSource, Data: []byte((&HTTP{Store: s}).tap(b.branch))}, e}
+	p.AddressBytes = 4
 	p.Bytes, err = p.Marshal()
 	if err != nil {
 		return nil, nil, err
 	}
-	var decodedEnd uint64
-	for i, m := range p.Members {
-		order.PutUint32(rows[i*IndexRowSize+12:], uint32(decodedEnd))
-		decodedEnd += uint64(len(m))
-		if decodedEnd > math.MaxUint32-4 {
-			return nil, nil, fmt.Errorf("decoded segment exceeds U32")
-		}
+	if uint64(len(p.Directory))+place.MemberBytes+4 > math.MaxUint32 {
+		return nil, nil, fmt.Errorf("decoded segment exceeds U32")
 	}
 
-	// Only collection replay needs directly addressable, uncompressed writes.
-	block := &StoredPAC{Placement: place, Decoded: uint64(len(p.Bytes)), Gzip: b.branch != Write || !s.config.ObjectIndex}
+	// Write packs remain directly addressable for object history. Replication
+	// still transfers whole packs, exactly as it does for the other branches.
+	block := &StoredPAC{Placement: place, Decoded: uint64(len(p.Bytes)), Gzip: b.branch != Write}
 	if block.Gzip {
 		sealed, err := compressPAC(p.Bytes, s.policyFor(b.branch).PAC.level())
 		if err == nil {
@@ -92,36 +88,15 @@ func validateBlock(run Run, rows []byte, layout RowLayout, source [16]byte) erro
 		run.PAC.Decoded < PACHeaderSize || run.MinMS < p.From || run.MaxMS >= p.To {
 		return fmt.Errorf("PAC directory/commit mismatch")
 	}
-	at, marker, previous := p.MemberStart, 0, uint64(math.MaxUint64)
+	var previous int64 = -1
 	for i := 0; i < len(rows); i += layout.Width {
-		row := rows[i : i+layout.Width]
-		if i > 0 && bytes.Compare(rows[i-layout.Width:i-layout.Width+12], row[:12]) >= 0 {
-			return fmt.Errorf("unordered PAC rows")
+		ms := indexTime(rows[i:i+layout.Width], p.From)
+		if ms < run.MinMS || ms > run.MaxMS || ms < previous {
+			return fmt.Errorf("invalid PAC row time")
 		}
-		start := uint64(order.Uint32(row[12:16]))
-		end := p.MemberBytes
-		if i+layout.Width < len(rows) {
-			end = uint64(order.Uint32(rows[i+layout.Width+12:]))
-		}
-		length := end - (at - p.MemberStart)
-		ms := p.From + indexDelta(row)
-		if start != at-p.MemberStart || end <= start || length == 0 ||
-			length > MaxFrame || ms < run.MinMS || ms > run.MaxMS {
-			return fmt.Errorf("invalid PAC row")
-		}
-		page := at / uint64(p.PageSize)
-		if page != previous {
-			if marker >= len(p.Pages) || p.Pages[marker] != (PACPage{uint64(i / layout.Width), page}) {
-				return fmt.Errorf("PAC page directory mismatch")
-			}
-			marker++
-			previous = page
-		}
-		at += length
+		previous = ms
 	}
-	if at-p.MemberStart != p.MemberBytes || marker != len(p.Pages) {
-		return fmt.Errorf("PAC population length mismatch")
-	}
+
 	return nil
 }
 

@@ -68,46 +68,48 @@ func Missing(wanted, have []Span) ([]Span, error) {
 }
 
 type Coverage struct {
-	Definition        [32]byte
-	Generation        [16]byte
-	Index, Population []Span
-	TrieNodes         int
-	StateKnown        bool
-	StateEpoch        [16]byte
-	StateSequence     uint64
+	Definition          [32]byte
+	Generation          [16]byte
+	Index, MemberRanges []Span
+	TrieNodes           int
+	StateKnown          bool
+	StateEpoch          [16]byte
+	StateSequence       uint64
 }
 type CollectionRequest struct {
-	Branch                       Branch
-	Day                          time.Time // Legacy explicit daily request; use At for policy-sized packages.
-	At                           time.Time
-	Until                        time.Time // Internal contiguous delivery window; preserves hourly storage.
-	IndexPeriod                  string    // Optional plan guard, e.g. 1h; reject a stale sizing plan.
-	PopulationFrom, PopulationTo time.Time
-	Have                         Coverage
-	StatePages                   bool
+	Branch           Branch
+	Day              time.Time // Legacy explicit daily request; use At for policy-sized packages.
+	At               time.Time
+	Until            time.Time // Internal contiguous delivery window; preserves hourly storage.
+	IndexPeriod      string    // Optional plan guard, e.g. 1h; reject a stale sizing plan.
+	DataFrom, DataTo time.Time
+	Have             Coverage
+	StatePages       bool
+	IndexOnly        bool
 }
 type Manifest struct {
-	TimeRetainedFrom                               int64
-	TimeRetired                                    bool   `cbor:",omitempty"`
-	TimeTrie                                       []byte `cbor:",omitempty"`
-	RetiredRows, RetiredMembers, RetiredPopulation uint64
-	Definition                                     [32]byte
-	Generation                                     [16]byte
-	GenerationSequence                             uint64
-	Branch                                         Branch
-	From, To                                       time.Time
-	Tail                                           uint64
-	Checkpoint                                     uint64
-	RowWidth                                       int
-	TrieNodes                                      int
-	Index                                          []Span
-	Population                                     []Span
-	Provisional                                    bool
-	IndexPeriod                                    string
-	Timezone                                       string
-	Blocks                                         []Run
-	StateEpoch                                     [16]byte
-	StateSequence                                  uint64
+	IndexOnly                                bool `pil:",omitempty"`
+	TimeRetainedFrom                         int64
+	TimeRetired                              bool   `pil:",omitempty"`
+	TimeTrie                                 []byte `pil:",omitempty"`
+	RetiredRows, RetiredMembers, RetiredPods uint64
+	Definition                               [32]byte
+	Generation                               [16]byte
+	GenerationSequence                       uint64
+	Branch                                   Branch
+	From, To                                 time.Time
+	Tail                                     uint64
+	Checkpoint                               uint64
+	RowWidth                                 int
+	TrieNodes                                int
+	Index                                    []Span
+	MemberRanges                             []Span
+	Provisional                              bool
+	IndexPeriod                              string
+	Timezone                                 string
+	Blocks                                   []Run
+	StateEpoch                               [16]byte
+	StateSequence                            uint64
 }
 type NativeChunk struct {
 	PAC    *StoredPAC
@@ -151,7 +153,7 @@ func (s *Store) collectDelivery(ctx context.Context, request CollectionRequest, 
 	if !request.Branch.Valid() {
 		return fmt.Errorf("invalid branch")
 	}
-	if len(request.Have.Index) > 10000 || len(request.Have.Population) > 10000 {
+	if len(request.Have.Index) > 10000 || len(request.Have.MemberRanges) > 10000 {
 		return fmt.Errorf("coverage advertisement too large")
 	}
 	if request.At.IsZero() == request.Day.IsZero() {
@@ -182,9 +184,10 @@ func (s *Store) collectDelivery(ctx context.Context, request CollectionRequest, 
 		return s.fail(e)
 	}
 	m := Manifest{Definition: s.layout.Digest, Generation: b.generation, GenerationSequence: s.generationSequence(request.Branch), Branch: request.Branch, From: from, To: to, Tail: b.tail(), Checkpoint: uint64(b.blockBase) + uint64(len(b.runs)), RowWidth: s.row.Width, TrieNodes: len(s.trie.nodes), IndexPeriod: period, Timezone: s.location.String(), Provisional: to.After(s.config.Now().Add(-s.provisionalTail(request.Branch))) || to.After(time.UnixMilli(b.finalizedBefore))}
+	m.IndexOnly = request.IndexOnly
 	m.TimeRetainedFrom = b.time.first()
 	m.RetiredRows = b.baseRows
-	m.RetiredPopulation = b.popRetired
+	m.RetiredPods = b.podsRetired
 	m.RetiredMembers = b.memberEnd
 	m.StateEpoch, m.StateSequence = s.state.epoch, s.state.sequence
 	if !m.Provisional {
@@ -220,10 +223,12 @@ func (s *Store) collectDelivery(ctx context.Context, request CollectionRequest, 
 		if !m.Provisional && run.PAC.Placement.From >= from.UnixMilli() && run.PAC.Placement.To <= to.UnixMilli() {
 			m.Blocks = append(m.Blocks, run)
 			p := run.PAC.Placement
-			m.Population = append(m.Population, Span{p.MemberStart, p.MemberStart + p.MemberBytes})
+			if !request.IndexOnly {
+				m.MemberRanges = append(m.MemberRanges, Span{p.MemberStart, p.MemberStart + p.MemberBytes})
+			}
 		}
 	}
-	m.Population, e = Normalize(m.Population)
+	m.MemberRanges, e = Normalize(m.MemberRanges)
 	if e != nil {
 		return e
 	}
@@ -233,14 +238,14 @@ func (s *Store) collectDelivery(ctx context.Context, request CollectionRequest, 
 		have = Coverage{}
 	} else if have.Generation != m.Generation {
 		have.Index = nil
-		have.Population = nil
+		have.MemberRanges = nil
 	}
 	// Normalize once, then walk only the selected block metadata and coverage.
 	indexHave, e := Normalize(have.Index)
 	if e != nil {
 		return e
 	}
-	popHave, e := Normalize(have.Population)
+	podsHave, e := Normalize(have.MemberRanges)
 	if e != nil {
 		return e
 	}
@@ -256,8 +261,8 @@ func (s *Store) collectDelivery(ctx context.Context, request CollectionRequest, 
 	for _, run := range m.Blocks {
 		p := run.PAC.Placement
 		indexOK := covered(indexHave, &iIndex, run.Start, run.End)
-		popOK := covered(popHave, &iPop, p.MemberStart, p.MemberStart+p.MemberBytes)
-		if !indexOK || !popOK {
+		podsOK := covered(podsHave, &iPop, p.MemberStart, p.MemberStart+p.MemberBytes)
+		if !indexOK || (!request.IndexOnly && !podsOK) {
 			missingBlocks = append(missingBlocks, run)
 			missingIndex = append(missingIndex, Span{run.Start, run.End})
 		}
@@ -282,11 +287,11 @@ func (s *Store) collectDelivery(ctx context.Context, request CollectionRequest, 
 		return e
 	}
 	// A generation's existing index bytes never change. Retain that committed
-	// slice and an independent population descriptor before releasing the writer
+	// slice and an independent payload descriptor before releasing the writer
 	// lock. Retention can replace/unlink files while this snapshot stays readable.
-	// Fully covered indexes (including population-only gap fills) have no row
+	// Fully covered indexes (including payload-only gap fills) have no row
 	// bytes to send after unlocking. Avoid an otherwise unused mmap/munmap per
-	// package; population boundaries were already captured under the mutex.
+	// package; payload boundaries were already captured under the mutex.
 	var rows []byte
 	if len(missingIndex) > 0 {
 		var releaseIndex func()
@@ -296,20 +301,20 @@ func (s *Store) collectDelivery(ctx context.Context, request CollectionRequest, 
 		}
 		defer releaseIndex()
 	}
-	var population *os.File
-	if len(missingBlocks) > 0 {
-		population, e = os.Open(b.pop.Name())
+	var payload *os.File
+	if len(missingBlocks) > 0 && !request.IndexOnly {
+		payload, e = os.Open(b.pods.Name())
 		if e != nil {
 			return e
 		}
-		defer population.Close()
+		defer payload.Close()
 	}
 	var output *nativeBuffer
 	if sendRange == nil {
 		output = s.memory.buffer()
 		defer output.close()
 	}
-	baseRows, popRetired := b.baseRows, b.popRetired
+	baseRows, podsRetired := b.baseRows, b.podsRetired
 	directory := b.time
 	s.mu.Unlock()
 	locked = false
@@ -338,6 +343,14 @@ func (s *Store) collectDelivery(ctx context.Context, request CollectionRequest, 
 	if e = state.send(func(start uint64, raw []byte) error { return emit("state", start, raw) }); e != nil {
 		return e
 	}
+	if request.IndexOnly {
+		for _, run := range missingBlocks {
+			if e = emit("index", run.Start, rows[(run.Start-baseRows)*IndexRowSize:(run.End-baseRows)*IndexRowSize]); e != nil {
+				return e
+			}
+		}
+		return nil
+	}
 	if sendRange != nil {
 		// Index rows are copied as opaque sidecars. They are not consulted to find
 		// PAC bytes; the client uses them to avoid rescanning event fields.
@@ -348,24 +361,24 @@ func (s *Store) collectDelivery(ctx context.Context, request CollectionRequest, 
 		}
 		for i := 0; i < len(missingBlocks); {
 			j := i + 1
-			for j < len(missingBlocks) && missingBlocks[j-1].PopEnd == missingBlocks[j].PopStart {
+			for j < len(missingBlocks) && missingBlocks[j-1].PodsEnd == missingBlocks[j].PodsStart {
 				j++
 			}
-			start, err := directory.podsBoundary(population, popRetired, missingBlocks[i].PAC.Placement.From)
+			start, err := directory.podsBoundary(payload, podsRetired, missingBlocks[i].PAC.Placement.From)
 			if err != nil {
 				return err
 			}
-			end, err := directory.podsBoundary(population, popRetired, missingBlocks[j-1].PAC.Placement.To)
+			end, err := directory.podsBoundary(payload, podsRetired, missingBlocks[j-1].PAC.Placement.To)
 			if err != nil {
 				return err
 			}
-			if start != missingBlocks[i].PopStart || end != missingBlocks[j-1].PopEnd || end <= start {
+			if start != missingBlocks[i].PodsStart || end != missingBlocks[j-1].PodsEnd || end <= start {
 				return fmt.Errorf("invalid committed PAC range")
 			}
 			if err = ctx.Err(); err != nil {
 				return err
 			}
-			if err = sendRange(population, start-popRetired, end-popRetired); err != nil {
+			if err = sendRange(payload, start-podsRetired, end-podsRetired); err != nil {
 				return err
 			}
 			i = j
@@ -380,11 +393,11 @@ func (s *Store) collectDelivery(ctx context.Context, request CollectionRequest, 
 		if !ok {
 			return fmt.Errorf("missing committed hour address")
 		}
-		start, end, err := storedSegmentRange(population, popRetired, leaf.Pods)
+		start, end, err := storedSegmentRange(payload, podsRetired, leaf.Pods)
 		if err != nil {
 			return err
 		}
-		raw, err := output.readAt(population, start-popRetired, end-popRetired)
+		raw, err := output.readAt(payload, start-podsRetired, end-podsRetired)
 		if err != nil {
 			return err
 		}

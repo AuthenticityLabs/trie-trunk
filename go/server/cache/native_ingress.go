@@ -53,6 +53,19 @@ func (m *nativeMemory) takeChunk(minimum int) (*ingressChunk, error) {
 			m.putChunk(c)
 		}
 	}
+	// Tiny unused suffixes must not occupy every idle slot forever. Release one
+	// lease when none can fit this frame; hour arenas retain committed prefixes.
+	for j := 0; j < ingressIdleChunks; j++ {
+		slot := &m.idle[(start+j)%ingressIdleChunks].value
+		c := slot.Load()
+		if c != nil && slot.CompareAndSwap(c, nil) {
+			if len(c.buffer.bytes)-c.used >= minimum {
+				return c, nil
+			}
+			c.buffer.close()
+			break
+		}
+	}
 	// Only allocation and shutdown need the handle mutex. The ordinary leased
 	// suffix path uses independent atomic slots and never crosses the C ABI.
 	m.ingressMu.Lock()
@@ -131,7 +144,7 @@ func (r *nativeIngress) allocate(n int) (nativeInput, error) {
 }
 func (r *nativeIngress) read(l *Layout, input io.Reader) (nativeInput, error) {
 	r.partial = 0
-	raw, err := l.ReadFrameBuffer(input, nil, true, r.resize)
+	raw, err := l.ReadFrameBuffer(input, nil, r.resize)
 	if err != nil {
 		return nativeInput{}, err
 	}

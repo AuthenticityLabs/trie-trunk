@@ -1,12 +1,10 @@
 package logging
 
 import (
-	"encoding/binary"
 	"encoding/json"
 	"fmt"
 	"strconv"
 	Keys "trie-trunk/go/logger/client/keys"
-	"unicode/utf8"
 
 	"trie-trunk/go/codec"
 	"trie-trunk/go/models"
@@ -24,81 +22,27 @@ type objectMark struct{ offset, count int }
 
 func (w *entryEncoder) object() objectMark {
 	mark := objectMark{offset: len(w.data)}
-	w.data = append(w.data, '{') // CBOR replaces this with the final map length.
+	w.data = append(w.data, '{')
 	return mark
 }
 func (w *entryEncoder) key(mark *objectMark, key codec.Key) {
-	if w.format == codec.CBOR {
-		w.head(0, uint64(key))
-	} else {
-		if mark.count > 0 {
-			w.data = append(w.data, ',')
-		}
-		w.data = append(w.data, '"')
-		w.data = strconv.AppendUint(w.data, uint64(key), 10)
-		w.data = append(w.data, '"', ':')
+	if mark.count > 0 {
+		w.data = append(w.data, ',')
 	}
+	w.data = append(w.data, '"')
+	w.data = strconv.AppendUint(w.data, uint64(key), 10)
+	w.data = append(w.data, '"', ':')
 	mark.count++
 }
-func (w *entryEncoder) end(mark objectMark) {
-	if w.format == codec.CBOR {
-		// Fixed entry/error/checkpoint objects each contain fewer than 24 fields.
-		if mark.count >= 24 {
-			w.err = fmt.Errorf("fixed object exceeds short CBOR map length")
-			return
-		}
-		w.data[mark.offset] = 0xa0 | byte(mark.count)
-	} else {
-		w.data = append(w.data, '}')
+func (w *entryEncoder) end(mark objectMark) { w.data = append(w.data, '}') }
+func (w *entryEncoder) uint(n uint64)       { w.data = strconv.AppendUint(w.data, n, 10) }
+func (w *entryEncoder) integer(n int64)     { w.data = strconv.AppendInt(w.data, n, 10) }
+func (w *entryEncoder) text(text string) {
+	data, err := json.Marshal(text)
+	if err != nil {
+		w.err = err
 	}
-}
-func (w *entryEncoder) head(major byte, n uint64) {
-	switch {
-	case n < 24:
-		w.data = append(w.data, major<<5|byte(n))
-	case n <= 0xff:
-		w.data = append(w.data, major<<5|24, byte(n))
-	case n <= 0xffff:
-		w.data = binary.BigEndian.AppendUint16(append(w.data, major<<5|25), uint16(n))
-	case n <= 0xffffffff:
-		w.data = binary.BigEndian.AppendUint32(append(w.data, major<<5|26), uint32(n))
-	default:
-		w.data = binary.BigEndian.AppendUint64(append(w.data, major<<5|27), n)
-	}
-}
-func (w *entryEncoder) uint(n uint64) {
-	if w.format == codec.CBOR {
-		w.head(0, n)
-	} else {
-		w.data = strconv.AppendUint(w.data, n, 10)
-	}
-}
-func (w *entryEncoder) integer(n int64) {
-	if w.format != codec.CBOR {
-		w.data = strconv.AppendInt(w.data, n, 10)
-		return
-	}
-	if n < 0 {
-		w.head(1, uint64(-(n + 1)))
-	} else {
-		w.head(0, uint64(n))
-	}
-}
-func (w *entryEncoder) text(s string) {
-	if w.format == codec.CBOR {
-		if !utf8.ValidString(s) {
-			w.err = fmt.Errorf("invalid UTF-8 in log text")
-			return
-		}
-		w.head(3, uint64(len(s)))
-		w.data = append(w.data, s...)
-	} else {
-		data, err := json.Marshal(s)
-		if err != nil {
-			w.err = err
-		}
-		w.data = append(w.data, data...)
-	}
+	w.data = append(w.data, data...)
 }
 func (w *entryEncoder) symbol(s codec.Symbol) {
 	if text, ok := s.Raw().(string); ok {
@@ -121,7 +65,7 @@ func (w *entryEncoder) textField(mark *objectMark, key codec.Key, s string) {
 }
 
 func (e *Entry) encodeCompact(format codec.Format) ([]byte, error) {
-	if format != codec.CBOR && format != codec.CompactJSON {
+	if format != codec.CompactJSON {
 		return nil, fmt.Errorf("unsupported format %d", format)
 	}
 	w := entryEncoder{data: make([]byte, 0, 128), format: format}
@@ -135,12 +79,7 @@ func (e *Entry) encodeCompact(format codec.Format) ([]byte, error) {
 	w.symbolField(&root, Keys.Resource, e.Resource)
 	w.symbolField(&root, Keys.Operation, e.Operation)
 	w.key(&root, Keys.Id)
-	if format == codec.CBOR {
-		w.head(2, uint64(len(e.Id)))
-		w.data = append(w.data, e.Id[:]...)
-	} else {
-		w.text(e.Id.String())
-	}
+	w.text(e.Id.String())
 	w.textField(&root, Keys.ClientTransactionId, e.ClientTransactionId)
 	w.textField(&root, Keys.ClientId, e.ClientId)
 	w.key(&root, Keys.Duration)
@@ -167,11 +106,7 @@ func (e *Entry) encodeCompact(format codec.Format) ([]byte, error) {
 	}
 	if len(e.Checkpoints) > 0 {
 		w.key(&root, Keys.Checkpoints)
-		if format == codec.CBOR {
-			w.head(4, uint64(len(e.Checkpoints)))
-		} else {
-			w.data = append(w.data, '[')
-		}
+		w.data = append(w.data, '[')
 		for i := range e.Checkpoints {
 			c := &e.Checkpoints[i]
 			if format == codec.CompactJSON && i > 0 {

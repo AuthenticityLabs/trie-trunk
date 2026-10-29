@@ -64,12 +64,12 @@ type ViewResult struct {
 type viewSource struct {
 	context       recordContext
 	indexing      bool
-	reader        populationReader
+	reader        podsReader
 	api           *HTTP
 	branch        Branch
 	binding       viewBinding
 	rows          []byte
-	pop           *os.File
+	pods          *os.File
 	release       func()
 	memoryRelease func()
 	ranges        []cursor
@@ -87,8 +87,8 @@ func (s *viewSource) close() {
 		s.memoryRelease()
 		s.memoryRelease = nil
 	}
-	if s.pop != nil {
-		s.pop.Close()
+	if s.pods != nil {
+		s.pods.Close()
 	}
 	if s.release != nil {
 		s.release()
@@ -169,7 +169,7 @@ func (s *Store) captureView(branch Branch, from, to time.Time, prior *viewBindin
 		}
 	}
 
-	v.snap = branchStore{baseRows: b.baseRows, popRetired: b.popRetired, blockBase: b.blockBase, layout: s.layout, runs: append([]Run(nil), b.runs...), rows: v.rows, popEnd: b.popEnd, generation: b.generation}
+	v.snap = branchStore{baseRows: b.baseRows, podsRetired: b.podsRetired, blockBase: b.blockBase, layout: s.layout, runs: append([]Run(nil), b.runs...), rows: v.rows, podsEnd: b.podsEnd, generation: b.generation}
 	v.snap.time = b.time
 	v.snap.timeAnchor = b.timeAnchor
 	if !finalize && len(v.snap.runs) > 0 {
@@ -181,11 +181,11 @@ func (s *Store) captureView(branch Branch, from, to time.Time, prior *viewBindin
 		}
 	}
 	if payload {
-		v.pop, err = os.Open(b.pop.Name())
+		v.pods, err = os.Open(b.pods.Name())
 		if err != nil {
 			return nil, err
 		}
-		v.snap.pop = v.pop
+		v.snap.pods = v.pods
 		v.assembler = frameAssembler{layout: s.layout, trie: &sharedTrie{nodes: append([]sharedNode(nil), s.trie.nodes...)}}
 	}
 	for _, c := range b.candidates(from, to, IndexRowSize) {
@@ -196,7 +196,7 @@ func (s *Store) captureView(branch Branch, from, to time.Time, prior *viewBindin
 			v.ranges = append(v.ranges, c)
 		}
 	}
-	if summary != nil {
+	if summary != nil && branch.Aggregates() {
 		indexed := make([]uint64, len(summary.Counts))
 		summed := make([]uint64, len(summary.Counts))
 		// A run usually fits entirely in one chart bin. Visit only intersecting
@@ -215,7 +215,7 @@ func (s *Store) captureView(branch Branch, from, to time.Time, prior *viewBindin
 			}
 		}
 		// Scan .sum once. Partial bins and groups beyond the captured tail fall
-		// back to index counts; no .pop bytes or event objects are needed.
+		// back to index counts; no .pods bytes or event objects are needed.
 		if branch.Aggregates() && summary.From%300000 == 0 && summary.Step%300000 == 0 {
 			for _, batch := range b.summaries {
 				if batch.Through > binding.Tail {
@@ -244,7 +244,7 @@ func (s *Store) captureView(branch Branch, from, to time.Time, prior *viewBindin
 			}
 		}
 	}
-	if summary != nil {
+	if summary != nil && branch.Aggregates() {
 		for _, p := range v.pending {
 			i := (eventTime(p.id[:]) - summary.From) / summary.Step
 			if i >= 0 && i < int64(len(summary.Counts)) {

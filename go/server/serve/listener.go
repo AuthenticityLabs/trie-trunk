@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/quic-go/quic-go"
@@ -68,6 +69,7 @@ func Run(ctx context.Context, c Config) error {
 		routes.Handle("/summaries", api)
 		routes.Handle("/objects/history", api)
 		routes.Handle("/objects/state", api)
+		routes.Handle("/collections/", api)
 	}
 	routes.Handle("/configurations", api)
 	routes.Handle("/storage", api)
@@ -77,9 +79,21 @@ func Run(ctx context.Context, c Config) error {
 	routes.Handle("/schemas", api)
 	routes.Handle("/caches", api)
 	routes.Handle("/taps", api) // Compatibility for older clients.
+	routes.Handle("/trunk", api)
+	routes.Handle("/trunk/", api)
+	var fallback http.Handler = http.NotFoundHandler()
 	if c.Web != "" {
-		routes.Handle("/", staticFiles(c.Web))
+		fallback = staticFiles(c.Web)
 	}
+	routes.Handle("/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		for _, extension := range []string{".rx", ".tri", ".sum", ".idx", ".tvy", ".pods"} {
+			if strings.HasSuffix(r.URL.Path, extension) {
+				api.ServeHTTP(w, r)
+				return
+			}
+		}
+		fallback.ServeHTTP(w, r)
+	}))
 	tcp, err := net.Listen("tcp", c.Address)
 	if err != nil {
 		return err

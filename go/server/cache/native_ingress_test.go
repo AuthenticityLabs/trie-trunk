@@ -187,7 +187,7 @@ func BenchmarkNativeIngressChunks(b *testing.B) {
 								got, err = l.ReadFrame(reader, nil)
 							case "native-record":
 								buffer := m.buffer()
-								got, err = l.ReadFrameBuffer(reader, nil, true, buffer.resize)
+								got, err = l.ReadFrameBuffer(reader, nil, buffer.resize)
 								if err != nil || !bytes.Equal(got, raw) {
 									b.Fatal(err)
 								}
@@ -232,7 +232,7 @@ func BenchmarkNativeIngressParallel(b *testing.B) {
 						got, err = l.ReadFrame(reader, nil)
 					case "native-record":
 						buffer := m.buffer()
-						got, err = l.ReadFrameBuffer(reader, nil, true, buffer.resize)
+						got, err = l.ReadFrameBuffer(reader, nil, buffer.resize)
 						if err != nil || !bytes.Equal(got, raw) {
 							b.Fatal(err)
 						}
@@ -326,7 +326,7 @@ func BenchmarkNativeIngressSparse(b *testing.B) {
 						got, e = l.ReadFrame(reader, nil)
 					case "native-record":
 						buffer := m.buffer()
-						got, e = l.ReadFrameBuffer(reader, nil, true, buffer.resize)
+						got, e = l.ReadFrameBuffer(reader, nil, buffer.resize)
 						if e != nil || !bytes.Equal(got, raw) {
 							b.Fatal(e)
 						}
@@ -394,7 +394,7 @@ func TestNativeIngressHTTPBatchRecovery(t *testing.T) {
 	}
 	n := 0
 	err = s.SearchLive(context.Background(), Query{Branch: Write, From: at, To: at.Add(time.Minute)}, func(raw []byte) error {
-		if n >= len(frames) || !bytes.Equal(raw, frames[n]) {
+		if n >= len(frames) || !sameSeedData(t, l, raw, frames[n]) {
 			t.Fatal("batch/recovery changed a frame", n)
 		}
 		n++
@@ -402,5 +402,34 @@ func TestNativeIngressHTTPBatchRecovery(t *testing.T) {
 	})
 	if err != nil || n != len(frames) {
 		t.Fatal(n, err)
+	}
+}
+
+// 99-byte frames leave 49-byte tails in 16-KiB chunks. Those tails used to
+// fill every idle slot and force one entire allocation per subsequent frame.
+func TestNativeIngressReclaimsUnusableIdleSuffixes(t *testing.T) {
+	m := newNativeMemory(8 << 20)
+	defer m.close()
+	s := &Store{memory: m}
+	b := &branchStore{}
+	defer func() {
+		for _, a := range b.memory {
+			a.close()
+		}
+	}()
+	raw := make([]byte, 99)
+	for i := 0; i < 50000; i++ {
+		raw[0] = byte(i)
+		id := [16]byte(uuid(1792584000000, uint32(i)).Bytes)
+		stored, e := b.own(s, id, raw, nil)
+		if e != nil {
+			t.Fatalf("row %d: %v", i, e)
+		}
+		if stored[0] != byte(i) {
+			t.Fatal("ownership changed bytes")
+		}
+	}
+	if used := m.stats().Used; used > 6<<20 {
+		t.Fatalf("wasted native storage: %d", used)
 	}
 }

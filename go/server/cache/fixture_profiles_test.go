@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"math"
 	"testing"
-	"trie-trunk/go/codec"
 )
 
 func TestMeasurementIntegerWidths(t *testing.T) {
@@ -73,7 +72,7 @@ func TestMeasurementProfiles(t *testing.T) {
 					}
 				}
 				for field, value := range b.Values {
-					want := field < 3 || field == 6 || field == 8 && i%2 == 0
+					want := field < 3 || field == 6 || field == l.Time || field == 8 && i%2 == 0
 					if (value.State != Absent) != want {
 						t.Fatal("sparse fixture changed its field membership")
 					}
@@ -88,7 +87,7 @@ func TestMeasurementProfiles(t *testing.T) {
 					if err != nil {
 						t.Fatal(err)
 					}
-					cbor, err := codec.MarshalCompact(record, codec.CBOR)
+					cbor, err := marshalBlindCBOR(record)
 					if err != nil {
 						t.Fatal(err)
 					}

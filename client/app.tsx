@@ -1,3 +1,4 @@
+import {zonedTimestamp,parseZonedTimestamp} from './services/time-zone';
 import { restoreWorkspace, type TabState } from './services/search-workspace';
 import { SummarySubscriptions } from "./components/summary-subscriptions";
 import { SearchPerformance } from './components/search-performance';
@@ -8,13 +9,17 @@ import { readTab, writeTab, clearTabWorkspace } from "./services/search-session"
 import { ViewInsights } from "./components/view-insights";
 import { AlertCenter } from "./components/alerts";
 import { PagedResults, type PagedViewState } from "./components/paged-results";
+import {TimeActivity} from './components/time-activity';
 import { Histogram } from "./components/charts";
 import type { ViewQuery } from "./services/pil/view";
 import type { ObjectHistoryTarget } from './services/replay';
+import type { DiagnosticTarget } from './services/diagnostics';
 import {
   For,
   Show,
+  batch,
   createEffect,
+  createComputed,
   createMemo,
   createSignal,
   onCleanup,
@@ -22,7 +27,12 @@ import {
   lazy,
   untrack,
 } from "solid-js";
-import { beginCollection, restoreCollection, rebaseCollection, disconnectClient } from "./services/pil/client";
+import { beginCollection, restoreCollection, disconnectClient,loadTrunk,selectConnection } from "./services/pil/client";
+import {defaultProfile,loadProfile,saveProfile,type UserProfile} from './services/profile';
+import {localConnection,connectionScope,type ServerConnection} from './services/connections';
+import {Choices as DefinitionChoices} from './services/pil/metadata';
+import type {TrunkBootstrap} from './services/pil/trunk';
+import type {ProfileTab} from './components/profile';
 import wordmark from "./assets/snoot-wordmark.png";
 import { Coverage, type Interval } from "./services/coverage";
 import { ExpansionDialog } from "./components/expansion";
@@ -39,8 +49,6 @@ import {
 import { IndicatorDialog } from "./components/indicator";
 import {
   defaultPageSize,
-  loadPageSize,
-  loadTheme,
   saveTheme,
   defaultTheme,
   nextTheme,
@@ -57,9 +65,7 @@ import {
   type Indicator,
 } from "./services/indicators";
 import {
-  loadDictionaries,
   streamEvents,
-  listCaches,
   type LogEvent,
   type Selection,
 } from "./services/events";
@@ -67,12 +73,11 @@ import { windowLabel } from "./services/calendar";
 import { WorkingSet } from "./services/working-set";
 
 import { Sources } from "./components/sources";
-import { resourceScope } from "./services/source";
+import { resourceScope,matchesSource } from "./services/source";
 import {
   collectionWindow,
   compileSearch,
   describeSearch,
-  type Choices,
   type Parameters,
   type LocalSelection,
   type Predicate,
@@ -86,6 +91,8 @@ const DashboardWorkspace = lazy(() => import("./components/dashboard-workspace")
 const DashboardMetrics = lazy(() => import("./components/dashboard"));
 const Research = lazy(() => import("./components/research"));
 const HistoryDialog = lazy(() => import("./components/research").then(module=>({default:module.HistoryDialog})));
+const DiagnosticDialog = lazy(() => import('./components/diagnostics'));
+const Profile = lazy(() => import('./components/profile'));
 
 type Status =
   | "restoring"
@@ -115,18 +122,29 @@ export default function App() {
 
 function Workspace(props: {onLogout: () => void}) {
   const saved=restoreWorkspace(readTab('snoot:workspace'));
+  const [profile,setProfile]=createSignal<UserProfile>(defaultProfile());
+  const [profileReady,setProfileReady]=createSignal(false);
+  const [profileTab,setProfileTab]=createSignal<ProfileTab>((['preferences','connections','storage'].includes(sessionStorage.getItem('snoot:profile:tab')??'')?sessionStorage.getItem('snoot:profile:tab'):'preferences') as ProfileTab);
+  createEffect(()=>sessionStorage.setItem('snoot:profile:tab',profileTab()));
+  const storageResets=new BroadcastChannel('snoot-storage-reset');
+  storageResets.onmessage=event=>{if(event.data==='reload')location.reload()};
+  onCleanup(()=>storageResets.close());
+  const [activeServer,setActiveServer]=createSignal(saved?.connection??'local');
+  const [connectionTokens,setConnectionTokens]=createSignal<Record<string,string>>({});
+  const activeRegistration=createMemo(()=>profile().connections.find(c=>c.enabled&&c.id===activeServer()));
   const [themePreference, setThemePreference] = createSignal<ThemePreference>(defaultTheme);
   const systemAppearance = matchMedia('(prefers-color-scheme: dark)');
   const [systemDark, setSystemDark] = createSignal(systemAppearance.matches);
   const appearanceChanged = (event: MediaQueryListEvent) => setSystemDark(event.matches);
   systemAppearance.addEventListener('change', appearanceChanged);
   onCleanup(() => systemAppearance.removeEventListener('change', appearanceChanged));
-  const theme = createMemo(() => resolveTheme(themePreference(), systemDark()));
+  const theme = createMemo(() => {const value=resolveTheme(themePreference(),systemDark());return value==='trunk'&&profile().palette==='snoot'?'dark':value;});
   const [themeBusy, setThemeBusy] = createSignal(false);
   const [themeError, setThemeError] = createSignal("");
   let themeChanged = false;
   createEffect(() => {
     document.documentElement.dataset.theme = theme();
+    document.documentElement.dataset.palette=profile().palette;
     document.querySelector('meta[name="theme-color"]')?.setAttribute(
       "content",
       themeColors[theme()],
@@ -134,13 +152,14 @@ function Workspace(props: {onLogout: () => void}) {
   });
 
   async function chooseTheme(next: ThemePreference) {
-    if (themeBusy()) return;
+    if (themeBusy()||!profileReady()) return;
     themeChanged = true;
     setThemePreference(next);
     setThemeBusy(true);
     setThemeError("");
     try {
       await saveTheme(next);
+      const value=await saveProfile({...profile(),appearance:next});setProfile(value);
     } catch {
       setThemeError("Could not save the theme for your next visit.");
     } finally {
@@ -164,16 +183,20 @@ function Workspace(props: {onLogout: () => void}) {
   }>();
   let activePredicate: Predicate | undefined;
   const [page, setPage] = createSignal<Page>(saved?.page ?? "Search");
+  const managingStorage=createMemo(()=>page()==='Profile'&&profileTab()==='storage');
   const [searchView, setSearchView] = createSignal<'events'|'charts'>(saved?.searchView ?? 'events');
   const [drawer, setDrawer] = createSignal(false);
   const [collapsed, setCollapsed] = createSignal(saved?.collapsed ?? false);
   const [modal, setModal] = createSignal<Panel>();
-  const [token, setToken] = createSignal("");
+  const token=createMemo(()=>connectionTokens()[activeServer()]??'');
+  const contextKey=createMemo(()=>connectionScope(activeRegistration()??{...localConnection(),id:activeServer()||'disconnected'},token()));
+  createComputed(()=>selectConnection(activeRegistration()??localConnection()));
   const [tap, setTap] = createSignal(resourceScope(saved?.tap ?? ""));
   const [taps, setTaps] = createSignal<string[]>([]);
   const [collections,setCollections]=createSignal<string[]>([]);
   const [historyObject,setHistoryObject]=createSignal<ObjectHistoryTarget>();
   function openObjectHistory(target:ObjectHistoryTarget){setHistoryObject(target);}
+  const [diagnostic,setDiagnostic]=createSignal<DiagnosticTarget>();
   const [tapError, setTapError] = createSignal("");
   const [tapsLoading, setTapsLoading] = createSignal(false);
   const [tapRefresh, setTapRefresh] = createSignal(0);
@@ -182,7 +205,6 @@ function Workspace(props: {onLogout: () => void}) {
   const [to, setTo] = createSignal(saved?.to ?? "");
   const [queryText,setQueryText]=createSignal(saved?.queryText??'');
   const [queryFields,setQueryFields]=createSignal<QueryField[]>([]);
-  const [choices, setChoices] = createSignal<Choices>({});
   const [schemaError, setSchemaError] = createSignal("");
   const [schemaLoading, setSchemaLoading] = createSignal(false);
   const queryValid = createMemo(() => {
@@ -190,7 +212,6 @@ function Workspace(props: {onLogout: () => void}) {
     catch { return false; }
   });
   const [localParameters, setLocalParameters] = createSignal<Parameters>(saved?.localParameters ?? {});
-  const [localChoices, setLocalChoices] = createSignal<Choices>({});
   const [localTap, setLocalTap] = createSignal(saved?.localTap ?? "");
   const [localFrom, setLocalFrom] = createSignal(saved?.localFrom ?? "");
   const [localTo, setLocalTo] = createSignal(saved?.localTo ?? "");
@@ -200,9 +221,6 @@ function Workspace(props: {onLogout: () => void}) {
   const [collected, setCollected] = createSignal(0);
   const [availableWindow, setAvailableWindow] = createSignal<TimeWindow>();
   const [viewRevision, setViewRevision] = createSignal(0);
-  const [collectionDraft, setCollectionDraft] = createSignal("");
-  const collectionParameters = () =>
-    JSON.stringify([tap(), range(), from(), to()]);
   const localDraft = (): LocalSelection => ({
     parameters: Object.fromEntries(
       Object.entries(localParameters())
@@ -231,6 +249,7 @@ function Workspace(props: {onLogout: () => void}) {
   const [selected, setSelected] = createSignal<LogEvent>();
   const [revealed, setRevealed] = createSignal<{ event: LogEvent }>();
   const [pagedQuery,setPagedQuery]=createSignal<ViewQuery | undefined>(saved?.query);
+  const [tantivyComparison,setTantivyComparison]=createSignal(saved?.query?.engine==='tantivy');
   const [pagedView,setPagedView]=createSignal<PagedViewState>({loaded:0,busy:false,error:""});
   const [pageSize, setPageSize] = createSignal(saved?.pageSize ?? defaultPageSize);
   const [preferencesBusy, setPreferencesBusy] = createSignal(true);
@@ -297,36 +316,34 @@ function Workspace(props: {onLogout: () => void}) {
   }
 
   async function loadPreferences() {
-    setPreferencesBusy(true);
-    setPreferencesError("");
+    setPreferencesBusy(true);setPreferencesError('');
     try {
-      const size = await loadPageSize();
-      if (!disposed && !saved) setPageSize(size);
-    } catch (cause) {
-      if (!disposed)
-        setPreferencesError(
-          `Could not load preferences: ${cause instanceof Error ? cause.message : String(cause)}`,
-        );
-    } finally {
-      if (!disposed) setPreferencesBusy(false);
-    }
+      const value=await loadProfile();if(disposed)return;
+      setProfile(themeChanged?{...value,appearance:themePreference()}:value);
+      if(!themeChanged)setThemePreference(value.appearance);
+      if(!saved)setPageSize(value.pageSize);
+      if(!value.connections.some(c=>c.enabled&&c.id===activeServer()))setActiveServer(value.connections.find(c=>c.enabled)?.id??'');
+    }catch(cause){if(!disposed)setPreferencesError(`Could not load profile: ${cause instanceof Error?cause.message:String(cause)}`);}
+    finally{if(!disposed){setProfileReady(true);setPreferencesBusy(false)}}
   }
-
-  onMount(() => {
-    // Browser storage must not gate the first render. A delayed preference
-    // must also not overwrite a theme the user has already chosen.
-    void loadTheme().then(
-      (saved) => {
-        if (!disposed && !themeChanged) setThemePreference(saved);
-      },
-      () => {
-        if (!disposed && !themeChanged)
-          setThemeError("Could not load the saved theme.");
-      },
-    );
-    void loadSavedIndicators();
-    void loadPreferences();
-  });
+  onMount(()=>{void loadSavedIndicators();void loadPreferences();});
+  async function saveUserProfile(value:UserProfile,tokens?:Record<string,string>){
+    const normalized=await saveProfile(value);
+    batch(()=>{
+    if(tokens){
+      const credentials:Record<string,string>={};
+      for(const connection of normalized.connections){
+        credentials[connection.id]=tokens[connection.id]??'';
+      }
+      setConnectionTokens(credentials);
+    }
+    setProfile(normalized);setThemePreference(normalized.appearance);themeChanged=true;setPageSize(normalized.pageSize);
+    if(!normalized.connections.some(c=>c.enabled&&c.id===activeServer()))chooseServer(normalized.connections.find(c=>c.enabled)?.id??'');
+    });
+    await saveTheme(normalized.appearance);
+  }
+  function openProfile(tab:ProfileTab='preferences'){setProfileTab(tab);navigate('Profile');}
+  function chooseServer(id:string){if(id!==activeServer())setActiveServer(id);}
 
   async function addIndicator(indicator: Indicator) {
     await saveIndicator(indicator);
@@ -341,48 +358,36 @@ function Workspace(props: {onLogout: () => void}) {
     );
   }
 
-  createEffect(() => {
-    tapRefresh();
-    const abort = new AbortController();
-    setTaps([]);
-    setCollections([]);setHistoryObject(undefined);
-    setTapError("");
-    setTapsLoading(true);
-    void listCaches(token(), abort.signal, sources=>{if(!abort.signal.aborted)setCollections(sources)})
-      .then((names) => {
-        if (!abort.signal.aborted) setTaps(names);
-      })
-      .catch((cause) => {
-        if (!abort.signal.aborted)
-          setTapError(cause instanceof Error ? cause.message : String(cause));
-      })
-      .finally(() => {
-        if (!abort.signal.aborted) setTapsLoading(false);
+  type BootstrapState={loading:boolean;trunk?:TrunkBootstrap;error?:string};
+  const [bootstraps,setBootstraps]=createSignal<Record<string,BootstrapState>>({});
+  const registrations=createMemo(()=>JSON.stringify(profile().connections));
+  createEffect(()=>{
+    tapRefresh();if(!profileReady()||managingStorage())return;
+    const connections=JSON.parse(registrations()) as ServerConnection[],credentials=connectionTokens(),abort=new AbortController();
+    setBootstraps(Object.fromEntries(connections.filter(c=>c.enabled).map(c=>[c.id,{loading:true}])));
+    for(const connection of connections.filter(c=>c.enabled)){
+      const signal=AbortSignal.any([abort.signal,AbortSignal.timeout(30000)]);
+      void loadTrunk(connection,credentials[connection.id]??'',signal).then(trunk=>{
+        if(!abort.signal.aborted)setBootstraps(current=>({...current,[connection.id]:{loading:false,trunk}}));
+      }).catch(cause=>{
+        if(!abort.signal.aborted)setBootstraps(current=>({...current,[connection.id]:{loading:false,error:cause instanceof Error?cause.message:String(cause)}}));
       });
-    onCleanup(() => abort.abort());
+    }
+    onCleanup(()=>abort.abort());
   });
-
-  createEffect(() => {
-    tapRefresh();
-    const abort = new AbortController();
-    setChoices({});
-    setSchemaError("");
-    setSchemaLoading(true);setQueryFields([]);
-    void loadDictionaries(tap(), token(), abort.signal)
-      .then((dictionaries) => {
-        if (!abort.signal.aborted){
-          setChoices(dictionaries.choices());setQueryFields(dictionaries.fields());}
-      })
-      .catch((cause) => {
-        if (!abort.signal.aborted)
-          setSchemaError(
-            cause instanceof Error ? cause.message : String(cause),
-          );
-      })
-      .finally(() => {
-        if (!abort.signal.aborted) setSchemaLoading(false);
-      });
-    onCleanup(() => abort.abort());
+  createEffect(()=>{
+    const state=bootstraps()[activeServer()];
+    setTaps(state?.trunk?.catalog.sources??[]);setCollections(state?.trunk?.catalog.collections??[]);
+    setTapsLoading(!profileReady()||!!state?.loading);
+    setTapError(state?.error??(profileReady()&&!activeRegistration()?'Enable a server in Profile → Connections.':''));
+  });
+  createEffect(()=>{
+    const state=bootstraps()[activeServer()],scope=tap();
+    setSchemaLoading(!profileReady()||!!state?.loading);setSchemaError(state?.error??'');
+    const trunk=state?.trunk;
+    if(!trunk){setQueryFields([]);return;}
+    const definitions=new DefinitionChoices(trunk.definitions,trunk.bindings.filter(b=>matchesSource(scope,b.tap)));
+    setQueryFields(definitions.fields());
   });
 
   async function restore(tokenValue: string, restoreWindow = false) {
@@ -411,6 +416,7 @@ function Workspace(props: {onLogout: () => void}) {
     setError("");
     setStatus("restoring");
     refresh();
+    if(!activeRegistration()){setStatus('idle');return;}
     let last: string | undefined;
     try {
       last = sessionStorage.getItem("snoot:search:collection") ?? undefined;
@@ -436,14 +442,7 @@ function Workspace(props: {onLogout: () => void}) {
             setFrom(saved.from);
             setTo(saved.to);
           }
-          setCollectionDraft(
-            saved.selection.where.length ? "" : JSON.stringify([
-              saved.selection.tap,
-              saved.range,
-              saved.from,
-              saved.to,
-            ]),
-          );
+
           setCollectionScope(
             describeSearch({
               parameters: saved.parameters,
@@ -480,13 +479,17 @@ function Workspace(props: {onLogout: () => void}) {
     }
   }
 
-  let initialRestore=true;
+  let initialRestore=true,previousContext:string|undefined;
   createEffect(() => {
+    if(!profileReady())return;
+    const context=contextKey();
     const credential = token();
+    if(context===previousContext)return;
+    const changed=previousContext!==undefined;previousContext=context;
     if(initialRestore&&saved?.query){initialRestore=false;return;}
     const restoreWindow=initialRestore&&!saved;
     initialRestore=false;
-    untrack(() => void restore(credential,restoreWindow));
+    untrack(() => {if(changed){setTap('');setHistoryObject(undefined);setDiagnostic(undefined);setIndicatorField(undefined);}void restore(credential,restoreWindow);});
   });
 
   let pageScroll!:HTMLDivElement;
@@ -505,7 +508,7 @@ function Workspace(props: {onLogout: () => void}) {
   createEffect(()=>{
     tabState={queryText:queryText(),version:1,page:page(),collapsed:collapsed(),tap:tap(),range:range(),from:from(),to:to(),
       localParameters:localParameters(),localTap:localTap(),localFrom:localFrom(),localTo:localTo(),
-      searchView:searchView(),query:pagedQuery(),pageSize:pageSize(),scroll:positions[page()]?.top??0};
+      connection:activeServer(),searchView:searchView(),query:pagedQuery(),pageSize:pageSize(),scroll:positions[page()]?.top??0};
     saveTab();
   });
   onMount(()=>{
@@ -543,7 +546,6 @@ function Workspace(props: {onLogout: () => void}) {
     setViewRevision((value) => value + 1);
     setCollected(working.collected.events.length);
     setAvailableWindow(collectionWindow(working.collected.events));
-    setLocalChoices(working.choices());
     setRecords(working.visible.events);
     setAnnotations(working.visible.annotations);
     setSummary(working.visible.summary());
@@ -602,21 +604,6 @@ function Workspace(props: {onLogout: () => void}) {
     flush();
     if (running()) setStatus("stopped");
   }
-  async function rebuildLocalCollection(source:string){
-    stop();
-    const current=generation,credential=token();
-    const abort=new AbortController();
-    await rebaseCollection(source,credential,abort.signal);
-    if(current!==generation||credential!==token())return;
-    working.cancel();searchRevision++;setSearching(false);
-    working=new WorkingSet();working.setMatchers(matchers());
-    activePredicate=undefined;setActiveSearch(undefined);setSearchError("");
-    coverage=new Coverage();setCovered([]);collectionId=undefined;
-    setSelected(undefined);setRevealed(undefined);setHasCollected(false);setActiveSelection(undefined);setCollectionDraft("");
-    setError("");setStatus("idle");refresh();
-    try{sessionStorage.removeItem("snoot:search:collection");}catch{}
-  }
-
   function selection(follow: boolean): Selection {
     const now = new Date();
     let start: Date;
@@ -627,8 +614,7 @@ function Workspace(props: {onLogout: () => void}) {
       start = new Date(`${from()}Z`);
       if (to()) end = new Date(`${to()}Z`);
     } else if (range() === "today") {
-      start = new Date(now);
-      start.setUTCHours(0, 0, 0, 0);
+      start = new Date(parseZonedTimestamp(zonedTimestamp(now.getTime(),profile().timeZone).slice(0,10)+"T00:00:00",profile().timeZone));
     } else {
       start = new Date(now.getTime() - Number(range()) * 60_000);
     }
@@ -659,17 +645,21 @@ function Workspace(props: {onLogout: () => void}) {
   }
   function openSearchWindow(){setCalendarBounds(searchWindow());setCalendarPaged(!!pagedQuery()||!hasCollected());setCalendar('Search')}
 
+  const hourlyWindow=createMemo(()=>{try{return selection(false)}catch{return undefined}});
+
   async function submitSearch() {
+    if(!activeRegistration()||!bootstraps()[activeServer()]?.trunk){setSearchError('Connect to a server in Profile → Connections before searching.');return;}
     try {
       const ast=parseQuery(queryText(),queryFields());
       for(const [field,value] of Object.entries(localParameters()))if(value)ast.plan.filters.push({field,op:'==',value:{kind:'string',value}});
       const q=selection(false);stop();setError("");setSearchError("");
-      setPagedQuery({tap:q.tap,from:q.from,to:q.to!,size:ast.page?.size??pageSize(),after:ast.page?.after,
-        ...(ast.plan.filters.length||ast.plan.search||ast.plan.order!=='asc'?{query:ast.plan}:{})});
+      setPagedQuery({engine:tantivyComparison()?'tantivy':'local',tap:q.tap,from:q.from,to:q.to!,size:ast.page?.size??pageSize(),after:ast.page?.after,
+        ...(ast.plan.filters.length||ast.plan.predicate||ast.plan.search||ast.plan.order!=='asc'?{query:ast.plan}:{})});
     }catch(e){setSearchError(e instanceof Error?e.message:String(e))}
   }
 
   async function collect(follow = false) {
+    if(!activeRegistration()||!bootstraps()[activeServer()]?.trunk){setError('Connect to a server in Profile → Connections before collecting.');return;}
     setPagedQuery(undefined);
     let request: Selection;
     try {
@@ -706,7 +696,6 @@ function Workspace(props: {onLogout: () => void}) {
     working = new WorkingSet(activePredicate);
     working.setMatchers(matchers());
     setViewRevision((value) => value + 1);
-    setCollectionDraft(collectionParameters());
     refresh();
     setSelected(undefined);
     setRevealed(undefined);
@@ -770,10 +759,7 @@ function Workspace(props: {onLogout: () => void}) {
         if (current === generation)
           setStatus(request.follow ? "following" : "reading");
       },
-      (dictionaries) => {
-        if (current === generation && tap() === request.tap)
-          setChoices(dictionaries.choices());
-      },
+      undefined,
       collectionId,
     );
     if (complete && current === generation && !request.follow && request.to) {
@@ -922,7 +908,6 @@ function Workspace(props: {onLogout: () => void}) {
   }
 
   function narrow(
-    scope: "Collect" | "Search",
     name: "service" | "level",
     value: string,
   ) {
@@ -995,16 +980,15 @@ function Workspace(props: {onLogout: () => void}) {
       </Show>
       <Navigation
         theme={themePreference()}
-        themeBusy={themeBusy()}
+        themeBusy={themeBusy()||!profileReady()}
         themeError={themeError()}
         onToggleTheme={() => void chooseTheme(nextTheme(themePreference()))}
         page={page()}
         count={pagedQuery()?pagedView().result?.summary?.count??0:collected()}
-        hasToken={Boolean(token())}
         onNavigate={navigate}
         onHelp={() => openModal("help")}
-        onConnection={() => openModal("connection")}
-        onProfile={() => openModal("profile")}
+        profileName={profile().name}
+        onProfile={() => openProfile()}
         onLogout={props.onLogout}
       >
         <Show when={pagedQuery() ? (pagedView().result?.summary?.count??0)>0 && !!pagedView().result?.summary?.statistics : records().length>0}>
@@ -1054,19 +1038,23 @@ function Workspace(props: {onLogout: () => void}) {
             <span class="sr-only"> — {page()}</span>
           </h1>
           <div class="topbar-right">
+              <Show when={profile().connections.filter(c=>c.enabled).length>1}><label class="control"><span>Server</span><select aria-label="Server" value={activeServer()} onChange={e=>chooseServer(e.currentTarget.value)}><For each={profile().connections.filter(c=>c.enabled)}>{connection=><option value={connection.id}>{connection.name}</option>}</For></select></label></Show>
+
             <button class="guide-button" aria-label="Quick Guide" onClick={() => openModal("help")}>
               <Icon name="help" size={16} />
               <span>Quick Guide</span>
             </button>
             <div class="theme-selector" role="group" aria-label="Appearance">
-              <For each={['light', 'dark', 'auto'] as const}>{choice => <button type="button" aria-pressed={themePreference() === choice} disabled={themeBusy()} onClick={() => void chooseTheme(choice)}>{choice === 'light' ? 'Light' : choice === 'dark' ? 'Dark' : 'Auto'}</button>}</For>
+              <For each={['light', 'dark', 'auto'] as const}>{choice => <button type="button" aria-pressed={themePreference() === choice} disabled={themeBusy()||!profileReady()} onClick={() => void chooseTheme(choice)}>{choice === 'light' ? 'Light' : choice === 'dark' ? 'Dark' : 'Auto'}</button>}</For>
             </div>
           </div>
         </header>
 
-        <SummarySubscriptions token={token()} sources={taps()} loading={tapsLoading()}/>
+        <Show when={!managingStorage()}><Show when={contextKey()} keyed>{_connection=><SummarySubscriptions token={token()} sources={taps()} loading={tapsLoading()}/>}</Show></Show>
         <div class="page-scroll" ref={pageScroll}>
         <div class="page-content" ref={pageContent}>
+          <Show when={contextKey()} keyed>{_connection=><>
+          <Show when={page()==='Profile'||!!bootstraps()[activeServer()]?.trunk} fallback={<section class="card profile-card"><p role="status">{tapError()||'Connecting to the registered server…'}</p><button class="button secondary" onClick={()=>openProfile('connections')}>Open Connections</button><button class="text-button" onClick={()=>setTapRefresh(n=>n+1)}>Retry</button></section>}>
           {/* Preserve the current page and snapshot across navigation. */}
           <div style={{display:page() === "Search"?"contents":"none"}}>
             <form
@@ -1092,15 +1080,15 @@ function Workspace(props: {onLogout: () => void}) {
                   </Show>
                 </span>
               </div>
-              <Sources value={tap()} catalog={taps()} loading={tapsLoading()} onChange={setTap} />
+              <Sources value={tap()} catalog={taps()} loading={tapsLoading()} onChange={value=>{setTap(value);setPagedQuery(undefined)}} />
               <Show when={Object.values(localParameters()).some(Boolean)}><div class="query-filter-chips"><For each={Object.entries(localParameters()).filter(([,value])=>!!value)}>{([field,value])=><button type="button" class="text-button" aria-label={`Remove ${field} filter`} onClick={()=>setLocalParameters(current=>{const next={...current};delete next[field];return next})}>{field} == {JSON.stringify(value)} ×</button>}</For></div></Show>
               <QueryEditor value={queryText()} onInput={setQueryText} fields={queryFields()} loading={schemaLoading()} />
               <div class="query-controls">
                 <label class="control">
                   <Icon name="clock" size={15} />
                   <span class="sr-only">Time Window</span>
-                  <select aria-label="Time Window" value={range()} onChange={event=>setRange(event.currentTarget.value)}>
-                    <option value="today">Today (UTC)</option>
+                  <select aria-label="Time Window" value={range()} onChange={event=>{setRange(event.currentTarget.value);setPagedQuery(undefined)}}>
+                    <option value="today">Today ({profile().timeZone})</option>
                     <option value="15">Last 15 Minutes</option>
                     <option value="60">Last Hour</option>
                     <option value="1440">Last 24 Hours</option>
@@ -1111,8 +1099,9 @@ function Workspace(props: {onLogout: () => void}) {
                   </select>
                 </label>
                 <button class="control time-window-trigger" type="button" aria-label="Search Time Window" onClick={openSearchWindow}>
-                  <Icon name="clock" />{windowLabel(searchWindow().from,searchWindow().to)}
+                  <Icon name="clock" />{windowLabel(searchWindow().from,searchWindow().to,profile().timeZone)}
                 </button>
+                <label class="query-comparison"><input type="checkbox" checked={tantivyComparison()} onChange={event=>{setTantivyComparison(event.currentTarget.checked);setPagedQuery(undefined)}}/> Tantivy Comparison</label>
                 <span class="query-controls-spacer" />
                 <button
                   type="button"
@@ -1192,9 +1181,9 @@ function Workspace(props: {onLogout: () => void}) {
                 <span>{error()}</span>
                 <button
                   class="text-button"
-                  onClick={() => openModal("connection")}
+                  onClick={() => openProfile('connections')}
                 >
-                  Connection
+                  Connections
                   <Icon name="arrow" size={14} />
                 </button>
               </div>
@@ -1214,10 +1203,12 @@ function Workspace(props: {onLogout: () => void}) {
                 onClick={() => setSearchView(view)}>{view === 'events' ? 'Events' : 'Charts'}</button>}</For>
             </div>
             <div id="search-events-panel" role="tabpanel" aria-labelledby="search-events-tab" hidden={searchView() !== 'events'}>
-            <Show when={pagedQuery()} keyed>{query=><PagedResults query={query} token={token()} pageSize={query.size} active={page()==="Search"&&searchView()==="events"}
+            <Show when={bootstraps()[activeServer()]?.trunk&&pagedQuery()} keyed>{query=><PagedResults timeZone={profile().timeZone} query={query} token={token()} pageSize={query.size} active={page()==="Search"&&searchView()==="events"}
               matchers={matchers()} onIndicator={setIndicatorField} indicatorsLoading={indicatorsLoading()}
               collections={collections()} onObjectHistory={openObjectHistory}
+              diagnosticSources={taps()} onDiagnostic={setDiagnostic}
               onState={setPagedView} />}</Show>
+            <Show when={!pagedQuery()&&bootstraps()[activeServer()]?.trunk}>{trunk=><TimeActivity trunk={trunk()} scope={tap()} from={hourlyWindow()?.from??''} to={hourlyWindow()?.to??''} token={token()} active={page()==='Search'&&searchView()==='events'} onWindow={(a,z)=>{setRange('custom');setFrom(new Date(a).toISOString().replace(/Z$/,''));setTo(new Date(z).toISOString().replace(/Z$/,''));}}/>}</Show>
             <Show when={!pagedQuery()}><div class="search-layout">
               <div class="results-column">
                 <Show when={records().length}>
@@ -1338,7 +1329,7 @@ function Workspace(props: {onLogout: () => void}) {
                       </div>
                     }
                   >
-                    <Events
+                    <Events timeZone={profile().timeZone}
                       revision={viewRevision()}
                       events={records()}
                       selected={selected()}
@@ -1351,6 +1342,7 @@ function Workspace(props: {onLogout: () => void}) {
                       indicatorsLoading={indicatorsLoading()}
                       reveal={revealed()}
                       collections={collections()} onObjectHistory={openObjectHistory}
+                      diagnosticSources={taps()} onDiagnostic={setDiagnostic}
                       pageSize={pageSize()}
 
                     />
@@ -1389,14 +1381,14 @@ function Workspace(props: {onLogout: () => void}) {
                   title="Services"
                   values={summary().services}
                   total={records().length}
-                  onSelect={(scope, value) => narrow(scope, "service", value)}
+                  onSelect={(_scope, value) => narrow( "service", value)}
                 />
                 <Breakdown
                   title="Levels"
                   values={summary().levels}
                   total={records().length}
                   levels
-                  onSelect={(scope, value) => narrow(scope, "level", value)}
+                  onSelect={(_scope, value) => narrow( "level", value)}
                 />
               </aside>
             </div></Show>
@@ -1427,14 +1419,14 @@ function Workspace(props: {onLogout: () => void}) {
                   title="Services"
                   values={summary().services}
                   total={records().length}
-                  onSelect={(scope, value) => narrow(scope, "service", value)}
+                  onSelect={(_scope, value) => narrow( "service", value)}
                 />
                 <Breakdown
                   title="Levels"
                   values={summary().levels}
                   total={records().length}
                   levels
-                  onSelect={(scope, value) => narrow(scope, "level", value)}
+                  onSelect={(_scope, value) => narrow( "level", value)}
                 />
               </aside>
             </div>
@@ -1464,6 +1456,7 @@ function Workspace(props: {onLogout: () => void}) {
             <DashboardWorkspace token={token()} sources={taps()} loading={tapsLoading()} catalogError={tapError()}/>
           </Show>
 
+          <Show when={page()==='Profile'}><Profile profile={profile()} loading={preferencesBusy()} loadError={preferencesError()} onReload={()=>void loadPreferences()} tokens={connectionTokens()} tab={profileTab()} onTab={setProfileTab} onSave={saveUserProfile} statuses={bootstraps()} onStorageClearStart={()=>{stop();disconnectClient();}}/></Show>
           <Show when={page() === "Configs"}><Configurations theme={theme()} token={token()}/></Show>
           <Show when={page() === "Alerts"}>
             <AlertCenter token={token()} lostEvents={()=><Research mode="Lost Events" token={token()} sources={taps()} initialSource={tap()} pageSize={pageSize()} onIndicator={setIndicatorField} indicatorsLoading={indicatorsLoading()}/>}>
@@ -1493,6 +1486,8 @@ function Workspace(props: {onLogout: () => void}) {
             </section>
             </AlertCenter>
           </Show>
+          </Show>
+          </>}</Show>
           <footer class="page-footer">
             <span>
               <Icon name="leaf" size={13} /> Small footprint. Clear signals.
@@ -1505,7 +1500,7 @@ function Workspace(props: {onLogout: () => void}) {
 
       <Show when={calendar()} keyed>
         {(scope) => (
-          <Calendar
+          <Calendar timeZone={profile().timeZone}
             scope={scope}
             from={calendarPaged()?calendarBounds().from:scope === 'Collect'?from():localFrom()||activeSelection()?.from.replace(/Z$/,'')||availableWindow()?.from||''}
             to={calendarPaged()?calendarBounds().to:scope === 'Collect'?to():localTo()||activeSelection()?.to?.replace(/Z$/,'')||availableWindow()?.to||''}
@@ -1524,7 +1519,7 @@ function Workspace(props: {onLogout: () => void}) {
                 setRange("custom");
                 setFrom(window.from);
                 setTo(window.to);
-                void submitSearch();
+                setPagedQuery(undefined);
               } else changeWindow(window, cancel);
             }}
           />
@@ -1544,12 +1539,9 @@ function Workspace(props: {onLogout: () => void}) {
       <Show when={historyObject()} keyed>{object=><HistoryDialog token={token()} sources={collections()} initialSource={object.source}
         initialObject={object} pageSize={pageSize()} onIndicator={setIndicatorField} indicatorsLoading={indicatorsLoading()}
         onClose={()=>setHistoryObject(undefined)}/>}</Show>
+      <Show when={diagnostic()} keyed>{target=><DiagnosticDialog target={target} token={token()} onClose={()=>setDiagnostic(undefined)}/>}</Show>
       <Settings
         panel={modal()}
-        token={token()}
-        onToken={setToken}
-        sources={taps()}
-        onRebase={rebuildLocalCollection}
         onClose={() => setModal(undefined)}
       />
       <Show when={indicatorField()} keyed>

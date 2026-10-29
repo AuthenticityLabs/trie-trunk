@@ -72,7 +72,7 @@ func TestCleanupPreviewApplyAndReplay(t *testing.T) {
 	if e = os.Mkdir(orphanDir, 0700); e != nil {
 		t.Fatal(e)
 	}
-	orphanPath := filepath.Join(orphanDir, "resource.map")
+	orphanPath := filepath.Join(orphanDir, "resource.rx")
 	if e = os.WriteFile(orphanPath, orphan.Bytes, 0600); e != nil {
 		t.Fatal(e)
 	}
@@ -80,7 +80,7 @@ func TestCleanupPreviewApplyAndReplay(t *testing.T) {
 	unknown := filepath.Join(dir, "writes.old.pods")
 	os.WriteFile(unknown, []byte("keep"), 0600)
 	before := map[string][]byte{}
-	for _, name := range []string{"resource.map", "resource.tri", "write.idx", "write.pods", "write.tri", "write.journal", "write.sum", "write.seed", "error.seed"} {
+	for _, name := range []string{"resource.rx", "state.tri", "write.idx", "write.pods", "write.tri", "write.journal", "write.sum", "write.seed", "error.seed"} {
 		raw, e := os.ReadFile(filepath.Join(dir, name))
 		if e != nil {
 			t.Fatal(e)
@@ -151,9 +151,9 @@ func TestCleanupPreservesReferencedAndDataBearingUnregisteredMaps(t *testing.T) 
 		}
 		target := filepath.Join(filepath.Dir(dir), fmt.Sprint(minor))
 		os.Mkdir(target, 0700)
-		os.WriteFile(filepath.Join(target, "resource.map"), orphan.Bytes, 0600)
+		os.WriteFile(filepath.Join(target, "resource.rx"), orphan.Bytes, 0600)
 		if minor == 1 {
-			os.WriteFile(filepath.Join(filepath.Dir(dir), fmt.Sprintf("producer-%x.map", orphan.Digest)), orphan.Bytes, 0600)
+			os.WriteFile(filepath.Join(filepath.Dir(dir), fmt.Sprintf("producer-%x.rx", orphan.Digest)), orphan.Bytes, 0600)
 		} else {
 			os.WriteFile(filepath.Join(target, "write.pods"), []byte("unregistered data"), 0600)
 		}

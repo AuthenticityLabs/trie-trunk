@@ -65,7 +65,7 @@ func OpenEndpoint(c Config) (p *Endpoint, err error) {
 			if path == nil {
 				return nil, fmt.Errorf("invalid catalog binding")
 			}
-			data, e := os.ReadFile(filepath.Join(c.Root, c.Cache, binding, "resource.map"))
+			data, e := os.ReadFile(filepath.Join(c.Root, c.Cache, binding, "resource.rx"))
 			if e != nil {
 				return nil, e
 			}
@@ -245,7 +245,7 @@ func (p *Endpoint) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		p.registration(w, r)
 		return
 	}
-	if r.URL.Path == "/objects/history" || r.URL.Path == "/objects/state" {
+	if r.URL.Path == "/objects/history" || r.URL.Path == "/objects/state" || strings.HasPrefix(r.URL.Path, "/collections/") {
 		p.replayHTTP(w, r)
 		return
 	}
@@ -258,7 +258,7 @@ func (p *Endpoint) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path == "/ingest" {
 		kind, _, _ := mime.ParseMediaType(r.Header.Get("Content-Type"))
 		// Standard CBOR is independent of PIL logger registration.
-		if r.Method == "POST" && strings.EqualFold(kind, "application/cbor") && r.Header.Get("Trunk-Version") == "" && r.Header.Get("Trunk-Digest") == "" && r.Header.Get("Upgrade") == "" {
+		if r.Method == "POST" && blindContentType(kind) && r.Header.Get("Trunk-Version") == "" && r.Header.Get("Trunk-Digest") == "" && r.Header.Get("Upgrade") == "" {
 			l, e := GenericDefinition()
 			if e == nil {
 				e = p.install(l)
@@ -274,7 +274,7 @@ func (p *Endpoint) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	api := p.api
-	if r.URL.Path == "/ingest" && strings.EqualFold(strings.Split(r.Header.Get("Content-Type"), ";")[0], "application/cbor") {
+	if r.URL.Path == "/ingest" && blindContentType(strings.Split(r.Header.Get("Content-Type"), ";")[0]) {
 		l, _ := GenericDefinition()
 		api = p.apis[fmt.Sprintf("%x", l.Digest)]
 	}
@@ -283,6 +283,13 @@ func (p *Endpoint) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		api = p.apis[r.Header.Get("Definition-Version")]
 	}
 	p.mu.Unlock()
+	if trunkRequest(r) {
+		(&HTTP{sources: sources}).trunkHTTP(w, r)
+		return
+	}
+	if (&HTTP{sources: sources}).trunkFileHTTP(w, r) {
+		return
+	}
 	if r.URL.Path == "/configurations" {
 		p.configurationHTTP(w, r, sources)
 		return
@@ -319,21 +326,16 @@ func (p *Endpoint) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		(&HTTP{}).ServeHTTP(w, r)
 		return
 	}
+	if file, ok := branchFilePath(r.URL.Path); ok {
+		(&HTTP{sources: sources}).branchFileHTTP(w, r, file)
+		return
+	}
 	if api != nil && (r.URL.Path == "/summaries" || r.URL.Path == "/events" || r.URL.Path == "/collect" || r.URL.Path == "/schemas" || r.URL.Path == "/rejections") {
 		handler := &HTTP{Store: api.Store, sources: sources}
 		handler.ServeHTTP(w, r)
 		return
 	}
 	if api == nil {
-		if r.URL.Path == "/ingest" && r.Method == "POST" {
-			kind, _, _ := mime.ParseMediaType(r.Header.Get("Content-Type"))
-			switch strings.ToLower(kind) {
-			case "application/json", "application/jsonl", "application/x-ndjson", "text/plain", "application/syslog":
-				// TODO: adapt JSONL and standard log input into native durable staging.
-				http.Error(w, "receiver not implemented; use PIL or CBOR", 501)
-				return
-			}
-		}
 		if r.URL.Path == "/ingest" && r.Method != "POST" {
 			w.Header().Set("Allow", "POST")
 			w.WriteHeader(405)
@@ -381,4 +383,12 @@ func (p *Endpoint) Close() error {
 		return p.group.close()
 	}
 	return nil
+}
+
+func blindContentType(kind string) bool {
+	switch strings.ToLower(kind) {
+	case "application/cbor", "application/json", "application/jsonl", "application/x-ndjson", "text/plain", "application/syslog":
+		return true
+	}
+	return false
 }

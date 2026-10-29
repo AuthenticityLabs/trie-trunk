@@ -1,10 +1,10 @@
 package cache
 
 import (
-	"bytes"
 	"encoding/json"
 	"net/http/httptest"
 	"net/url"
+	"strings"
 	"testing"
 	"time"
 )
@@ -45,7 +45,7 @@ func TestTextQueryPaginationSummariesAndSnapshot(t *testing.T) {
 		t.Fatal(first.Code, first.Body.String())
 	}
 	a := collectView(t, l, h, first.Body.Bytes())
-	if a.result.Summary.Count != 2 || len(a.frames) != 1 || !bytes.Equal(a.frames[0], frames[7]) || len(a.result.Buckets) != 0 || a.result.Next == "" {
+	if a.result.Summary.Count != 2 || len(a.frames) != 1 || !sameSeedData(t, l, a.frames[0], frames[7]) || len(a.result.Buckets) != 0 || a.result.Next == "" {
 		t.Fatalf("bad filtered view %+v", a.result)
 	}
 	if a.result.Summary.Statistics.Duration.Count != 2 {
@@ -56,7 +56,7 @@ func TestTextQueryPaginationSummariesAndSnapshot(t *testing.T) {
 		t.Fatal(next.Body.String())
 	}
 	b := collectView(t, l, h, next.Body.Bytes())
-	if len(b.frames) != 1 || !bytes.Equal(b.frames[0], frames[4]) || b.result.Next != "" {
+	if len(b.frames) != 1 || !sameSeedData(t, l, b.frames[0], frames[4]) || b.result.Next != "" {
 		t.Fatal("descending continuation")
 	}
 	q.Search.Text = "missing"
@@ -163,7 +163,11 @@ func TestLevelAndAccessAreIndependentQueryFields(t *testing.T) {
 		for _, level := range []string{"INFO", "ERROR", "DEBUG", "TRACE"} {
 			q := QueryPlan{Order: "asc", Filters: []QueryFilter{{"access", "==", QueryLiteral{"string", access}}, {"level", "==", QueryLiteral{"string", level}}}}
 			raw, _ := json.Marshal(q)
-			r := httptest.NewRequest("GET", "/events?tap=demo/payment/transactions.v1/*&from=2026-10-20T10:00:00Z&to=2026-10-20T11:00:00Z&include=summary,page&query="+url.QueryEscape(string(raw)), nil)
+			branch, wantCount := "*", uint64(1)
+			if level == "DEBUG" || level == "TRACE" {
+				branch, wantCount = strings.ToLower(level), 0
+			}
+			r := httptest.NewRequest("GET", "/events?tap=demo/payment/transactions.v1/"+branch+"&from=2026-10-20T10:00:00Z&to=2026-10-20T11:00:00Z&include=summary,page&query="+url.QueryEscape(string(raw)), nil)
 			r.Header.Set("Accept", "application/pil")
 			r.Header.Set("PIL-Version", "2")
 			r.Header.Set("PIL-Features", "pac-arrays,adaptive-integers,view-buckets")
@@ -173,7 +177,7 @@ func TestLevelAndAccessAreIndependentQueryFields(t *testing.T) {
 				t.Fatal(w.Code, w.Body.String())
 			}
 			result := collectView(t, l, h, w.Body.Bytes())
-			if result.result.Summary.Count != 1 || len(result.frames) != 1 {
+			if result.result.Summary.Count != wantCount || len(result.frames) != 1 {
 				t.Fatalf("%s/%s: %+v", access, level, result.result)
 			}
 		}

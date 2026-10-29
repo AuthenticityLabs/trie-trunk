@@ -19,12 +19,12 @@ func TestStagingLimitsPreserveAcknowledgedAndAllowRetry(t *testing.T) {
 	defer s.Close()
 	first := testFrame(t, l, now.Add(-time.Minute), 1, false)
 	next := testFrame(t, l, now.Add(time.Second), 2, false)
-	s.policy.Staging = &StagingLimits{MaxRecords: 1, MaxBytes: int64(len(first))}
+	s.policy.Staging = &StagingLimits{MaxRecords: 1, MaxBytes: int64(len(first) + 3)}
 	if _, e = s.Append(Write, first); e != nil {
 		t.Fatal(e)
 	}
-	if dup, e := s.Append(Write, first); !dup || e != nil {
-		t.Fatal("retry of accepted event rejected", e)
+	if dup, e := s.Append(Write, first); dup || !errors.Is(e, ErrStagingFull) {
+		t.Fatal("UUID retry bypassed capacity", e)
 	}
 	if _, e = s.Append(Read, next); !errors.Is(e, ErrStagingFull) {
 		t.Fatal("branch evaded limit", e)

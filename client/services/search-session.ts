@@ -1,11 +1,11 @@
 import type { ViewQuery, ViewResponse } from './pil/view.ts';
 export type { ScrollPosition as Position } from './ui-position.ts';
 import { validPosition, type ScrollPosition as Position } from './ui-position.ts';
+import {activeConnection,connectionScope} from './connections.ts';
 const root = 'snoot:search:workspace';
 type Checkpoint = { credential:string; input:ViewQuery; query:ViewQuery; position:Position; selected?:string };
 export async function credentialScope(token: string): Promise<string> {
-  if (!token) return 'anonymous';
-  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(token));
+  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(connectionScope(activeConnection(),token)));
   return Array.from(new Uint8Array(digest), b => b.toString(16).padStart(2, '0')).join('');
 }
 export function tabStorage(): Storage | undefined {

@@ -5,7 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/fxamacker/cbor/v2"
+	pil "github.com/AuthenticityLabs/pill-packer/go/codec"
 	"trie-trunk/go/codec"
 )
 
@@ -100,7 +100,7 @@ func (tr *trie) prepare(r record, c Config) (record, error) {
 		}
 
 		if len(tr.nodes) >= c.MaxNodes || tr.schema.narrowReferences() && len(tr.nodes) >= 1<<16 {
-			var fields map[codec.Key]cbor.RawMessage
+			var fields map[codec.Key]pil.RawObject
 			if e = decoder.Unmarshal(r.Dynamic, &fields); e != nil {
 				return r, e
 			}

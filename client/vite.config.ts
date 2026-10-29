@@ -11,7 +11,9 @@ export default defineConfig(({ mode }) => {
       port: 5173,
       strictPort: true,
       proxy: Object.fromEntries(
-        ["/collect", "/events", "/summaries", "/schemas", "/caches", "/objects", "/rejections"].map(path => [
+        ["/trunk", "/collect", "/events", "/summaries", "/schemas", "/caches", "/objects", "/collections", "/rejections",
+          '^/(?:[^/]+/)+(?:resource\\.rx|(?:resource|state|read|write|error|debug|trace)\\.(?:tri|sum|idx|tvy|pods))(?:\\?|$)',
+        ].map(path => [
           path, api,
         ]),
       ),

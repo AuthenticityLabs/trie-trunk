@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"github.com/fxamacker/cbor/v2"
+	pil "github.com/AuthenticityLabs/pill-packer/go/codec"
 	"net/http/httptest"
 	"net/url"
 	"os"
@@ -37,6 +37,15 @@ func TestDailySummaryCodec(t *testing.T) {
 		for _, at := range []int{0, 8, 12, 16, 20, 24, 32, len(raw) - 1} {
 			bad := bytes.Clone(raw)
 			bad[at] ^= 255
+			// The compressed PAC wrapper is 16 bytes. Gzip MTIME and XFL
+			// metadata are outside its payload CRC and may change harmlessly.
+			if compressed && (at == 20 || at == 24) {
+				d, f, z, decoded, err := decodeSummaryDay(bad)
+				if err != nil || d != day || f != from || z != to || !reflect.DeepEqual(decoded, got) {
+					t.Fatalf("gzip metadata changed decoded summary at %d: %v", at, err)
+				}
+				continue
+			}
 			if _, _, _, _, e = decodeSummaryDay(bad); e == nil {
 				t.Fatalf("corruption %d", at)
 			}
@@ -48,14 +57,9 @@ func TestDailySummaryCodec(t *testing.T) {
 	if _, e := encodeSummaryDay(0, 0, summaryDayMS, []Summary{sum, sum}, true); e == nil {
 		t.Fatal("duplicate hour")
 	}
-	// An absent hour is explicitly known empty only within certified coverage.
-	raw, e := encodeSummaryDay(0, TimeHourMS, 3*TimeHourMS, nil, true)
-	if e != nil {
-		t.Fatal(e)
-	}
-	_, a, z, got, e := decodeSummaryDay(raw)
-	if e != nil || a != TimeHourMS || z != 3*TimeHourMS || len(got) != 0 {
-		t.Fatal("empty day coverage", e)
+	// A PAC needs at least one summary member to carry its day coverage.
+	if _, e := encodeSummaryDay(0, TimeHourMS, 3*TimeHourMS, nil, true); e == nil {
+		t.Fatal("empty summary PAC accepted")
 	}
 }
 
@@ -140,12 +144,12 @@ func TestDailySummaryRolloverRecoveryAndConcurrentIngress(t *testing.T) {
 	if len(b.summaries) != 24 || len(b.accumulators) != 1 || len(b.summaryDays) != 1 {
 		t.Fatal("recovery lost accumulators or packed day")
 	}
-	if dup, e := s.Append(Write, testFrame(t, l, now, 100, false)); e != nil || !dup {
-		t.Fatal("duplicate", e)
+	if dup, e := s.Append(Write, testFrame(t, l, now, 100, false)); e != nil || dup {
+		t.Fatal("new receipt reused a discarded UUID identity", e)
 	}
 	for _, a := range b.accumulators {
-		if a.columns.Count[0] != 1 {
-			t.Fatal("duplicate inflated accumulator")
+		if a.columns.Count[0] != 2 {
+			t.Fatal("new receipt missing from accumulator")
 		}
 	}
 }
@@ -263,7 +267,7 @@ func TestDailySummaryHTTPFixture(t *testing.T) {
 			t.Fatal(response.Code, response.Body.String())
 		}
 		var packets [][]byte
-		if err := cbor.Unmarshal(response.Body.Bytes(), &packets); err != nil {
+		if err := decodeSummaryTest(response.Body.Bytes(), &packets); err != nil {
 			t.Fatal(err)
 		}
 		if len(packets) != len(refs) {
@@ -380,7 +384,7 @@ func TestDailySummaryRetentionAndDirectDelivery(t *testing.T) {
 		t.Fatal("direct disk delivery after restart", w.Code)
 	} else {
 		var packs [][]byte
-		if err := cbor.Unmarshal(w.Body.Bytes(), &packs); err != nil || len(packs) != 1 || !bytes.Equal(packs[0], oldPacket) {
+		if err := decodeSummaryTest(w.Body.Bytes(), &packs); err != nil || len(packs) != 1 || !bytes.Equal(packs[0], oldPacket) {
 			t.Fatal("changed sealed pack", err)
 		}
 	}
@@ -402,4 +406,24 @@ func requestSummaryPacks(t *testing.T, h *HTTP, refs []summaryPackQuery) *httpte
 	w := httptest.NewRecorder()
 	h.ServeHTTP(w, r)
 	return w
+}
+
+func decodeSummaryTest(raw []byte, out *[][]byte) error {
+	l, err := pil.Compile(pil.Definition{Fields: []pil.Field{{Name: "packs", Type: "ARRAY<BYTES>"}}})
+	if err != nil {
+		return err
+	}
+	var f pil.Frame
+	if err = l.Scan(raw, &f); err != nil {
+		return err
+	}
+	items, err := pil.FieldValue(l.Definition.Fields[0], f.Values[0])
+	if err != nil {
+		return err
+	}
+	*out = make([][]byte, len(items.([]any)))
+	for i, v := range items.([]any) {
+		(*out)[i] = v.([]byte)
+	}
+	return nil
 }

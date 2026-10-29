@@ -160,7 +160,7 @@ func TestPagedViewNegotiationSnapshotAndCache(t *testing.T) {
 		t.Fatalf("first %#v", d)
 	}
 	for i, f := range d.frames {
-		if !bytes.Equal(f, originals[i]) {
+		if !sameSeedData(t, l, f, originals[i]) {
 			t.Fatal("changed frame")
 		}
 	}
@@ -246,9 +246,9 @@ func TestPagedViewNegotiationSnapshotAndCache(t *testing.T) {
 	if unauthorized.Code != 401 {
 		t.Fatal("authorization", unauthorized.Code)
 	}
-	// Summary-only requests don't read .pop values (damage a frame after commit).
+	// Summary-only requests don't read .pods values (damage a frame after commit).
 	b := s.branches[Write]
-	if _, e = b.pop.WriteAt([]byte{255, 255, 255, 255}, headerSize); e != nil {
+	if _, e = b.pods.WriteAt([]byte{255, 255, 255, 255}, headerSize); e != nil {
 		t.Fatal(e)
 	}
 	summary := get(path+"&include=summary", nil)
@@ -263,7 +263,7 @@ func TestPagedViewNegotiationSnapshotAndCache(t *testing.T) {
 		if e = os.MkdirAll(dir, 0755); e != nil {
 			t.Fatal(e)
 		}
-		for name, raw := range map[string][]byte{"cold.pil.gz": compressed.Body.Bytes(), "warm.pil.gz": warmCompressed.Body.Bytes(), "next.pil.gz": nextCompressed, "next.pil": nextFixture, "cold.pil": first.Body.Bytes(), "warm.pil": warm.Body.Bytes(), "definition.cbor": l.Bytes} {
+		for name, raw := range map[string][]byte{"cold.pil.gz": compressed.Body.Bytes(), "warm.pil.gz": warmCompressed.Body.Bytes(), "next.pil.gz": nextCompressed, "next.pil": nextFixture, "cold.pil": first.Body.Bytes(), "warm.pil": warm.Body.Bytes(), "definition.rx": l.Bytes} {
 			if e = os.WriteFile(filepath.Join(dir, name), raw, 0644); e != nil {
 				t.Fatal(e)
 			}

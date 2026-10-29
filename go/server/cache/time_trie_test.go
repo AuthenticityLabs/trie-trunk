@@ -10,7 +10,7 @@ import (
 )
 
 func timeRun(ms int64, start, events uint64) Run {
-	return Run{Start: start + 1, End: start + 1 + events, MinMS: ms, MaxMS: ms, PAC: &StoredPAC{Placement: PACPlacement{From: ms, To: ms + TimeHourMS, MemberStart: 4}}}
+	return Run{Start: start + 1, End: start + 1 + events, MinMS: ms, MaxMS: ms, PAC: &StoredPAC{Placement: PACPlacement{From: ms, To: ms + TimeHourMS, MemberStart: 4 + 4*events}}}
 }
 
 func TestPositionalTimeTrieNullZeroAndHourlySegments(t *testing.T) {
@@ -36,8 +36,8 @@ func TestPositionalTimeTrieNullZeroAndHourlySegments(t *testing.T) {
 	if !bytes.Equal(tree.raw[unused:unused+TimeTrieDayBytes], make([]byte, TimeTrieDayBytes)) {
 		t.Fatal("non-leap day 366 not blank")
 	}
-	if !bytes.Equal(tree.raw[TimeTrieHeader+366*TimeTrieDayBytes+365*24:], make([]byte, 24)) {
-		t.Fatal("unused day is marked complete")
+	if len(tree.raw) != TimeTrieHeader+366*TimeTrieDayBytes {
+		t.Fatal("server time trie contains a client status tail")
 	}
 	if os.Getenv("UPDATE_TIME_TRIE_FIXTURE") == "1" {
 		dir := "../../../client/services/fixtures/time-trie"

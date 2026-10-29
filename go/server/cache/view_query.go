@@ -338,7 +338,7 @@ func matchBoundQuery(l *Layout, frame *Frame, q *QueryPlan, bound []boundQueryFi
 		if f.Type == "STRING" && len(f.Values) == 0 && strings.Contains(strings.ToLower(string(v.Bytes)), needle) {
 			return true
 		}
-		if f.Type == "ARRAY<STRING>" || f.Type == "ARRAY<CBOR>" {
+		if f.Type == "ARRAY<STRING>" || f.Type == "ARRAY<OBJECT>" {
 			at := 0
 			n, e := readExtended(v.Bytes, &at)
 			if e != nil {
@@ -364,7 +364,7 @@ func matchBoundQuery(l *Layout, frame *Frame, q *QueryPlan, bound []boundQueryFi
 				}
 			}
 		}
-		if f.Type == "CBOR" {
+		if f.Type == "OBJECT" {
 			var value any
 			if decoder.Unmarshal(v.Bytes, &value) == nil && containsText(value, needle) {
 				return true
@@ -418,7 +418,15 @@ func (s *viewSource) filterQuery(ctx context.Context, q *QueryPlan) error {
 			}
 			identityMatch := true
 			for _, f := range identityBound {
-				if !f.matches(l, Value{Direct, s.eventID(row)}) {
+				raw, err := s.fullFrame(row)
+				if err != nil {
+					return err
+				}
+				var identityFrame Frame
+				if err = l.Scan(raw, &identityFrame); err != nil {
+					return err
+				}
+				if !f.matches(l, identityFrame.Values[l.Event]) {
 					identityMatch = false
 					break
 				}
@@ -457,9 +465,12 @@ func (s *viewSource) filterQuery(ctx context.Context, q *QueryPlan) error {
 }
 func filteredSummary(summary *ViewSummary, sources []*viewSource) {
 	for _, s := range sources {
+		if !s.branch.Aggregates() {
+			continue
+		}
 		for _, span := range s.ranges {
 			for row := span.at; row < span.end; row++ {
-				i := (eventTime(s.eventID(row)) - summary.From) / summary.Step
+				i := (eventTime(s.orderingKey(row)) - summary.From) / summary.Step
 				if i >= 0 && i < int64(len(summary.Counts)) {
 					summary.Count++
 					summary.Counts[i]++
@@ -474,7 +485,7 @@ func filteredSummary(summary *ViewSummary, sources []*viewSource) {
 
 // compareEvent orders canonical references, independent of the index providing them.
 func compareEvent(sources []*viewSource, a, b viewHit) int {
-	if n := bytes.Compare(sources[a.source].eventID(a.row), sources[b.source].eventID(b.row)); n != 0 {
+	if n := bytes.Compare(sources[a.source].orderingKey(a.row), sources[b.source].orderingKey(b.row)); n != 0 {
 		return n
 	}
 	if a.source < b.source {
@@ -492,7 +503,7 @@ func compareEvent(sources []*viewSource, a, b viewHit) int {
 	return 0
 }
 
-// Object identity equality uses the optional collection index, never a population
+// Object identity equality uses the optional collection index, never a payload
 // scan to discover object membership. Pending records retain provisional locators.
 func (s *viewSource) objectQueryCandidates(q *QueryPlan) error {
 	l := s.api.Store.layout
@@ -561,7 +572,7 @@ func (s *viewSource) objectQueryCandidates(q *QueryPlan) error {
 			if span.end > s.binding.Tail {
 				var frame Frame
 				for row := max(span.at, s.binding.Tail); row < span.end; row++ {
-					if err := l.IdentityFrame(s.pending[row-s.binding.Tail].frame, &frame); err != nil {
+					if err := l.Scan(s.pending[row-s.binding.Tail].frame, &frame); err != nil {
 						return err
 					}
 					if frame.Values[l.Revision].State == Direct {

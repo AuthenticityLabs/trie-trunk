@@ -1,7 +1,6 @@
 export function summaryArray(packs) {
-  const head=(major,n)=>n<24?Buffer.from([major<<5|n]):n<=255?Buffer.from([major<<5|24,n]):n<=65535?Buffer.from([major<<5|25,n>>8,n&255]):Buffer.from([major<<5|26,n>>>24,n>>>16&255,n>>>8&255,n&255]);
-  return Buffer.concat([head(4,packs.length),...packs.flatMap(p=>[head(2,p.length),p])]);
+ const ext=n=>{if(n<65535){const b=Buffer.alloc(2);b.writeUInt16LE(n);return b}const b=Buffer.alloc(6);b.writeUInt16LE(65535);b.writeUInt32LE(n,2);return b};
+ let end=0;const array=Buffer.concat([ext(packs.length),...packs.map(p=>ext(end+=p.length))]);
+ return Buffer.concat([Buffer.from([0xc0]),ext(array.length+end),array,...packs]);
 }
-export function summaryResponse(packs) {
-  return new Response(summaryArray(packs),{headers:{'Content-Type':'application/cbor'}});
-}
+export function summaryResponse(packs) {return new Response(summaryArray(packs),{headers:{'Content-Type':'application/pil'}})}

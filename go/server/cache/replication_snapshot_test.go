@@ -8,7 +8,7 @@ import (
 )
 
 func TestNativeSnapshotDoesNotBlockWriterOrRetention(t *testing.T) {
-	for _, mode := range []string{"all", "population-only", "fully-covered"} {
+	for _, mode := range []string{"all", "payload-only", "fully-covered"} {
 		t.Run(mode, func(t *testing.T) { testNativeSnapshot(t, mode) })
 	}
 }
@@ -25,7 +25,7 @@ func testNativeSnapshot(t *testing.T, mode string) {
 	if _, e = s.Append(Write, testFrame(t, l, at, 1, false)); e != nil {
 		t.Fatal(e)
 	}
-	request := CollectionRequest{Branch: Write, At: at, PopulationFrom: at, PopulationTo: at.Add(time.Hour)}
+	request := CollectionRequest{Branch: Write, At: at, DataFrom: at, DataTo: at.Add(time.Hour)}
 	if mode != "all" {
 		var have Manifest
 		if e = s.Collect(context.Background(), request, func(m Manifest) error { have = m; return nil }, func(NativeChunk) error { return nil }); e != nil {
@@ -33,7 +33,7 @@ func testNativeSnapshot(t *testing.T, mode string) {
 		}
 		request.Have = Coverage{Definition: have.Definition, Generation: have.Generation, Index: have.Index, TrieNodes: have.TrieNodes}
 		if mode == "fully-covered" {
-			request.Have.Population = have.Population
+			request.Have.MemberRanges = have.MemberRanges
 		}
 	}
 	var expected []NativeChunk

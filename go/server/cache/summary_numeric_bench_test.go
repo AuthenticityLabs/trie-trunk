@@ -13,6 +13,7 @@ import (
 	"reflect"
 	"sort"
 	"testing"
+	"time"
 )
 
 // Previous all-U64 format exists only in tests, not as a production fallback.
@@ -103,6 +104,190 @@ func baselineDecodeDay(raw []byte) (sums []Summary, err error) {
 	}
 	return
 }
+
+// legacyColumnarDay reproduces the immediately preceding SUMDAY00 encoder for
+// a matched-format benchmark. It is test-only and is never accepted by runtime.
+func legacyColumnarDay(day, from, to int64, sums []Summary, compressed bool, level int) ([]byte, error) {
+	enc, err := chooseSummaryEncoding(sums, compressed)
+	if err != nil {
+		return nil, err
+	}
+	totals, errors, err := summaryTotals(sums)
+	if err != nil {
+		return nil, err
+	}
+	const directory = 16 + 24*12 + summaryRollupSize + summaryEncodingSize
+	var chunks [24][]byte
+	size := directory
+	for _, sum := range sums {
+		raw, e := encodeSummaryColumns(sum, &enc)
+		if e != nil {
+			return nil, e
+		}
+		if compressed {
+			if e = shuffleSummary(raw, enc, false); e != nil {
+				return nil, e
+			}
+		}
+		h := int((utcHour(sum.Columns.Period[0]) - day) / TimeHourMS)
+		if h < 0 || h >= len(chunks) || chunks[h] != nil {
+			return nil, fmt.Errorf("invalid legacy hour")
+		}
+		chunks[h] = raw
+		size += len(raw)
+	}
+	body := make([]byte, size)
+	order.PutUint64(body, uint64(from))
+	order.PutUint64(body[8:], uint64(to))
+	putSummaryTotals(body[304:], totals, errors)
+	enc.put(body[304+summaryRollupSize:])
+	cursor := directory
+	for h, raw := range chunks {
+		d := 16 + h*12
+		at := day + int64(h)*TimeHourMS
+		if at >= from && at < to {
+			order.PutUint32(body[d+8:], 1)
+		}
+		if raw == nil {
+			continue
+		}
+		order.PutUint32(body[d:], uint32(cursor))
+		order.PutUint32(body[d+4:], uint32(len(raw)))
+		copy(body[cursor:], raw)
+		cursor += len(raw)
+	}
+	stored := body
+	if compressed {
+		var out bytes.Buffer
+		z, e := gzip.NewWriterLevel(&out, level)
+		if e != nil {
+			return nil, e
+		}
+		if _, e = z.Write(body); e != nil {
+			return nil, e
+		}
+		if e = z.Close(); e != nil {
+			return nil, e
+		}
+		stored = out.Bytes()
+	}
+	raw := make([]byte, 32+len(stored))
+	copy(raw, "SUMDAY00")
+	if compressed {
+		raw[8], raw[9], raw[10] = 1, 1, 1
+	}
+	order.PutUint32(raw[12:], uint32(len(raw)))
+	order.PutUint32(raw[16:], uint32(len(body)))
+	order.PutUint32(raw[20:], crc32.Checksum(body, checksum))
+	order.PutUint64(raw[24:], uint64(day))
+	copy(raw[32:], stored)
+	return raw, nil
+}
+
+func legacyDecodeColumnarDay(raw []byte) (sums []Summary, err error) {
+	body := raw[32:]
+	if raw[8] == 1 {
+		z, e := gzip.NewReader(bytes.NewReader(body))
+		if e != nil {
+			return nil, e
+		}
+		body, e = io.ReadAll(io.LimitReader(z, maxSummaryDay+1))
+		closeErr := z.Close()
+		if e != nil {
+			return nil, e
+		}
+		if closeErr != nil {
+			return nil, closeErr
+		}
+	}
+	if crc32.Checksum(body, checksum) != order.Uint32(raw[20:]) {
+		return nil, fmt.Errorf("legacy checksum")
+	}
+	enc, err := readSummaryEncoding(body[304+summaryRollupSize:])
+	if err != nil {
+		return nil, err
+	}
+	const directory = 16 + 24*12 + summaryRollupSize + summaryEncodingSize
+	for h := 0; h < 24; h++ {
+		d := body[16+h*12:]
+		a, n := int(order.Uint32(d)), int(order.Uint32(d[4:]))
+		if n == 0 {
+			continue
+		}
+		if a < directory || n > len(body)-a {
+			return nil, fmt.Errorf("legacy member range")
+		}
+		chunk := bytes.Clone(body[a : a+n])
+		if raw[10] == 1 {
+			if err = shuffleSummary(chunk, enc, true); err != nil {
+				return nil, err
+			}
+		}
+		var sum Summary
+		if err = decodeSummaryColumns(chunk, &sum, &enc); err != nil {
+			return nil, err
+		}
+		sums = append(sums, sum)
+	}
+	return sums, nil
+}
+
+func BenchmarkSummaryDayPACTransition(b *testing.B) {
+	at, sums := summaryBenchDay(b)
+	for _, version := range []string{"sumday", "pil-pac"} {
+		for _, level := range []int{0, 1, 6} {
+			compressed := level != 0
+			codecLevel := max(level, 1)
+			encode := func() ([]byte, error) {
+				if version == "sumday" {
+					return legacyColumnarDay(at.UnixMilli(), at.UnixMilli(), at.Add(24*time.Hour).UnixMilli(), sums, compressed, codecLevel)
+				}
+				return encodeSummaryDayLevel(at.UnixMilli(), at.UnixMilli(), at.Add(24*time.Hour).UnixMilli(), sums, compressed, codecLevel)
+			}
+			raw, err := encode()
+			if err != nil {
+				b.Fatal(err)
+			}
+			decode := func() error {
+				var got []Summary
+				var e error
+				if version == "sumday" {
+					got, e = legacyDecodeColumnarDay(raw)
+				} else {
+					_, _, _, got, e = decodeSummaryDay(raw)
+				}
+				if e != nil {
+					return e
+				}
+				if !reflect.DeepEqual(got, sums) {
+					return fmt.Errorf("semantic mismatch")
+				}
+				return nil
+			}
+			if err = decode(); err != nil {
+				b.Fatal(err)
+			}
+			b.Run(fmt.Sprintf("%s/gzip%d/encode", version, level), func(b *testing.B) {
+				b.ReportAllocs()
+				b.ReportMetric(float64(len(raw)), "bytes/day")
+				for i := 0; i < b.N; i++ {
+					if _, err := encode(); err != nil {
+						b.Fatal(err)
+					}
+				}
+			})
+			b.Run(fmt.Sprintf("%s/gzip%d/decode", version, level), func(b *testing.B) {
+				b.ReportAllocs()
+				for i := 0; i < b.N; i++ {
+					if err := decode(); err != nil {
+						b.Fatal(err)
+					}
+				}
+			})
+		}
+	}
+}
+
 func BenchmarkSummaryNumericCodec(b *testing.B) {
 	at, dense := summaryBenchDay(b)
 	// Already-sealed representative low-volume day from the prior deployment.

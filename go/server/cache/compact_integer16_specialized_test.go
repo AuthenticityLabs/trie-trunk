@@ -20,7 +20,7 @@ func compact16Code(b []byte, signed bool) byte {
 func (a *fastIntegerLayout) encode16(dst []byte, values []Value, compact bool) ([]byte, error) {
 	// The original fixed encoder is already a single-pass append fast path when capacity is reused.
 	if !compact && cap(dst) > 0 {
-		return a.reference.base.Encode(dst, values)
+		return a.reference.base.Layout.Encode(dst, values)
 	}
 	if len(values) != len(a.fields) {
 		return nil, fmt.Errorf("field count mismatch")

@@ -107,7 +107,7 @@ func TestAddressTradeoffFixture(t *testing.T) {
 					fixture.Docs = append(fixture.Docs, doc)
 					fixture.Headers = append(fixture.Headers, header)
 					r := make([]byte, 16)
-					mustAddress(t, packIndexID(r, id, base))
+					mustAddress(t, benchmarkPackUUID(r, id, base))
 					compact = append(compact, r...)
 					r = make([]byte, 20)
 					copy(r, id[:])
@@ -145,7 +145,7 @@ func TestAddressTradeoffFixture(t *testing.T) {
 			for i, d := range fixture.Docs {
 				h := fixture.Headers[i]
 				at := int(d.Row)
-				id := unpackIndexID(compact[at*16:], int64(order.Uint64(compact[int(h)*16+4:])))
+				id := benchmarkUnpackUUID(compact[at*16:], int64(order.Uint64(compact[int(h)*16+4:])))
 				if !bytes.Equal(id[:], full[at*20:at*20+16]) {
 					t.Fatal("UUID round trip")
 				}
@@ -218,7 +218,7 @@ func BenchmarkAddressTradeoff(b *testing.B) {
 				runs = append(runs, Run{Start: uint64(h + 1), End: uint64(h + per + 1), PAC: &StoredPAC{Placement: PACPlacement{From: base}}})
 			}
 			id := [16]byte(uuid(base+int64(i%per), uint32(i)).Bytes)
-			mustAddress(b, packIndexID(compact[row*16:], id, base))
+			mustAddress(b, benchmarkPackUUID(compact[row*16:], id, base))
 			copy(full[row*20:], id[:])
 			order.PutUint32(compact[row*16+12:], uint32(i%per+1)*80)
 			order.PutUint32(full[row*20+16:], uint32(i%per+1)*80)
@@ -251,12 +251,12 @@ func BenchmarkAddressTradeoff(b *testing.B) {
 								base = int64(order.Uint64(compact[header*16+4:]))
 								last = header
 							}
-							benchUUID = unpackIndexID(compact[row*16:], base)
+							benchUUID = benchmarkUnpackUUID(compact[row*16:], base)
 							benchLength = order.Uint32(compact[row*16+12:]) - order.Uint32(compact[row*16-4:])
 						case "compact_direct_control":
 							row := uint64(direct[j])
 							base = ctx.segment(&source, row).PAC.Placement.From
-							benchUUID = unpackIndexID(compact[row*16:], base)
+							benchUUID = benchmarkUnpackUUID(compact[row*16:], base)
 							benchLength = order.Uint32(compact[row*16+12:]) - order.Uint32(compact[row*16-4:])
 						case "full_direct", "full_direct_pac_context":
 							row := int(direct[j])
@@ -279,7 +279,7 @@ func BenchmarkAddressTradeoff(b *testing.B) {
 					delta := int64((i * 71) % per)
 					base := int64(1790002800000) + int64(seg)*3600000
 					if mode == "compact" {
-						benchOrdinal = sort.Search(per, func(k int) bool { return indexDelta(compact[(start+k)*16:]) >= delta })
+						benchOrdinal = sort.Search(per, func(k int) bool { return benchmarkUUIDDelta(compact[(start+k)*16:]) >= delta })
 					} else if mode == "full" {
 						target := uint64(base + delta)
 						benchOrdinal = sort.Search(per, func(k int) bool { return binary.BigEndian.Uint64(full[(start+k)*20:])>>16 >= target })
@@ -457,11 +457,46 @@ func BenchmarkAddressCollectionLookup(b *testing.B) {
 				row := int(uint64(a.Hour) + uint64(a.Record)) // Historical header-row/displacement benchmark only.
 				if variant == 0 {
 					base := int64(order.Uint64(rows[int(a.Hour)*16+4:]))
-					benchUUID = unpackIndexID(rows[row*16:], base)
+					benchUUID = benchmarkUnpackUUID(rows[row*16:], base)
 				} else {
 					benchUUID = [16]byte(rows[row*20 : row*20+16])
 				}
 			}
 		})
 	}
+}
+
+// Historical layout for measuring alternatives only; no runtime fallback.
+func benchmarkUUIDDelta(row []byte) int64 {
+	return int64(uint32(row[0])<<14 | uint32(row[1])<<6 | uint32(row[2])>>2)
+}
+func benchmarkPackUUID(row []byte, id [16]byte, base int64) error {
+	delta := eventTime(id[:]) - base
+	hi := uint64(delta)<<42 | uint64(id[6]&15)<<38 | uint64(id[7])<<30 | uint64(id[8]&63)<<24 | uint64(id[9])<<16 | uint64(id[10])<<8 | uint64(id[11])
+	for i := 7; i >= 0; i-- {
+		row[i] = byte(hi)
+		hi >>= 8
+	}
+	copy(row[8:12], id[12:])
+	return nil
+}
+func benchmarkUnpackUUID(row []byte, base int64) [16]byte {
+	var id [16]byte
+	ms := base + benchmarkUUIDDelta(row)
+	for i := 5; i >= 0; i-- {
+		id[i] = byte(ms)
+		ms >>= 8
+	}
+	var hi uint64
+	for _, b := range row[:8] {
+		hi = hi<<8 | uint64(b)
+	}
+	id[6] = 0x70 | byte(hi>>38)&15
+	id[7] = byte(hi >> 30)
+	id[8] = 0x80 | byte(hi>>24)&63
+	id[9] = byte(hi >> 16)
+	id[10] = byte(hi >> 8)
+	id[11] = byte(hi)
+	copy(id[12:], row[8:12])
+	return id
 }

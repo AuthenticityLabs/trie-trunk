@@ -1,7 +1,6 @@
 package cache
 
 import (
-	"bytes"
 	"context"
 	"errors"
 	"os"
@@ -65,7 +64,7 @@ func TestSealWaitDoesNotBlockIngressOrReplay(t *testing.T) {
 	done := make(chan error, 1)
 	go func() { _, err := s.Append(Write, second); done <- err }()
 	awaitResult(t, done)
-	if duplicate, err := s.Append(Write, first); err != nil || !duplicate {
+	if duplicate, err := s.Append(Write, first); err == nil || duplicate {
 		t.Fatal("frozen duplicate", duplicate, err)
 	}
 	// A different event claiming the same revision is still rejected while the
@@ -93,7 +92,7 @@ func TestSealWaitDoesNotBlockIngressOrReplay(t *testing.T) {
 	count := 0
 	if err = h.visitBorrowed(context.Background(), func(_ EventReference, raw []byte) error {
 		count++
-		if !bytes.Equal(raw, first) && !bytes.Equal(raw, second) {
+		if !sameSeedData(t, l, raw, first) && !sameSeedData(t, l, raw, second) {
 			t.Error("snapshot bytes changed")
 		}
 		return nil
@@ -216,7 +215,7 @@ func TestSealCrashPublication(t *testing.T) {
 				t.Fatal(e)
 			}
 			got := collect(t, s, Read, at, at.Add(time.Hour))
-			if len(got) != 1 || !bytes.Equal(got[0], raw) {
+			if len(got) != 1 || !sameSeedData(t, l, got[0], raw) {
 				t.Fatal("lost or duplicated record after crash")
 			}
 		})
@@ -237,7 +236,7 @@ func TestNativeLiveLimitAndRetainedIdentity(t *testing.T) {
 	if _, e = s.Append(Read, first); e != nil {
 		t.Fatal(e)
 	}
-	if duplicate, err := s.Append(Read, first); err != nil || !duplicate {
+	if duplicate, err := s.Append(Read, first); !errors.Is(err, ErrStagingFull) || duplicate {
 		t.Fatal("retry consumed capacity")
 	}
 	if _, e = s.Append(Read, testFrame(t, l, at.Add(time.Second), 2, false)); !errors.Is(e, ErrStagingFull) {

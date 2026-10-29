@@ -1,7 +1,6 @@
 package cache
 
 import (
-	"bytes"
 	"context"
 	"encoding/hex"
 	"encoding/json"
@@ -191,7 +190,7 @@ func TestCollectionRecentHistoryBypassesDisk(t *testing.T) {
 	count := 0
 	err = p.History(context.Background(), l.Definition.Identity, 1, testObject(42), at, now, func(_ EventReference, got []byte) error {
 		count++
-		if !bytes.Equal(raw, got) {
+		if !sameSeedData(t, l, raw, got) {
 			t.Fatal("frame changed")
 		}
 		return nil

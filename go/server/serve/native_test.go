@@ -259,7 +259,7 @@ func TestPILLoggerRegistrationTransports(t *testing.T) {
 			request.Header.Set("Authorization", "Bearer secret")
 			request.Header.Set("Accept", "application/pil")
 			request.Header.Set("PIL-Version", "2")
-			request.Header.Set("PIL-Features", "adaptive-integers,pac-arrays,"+cache.CompressionFeature)
+			request.Header.Set("PIL-Features", "adaptive-integers,pac-arrays")
 			response, e := (&http.Client{Transport: transport}).Do(request)
 			if e != nil {
 				t.Fatal(e)

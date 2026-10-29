@@ -42,12 +42,12 @@ test('sealed views collect a complete hour and expose canonical bytes without se
   if(url.startsWith('/collect?')){collects++;assert.equal(new URL(url,'https://test').searchParams.get('definition'),binding.digest);return new Response(wire,{headers:{'Content-Type':'application/pil','PIL-Version':'2','Definition-Version':binding.digest,'Trunk-Format':'native-pac/0','Trunk-Completion':'body'}})}
   return new Response(viewWire(),{headers:{'Content-Type':'application/pil','PIL-Version':'2','Trunk-Format':'pac-view/0','Trunk-Completion':'body'}});
  });
- const query={tap:binding.tap,from:new Date(from).toISOString(),to:new Date(to).toISOString(),size:1,include:'page'};
+ const query={engine:'tantivy',tap:binding.tap,from:new Date(from).toISOString(),to:new Date(to).toISOString(),size:1,include:'page'};
  const view=await cache.query(query,'',new AbortController().signal,codec,definitions,archive);
- assert.equal(collects,1);assert.equal(view.native[0].row.length,16);
+ assert.equal(collects,1);assert.equal(view.native[0].row.length,6);
  const event=viewEvents(view)[0];assert.equal(valueAt(event,'revision_id'),3);assert.equal(event.millis,from+20*60000);
  const source=(await backend.list())[0];assert.deepEqual(committedRanges(source).index,[{Start:1,End:7}]);
- const original=records.find(r=>r.kind==='chunk'&&r.file==='index').bytes.subarray(2*16,3*16);
+ const original=records.find(r=>r.kind==='chunk'&&r.file==='index').bytes.subarray(2*6,3*6);
  assert.deepEqual(view.native[0].row,original,'client rewrote canonical index bytes');
  const clone=structuredClone(view);assert.equal(valueAt(viewEvents(clone)[0],'message'),'request completed');
  await cache.query(query,'',new AbortController().signal,codec,definitions,archive);assert.equal(collects,1,'already complete hour fetched again');
@@ -70,7 +70,7 @@ test('sealed views collect a complete hour and expose canonical bytes without se
  const grouped=await cache.query({...query,size:3},'',new AbortController().signal,codec,definitions,archive);
  assert.equal(reads-beforeReads,1,'one storage command per hour, not per event');
  assert.equal(collects,2,'already collected hour was downloaded again');
- positions.forEach((row,i)=>assert.deepEqual(grouped.native[i].row,originalPage.rows.subarray((row-1)*16,row*16),'global query order changed'));
+ positions.forEach((row,i)=>assert.deepEqual(grouped.native[i].row,originalPage.rows.subarray((row-1)*6,row*6),'global query order changed'));
  let opens=0;const file=backend.file.bind(backend);
  backend.file=async(...args)=>{opens++;return file(...args)};
  const individual=[];
@@ -78,8 +78,8 @@ test('sealed views collect a complete hour and expose canonical bytes without se
  assert.equal(opens,6);
  opens=0;
  const batch=await store.records(source.key,from,to,[1,3,6]);
- assert.equal(opens,2,'batch must open index and population just once');
- individual.forEach((page,i)=>assert.deepEqual(batch.population.subarray(batch.offsets[i*2],batch.offsets[i*2+1]),page.population));
+ assert.equal(opens,2,'batch must open index and payload just once');
+ individual.forEach((page,i)=>assert.deepEqual(batch.payload.subarray(batch.offsets[i*2],batch.offsets[i*2+1]),page.payload));
  await assert.rejects(store.records(source.key,from,to,[3,1]),/Invalid native record selection/);
  await assert.rejects(store.records(source.key,from,to,[1,1]),/Invalid native record selection/);
  await assert.rejects(store.records(source.key,from,to,[1,7]),/Missing canonical search record/);
@@ -112,13 +112,13 @@ test('sealed page overlaps at most four hour collections and batches rows withou
   if(c.kind==='native-dependencies')return {nativeDependencies:{source:{digest:binding.digest,generation},trie:[]}};
   if(c.kind==='native-rows'){
    reads++;assert.equal(c.rows.length,2);assert.ok(c.rows[0]<c.rows[1]);
-   const rows=new Uint8Array(c.rows.length*16);c.rows.forEach((row,i)=>{rows[i*16]=row});
-   return {nativePage:{rows,population:Uint8Array.from(c.rows),offsets:Uint32Array.from(c.rows.flatMap((_,i)=>[i,i+1])),bases:new Float64Array(c.rows.length).fill(c.from),after:c.rows.at(-1),done:true}};
+   const rows=new Uint8Array(c.rows.length*6);c.rows.forEach((row,i)=>{rows[i*6]=row});
+   return {nativePage:{rows,payload:Uint8Array.from(c.rows),offsets:Uint32Array.from(c.rows.flatMap((_,i)=>[i,i+1])),bases:new Float64Array(c.rows.length).fill(c.from),after:c.rows.at(-1),done:true}};
   }
   if(c.kind==='native-page')assert.fail('per-event read');
   return {};
  };
- const result=await cache.query({tap:binding.tap,from:new Date(from).toISOString(),to:new Date(from+6*3600000).toISOString(),size:12,include:'page'},'',new AbortController().signal,codec,definitions,archive);
+ const result=await cache.query({engine:'tantivy',tap:binding.tap,from:new Date(from).toISOString(),to:new Date(from+6*3600000).toISOString(),size:12,include:'page'},'',new AbortController().signal,codec,definitions,archive);
  assert.equal(peak,4);assert.equal(collects,6);assert.equal(reads,6);
  assert.deepEqual(result.native.map(record=>record.row[0]),refs.map(ref=>ref.row));
  assert.deepEqual([...new Uint8Array(result.batch.bytes)],refs.map(ref=>ref.row));
@@ -140,7 +140,7 @@ test('search discovers every conflicting resource beyond the four concurrent col
   throw new NativeCacheError('conflict',{code:'native-cache-conflict',source,reason:'generation-fork'});
  });
  const archive=async()=>({});
- await assert.rejects(cache.query({tap:'',from:new Date(from).toISOString(),to:new Date(from+7200000).toISOString(),size:12},'',new AbortController().signal,codec,definitions,archive),error=>{
+ await assert.rejects(cache.query({engine:'tantivy',tap:'',from:new Date(from).toISOString(),to:new Date(from+7200000).toISOString(),size:12},'',new AbortController().signal,codec,definitions,archive),error=>{
   assert.ok(nativeCacheIssue(error),error.message);assert.deepEqual(nativeCacheIssue(error).conflicts.map(c=>c.source).sort(),taps);return true;
  });
  assert.deepEqual([...new Set(calls)].sort(),taps,'later resources must still be checked');

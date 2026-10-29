@@ -142,7 +142,7 @@ func run() error {
 			r[11] = uint64(i % 5000)
 		}
 		// Sparse fixtures retain the same envelope but have just the changed state.
-		frame, e := codec.MarshalCompact(r, codec.CBOR)
+		frame, e := codec.MarshalCompact(r, codec.PIL)
 		if e != nil {
 			return e
 		}
@@ -254,7 +254,7 @@ func run() error {
 		}
 		out.Query[q.Name] = metric
 	}
-	out.Notes = []string{"Source records generated and definitions installed before ingest timing.", "Ingest includes CBOR decode, trie insertion, population/index/summary writes and final durable close.", "Reopen includes store recovery; query latency is warm resident Rust PIL return over local IPC, not HTTP or browser rendering.", "Operating-system page cache is not flushed; no physical-disk-cold latency claim.", "Percentiles describe the recorded sample set, not a production latency SLA.", "Logical bytes include metadata and summaries; filesystem allocation is not inferred from file length."}
+	out.Notes = []string{"Source records generated and definitions installed before ingest timing.", "Ingest includes PIL decode, trie insertion, payload/index/summary writes and final durable close.", "Reopen includes store recovery; query latency is warm resident Rust PIL return over local IPC, not HTTP or browser rendering.", "Operating-system page cache is not flushed; no physical-disk-cold latency claim.", "Percentiles describe the recorded sample set, not a production latency SLA.", "Logical bytes include metadata and summaries; filesystem allocation is not inferred from file length."}
 	data, err := json.MarshalIndent(out, "", "  ")
 	if err != nil {
 		return err

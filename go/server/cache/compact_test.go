@@ -15,7 +15,7 @@ func TestCompactRowsAndEncodedAssembly(t *testing.T) {
 		// Event identity need not be the first definition field. Exercise offset
 		// tables, arrays, CBOR, literal dictionary escapes and all presence states.
 		d.Fields[0], d.Fields[5] = d.Fields[5], d.Fields[0]
-		d.Fields = append(d.Fields, Field{Name: "tags", Type: "ARRAY<STRING>"}, Field{Name: "details", Type: "CBOR"})
+		d.Fields = append(d.Fields, Field{Name: "tags", Type: "ARRAY<STRING>"}, Field{Name: "details", Type: "OBJECT"})
 		var err error
 		l, err = Compile(d)
 		if err != nil {
@@ -42,7 +42,7 @@ func TestCompactRowsAndEncodedAssembly(t *testing.T) {
 			tags = extended(tags, 0)
 			tags = extended(tags, 3)
 			tags = append(tags, []byte("abc")...)
-			f.Values = append(f.Values, Value{Offset, tags}, Value{Offset, []byte{0xa1, 0x01, 0xf6}})
+			f.Values = append(f.Values, Value{Offset, tags}, Value{Offset, mustObject(t, map[uint16]any{1: nil})})
 			switch i {
 			case 0:
 				f.Values[l.Object] = Value{}
@@ -76,10 +76,10 @@ func TestCompactRowsAndEncodedAssembly(t *testing.T) {
 		}
 		b := s.branches[Write]
 		assembler := frameAssembler{layout: l, trie: &s.trie}
-		var reader populationReader
+		var reader podsReader
 		last := uint64(headerSize)
 		for n := b.nextRecord(0); n < b.tail(); n = b.nextRecord(n + 1) {
-			start, end, e := b.populationRange(n, s.row)
+			start, end, e := b.podsRange(n, s.row)
 			if e != nil || (n == b.runs[b.runIndex(n)].Start && start != last) {
 				t.Fatalf("physical bounds %d %d %v", start, last, e)
 			}
@@ -93,11 +93,11 @@ func TestCompactRowsAndEncodedAssembly(t *testing.T) {
 				t.Fatal(e)
 			}
 			row := b.assemblyRow(uint64(n))
-			want, e := s.expandFrame(row, &f, nil)
+			want, e := s.expandFrame(row, &f, nil, b.rowLeaf(n))
 			if e != nil {
 				t.Fatal(e)
 			}
-			got, e := assembler.assemble(row, raw, nil)
+			got, e := assembler.assemble(row, raw, nil, b.rowLeaf(n))
 			if e != nil || !bytes.Equal(got, want) {
 				t.Fatalf("encoded assembly: %v", e)
 			}
@@ -111,22 +111,22 @@ func TestCompactRowsAndEncodedAssembly(t *testing.T) {
 			}
 			for _, i := range []int{l.Object, l.Revision} {
 				if !l.equal(i, stored.Values[i], full.Values[i]) {
-					t.Fatal("identity missing from population")
+					t.Fatal("identity missing from payload")
 				}
 			}
 		}
 		if reader.reads != uint64(len(b.runs)) {
-			t.Fatalf("contiguous population read %d times", reader.reads)
+			t.Fatalf("contiguous payload read %d times", reader.reads)
 		}
 		got := collect(t, s, Write, at, at.Add(time.Hour))
 		for i := range originals {
-			if !bytes.Equal(got[i], originals[i]) {
+			if !sameSeedData(t, l, got[i], originals[i]) {
 				t.Fatalf("late-run result %d", i)
 			}
 		}
 		got = collect(t, s, Write, at.Add(3*time.Minute), at.Add(6*time.Minute))
 		for i := range got {
-			if !bytes.Equal(got[i], originals[i+3]) {
+			if !sameSeedData(t, l, got[i], originals[i+3]) {
 				t.Fatal("mid-run start used preceding match")
 			}
 		}
@@ -183,9 +183,9 @@ func TestNativeCompactSliceBoundaries(t *testing.T) {
 				received += len(c.Data) / IndexRowSize
 			case "pac":
 				run := b.runs[c.PAC.Placement.Block]
-				raw, e := readBytes(b.pop, run.PopStart, run.PopEnd)
+				raw, e := readBytes(b.pods, run.PodsStart, run.PodsEnd)
 				if e != nil || !bytes.Equal(raw, c.Data) {
-					t.Fatal("native population changed")
+					t.Fatal("native payload changed")
 				}
 			}
 			return nil
@@ -203,7 +203,7 @@ func TestNativeCompactSliceBoundaries(t *testing.T) {
 		t.Fatalf("gap fill count %d", got)
 	}
 	request.Have.Index = m.Index
-	request.Have.Population = m.Population
+	request.Have.MemberRanges = m.MemberRanges
 	if got := run(); got != 0 {
 		t.Fatal("cached rows resent")
 	}

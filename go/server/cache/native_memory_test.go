@@ -125,7 +125,7 @@ func TestNativeHistorySurvivesStoreClose(t *testing.T) {
 	n := 0
 	if err = h.visit(context.Background(), func(_ EventReference, b []byte) error {
 		n++
-		if !bytes.Equal(b, raw) {
+		if !sameSeedData(t, l, b, raw) {
 			t.Fatal("snapshot changed after close")
 		}
 		return nil
@@ -163,7 +163,7 @@ func BenchmarkIngressBufferOwnership(b *testing.B) {
 					var out []byte
 					if native {
 						buffer := pool.buffer()
-						out, err = l.ReadFrameBuffer(reader, nil, true, buffer.resize)
+						out, err = l.ReadFrameBuffer(reader, nil, buffer.resize)
 						if err != nil || !bytes.Equal(out, input) {
 							b.Fatal(err)
 						}

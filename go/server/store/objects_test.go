@@ -55,7 +55,7 @@ func objectPayload(t *testing.T, at time.Time, region, state uint64) []byte {
 	if err != nil {
 		t.Fatal(err)
 	}
-	data, err := codec.MarshalCompact(codec.Record{0: id, 1: region, 2: state, 3: "dynamic"}, codec.CBOR)
+	data, err := codec.MarshalCompact(codec.Record{0: id, 1: region, 2: state, 3: "dynamic"}, codec.PIL)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -99,7 +99,7 @@ func TestObjectIdentityRegistryAndMinorAssignment(t *testing.T) {
 	if err != nil || reused != next {
 		t.Fatal(reused, err)
 	}
-	for _, name := range []string{"events.map", "events.tri", "statistics"} {
+	for _, name := range []string{"events.rx", "events.tri", "statistics"} {
 		if _, err = os.Stat(filepath.Join(c.Root, "demo", "orders.v1", "0", name)); err != nil {
 			t.Fatal(err)
 		}

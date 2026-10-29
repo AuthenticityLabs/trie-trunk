@@ -12,7 +12,7 @@ self.onmessage=async({data})=>{
   for(const item of data){
    const bytes=new Uint8Array(await (await fetch('/fixture/'+item.file)).arrayBuffer());
    for(let round=0;round<5;round++){
-    const file=await root.getFileHandle('compression-benchmark.pop',{create:true});
+    const file=await root.getFileHandle('compression-benchmark.sods',{create:true});
     const disk=await (file as any).createSyncAccessHandle();disk.truncate(0);
     const definitions=new Map();let count=0,stored=0,diskMS=0;
     const c=new Codec(await WebAssembly.instantiate(module));
@@ -33,7 +33,7 @@ self.onmessage=async({data})=>{
     results.push({...item,round,elapsed,diskMS,stored,hash});
    }
   }
-  await root.removeEntry('compression-benchmark.pop');
+  await root.removeEntry('compression-benchmark.sods');
   self.postMessage({results});
  }catch(e){self.postMessage({error:String(e)})}
 };

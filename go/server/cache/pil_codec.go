@@ -49,8 +49,8 @@ func combineCRC32(a, b uint32, n uint64) uint32                 { return pil.Com
 func compressPAC(b []byte, level int) ([]byte, error)           { return pil.CompressPAC(b, level) }
 func expandPAC(b []byte) ([]byte, error)                        { return pil.ExpandPAC(b) }
 func validatePlainPACEnvelope(b []byte) error                   { return pil.ValidatePlainPACEnvelope(b) }
-func fieldCBOR(f Field, v Value) ([]byte, error)                { return pil.FieldCBOR(f, v) }
-func valueFromCBOR(f Field, w int, b []byte) (Value, error)     { return pil.ValueFromCBOR(f, w, b) }
+func fieldObject(f Field, v Value) ([]byte, error)              { return pil.FieldObject(f, v) }
+func valueFromObject(f Field, w int, b []byte) (Value, error)   { return pil.ValueFromObject(f, w, b) }
 
 func PackPAC(l *Layout, f [][]byte, e []PACExtension, p bool) (*PAC, error) {
 	return pil.PackPAC(l.Layout, f, e, p)
@@ -68,3 +68,6 @@ func CompilePositionalCBOR(l *Layout) (*PositionalCBOR, error) {
 	}
 	return pil.CompilePositionalCBOR(l.Layout)
 }
+
+func isNullObject(raw []byte) bool { var v any; return pil.UnmarshalObject(raw, &v) == nil && v == nil }
+func emptyObject() []byte          { b, _ := pil.MarshalObject(map[string]any{}); return b }

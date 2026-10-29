@@ -125,6 +125,9 @@ func (s *viewSource) indexedCandidates(ctx context.Context, q *QueryPlan) (*Quer
 	if e := catchupErr; e != nil {
 		return nil, fmt.Errorf("search index catch-up: %w", e)
 	}
+	// These are exact snapshot boundaries, already narrowed by the time trie
+	// and UUIDv7 index (including sub-hour bounds and object constraints).
+	// Rust clips matching addresses against them without a Tantivy range query.
 	var pendingRanges [][2]uint64
 	for _, c := range s.ranges {
 		if c.at < s.binding.Tail {
@@ -158,6 +161,9 @@ func (s *viewSource) indexedCandidates(ctx context.Context, q *QueryPlan) (*Quer
 	}
 	var selected []cursor
 	for _, ref := range reply.Rows {
+		if e := ctx.Err(); e != nil {
+			return nil, e
+		}
 		row, e := s.context.resolve(&s.snap, ref)
 		if e != nil {
 			return nil, e

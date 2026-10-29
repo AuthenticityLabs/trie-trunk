@@ -12,7 +12,7 @@ func TestHourDirectoryIndependentWidening(t *testing.T) {
 	origin := time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC).UnixMilli()
 	first := origin + 65536*TimeHourMS
 	r := timeRun(first, 1<<32, 65536)
-	r.PopStart = 1<<40 + 72
+	r.PodsStart = 1<<40 + 72
 	r.PAC.Placement.MemberStart = 1<<40 + 4
 	d, err := buildHourDirectory([]Run{r}, first, first+TimeHourMS, r.End, [16]byte{1}, origin, [6]byte{})
 	if err != nil {
@@ -22,7 +22,7 @@ func TestHourDirectoryIndependentWidening(t *testing.T) {
 		t.Fatal("widths", d.raw[40:46])
 	}
 	leaf, ok := d.leaf(first)
-	if !ok || leaf.Start != r.Start-1 || leaf.Pods != r.PopStart || leaf.Sods != r.PAC.Placement.MemberStart-4 || leaf.End != r.End {
+	if !ok || leaf.Start != r.Start-1 || leaf.Pods != r.PodsStart || leaf.Sods != r.PAC.Placement.MemberStart-4-4*(r.End-r.Start) || leaf.End != r.End {
 		t.Fatal(leaf)
 	}
 	address := collectionAddress{65536, 65536}
@@ -33,7 +33,7 @@ func TestHourDirectoryIndependentWidening(t *testing.T) {
 		t.Fatal("out-of-hour record accepted")
 	}
 	h := indexHeader(first, 65536)
-	if h[12] != 3 || validateIndexHeader(h, r) != nil {
+	if len(h) != 6 || validateIndexHeader(h, r) != nil {
 		t.Fatal("literal count did not widen")
 	}
 }
@@ -149,7 +149,7 @@ func TestCollectionWideningSplitsWithoutMovingPinnedReaders(t *testing.T) {
 		t.Fatal("expected one nearly full narrow page")
 	}
 	id := collectionTestID(30)
-	wide := collectionAddress{65536, 65536}
+	wide := collectionAddress{65536, 65535}
 	if err := i.mergeRetained(k, 2, 1001, []collectionPosting{{id, 9, wide}}); err != nil {
 		t.Fatal(err)
 	}

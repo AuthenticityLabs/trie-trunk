@@ -90,6 +90,9 @@ func (e Entry) Record() codec.Record {
 }
 
 func (e Entry) Encode(format codec.Format, dictionary *codec.Dictionary) ([]byte, error) {
+	if format == codec.PIL {
+		return codec.MarshalCompact(e.Record(), codec.PIL)
+	}
 	if format != codec.ReadableJSON {
 		return e.encodeCompact(format)
 	}

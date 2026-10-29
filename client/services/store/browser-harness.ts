@@ -58,7 +58,7 @@ self.onmessage = ({ data }) => {
             const original=FileSystemFileHandle.prototype.createWritable;
             FileSystemFileHandle.prototype.createWritable=async function(options){
               const writer=await original.call(this,options);
-              if(this.name==='commit.cbor'){
+              if(this.name==='commit.pil'){
                 FileSystemFileHandle.prototype.createWritable=original;
                 writer.close=async()=>{await writer.abort();throw Error('simulated file commit failure');};
               }

@@ -44,7 +44,7 @@ func TestPACCompressionPolicy(t *testing.T) {
 	}
 }
 
-func TestWriteCompressionFollowsCollectionIndex(t *testing.T) {
+func TestWritePacksRemainUncompressed(t *testing.T) {
 	for _, indexed := range []bool{false, true} {
 		t.Run(fmt.Sprintf("collections=%t", indexed), func(t *testing.T) {
 			l := testLayout(t, false)
@@ -64,7 +64,7 @@ func TestWriteCompressionFollowsCollectionIndex(t *testing.T) {
 			if err := s.Flush(); err != nil {
 				t.Fatal(err)
 			}
-			if s.branches[Write].runs[0].PAC.Gzip == indexed {
+			if s.branches[Write].runs[0].PAC.Gzip {
 				t.Fatalf("compressed=%t with collections=%t", s.branches[Write].runs[0].PAC.Gzip, indexed)
 			}
 			if err := s.Close(); err != nil {
@@ -125,7 +125,7 @@ func TestPACCompressionReloadAndStoredBytes(t *testing.T) {
 		}
 		b := s.branches[Error]
 		run := b.runs[i]
-		raw, err := readBytes(b.pop, run.PopStart, run.PopEnd)
+		raw, err := readBytes(b.pods, run.PodsStart, run.PodsEnd)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -153,8 +153,8 @@ func TestPACCompressionReloadAndStoredBytes(t *testing.T) {
 	if err := s.Flush(); err != nil {
 		t.Fatal(err)
 	}
-	if !s.branches[Write].runs[0].PAC.Gzip {
-		t.Fatal("writes without collection indexing should use compression")
+	if s.branches[Write].runs[0].PAC.Gzip {
+		t.Fatal("write packs must remain uncompressed after policy reload")
 	}
 	if err := s.Close(); err != nil {
 		t.Fatal(err)
@@ -164,7 +164,7 @@ func TestPACCompressionReloadAndStoredBytes(t *testing.T) {
 		t.Fatal(err)
 	}
 	b := s.branches[Error]
-	raw, err := readBytes(b.pop, b.runs[0].PopStart, b.runs[0].PopEnd)
+	raw, err := readBytes(b.pods, b.runs[0].PodsStart, b.runs[0].PodsEnd)
 	if err != nil || !bytes.Equal(raw, original) {
 		t.Fatal("old PAC changed after reload/recovery", err)
 	}

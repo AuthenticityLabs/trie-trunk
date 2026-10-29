@@ -15,7 +15,8 @@ test("object identity stays lossless and escaped; lookup requires an exact colle
   assert.equal(objectParameters(query).get("id"), query.id);
   for (const id of ["customer/ID ?✓", "", "AP_-"]) {
     const url = new URL(historyURL({ ...query, id, from: "2026-10-16T00:00:00Z", to: "2026-10-17T00:00:00Z" }), "https://localhost");
-    assert.equal(url.searchParams.get("id"), id);
+    assert.equal(decodeURIComponent(url.pathname.slice('/collections/'.length)), id);
+    assert.equal(url.searchParams.has('id'), false);
     assert.equal(url.searchParams.get("collection"), "payment/transactions.v1");
   }
   for (const source of ["demo", "*/payment/transactions.v1/write", "demo/payment/*/write"])

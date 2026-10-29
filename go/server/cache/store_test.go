@@ -84,7 +84,7 @@ func TestStoreLateSparseBranchesAndRecovery(t *testing.T) {
 				t.Fatal(e)
 			}
 			for _, b := range []Branch{Read, Write, Error, Debug, Trace} {
-				if dup, e := s.Append(b, first); e != nil || !dup {
+				if dup, e := s.Append(b, first); e == nil || dup {
 					t.Fatalf("duplicate: %v %v", dup, e)
 				}
 			}
@@ -98,10 +98,10 @@ func TestStoreLateSparseBranchesAndRecovery(t *testing.T) {
 			defer s.Close()
 			for _, b := range []Branch{Read, Write, Error, Debug, Trace} {
 				rows := collect(t, s, b, start.Add(-2*time.Hour), start.Add(25*time.Hour))
-				if len(rows) != 3 || !bytes.Equal(rows[0], late) || !bytes.Equal(rows[1], first) || !bytes.Equal(rows[2], next) {
+				if len(rows) != 3 || !sameSeedData(t, l, rows[0], late) || !sameSeedData(t, l, rows[1], first) || !sameSeedData(t, l, rows[2], next) {
 					t.Fatalf("round trip %s", b.Name())
 				}
-				if dup, e := s.Append(b, late); e != nil || !dup {
+				if dup, e := s.Append(b, late); e == nil || dup {
 					t.Fatalf("recovered duplicate: %v %v", dup, e)
 				}
 				path := filepath.Join(s.dir, b.Prefix()+".sum")
@@ -177,7 +177,7 @@ func TestRecoveryDiscardUncommittedTails(t *testing.T) {
 	if e != nil {
 		t.Fatal(e)
 	}
-	if rows := collect(t, s, Write, at.Add(-time.Second), at.Add(time.Second)); len(rows) != 1 || !bytes.Equal(rows[0], frame) {
+	if rows := collect(t, s, Write, at.Add(-time.Second), at.Add(time.Second)); len(rows) != 1 || !sameSeedData(t, l, rows[0], frame) {
 		t.Fatal("recovery lost data")
 	}
 	s.Close()
@@ -292,8 +292,10 @@ func TestFrameValidationAndReuse(t *testing.T) {
 	if e != nil {
 		t.Fatal(e)
 	}
-	want := append([]byte{0xad}, id.Bytes...)
-	want = append(want, 0x34, 0x12, 2, 0, 'h', 'i')
+	want := append([]byte{0xad, 0x20}, id.Bytes...)
+	want = append(want, 0x34, 0x12)
+	want = append(want, Uint(uint64(at.UnixMilli()), 8).Bytes...)
+	want = append(want, 2, 0, 'h', 'i')
 	if !bytes.Equal(raw, want) {
 		t.Fatalf("wire %x != %x", raw, want)
 	}
@@ -309,7 +311,7 @@ func TestExportRustInterop(t *testing.T) {
 	if e := os.MkdirAll(dir, 0700); e != nil {
 		t.Fatal(e)
 	}
-	if e := os.WriteFile(filepath.Join(dir, "resource.map"), l.Bytes, 0600); e != nil {
+	if e := os.WriteFile(filepath.Join(dir, "resource.rx"), l.Bytes, 0600); e != nil {
 		t.Fatal(e)
 	}
 	raw := append(testFrame(t, l, at, 1, false), testFrame(t, l, at, 2, true)...)

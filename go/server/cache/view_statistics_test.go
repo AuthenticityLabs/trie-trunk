@@ -37,7 +37,7 @@ func TestViewStatisticsFullRangeSparseAndContinuation(t *testing.T) {
 		if i == 21 {
 			duration = Value{State: Null}
 		}
-		v := []Value{uuid(at.Add(time.Duration(i)*time.Minute).UnixMilli(), uint32(i+1)), testObject(42), Uint(uint64(i), 8), duration, Uint(0, 1), Text("completed"), Uint(999, 8), Uint(uint64(i/20), 1), Uint(level, 1)}
+		v := []Value{uuid(at.Add(time.Duration(i)*time.Minute).UnixMilli(), uint32(i+1)), testObject(42), Uint(uint64(i), 8), duration, Uint(0, 1), Text("completed"), Uint(999, 8), {}, {}, {}, Uint(uint64(i/20), 1), Uint(level, 1)}
 		if i == 22 {
 			v[4] = Value{}
 		} // no shared prefix: classification must come from PIL
@@ -49,10 +49,13 @@ func TestViewStatisticsFullRangeSparseAndContinuation(t *testing.T) {
 			t.Fatal(e)
 		}
 	}
-	// Debug durations must not contaminate operational duration aggregates.
-	v := []Value{uuid(at.Add(41*time.Minute).UnixMilli(), 99), testObject(42), {}, Uint(999999, 8), Uint(0, 1), Text("debug"), {}, Uint(0, 1), Uint(0, 1)}
+	// Diagnostic records must not contaminate any operational statistics.
+	v := []Value{uuid(at.Add(41*time.Minute).UnixMilli(), 99), testObject(42), {}, Uint(999999, 8), Uint(0, 1), Text("debug"), {}, {}, {}, {}, Uint(0, 1), Uint(0, 1)}
 	raw, _ := l.Encode(nil, v)
 	if _, err = s.Append(Debug, raw); err != nil {
+		t.Fatal(err)
+	}
+	if _, err = s.Append(Trace, raw); err != nil {
 		t.Fatal(err)
 	}
 	h := &HTTP{Store: s}
@@ -73,13 +76,13 @@ func TestViewStatisticsFullRangeSparseAndContinuation(t *testing.T) {
 	first := get(path, "")
 	summary := first.result.Summary
 	stats := summary.Statistics
-	if summary.Count != 41 || len(first.frames) != 2 || stats == nil {
+	if summary.Count != 40 || len(first.frames) != 2 || stats == nil {
 		t.Fatal(summary)
 	}
 	if stats.Duration.Count != 38 || math.Abs(stats.Duration.Average-2217.0/38) > 1e-9 || stats.Duration.Min != 1 || stats.Duration.Max != 120 {
 		t.Fatal(stats.Duration)
 	}
-	if len(stats.Services) != 1 || stats.Services[0].Name != "payment" || stats.Services[0].Count != 41 {
+	if len(stats.Services) != 1 || stats.Services[0].Name != "payment" || stats.Services[0].Count != 40 {
 		t.Fatal(stats.Services)
 	}
 	if len(stats.Operations.Errors) != 2 || stats.Operations.Errors[0].Value != 5 || stats.Operations.Errors[1].Value != 5 {

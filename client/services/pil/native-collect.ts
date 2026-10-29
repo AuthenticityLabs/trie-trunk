@@ -1,3 +1,5 @@
+import {compactHour} from "./time-window.ts";
+import {registeredPath} from "./trunk.ts";
 import { nativeCacheIssue } from "../store/errors.ts";
 import type { Archive, NativeInput } from "../store/protocol.ts";
 import { PILStream, consume, type StoredDefinition } from "./stream.ts";
@@ -18,7 +20,8 @@ export type NativeCollectOptions = {
   definitions: Map<string, StoredDefinition>;
   archive: Archive;
   fetcher?: typeof fetch;
-  population?: "none";
+  data?: "none";
+  artifact?: {path:string;kind:"idx"|"pods";states?:string};
   definitionVersion?: string;
   onVersion?: (version:string)=>void;
   onProvisional?: (tap:string,from:number,to:number)=>void;
@@ -58,8 +61,16 @@ async function collectOnce(options:NativeCollectOptions):Promise<string[]> {
     }
     const query=new URLSearchParams({format:"native",tap,from,to});
     if(options.definitionVersion)query.set("definition",options.definitionVersion);
-    if(options.population)query.set("population",options.population);
-    const response=await (options.fetcher??fetch)(`/collect?${query}`,{
+    if(options.data)query.set("data",options.data);
+    let url=`/collect?${query}`;
+    if(options.artifact){
+      const {path,kind,states}=options.artifact;
+      if(!registeredPath(path)||!path.endsWith('.'+kind)||(kind==='idx')!==(options.data==='none'))throw Error("Invalid catalog collection artifact");
+      const range=new URLSearchParams({begin:compactHour(Date.parse(from)),end:compactHour(Date.parse(to))});
+      if(states)range.set('states',states);
+      url=`/${path}?${range}`;
+    }
+    const response=await (options.fetcher??fetch)(url,{
       method:"GET",signal,cache:"no-store",
       headers:{Accept:"application/pil","PIL-Version":"2","PIL-Features":"native-ranges,native-state-pages,adaptive-integers",
         "Definition-Version":options.definitionVersion??"",
@@ -67,13 +78,16 @@ async function collectOnce(options:NativeCollectOptions):Promise<string[]> {
         ...(have?{"Trunk-Coverage":have}:{}),...(token?{Authorization:`Bearer ${token}`}:{})},
     });
     const version=response.headers.get("Definition-Version");
-    if(response.ok&&(response.headers.get("Trunk-Format")!=="native-pac/0"||!version||!/^[a-f0-9]{64}$/.test(version))){
+    if(response.ok&&(response.headers.get("Trunk-Format")!=="native-pac/0"||(options.artifact&&response.headers.get("Trunk-Path")!==options.artifact.path)||!version||!/^[a-f0-9]{64}$/.test(version))){
       await response.body?.cancel();throw Error("Native collection was not negotiated");
     }
     await consume(response,new PILStream(codec,definitions,()=>{},()=>{},async()=>{
       throw Error("Expanded event in native response");
     },async record=>{
       signal.throwIfAborted();
+      if(record.kind==='manifest'&&options.artifact){
+        if(record.binding.tap!==tap||record.binding.digest!==options.definitionVersion||Boolean(record.manifest.IndexOnly)!==(options.artifact.kind==='idx'))throw Error('Catalog collection binding mismatch');
+      }
       const d=record.kind==="manifest"?definitions.get(record.binding.digest):undefined;
       const bytes=record.kind==='pac'?record.bytes.byteLength+record.bounds.byteLength:record.kind==='chunk'?record.bytes.byteLength:record.kind==='manifest'?(record.manifest.TimeTrie instanceof Uint8Array?record.manifest.TimeTrie.byteLength:0)+1024:64;
       if(records.length&&(queuedBytes+bytes>4*1024*1024||records.length>=4096))await flush();

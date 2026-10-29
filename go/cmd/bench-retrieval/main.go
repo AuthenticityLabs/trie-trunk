@@ -23,7 +23,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/fxamacker/cbor/v2"
+	pil "github.com/AuthenticityLabs/pill-packer/go/codec"
 	"github.com/quic-go/quic-go/http3"
 )
 
@@ -127,7 +127,7 @@ func (r runner) get(ctx context.Context, q request) ([]byte, measurement, error)
 	m.DecodedBodyBytes = len(raw)
 	if len(q.Digests) > 0 {
 		var packs [][]byte
-		if err := cbor.Unmarshal(raw, &packs); err != nil {
+		if err := decodeSummaryPacks(raw, &packs); err != nil {
 			return nil, m, err
 		}
 		if len(packs) != len(q.Digests) {
@@ -347,7 +347,7 @@ func (r runner) run(ctx context.Context, s scenario, trial int) (sample, error) 
 			for i, d := range days {
 				digests[i] = d.Key
 			}
-			summaries = append(summaries, request{Path: "/summaries", Stage: "summary", Headers: http.Header{"Content-Type": {"application/json"}, "Accept": {"application/cbor"}}, Body: body, Digests: digests})
+			summaries = append(summaries, request{Path: "/summaries", Stage: "summary", Headers: http.Header{"Content-Type": {"application/json"}, "Accept": {"application/pil"}}, Body: body, Digests: digests})
 		}
 	}
 	seen := map[string]bool{}
@@ -511,6 +511,26 @@ func mainErr() error {
 		if e = os.WriteFile(*out, append(raw, '\n'), 0644); e != nil {
 			return e
 		}
+	}
+	return nil
+}
+
+func decodeSummaryPacks(raw []byte, out *[][]byte) error {
+	l, e := pil.Compile(pil.Definition{Fields: []pil.Field{{Name: "packs", Type: "ARRAY<BYTES>"}}})
+	if e != nil {
+		return e
+	}
+	var f pil.Frame
+	if e = l.Scan(raw, &f); e != nil {
+		return e
+	}
+	items, e := pil.FieldValue(l.Definition.Fields[0], f.Values[0])
+	if e != nil {
+		return e
+	}
+	*out = make([][]byte, len(items.([]any)))
+	for i, v := range items.([]any) {
+		(*out)[i] = v.([]byte)
 	}
 	return nil
 }

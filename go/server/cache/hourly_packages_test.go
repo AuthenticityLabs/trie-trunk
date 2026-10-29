@@ -104,7 +104,7 @@ func TestHourlyRepeatedHourReplication(t *testing.T) {
 		t.Helper()
 		for i, at := range []time.Time{first, second} {
 			var m Manifest
-			err = s.Collect(context.Background(), CollectionRequest{Branch: Write, At: at, IndexPeriod: "1h", PopulationFrom: at, PopulationTo: at.Add(time.Hour)}, func(v Manifest) error { m = v; return nil }, func(NativeChunk) error { return nil })
+			err = s.Collect(context.Background(), CollectionRequest{Branch: Write, At: at, IndexPeriod: "1h", DataFrom: at, DataTo: at.Add(time.Hour)}, func(v Manifest) error { m = v; return nil }, func(NativeChunk) error { return nil })
 			if err != nil || len(m.Index) != 1 || m.Index[0] != (Span{uint64(i*2 + 1), uint64(i*2 + 2)}) || !m.From.Equal(at) || !m.To.Equal(at.Add(time.Hour)) {
 				t.Fatalf("fold %d: %+v %v", i, m, err)
 			}

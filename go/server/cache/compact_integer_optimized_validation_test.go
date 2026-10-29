@@ -64,7 +64,7 @@ func TestCompactIntegerOptimizedEquivalence(t *testing.T) {
 			if compact {
 				want, e = ref.encode(nil, values)
 			} else {
-				want, e = ref.base.Encode(nil, values)
+				want, e = ref.base.Layout.Encode(nil, values)
 			}
 			if e != nil {
 				t.Fatal(e)

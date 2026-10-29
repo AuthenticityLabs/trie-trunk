@@ -47,7 +47,7 @@ func (p *Endpoint) validatePreferred(target *Layout) error {
 		}
 	}
 	n := target.Definition.Resource
-	pattern := filepath.Join(p.config.Root, p.config.Cache, n.Service, fmt.Sprintf("%s.v%d", n.Resource, n.Major), "producer-*.map")
+	pattern := filepath.Join(p.config.Root, p.config.Cache, n.Service, fmt.Sprintf("%s.v%d", n.Resource, n.Major), "producer-*.rx")
 	paths, err := filepath.Glob(pattern)
 	if err != nil {
 		return err
@@ -61,7 +61,7 @@ func (p *Endpoint) validatePreferred(target *Layout) error {
 		if err != nil {
 			return err
 		}
-		digest := strings.TrimSuffix(strings.TrimPrefix(filepath.Base(path), "producer-"), ".map")
+		digest := strings.TrimSuffix(strings.TrimPrefix(filepath.Base(path), "producer-"), ".rx")
 		if digest != fmt.Sprintf("%x", source.Digest) || collectionKey(source) != key {
 			return fmt.Errorf("invalid registered producer binding")
 		}

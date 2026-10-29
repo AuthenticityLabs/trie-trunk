@@ -25,9 +25,15 @@ for(const kind of ['aligned','border']){
 }
 test('daily decoder rejects corrupt, short and over-expanding packets',async()=>{
  const ref=fixture('aligned').result.analytics.days[0],raw=bytes('aligned',ref);
- for(const at of [0,8,12,16,20,24,32,raw.length-1]){const bad=raw.slice();bad[at]^=255;await assert.rejects(decodeSummaryDay(bad))}
+ const decoded=await decodeSummaryDay(raw),compressed=new DataView(raw.buffer,raw.byteOffset,raw.byteLength).getUint32(4,true)===2;
+ for(const at of [0,8,12,16,20,24,32,raw.length-1]){
+  const bad=raw.slice();bad[at]^=255;
+  // Gzip MTIME and XFL are header metadata, outside the decoded payload CRC.
+  if(compressed&&(at===20||at===24))assert.deepEqual(await decodeSummaryDay(bad),decoded);
+  else await assert.rejects(decodeSummaryDay(bad));
+ }
  await assert.rejects(decodeSummaryDay(raw.subarray(0,-1)));
- const bad=raw.slice();new DataView(bad.buffer).setUint32(16,304,true);await assert.rejects(decodeSummaryDay(bad));
+ const bad=raw.slice();new DataView(bad.buffer).setUint32(8,128*1024*1024+1,true);await assert.rejects(decodeSummaryDay(bad));
 });
 test('daily cache reuses content, partitions authorization and checks manifest',async()=>{
  const ref=fixture('aligned').result.analytics.days[0],raw=bytes('aligned',ref),cache=new SummaryDayCache();let calls=0;
@@ -42,7 +48,7 @@ test('Snoot summary-only request fetches daily summaries and no event PACs',asyn
  const fetcher=async(url,options)=>{calls.push(url);if(url.startsWith('/events?')){assert.match(options.headers['PIL-Features'],/daily-summaries/);return new Response(raw,{headers:{'Content-Type':'application/pil','PIL-Version':'2','Trunk-Completion':'body','Trunk-Format':'pac-view/0'}})}
   assert.equal(url,'/summaries');assert.equal(options.method,'POST');return summaryResponse(JSON.parse(options.body).packs.map(ref=>bytes('aligned',ref)));};
  const codec=new Codec((await WebAssembly.instantiate(readFileSync(new URL('../assets/pil.wasm',import.meta.url)))).instance);
- const cache=new ViewCache(fetcher),definitions=new Map(),query={tap:'demo/payment/transactions.v1/*',from:new Date(result.summary.from).toISOString(),to:new Date(result.summary.to).toISOString(),include:'summary',size:50};
+ const cache=new ViewCache(fetcher),definitions=new Map(),query={engine:'tantivy',tap:'demo/payment/transactions.v1/*',from:new Date(result.summary.from).toISOString(),to:new Date(result.summary.to).toISOString(),include:'summary',size:50};
  const first=await cache.query(query,'secret',new AbortController().signal,codec,definitions);
  assert.equal(first.result.summary.count,864);assert.equal(first.batch.rows.length,0);assert.ok(calls.every(u=>!u.startsWith('/collect')));
  const count=calls.length;await cache.query(query,'secret',new AbortController().signal,codec,definitions);assert.equal(calls.length,count+1);
@@ -75,7 +81,7 @@ test('progressive search publishes its page before any summary fetch, then the s
   return summaryResponse(JSON.parse(options.body).packs.map(ref=>bytes('aligned',ref)));
  };
  const codec=new Codec((await WebAssembly.instantiate(readFileSync(new URL('../assets/pil.wasm',import.meta.url)))).instance);
- const cache=new ViewCache(fetcher),query={tap:'demo/payment/transactions.v1/*',from:new Date(result.summary.from).toISOString(),to:new Date(result.summary.to).toISOString(),include:'summary',size:50};
+ const cache=new ViewCache(fetcher),query={engine:'tantivy',tap:'demo/payment/transactions.v1/*',from:new Date(result.summary.from).toISOString(),to:new Date(result.summary.to).toISOString(),include:'summary',size:50};
  const complete=await cache.query(query,'',new AbortController().signal,codec,new Map(),undefined,false,undefined,page=>{
   assert.equal(dayFetches,0);assert.equal(page.result.summary,undefined);
   published=structuredClone(page,{transfer:[page.batch.bytes,page.batch.rows.buffer]});
@@ -92,7 +98,7 @@ test('failed chart retrieval leaves the delivered page intact and remains retrya
   return summaryResponse(JSON.parse(options.body).packs.map(ref=>bytes('aligned',ref)));
  };
  const codec=new Codec((await WebAssembly.instantiate(readFileSync(new URL('../assets/pil.wasm',import.meta.url)))).instance);
- const cache=new ViewCache(fetcher),query={tap:'demo/payment/transactions.v1/*',from:new Date(result.summary.from).toISOString(),to:new Date(result.summary.to).toISOString(),include:'summary',size:50};
+ const cache=new ViewCache(fetcher),query={engine:'tantivy',tap:'demo/payment/transactions.v1/*',from:new Date(result.summary.from).toISOString(),to:new Date(result.summary.to).toISOString(),include:'summary',size:50};
  await assert.rejects(cache.query(query,'',new AbortController().signal,codec,new Map(),undefined,false,undefined,page=>{published=page}),/offline/);
  assert.ok(published);assert.equal(published.result.summary,undefined);
  broken=false;assert.equal((await cache.query(query,'',new AbortController().signal,codec,new Map())).result.summary.count,864);

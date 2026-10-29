@@ -167,7 +167,7 @@ test("same version in different taps uses distinct handles and switches without 
   assert.equal(valueAt(decoder.read([8, id.raw, 3, 5]), "level"), "ERROR");
 });
 
-test("presentation headers are exact and otherwise retain lineage then population order", () => {
+test("presentation headers are exact and otherwise retain lineage then payload order", () => {
   for (const headers of [[], ["duration", "time_begin", "level", "duration"]]) {
     const decoder = new Dictionaries();
     decoder.install(negotiated);

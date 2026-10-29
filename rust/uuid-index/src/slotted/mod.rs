@@ -507,7 +507,7 @@ impl Index {
         }
     }
     fn allocate(w: &mut Writer) -> Result<u32> {
-        if let Some(id) = w.free.pop() {
+        if let Some(id) = w.free.pods() {
             w.stats.reused_pages += 1;
             return Ok(id);
         }

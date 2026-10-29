@@ -26,30 +26,26 @@ pub(crate) struct Schema {
     pub fields: Fields,
 }
 
-pub(crate) fn decode(mut data: &[u8]) -> io::Result<Value> {
-    let value = ciborium::de::from_reader_with_recursion_limit(&mut data, 32).map_err(invalid)?;
-    if !data.is_empty() {
-        return Err(invalid("trailing CBOR data"));
-    }
-    Ok(value)
+pub(crate) fn decode(data: &[u8]) -> io::Result<Value> {
+    pil_codec::object::decode_value(data).map_err(invalid)
 }
 
 pub(crate) fn unsigned(value: &Value) -> io::Result<u64> {
     match value {
         Value::Integer(n) => u64::try_from(*n).map_err(invalid),
-        _ => Err(invalid("expected unsigned CBOR integer")),
+        _ => Err(invalid("expected unsigned PIL integer")),
     }
 }
 
 pub(crate) fn record(value: Value) -> io::Result<BTreeMap<u16, Value>> {
     let Value::Map(pairs) = value else {
-        return Err(invalid("expected CBOR object"));
+        return Err(invalid("expected PIL object"));
     };
     let mut fields = BTreeMap::new();
     for (key, value) in pairs {
         let key = u16::try_from(unsigned(&key)?).map_err(invalid)?;
         if fields.insert(key, value).is_some() {
-            return Err(invalid("duplicate CBOR field"));
+            return Err(invalid("duplicate PIL field"));
         }
     }
     Ok(fields)
@@ -58,7 +54,7 @@ pub(crate) fn record(value: Value) -> io::Result<BTreeMap<u16, Value>> {
 fn text(value: Value) -> io::Result<String> {
     match value {
         Value::Text(text) => Ok(text),
-        _ => Err(invalid("expected CBOR text")),
+        _ => Err(invalid("expected PIL text")),
     }
 }
 
@@ -374,6 +370,6 @@ pub(crate) fn json(value: Value) -> io::Result<Json> {
             }
             Json::Object(result)
         }
-        _ => return Err(invalid("unsupported CBOR value")),
+        _ => return Err(invalid("unsupported PIL value")),
     })
 }

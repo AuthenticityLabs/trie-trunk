@@ -57,7 +57,7 @@ func (s *Store) rememberLive(b *branchStore, p pending, row uint64, staged bool)
 	var revision collectionRevision
 	if b.branch == Write && s.config.ObjectIndex && s.layout.Object >= 0 {
 		var f Frame
-		if e := s.layout.IdentityFrame(p.frame, &f); e != nil {
+		if e := s.layout.Scan(p.frame, &f); e != nil {
 			return e
 		}
 		if f.Values[s.layout.Revision].State != Absent {
@@ -200,4 +200,15 @@ func (l *nativeLive) insert(p pending, key *collectionRevision, row uint64, stag
 		rev = C.uint64_t(key.Revision)
 	}
 	return bool(C.trunk_live_put(l.ptr, r, object, rev, C.bool(staged), C.int64_t(cutoff)))
+}
+
+func (l *nativeLive) row(ms int64, row uint64, now time.Time) []byte {
+	if l == nil {
+		return nil
+	}
+	r := C.trunk_live_row(l.ptr, C.int64_t(ms), C.uint64_t(row), C.int64_t(now.Add(-HotWindow).UnixMilli()))
+	if r.length == 0 {
+		return nil
+	}
+	return unsafe.Slice((*byte)(r.address), int(r.length))
 }

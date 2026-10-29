@@ -59,7 +59,7 @@ func timebaseFixture(t testing.TB, n int, sparse, withTimestamp bool) (*timebase
 		if e != nil || !bytes.Equal(restored, absolute) {
 			t.Fatal("roundtrip", e)
 		}
-		wantSaving := 2
+		wantSaving := 6 // UUID (2) plus Seed @time (4)
 		if withTimestamp {
 			wantSaving += 4
 		}
@@ -204,5 +204,5 @@ func TestMeasureTimebaseTransit(t *testing.T) {
 	for q, rows := range queries {
 		counts[q] = len(rows)
 	}
-	saveMeasurement(t, map[string]any{"events": n, "sparse": sparse, "profile": os.Getenv("TRUNK_TIMEBASE_PROFILE"), "definition": p.layout.Definition, "source_blocks": len(blocks), "source_buffers": "contiguous absolute and relative slabs", "source_block_max_rows": 4096, "absolute_frame_bytes": abs, "relative_frame_bytes": rel, "relative_base_bytes": 8 * len(blocks), "output": sizes, "codec": timings, "repeats_per_sample": repetitions, "selected_counts": counts, "received_sha256": hashes, "allocations_per_query": allocs, "samples": 12, "all_records_validated": true, "go": runtime.Version(), "platform": runtime.GOOS + "/" + runtime.GOARCH, "scope": "in-memory output assembly after candidate selection; no disk, index search, HTTP, compression, or actual .idx/.pop layout changes"})
+	saveMeasurement(t, map[string]any{"events": n, "sparse": sparse, "profile": os.Getenv("TRUNK_TIMEBASE_PROFILE"), "definition": p.layout.Definition, "source_blocks": len(blocks), "source_buffers": "contiguous absolute and relative slabs", "source_block_max_rows": 4096, "absolute_frame_bytes": abs, "relative_frame_bytes": rel, "relative_base_bytes": 8 * len(blocks), "output": sizes, "codec": timings, "repeats_per_sample": repetitions, "selected_counts": counts, "received_sha256": hashes, "allocations_per_query": allocs, "samples": 12, "all_records_validated": true, "go": runtime.Version(), "platform": runtime.GOOS + "/" + runtime.GOARCH, "scope": "in-memory output assembly after candidate selection; no disk, index search, HTTP, compression, or actual .idx/.pods layout changes"})
 }

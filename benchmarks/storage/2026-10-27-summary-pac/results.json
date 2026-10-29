@@ -1,0 +1,85 @@
+{
+  "date": "2026-10-27",
+  "machine": "Apple M1 Max (darwin/arm64)",
+  "command": "go test ./server/cache -run '^$' -bench '^BenchmarkSummaryDayPACTransition$' -benchmem -benchtime=1s -count=3",
+  "workload": {
+    "eventsPerDay": 240000,
+    "summaries": 24,
+    "source": "synthetic benchmark; 10,000 events summarized per hour",
+    "comparison": "immediately preceding SUMDAY00 columnar day pack vs PIL PAC with the same shared numeric encoding and shuffle"
+  },
+  "medians": {
+    "sumday-gzip0": {
+      "bytesPerDay": 666321,
+      "encodeNs": 3903022,
+      "encodeBytesAllocated": 2105535,
+      "encodeAllocs": 243,
+      "decodeNs": 7824721,
+      "decodeBytesAllocated": 9536665,
+      "decodeAllocs": 3695
+    },
+    "sumday-gzip1": {
+      "bytesPerDay": 17010,
+      "encodeNs": 5404907,
+      "encodeBytesAllocated": 3225496,
+      "encodeAllocs": 346,
+      "decodeNs": 8779371,
+      "decodeBytesAllocated": 11552683,
+      "decodeAllocs": 4010
+    },
+    "pil-pac-gzip0": {
+      "bytesPerDay": 668804,
+      "encodeNs": 4626125,
+      "encodeBytesAllocated": 2164824,
+      "encodeAllocs": 584,
+      "decodeNs": 7777033,
+      "decodeBytesAllocated": 8878756,
+      "decodeAllocs": 3681
+    },
+    "sumday-gzip6": {
+      "bytesPerDay": 10370,
+      "encodeNs": 5892823,
+      "encodeBytesAllocated": 2791895,
+      "encodeAllocs": 342,
+      "decodeNs": 8653064,
+      "decodeBytesAllocated": 11546946,
+      "decodeAllocs": 3829
+    },
+    "pil-pac-gzip1": {
+      "bytesPerDay": 17235,
+      "encodeNs": 6181774,
+      "encodeBytesAllocated": 3956839,
+      "encodeAllocs": 688,
+      "decodeNs": 8755593,
+      "decodeBytesAllocated": 11583123,
+      "decodeAllocs": 4015
+    },
+    "pil-pac-gzip6": {
+      "bytesPerDay": 10411,
+      "encodeNs": 6697889,
+      "encodeBytesAllocated": 3523307,
+      "encodeAllocs": 685,
+      "decodeNs": 8615761,
+      "decodeBytesAllocated": 11576893,
+      "decodeAllocs": 3835
+    }
+  },
+  "comparison": {
+    "gzip0BytesPercent": 0.3728,
+    "gzip0EncodeTimePercent": 18.53,
+    "gzip0DecodeTimePercent": -0.61,
+    "gzip1BytesPercent": 1.3228,
+    "gzip1EncodeTimePercent": 14.37,
+    "gzip1DecodeTimePercent": -0.27,
+    "gzip6BytesPercent": 0.3954,
+    "gzip6EncodeTimePercent": 13.65,
+    "gzip6DecodeTimePercent": -0.43
+  },
+  "notes": [
+    "The benchmark checks decoded summary equality for both formats.",
+    "The summary compression policy defaults to gzip-6; ordinary PAC policy defaults to gzip-1. The benchmark includes both levels plus uncompressed sizes.",
+    "Uncompressed PIL PAC is 2,483 bytes larger than the legacy day pack; the shared 90-byte encoding descriptor is repeated in each of 24 member frames instead of stored once (2,070 repeated descriptor bytes before compression).",
+    "This is a high-density synthetic day and does not model the 50,000-event/30-day demo footprint.",
+    "A real five-resource dataset benchmark is still needed before making an end-to-end performance claim."
+  ]
+}

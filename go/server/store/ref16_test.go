@@ -93,7 +93,7 @@ func TestReference16MaturityLateArrivalDedupAndRecovery(t *testing.T) {
 		t.Fatal(scopes, err)
 	}
 	dir := filepath.Join(s.directory(c.Root, m.config.Tap), scopes[0].Dir)
-	before, _ := os.ReadFile(filepath.Join(dir, "events.pop"))
+	before, _ := os.ReadFile(filepath.Join(dir, "events.pods"))
 	index, _ := os.ReadFile(filepath.Join(dir, "events.idx"))
 	if string(index[:4]) != "TIDA" || order.Uint32(index[4:8]) != 4 || len(index) != 36+8+4+2*34 {
 		t.Fatal("wrong active layout", len(index))
@@ -106,9 +106,9 @@ func TestReference16MaturityLateArrivalDedupAndRecovery(t *testing.T) {
 	if string(index[:4]) != "TIDC" || len(index) != 36+8+12+2*26 {
 		t.Fatal("wrong compact layout", len(index))
 	}
-	after, _ := os.ReadFile(filepath.Join(dir, "events.pop"))
+	after, _ := os.ReadFile(filepath.Join(dir, "events.pods"))
 	if !bytes.Equal(before, after) {
-		t.Fatal("maturity rewrote population")
+		t.Fatal("maturity rewrote payload")
 	}
 	_, late := modernPayload(t, now.Add(-23*time.Minute), 1)
 	if dup, err := m.Append(rev, late); err != nil || dup {
@@ -131,20 +131,28 @@ func TestReference16MaturityLateArrivalDedupAndRecovery(t *testing.T) {
 	}
 }
 
-func TestReference16TrieCapacityRetainsValuesInPopulation(t *testing.T) {
+func TestReference16TrieCapacityRetainsValuesInPayload(t *testing.T) {
 	// Even an explicitly larger legacy Config cannot exceed the new disk width.
 	s := &schema{definition: codec.Definition{Storage: &codec.StoragePolicy{Format: 4}}}
 	tr := &trie{schema: s, nodes: make([]node, 65536), edges: make(map[edge]uint32)}
-	dynamic, err := codec.MarshalCompact(codec.Record{9: "kept"}, codec.CBOR)
+	dynamic, err := codec.MarshalCompact(codec.Record{9: "kept"}, codec.PIL)
 	if err != nil {
 		t.Fatal(err)
 	}
-	r, err := tr.prepare(record{Path: []token{{Key: 3, Value: []byte{7}}}, Dynamic: dynamic}, Config{MaxNodes: 100000})
+	r, err := tr.prepare(record{Path: []token{{Key: 3, Value: mustPILInteger(t, 7)}}, Dynamic: dynamic}, Config{MaxNodes: 100000})
 	if err != nil {
 		t.Fatal(err)
 	}
-	values, err := codec.Decode(r.Dynamic, codec.CBOR)
+	values, err := codec.Decode(r.Dynamic, codec.PIL)
 	if err != nil || r.Leaf != 0 || len(tr.nodes) != 65536 || values[3] != uint64(7) || values[9] != "kept" {
 		t.Fatal(r.Leaf, len(tr.nodes), values, err)
 	}
+}
+
+func mustPILInteger(t *testing.T, n uint64) []byte {
+	b, e := diskEncoder.Marshal(n)
+	if e != nil {
+		t.Fatal(e)
+	}
+	return b
 }

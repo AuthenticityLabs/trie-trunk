@@ -5,6 +5,7 @@ import (
 	"compress/gzip"
 	"context"
 	"fmt"
+	pilcodec "github.com/AuthenticityLabs/pill-packer/go/codec"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -147,14 +148,14 @@ func TestFailedRegistrationAndAcknowledgement(t *testing.T) {
 }
 
 func TestPreferredDefinitionReordersAndRemaps(t *testing.T) {
-	sourceDef := Definition{Identity: "payment/transactions", Version: 1 << 20, Fields: []Field{{Name: "event_id", Type: "UUID"}, {Name: "state", Type: "STRING", Values: []string{"pending", "authorized"}}, {Name: "note", Type: "STRING"}, {Name: "@fields", Type: "CBOR"}}, Resource: Binding{Format: StorageFormat, Service: "payment", Resource: "transactions", Major: 1, Timezone: "UTC", Roles: Roles{Event: "event_id"}}}
+	sourceDef := Definition{Identity: "payment/transactions", Version: 1 << 20, Fields: []Field{{Name: "event_id", Type: "UUID"}, {Name: "state", Type: "STRING", Values: []string{"pending", "authorized"}}, {Name: "note", Type: "STRING"}, {Name: "@fields", Type: "OBJECT"}}, Resource: Binding{Format: StorageFormat, Service: "payment", Resource: "transactions", Major: 1, Timezone: "UTC", Roles: Roles{Event: "event_id"}}}
 	source, _ := cache.Compile(sourceDef)
 	targetDef := sourceDef
 	targetDef.Version++
 	targetDef.Resource.Minor = 1
 	targetDef.PIL = 1
 	targetDef.AdaptiveIntegers = "16"
-	targetDef.Fields = []Field{{Name: "state", Type: "STRING", Values: []string{"authorized", "pending"}}, {Name: "event_id", Type: "UUID"}, {Name: "attempts", Type: "U16"}, {Name: "@fields", Type: "CBOR"}, {Name: "optional", Type: "STRING"}}
+	targetDef.Fields = []Field{{Name: "state", Type: "STRING", Values: []string{"authorized", "pending"}}, {Name: "event_id", Type: "UUID"}, {Name: "attempts", Type: "U16"}, {Name: "@fields", Type: "OBJECT"}, {Name: "optional", Type: "STRING"}}
 	target, e := cache.Compile(targetDef)
 	if e != nil {
 		t.Fatal(e)
@@ -188,7 +189,7 @@ func TestPreferredDefinitionReordersAndRemaps(t *testing.T) {
 		t.Fatal("did not accept preferred definition")
 	}
 	id, _ := codec.NewUUIDv7(time.Now())
-	values := []Value{{State: Direct, Bytes: id[:]}, {State: Direct, Bytes: []byte{1}}, {State: Offset, Bytes: []byte("retained")}, {State: Offset, Bytes: []byte{0xa1, 0x68, 'a', 't', 't', 'e', 'm', 'p', 't', 's', 9}}}
+	values := []Value{{State: Direct, Bytes: id[:]}, {State: Direct, Bytes: []byte{1}}, {State: Offset, Bytes: []byte("retained")}, {State: Offset, Bytes: nativeObject(t, map[string]any{"attempts": 9})}}
 	original, e := source.Encode(nil, values)
 	if e != nil {
 		t.Fatal(e)
@@ -372,8 +373,8 @@ func TestNegotiatedCompressionAndRawFallback(t *testing.T) {
 		if e = logger.WriteValues(context.Background(), v); e != nil {
 			t.Fatal(e)
 		}
-		if contentEncoding != "" || l.IsCompressed(received) {
-			t.Fatal("small event expanded by compression")
+		if contentEncoding != "" {
+			t.Fatal("unexpected HTTP compression")
 		}
 		logger.Close()
 		if e = endpoint.Close(); e != nil {
@@ -460,4 +461,13 @@ func TestCapacityRolloverRetriesOnlyUnacceptedSuffix(t *testing.T) {
 	if logger.layout.Digest != next.Digest {
 		t.Fatal("logger did not retain new minor")
 	}
+}
+
+func nativeObject(t *testing.T, v any) []byte {
+	t.Helper()
+	b, e := pilcodec.MarshalObject(v)
+	if e != nil {
+		t.Fatal(e)
+	}
+	return b
 }

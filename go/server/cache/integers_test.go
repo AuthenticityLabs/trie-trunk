@@ -22,7 +22,7 @@ func TestAdaptiveIntegersMatchOptimizedOracle(t *testing.T) {
 	d := compactTestDefinition("U16", "I16", "U32", "I32", "U64", "I64", "STRING")
 	for _, mode := range []string{"16", "32"} {
 		l := adaptiveLayout(t, d, mode)
-		oracle, e := compileSeparateWidthExperiment(d, mode == "16")
+		oracle, e := compileSeparateWidthExperiment(l.Definition, mode == "16")
 		if e != nil {
 			t.Fatal(e)
 		}
@@ -34,6 +34,7 @@ func TestAdaptiveIntegersMatchOptimizedOracle(t *testing.T) {
 				v[1] = Value{}
 				v[4] = Value{Null, nil}
 			}
+			v = append(v, Value{}, Value{}, Value{})
 			want, e := oracle.encodeReuse(nil, v)
 			if e != nil {
 				t.Fatal(e)
@@ -92,10 +93,10 @@ func TestAdaptiveIntegersStorage(t *testing.T) {
 			t.Fatal(e)
 		}
 		rows := collect(t, s, Write, at, at.Add(time.Minute))
-		if len(rows) != 2 || !bytes.Equal(rows[0], full) || !bytes.Equal(rows[1], sparse) {
+		if len(rows) != 2 || !sameSeedData(t, l, rows[0], full) || !sameSeedData(t, l, rows[1], sparse) {
 			t.Fatal("native assembly mismatch")
 		}
-		if dup, e := s.Append(Write, full); e != nil || !dup {
+		if dup, e := s.Append(Write, full); e == nil || dup {
 			t.Fatal("dedup", e)
 		}
 		locations, e := s.ObjectLocations(testObject(42))
@@ -126,7 +127,7 @@ func TestAdaptiveMalformedAndVersion(t *testing.T) {
 		}
 	}
 	raw, e := l.Encode(nil, []Value{{}, Uint(7, 2)})
-	if e != nil || !bytes.Equal(raw, []byte{0x20, 0, 7}) {
+	if e != nil || !bytes.Equal(raw, []byte{0x20, 0, 0, 7}) {
 		t.Fatalf("golden %x %v", raw, e)
 	}
 	for i := 0; i < len(raw); i++ {

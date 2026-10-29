@@ -45,7 +45,7 @@ func (p *Endpoint) Resolve(ref EventReference) ([]byte, error) {
 	return s.frame(b, ref.Row, nil)
 }
 
-// A history snapshot pins its index mappings and population descriptors. Its
+// A history snapshot pins its index mappings and payload descriptors. Its
 // immutable trie prefix survives concurrent append, retention, and endpoint close.
 // Object payloads are not copied into an intermediate event collection.
 type historySource struct {
@@ -56,7 +56,7 @@ type historySource struct {
 	release       func()
 	memoryRelease func()
 	output        *nativeBuffer
-	reader        populationReader
+	reader        podsReader
 	assembler     frameAssembler
 }
 type historyLocation struct {
@@ -79,8 +79,8 @@ func (h *historySnapshot) close() {
 			s.memoryRelease()
 			s.memoryRelease = nil
 		}
-		if s.branch.pop != nil {
-			s.branch.pop.Close()
+		if s.branch.pods != nil {
+			s.branch.pods.Close()
 		}
 		if s.release != nil {
 			s.release()
@@ -125,7 +125,7 @@ func (h *historySnapshot) visitFrames(ctx context.Context, visit func(EventRefer
 				return e
 			}
 			row := s.branch.assemblyRow(v.row)
-			output, err = s.assembler.assemble(row, raw, output)
+			output, err = s.assembler.assemble(row, raw, output, s.branch.rowLeaf(v.row))
 			if err != nil {
 				return err
 			}
@@ -183,7 +183,7 @@ func (p *Endpoint) snapshotHistory(identity string, major uint32, id Value, from
 		if !s.config.ObjectIndex || s.objects == nil {
 			return nil, ErrObjectIndexDisabled
 		}
-		object := s.layout.IdentityValue(s.layout.Object, id)
+		object := s.layout.NormalizeIntegerWidth(s.layout.Object, id)
 		if e := s.validateObject(object); e != nil {
 			return nil, e
 		}
@@ -194,7 +194,7 @@ func (p *Endpoint) snapshotHistory(identity string, major uint32, id Value, from
 		}
 		// Sealing belongs to maintenance/ingress. Replay reads merge durable
 		// pending data and committed data without initiating disk writes.
-		source := &historySource{layout: s.layout, row: s.row, branch: branchStore{baseRows: b.baseRows, popRetired: b.popRetired, blockBase: b.blockBase, layout: s.layout, runs: append([]Run(nil), b.runs...), generation: b.generation, popEnd: b.popEnd, time: b.time, timeAnchor: b.timeAnchor}, trie: sharedTrie{nodes: s.trie.nodes}, reader: populationReader{point: true}}
+		source := &historySource{layout: s.layout, row: s.row, branch: branchStore{baseRows: b.baseRows, podsRetired: b.podsRetired, blockBase: b.blockBase, layout: s.layout, runs: append([]Run(nil), b.runs...), generation: b.generation, podsEnd: b.podsEnd, time: b.time, timeAnchor: b.timeAnchor}, trie: sharedTrie{nodes: s.trie.nodes}, reader: podsReader{point: true}}
 		source.memoryRelease = b.pinMemory()
 		source.output = s.memory.buffer()
 		source.assembler = frameAssembler{layout: source.layout, trie: &source.trie}
@@ -213,14 +213,18 @@ func (p *Endpoint) snapshotHistory(identity string, major uint32, id Value, from
 		}
 		for _, row := range selected {
 			var event [16]byte
-			copy(event[:], b.rowID(row))
+			identity, err := source.contextIdentity(b, row)
+			if err != nil {
+				return nil, err
+			}
+			copy(event[:], identity)
 			raw := b.live.get(event[:], false, s.config.Now())
-			if raw == nil && source.branch.pop == nil {
+			if raw == nil && source.branch.pods == nil {
 				source.branch.rows, source.release, e = b.snapshotIndex()
 				if e != nil {
 					return nil, e
 				}
-				source.branch.pop, e = os.Open(b.pop.Name())
+				source.branch.pods, e = os.Open(b.pods.Name())
 				if e != nil {
 					return nil, e
 				}
@@ -241,4 +245,12 @@ func (p *Endpoint) snapshotHistory(identity string, major uint32, id Value, from
 		return h.locations[i].binding < h.locations[j].binding
 	})
 	return h, nil
+}
+
+func (s *historySource) contextIdentity(b *branchStore, row uint64) ([]byte, error) {
+	raw, err := s.reader.read(b, row, s.row)
+	if err != nil {
+		return nil, err
+	}
+	return s.layout.seedIdentity(raw, b.rowTime(row))
 }

@@ -9,6 +9,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 	"time"
@@ -45,7 +46,7 @@ func objectText(l *Layout, text string) (Value, error) {
 	}
 	field := l.Definition.Fields[l.Object]
 	switch field.Type {
-	case "U8", "U16", "U32", "U64":
+	case "U8", "U16", "U24", "U32", "U64":
 		n, e := strconv.ParseUint(text, 10, l.Widths[l.Object]*8)
 		if e != nil {
 			return Value{}, fmt.Errorf("invalid %s identity", field.Type)
@@ -82,8 +83,9 @@ func (p *Endpoint) replayHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	q := r.URL.Query()
+	collectionHistory := strings.HasPrefix(r.URL.Path, "/collections/")
 	for key := range q {
-		if key != "cache" && key != "collection" && key != "id" && !(r.URL.Path == "/objects/state" && key == "token") && !(r.URL.Path == "/objects/history" && (key == "from" || key == "to")) {
+		if key != "cache" && key != "collection" && !(key == "id" && !collectionHistory) && !(r.URL.Path == "/objects/state" && key == "token") && !((r.URL.Path == "/objects/history" || collectionHistory) && (key == "from" || key == "to")) {
 			http.Error(w, "unsupported object selection parameter", 400)
 			return
 		}
@@ -92,7 +94,15 @@ func (p *Endpoint) replayHTTP(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	if !q.Has("id") {
+	idText := q.Get("id")
+	if collectionHistory {
+		var err error
+		idText, err = url.PathUnescape(strings.TrimPrefix(r.URL.EscapedPath(), "/collections/"))
+		if err != nil {
+			http.Error(w, "invalid object id", 400)
+			return
+		}
+	} else if !q.Has("id") {
 		http.Error(w, "object id required", 400)
 		return
 	}
@@ -113,7 +123,7 @@ func (p *Endpoint) replayHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	l := api.Store.layout
-	id, err := objectText(l, q.Get("id"))
+	id, err := objectText(l, idText)
 	if err != nil {
 		http.Error(w, err.Error(), 400)
 		return
@@ -149,8 +159,21 @@ func (p *Endpoint) replayHTTP(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "PIL-Version: 2 required", 426)
 		return
 	}
-	from, err := time.Parse(time.RFC3339Nano, q.Get("from"))
-	to, endErr := time.Parse(time.RFC3339Nano, q.Get("to"))
+	fromText, toText := q.Get("from"), q.Get("to")
+	if collectionHistory {
+		if !q.Has("from") {
+			fromText = time.UnixMilli(0).UTC().Format(time.RFC3339Nano)
+		}
+		if !q.Has("to") {
+			now := time.Now()
+			if p.config.Now != nil {
+				now = p.config.Now()
+			}
+			toText = now.UTC().Format(time.RFC3339Nano)
+		}
+	}
+	from, err := time.Parse(time.RFC3339Nano, fromText)
+	to, endErr := time.Parse(time.RFC3339Nano, toText)
 	if err != nil || endErr != nil || !from.Before(to) {
 		http.Error(w, "invalid history time window", 400)
 		return
@@ -211,7 +234,7 @@ func (p *Endpoint) replayHTTP(w http.ResponseWriter, r *http.Request) {
 	if err == nil {
 		err = history.visitBorrowed(r.Context(), func(ref EventReference, raw []byte) error {
 			stream := streams[ref.Definition]
-			return writeEvent(out, layouts[stream], stream, raw, hasCompression(r))
+			return writeEvent(out, stream, raw)
 		})
 	}
 	if err == nil {

@@ -1,22 +1,21 @@
 package cache
 
-// The blind receiver keeps incoming CBOR intact. It does not infer a permanent
-// schema from an example, nor put arbitrary attributes into the shared trie.
+// Blind formats are decoded at ingress. Only native PIL objects reach storage.
 import (
-	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
-	"os"
-	"path/filepath"
+	pil "github.com/AuthenticityLabs/pill-packer/go/codec"
+	"github.com/fxamacker/cbor/v2"
 	"strings"
-
 	"trie-trunk/go/codec"
 )
 
+var ingressDecoder, _ = (cbor.DecOptions{DupMapKey: cbor.DupMapKeyEnforcedAPF, TagsMd: cbor.TagsForbidden, MaxNestedLevels: 32, MaxArrayElements: 65536, MaxMapPairs: 65536}).DecMode()
+
 var genericLayout, genericLayoutError = compileGenericDefinition()
 
-// GenericDefinition is the built-in blind-registration definition. The optional
-// source_definition digest binds numeric CBOR keys/values to the sender's map.
+// GenericDefinition is the built-in blind-registration definition. Incoming
+// values are represented by native PIL objects with text or integer keys.
 func GenericDefinition() (*Layout, error) {
 	if genericLayoutError != nil {
 		return nil, genericLayoutError
@@ -25,7 +24,7 @@ func GenericDefinition() (*Layout, error) {
 }
 func compileGenericDefinition() (*Layout, error) {
 	return Compile(Definition{Identity: "default/logs", Version: 1 << 20,
-		Fields:   []Field{{Name: "event_id", Type: "UUID"}, {Name: "payload", Type: "CBOR"}, {Name: "source_definition", Type: "BYTES"}},
+		Fields:   []Field{{Name: "event_id", Type: "UUID"}, {Name: "payload", Type: "OBJECT"}, {Name: "source_definition", Type: "BYTES"}},
 		Resource: Binding{Format: Format, Service: "default", Resource: "logs", Major: 1, Timezone: "UTC", Roles: Roles{Event: "event_id"}},
 	})
 }
@@ -33,33 +32,37 @@ func (s *Store) generic() bool {
 	return genericLayoutError == nil && genericLayout.Digest == s.layout.Digest
 }
 
-// Retained only to inspect previously written compatibility records.
-func (s *Store) sourcePath(digest [32]byte) string {
-	return filepath.Join(s.dir, fmt.Sprintf("source-%x.map", digest))
-}
-
-func (s *Store) wrapCBOR(raw, identity, source []byte) ([]byte, error) {
+func (s *Store) wrapBlind(value any) ([]byte, error) {
+	var identity any
+	switch m := value.(type) {
+	case map[string]any:
+		identity = m["event_id"]
+	case map[any]any:
+		identity = m["event_id"]
+	}
 	var id codec.UUIDv7
 	if identity == nil {
-		var e error
-		id, e = codec.NewUUIDv7(s.config.Now())
-		if e != nil {
-			return nil, e
+		var err error
+		id, err = codec.NewUUIDv7(s.config.Now())
+		if err != nil {
+			return nil, err
 		}
 	} else {
 		var b []byte
-		if e := decoder.Unmarshal(identity, &b); e != nil {
-			var text string
-			if e = decoder.Unmarshal(identity, &text); e != nil {
-				return nil, fmt.Errorf("event_id must be a UUIDv7")
-			}
-			if len(text) != 36 || text[8] != '-' || text[13] != '-' || text[18] != '-' || text[23] != '-' {
+		switch v := identity.(type) {
+		case []byte:
+			b = v
+		case string:
+			if len(v) != 36 || v[8] != '-' || v[13] != '-' || v[18] != '-' || v[23] != '-' {
 				return nil, fmt.Errorf("invalid event_id")
 			}
-			b, e = hex.DecodeString(strings.ReplaceAll(text, "-", ""))
-			if e != nil {
-				return nil, e
+			var err error
+			b, err = hex.DecodeString(strings.ReplaceAll(v, "-", ""))
+			if err != nil {
+				return nil, err
 			}
+		default:
+			return nil, fmt.Errorf("event_id must be UUIDv7")
 		}
 		if len(b) != 16 {
 			return nil, fmt.Errorf("invalid event_id")
@@ -69,6 +72,14 @@ func (s *Store) wrapCBOR(raw, identity, source []byte) ([]byte, error) {
 			return nil, fmt.Errorf("event_id must be UUIDv7")
 		}
 	}
+	payload, err := pil.MarshalObject(value)
+	if err != nil {
+		return nil, err
+	}
+	return s.wrapObject(payload, id, nil)
+}
+
+func (s *Store) wrapObject(raw []byte, id codec.UUIDv7, source []byte) ([]byte, error) {
 	values := []Value{{State: Direct, Bytes: id[:]}, {State: Offset, Bytes: raw}, {State: Absent}}
 	if source != nil {
 		values[2] = Value{State: Offset, Bytes: source}
@@ -76,40 +87,36 @@ func (s *Store) wrapCBOR(raw, identity, source []byte) ([]byte, error) {
 	return s.layout.Encode(nil, values)
 }
 
-// Layout and content-addressed producer maps are immutable during inspection.
-func (s *Store) inspectRejection(raw []byte) (map[string]any, error) {
-	fields, e := s.layout.inspect(raw)
-	if e != nil || !s.generic() {
-		return fields, e
+func (s *Store) inspectRejection(raw []byte) (map[string]any, error) { return s.layout.inspect(raw) }
+
+// The blind payload may repeat its promoted event_id. Remove that top-level
+// identity from accepted storage too; rejection handling retains the input frame.
+func (s *Store) stripBlindEventID(values []Value) error {
+	if !s.generic() || values[1].State != Offset {
+		return nil
 	}
-	var f Frame
-	if e = s.layout.Scan(raw, &f); e != nil {
-		return nil, e
+	var payload any
+	if err := pil.UnmarshalObject(values[1].Bytes, &payload); err != nil {
+		return err
 	}
-	if f.Values[2].State != Offset || len(f.Values[2].Bytes) != 32 {
-		return fields, nil
+	switch m := payload.(type) {
+	case map[string]any:
+		if _, ok := m["event_id"]; !ok {
+			return nil
+		}
+		delete(m, "event_id")
+	case map[any]any:
+		if _, ok := m["event_id"]; !ok {
+			return nil
+		}
+		delete(m, "event_id")
+	default:
+		return nil
 	}
-	var digest [32]byte
-	copy(digest[:], f.Values[2].Bytes)
-	data, e := os.ReadFile(s.sourcePath(digest))
-	if e != nil {
-		return nil, e
+	raw, err := pil.MarshalObject(payload)
+	if err != nil {
+		return err
 	}
-	if sha256.Sum256(data) != digest {
-		return nil, fmt.Errorf("source map digest mismatch")
-	}
-	var d codec.Definition
-	if e = decoder.Unmarshal(data, &d); e != nil {
-		return nil, e
-	}
-	dictionary, e := codec.NewDictionary("source", d.Domains)
-	if e != nil {
-		return nil, e
-	}
-	record, e := codec.Decode(f.Values[1].Bytes, codec.CBOR)
-	if e != nil {
-		return nil, e
-	}
-	fields["payload"] = codec.Expand(record, d.Fields, dictionary)
-	return fields, nil
+	values[1] = Value{State: Offset, Bytes: raw}
+	return nil
 }

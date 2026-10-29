@@ -78,7 +78,7 @@ func (s *Store) inventoryStorage(v *storageInventory, history bool) error {
 	v.add(scope)
 	owner := storageOwner{resource: scope, branches: map[string][]string{}}
 	for branch, b := range s.branches {
-		if b.journal == nil || b.idx == nil || b.pop == nil {
+		if b.journal == nil || b.idx == nil || b.pods == nil {
 			return fmt.Errorf("incomplete physical branch inventory")
 		}
 		path := append(append([]string{}, scope...), branch.Name())
@@ -98,7 +98,7 @@ func (s *Store) inventoryStorage(v *storageInventory, history bool) error {
 			row.Events += count
 		}
 		for _, run := range b.runs {
-			add(utcHour(run.MinMS), float64(run.PopEnd-run.PopStart+(run.End-run.Start+1)*IndexRowSize), run.End-run.Start)
+			add(utcHour(run.MinMS), float64(run.PodsEnd-run.PodsStart+(run.End-run.Start+1)*IndexRowSize), run.End-run.Start)
 		}
 		// Pending descriptors expose UUID and length without decoding or copying PIL.
 		live := b.live.snapshot(nil, 0, time.UnixMilli(0), time.UnixMilli(1<<48))

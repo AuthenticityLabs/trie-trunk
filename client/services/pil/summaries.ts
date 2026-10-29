@@ -1,8 +1,11 @@
+import type {Archive} from "../store/protocol.ts";
 import {unsignedNumber as compact,unsignedBig as compactBig,shuffleColumns,type ColumnSpan,type UnsignedEncoding} from 'pill-packer/columns';
-import {inflateGzip} from 'pill-packer/gzip';
+import {expandPAC,pacHeader} from './pac.ts';
 import { readSummaryPacks, summaryBatchLimit } from './summary-packs.ts';
+import {fetchCredentialScope} from '../connections.ts';
 import { queueSummaryPacket, storeSummaryPacket } from './summary-storage.ts';
 import type { ViewSummary, ViewStatistics } from './view.ts';
+import {encodeObject} from 'pill-packer/object';
 export type SummaryDayReference = {
   key: string;
   source: string;
@@ -38,17 +41,14 @@ const hour = 3600000,
 const decoder = new TextDecoder('utf-8', {
   fatal: true
 });
-const crcTable = Uint32Array.from({
-  length: 256
-}, (_, i) => {
-  let c = i;
-  for (let j = 0; j < 8; j++) c = c & 1 ? 0x82f63b78 ^ c >>> 1 : c >>> 1;
-  return c >>> 0;
-});
-function crc32c(bytes: Uint8Array) {
-  let c = 0xffffffff;
-  for (const b of bytes) c = crcTable[(c ^ b) & 255] ^ c >>> 8;
-  return (c ^ 0xffffffff) >>> 0;
+const summaryDefinition={pil:0,definition:'trie-trunk/daily-summary',version:0,fields:[
+  {name:'day',type:'U64'},{name:'from',type:'U64'},{name:'to',type:'U64'},
+  {name:'hour',type:'U64'},{name:'sealed',type:'BOOL'},{name:'encoding',type:'BYTES'},{name:'columns',type:'BYTES'}
+]};
+let summaryDigest:Promise<string>|undefined;
+function expectedSummaryDigest() {
+  return summaryDigest??=crypto.subtle.digest('SHA-256',encodeObject(summaryDefinition).slice().buffer as ArrayBuffer).then(raw=>
+    [...new Uint8Array(raw)].map(b=>b.toString(16).padStart(2,'0')).join(''));
 }
 function u64(v: DataView, at: number, exact = true) {
   const n = Number(v.getBigUint64(at, true));
@@ -64,7 +64,7 @@ function magic(b: Uint8Array, s: string) {
   return b.length >= s.length && s.split('').every((c, i) => b[i] === c.charCodeAt(0));
 }
 type NumericEncoding=UnsignedEncoding;
-const encodingSize = 81, dayDirectory = 433;
+const encodingSize = 81;
 function readEncoding(v: DataView, at: number): NumericEncoding[] {
   return Array.from({length: 9}, (_, i) => {
     const width = v.getUint8(at + i * 9), base = v.getBigUint64(at + i * 9 + 1, true);
@@ -218,41 +218,35 @@ export function decodeSummaryHour(bytes: Uint8Array, shared?:NumericEncoding[]):
   };
 }
 export async function decodeSummaryDay(raw: Uint8Array) {
-  if (raw.length < 32 || raw.length > maximum + 32 || !magic(raw, 'SUMDAY00')) throw Error('Invalid daily summary');
-  const v = new DataView(raw.buffer, raw.byteOffset, raw.length),
-    length = v.getUint32(16, true),
-    time = u64(v, 24);
-  if (v.getUint32(12, true) !== raw.length || length < dayDirectory || length > maximum || raw[8] > 1 || raw[9] > 1 || raw[10]>1 || raw[11] || time % day) throw Error('Invalid daily summary header');
-  let bytes = raw.subarray(32);
-  if (raw[8] === 1) {
-    bytes=await inflateGzip(bytes,length,maximum);
-  }
-  if (bytes.length !== length || crc32c(bytes) !== v.getUint32(20, true)) throw Error('Summary checksum mismatch');
-  if(raw[10]&&raw[8]===0)bytes=bytes.slice();
-  const d = new DataView(bytes.buffer, bytes.byteOffset, bytes.length),
-    from = u64(d, 0),
-    to = u64(d, 8);
-  if (from < time || to > time + day || from > to || from % hour || to % hour) throw Error('Invalid day coverage');
+  if (raw.length > maximum + 16) throw Error('Summary PAC exceeds limit');
+  const expanded=await expandPAC(raw,0,maximum);
+  if(!expanded||expanded.end!==raw.length)throw Error('Invalid summary PAC');
+  const bytes=expanded.bytes,header=pacHeader(bytes,0,maximum,new Set());
+  if(!header||header.end!==bytes.length||header.common.length||header.extensions.length||header.count<1||header.count>24)throw Error('Invalid summary PAC header');
+  if(header.digest!==await expectedSummaryDigest())throw Error('Summary PAC definition mismatch');
   const hours: SummaryHour[] = [];
-  const encoding=readEncoding(d,352);
-  const rollup=Array.from({length:6},(_,i)=>d.getBigUint64(304+i*8,true));
-  let cursor = dayDirectory;
-  for (let h = 0; h < 24; h++) {
-    const offset = d.getUint32(16 + h * 12, true),
-      n = d.getUint32(20 + h * 12, true),
-      state = d.getUint32(24 + h * 12, true),
-      known = time + h * hour >= from && time + h * hour < to;
-    if (state !== (known ? 1 : 0) || !known && n || !n && offset) throw Error('Invalid hour state');
-    if (!n) continue;
-    if (offset !== cursor || n > bytes.length - offset) throw Error('Invalid hour range');
-    const chunk=bytes.subarray(offset,offset+n);
-    if(raw[10])unshuffleSummary(chunk,encoding);
-    const col = decodeSummaryHour(chunk,encoding);
-    if (col.time !== time + h * hour) throw Error('Misplaced summary hour');
-    hours.push(col);
-    cursor += n;
+  let dayStart=-1,from=-1,to=-1,sealed:boolean|undefined,cursor=header.start;
+  const view=new DataView(bytes.buffer,bytes.byteOffset,bytes.byteLength);
+  for(let i=0;i<header.count;i++){
+    if(cursor+37>header.end||bytes[cursor]!==0xaa||bytes[cursor+1]!==0xbc)throw Error('Invalid summary PAC member');
+    const direct=cursor+2;
+    const recordDay=u64(view,direct),recordFrom=u64(view,direct+8),recordTo=u64(view,direct+16),recordHour=u64(view,direct+24),recordSealed=view.getUint8(direct+32);
+    if(recordSealed>1)throw Error('Invalid summary seal state');
+    let at=direct+33;
+    const extended=()=>{const short=view.getUint16(at,true);at+=2;if(short!==65535)return short;const medium=view.getUint32(at,true);at+=4;if(medium!==0xffffffff){if(medium<65535)throw Error('Nonminimal summary offset');return medium;}const large=view.getBigUint64(at,true);at+=8;if(large<BigInt(0xffffffff)||large>BigInt(maximum))throw Error('Invalid summary offset');return Number(large);};
+    const encodingEnd=extended(),memberEnd=extended();
+    if(encodingEnd!==encodingSize||memberEnd<=encodingEnd||memberEnd>header.end-at)throw Error('Invalid summary member bounds');
+    if(i===0){dayStart=recordDay;from=recordFrom;to=recordTo;sealed=recordSealed===1;}
+    else if(dayStart!==recordDay||from!==recordFrom||to!==recordTo||sealed!==(recordSealed===1))throw Error('Summary PAC member metadata differs');
+    if(dayStart%day!==0||from<dayStart||to>dayStart+day||from>to||from%hour||to%hour||recordHour<from||recordHour>=to||Math.floor(recordHour/day)*day!==dayStart)throw Error('Invalid summary PAC coverage');
+    const encodingBytes=bytes.subarray(at,at+encodingEnd),encoding=readEncoding(new DataView(encodingBytes.buffer,encodingBytes.byteOffset,encodingBytes.byteLength),0);
+    const chunk=bytes.subarray(at+encodingEnd,at+memberEnd);
+    if(recordSealed)unshuffleSummary(chunk,encoding);
+    const col=decodeSummaryHour(chunk,encoding);
+    if(col.time!==recordHour||hours.length&&hours.at(-1)!.time>=recordHour)throw Error('Misplaced summary hour');
+    hours.push(col);cursor=at+memberEnd;
   }
-  if (cursor !== bytes.length) throw Error('Trailing daily data');
+  if(cursor!==header.end)throw Error('Trailing summary PAC data');
   const totals=[0n,0n,0n,0n,0n,0n];
   for(const c of hours){
    for(let i=0;i<c.rows;i++){
@@ -269,15 +263,15 @@ export async function decodeSummaryDay(raw: Uint8Array) {
    }
    for(let i=0;i<c.stats;i++)totals[5]+=compactBig(c.view,c.statErrors+i*c.encoding[6].width,c.encoding[6]);
   }
-  if(totals.some((v,i)=>v!==rollup[i]))throw Error('Invalid daily rollup');
+  const rollup=totals;
   return {
     rollup,
     statisticsComplete: hours.every(c => c.stats > 0),
-    day: time,
+    day:dayStart,
     from,
     to,
     hours,
-    sealed: raw[9] === 1,
+    sealed,
     bytes: bytes.length
   };
 }
@@ -322,12 +316,13 @@ export class SummaryDayCache {
   async load(ref: SummaryDayReference, token: string, fetcher: typeof fetch, signal: AbortSignal, requireStorage = false): Promise<DecodedDay> {
     return (await this.loadMany([ref], token, fetcher, signal, requireStorage))[0];
   }
-  async loadMany(refs: SummaryDayReference[], token: string, fetcher: typeof fetch, signal: AbortSignal, requireStorage = false): Promise<DecodedDay[]> {
+  async loadMany(refs: SummaryDayReference[], token: string, fetcher: typeof fetch, signal: AbortSignal, requireStorage = false, archive?:Archive): Promise<DecodedDay[]> {
     signal.throwIfAborted();
     for (const ref of refs) {
       if (!/^[a-f0-9]{64}$/.test(ref.key) || !/^[a-f0-9]{64}$/.test(ref.definition) || !/^[a-f0-9]{32}$/.test(ref.generation) || typeof ref.source !== 'string' || !Number.isSafeInteger(ref.day) || ref.day < 0 || ref.day % day || typeof ref.sealed !== 'boolean') throw Error('Invalid summary manifest');
     }
-    if(this.partition?.token !== token)this.partition={token,digest:digest(new TextEncoder().encode(token))};
+    const scope=fetchCredentialScope(fetcher,token);
+    if(this.partition?.token !== scope)this.partition={token:scope,digest:digest(new TextEncoder().encode(scope))};
     const partition = await this.partition.digest;
     type Pending = {ref:SummaryDayReference; key:string; flight:string; url:string; cache?:Cache; missing?:boolean; resolve:(day:DecodedDay)=>void; reject:(error:unknown)=>void};
     const owned:Pending[]=[];
@@ -365,6 +360,11 @@ export class SummaryDayCache {
         const prepares=await Promise.allSettled(Array.from({length:Math.min(16,owned.length)},async()=>{
           for(;;){
             signal.throwIfAborted();const item=owned[next++];if(!item)return;
+            if(archive&&item.ref.sealed){
+              const {ref}=item;
+              const bytes=(await archive(token,{kind:'summary-read',query:{tap:ref.source,digest:ref.definition,generation:ref.generation,key:ref.key}})).summaryBytes;
+              if(bytes){await complete(item,bytes,true);continue;}
+            }
             try {if(item.ref.sealed&&typeof caches!=='undefined')item.cache=await caches.open('snoot-summary-days')}catch{}
             if(requireStorage&&item.ref.sealed&&!item.cache)throw Error('Local summary storage is unavailable.');
             let raw:Uint8Array|undefined;
@@ -380,7 +380,7 @@ export class SummaryDayCache {
           const batch=missing.slice(start,start+summaryBatchLimit);
           const response=await fetcher('/summaries',{
             method:'POST',signal,cache:'no-store',
-            headers:{'Content-Type':'application/json',Accept:'application/cbor',...(token?{Authorization:`Bearer ${token}`}:{})},
+            headers:{'Content-Type':'application/json',Accept:'application/pil',...(token?{Authorization:`Bearer ${token}`}:{})},
             body:JSON.stringify({packs:batch.map(({ref:{source,definition,key}})=>({source,definition,key}))})
           });
           await readSummaryPacks(response,batch.length,maximum+32,signal,(index,raw)=>complete(batch[index],raw,false));

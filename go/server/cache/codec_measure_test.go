@@ -15,7 +15,7 @@ import (
 
 // These adapters intentionally use the existing compact CBOR implementation.
 // Field IDs and dictionary ordinals remain numeric. No expanded JSON is built.
-// This is a benchmark population adapter, not a second production file format.
+// This is a benchmark payload adapter, not a second production file format.
 func fixtureCBOR(l *Layout, values []Value) (codec.Record, error) {
 	r := codec.Record{}
 	for i, v := range values {
@@ -80,7 +80,7 @@ func scanFixtureCBOR(l *Layout, raw []byte, f *Frame) error {
 	return nil
 }
 func (s *Store) fixtureCBORReader() func(*branchStore, uint64, []byte) ([]byte, error) {
-	var reader populationReader
+	var reader podsReader
 	return func(b *branchStore, number uint64, dst []byte) ([]byte, error) {
 		raw, e := reader.read(b, number, s.row)
 		if e != nil {
@@ -90,11 +90,11 @@ func (s *Store) fixtureCBORReader() func(*branchStore, uint64, []byte) ([]byte, 
 		if e = scanFixtureCBOR(s.layout, raw, &f); e != nil {
 			return nil, e
 		}
-		return s.expandFrame(b.assemblyRow(number), &f, dst)
+		return s.expandFrame(b.assemblyRow(number), &f, dst, b.rowLeaf(number))
 	}
 }
 
-func TestMeasurePopulationCodecs(t *testing.T) {
+func TestMeasurePayloadCodecs(t *testing.T) {
 	n := measurementSize(t)
 	sparse := os.Getenv("TRUNK_MEASURE_SHAPE") == "sparse"
 	profile := measurementIntegerProfile(t)
@@ -126,18 +126,18 @@ func TestMeasurePopulationCodecs(t *testing.T) {
 	original := s.branches[Write]
 	alt := *original
 	alt.rows = append([]byte(nil), original.rows...)
-	alt.pop, e = os.CreateTemp(t.TempDir(), "cbor-pop-")
+	alt.pods, e = os.CreateTemp(t.TempDir(), "cbor-pods-")
 	if e != nil {
 		t.Fatal(e)
 	}
-	defer alt.pop.Close()
-	writer := bufio.NewWriterSize(alt.pop, 1<<20)
+	defer alt.pods.Close()
+	writer := bufio.NewWriterSize(alt.pods, 1<<20)
 	if _, e = writer.Write(make([]byte, headerSize)); e != nil {
 		t.Fatal(e)
 	}
 	at := uint64(headerSize)
 	// Prepare one representative committed batch for encode/decode measurements;
-	// the full population comparison below uses every record in both files.
+	// the full payload comparison below uses every record in both files.
 	var pilBatch, cborBatch [][]byte
 	var valueBatch [][]Value
 	var recordBatch []codec.Record
@@ -145,11 +145,11 @@ func TestMeasurePopulationCodecs(t *testing.T) {
 	batchSize := min(n, 1024)
 	for offset := 0; offset < len(alt.rows); offset += s.row.Width {
 		row := alt.rows[offset : offset+s.row.Width]
-		start, end, e := original.populationRange(uint64(offset/s.row.Width), s.row)
+		start, end, e := original.podsRange(uint64(offset/s.row.Width), s.row)
 		if e != nil {
 			t.Fatal(e)
 		}
-		raw, e := readBytes(original.pop, start, end)
+		raw, e := readBytes(original.pods, start, end)
 		if e != nil {
 			t.Fatal(e)
 		}
@@ -161,7 +161,7 @@ func TestMeasurePopulationCodecs(t *testing.T) {
 		if e != nil {
 			t.Fatal(e)
 		}
-		encoded, e := codec.MarshalCompact(record, codec.CBOR)
+		encoded, e := marshalBlindCBOR(record)
 		if e != nil {
 			t.Fatal(e)
 		}
@@ -182,11 +182,11 @@ func TestMeasurePopulationCodecs(t *testing.T) {
 	if e = writer.Flush(); e != nil {
 		t.Fatal(e)
 	}
-	if e = alt.pop.Sync(); e != nil {
+	if e = alt.pods.Sync(); e != nil {
 		t.Fatal(e)
 	}
-	alt.popEnd = at
-	popStat, e := original.pop.Stat()
+	alt.podsEnd = at
+	podsStat, e := original.pods.Stat()
 	if e != nil {
 		t.Fatal(e)
 	}
@@ -272,7 +272,7 @@ func TestMeasurePopulationCodecs(t *testing.T) {
 	codecTimings := map[string]timing{}
 	codecTimings["cbor_encode_1024"] = timed(t, 21, func() error {
 		for _, v := range recordBatch {
-			if _, e := codec.MarshalCompact(v, codec.CBOR); e != nil {
+			if _, e := marshalBlindCBOR(v); e != nil {
 				return e
 			}
 		}
@@ -363,10 +363,10 @@ func TestMeasurePopulationCodecs(t *testing.T) {
 	measurementWithoutObjectIndex(t, s)
 	saveMeasurement(t, map[string]any{"events": n, "sparse": sparse, "format": Format, "aggregates": false, "object_index": false, "object_index_bytes": 0, "row_width": s.row.Width, "fixture_sha256": hash, "go": runtime.Version(), "platform": runtime.GOOS + "/" + runtime.GOARCH,
 		"integer_profile": profile, "definition": l.Definition, "codec_batch_rows": batchRows, "output_contract": "standalone PIL",
-		"decoder_allocations_per_record": allocs, "population_bytes": map[string]int64{"cbor": int64(at) - headerSize, "pil": popStat.Size() - headerSize}, "index_bytes_each": len(original.rows), "query": results, "result_hashes": hashes, "matched_events": matched, "codec_batch_events": len(pilBatch), "codec": codecTimings})
+		"decoder_allocations_per_record": allocs, "payload_bytes": map[string]int64{"cbor": int64(at) - headerSize, "pil": podsStat.Size() - headerSize}, "index_bytes_each": len(original.rows), "query": results, "result_hashes": hashes, "matched_events": matched, "codec_batch_events": len(pilBatch), "codec": codecTimings})
 }
 
-func TestPopulationCodecEquivalence(t *testing.T) {
+func TestPayloadCodecEquivalence(t *testing.T) {
 	l, frames, from, to, _ := measurementFixture(t, 12, false)
 	// Include NULL and empty text as well as absent PATCH fields.
 	for i := 0; i < 2; i++ {
@@ -405,7 +405,7 @@ func TestPopulationCodecEquivalence(t *testing.T) {
 		for n := b.nextRecord(0); n < b.tail(); n = b.nextRecord(n + 1) {
 			at := int(n) * s.row.Width
 			row := b.assemblyRow(n)
-			reader := populationReader{}
+			reader := podsReader{}
 			raw, e := reader.read(b, uint64(at/s.row.Width), s.row)
 			if e != nil {
 				t.Fatal(e)
@@ -418,7 +418,7 @@ func TestPopulationCodecEquivalence(t *testing.T) {
 			if e != nil {
 				t.Fatal(e)
 			}
-			encoded, e := codec.MarshalCompact(record, codec.CBOR)
+			encoded, e := marshalBlindCBOR(record)
 			if e != nil {
 				t.Fatal(e)
 			}
@@ -426,15 +426,15 @@ func TestPopulationCodecEquivalence(t *testing.T) {
 			if e = scanFixtureCBOR(l, encoded, &other); e != nil {
 				t.Fatal(e)
 			}
-			pil, e := s.expandFrame(row, &f, nil)
+			pil, e := s.expandFrame(row, &f, nil, b.rowLeaf(n))
 			if e != nil {
 				t.Fatal(e)
 			}
-			cbor, e := s.expandFrame(row, &other, nil)
+			cbor, e := s.expandFrame(row, &other, nil, b.rowLeaf(n))
 			if e != nil {
 				t.Fatal(e)
 			}
-			if string(pil) != string(set[ordinal]) {
+			if !sameSeedData(t, l, pil, set[ordinal]) {
 				t.Fatal("expanded identity/payload differs from ingress")
 			}
 			if string(pil) != string(cbor) {
@@ -451,10 +451,10 @@ func TestPopulationCodecEquivalence(t *testing.T) {
 	}
 }
 
-// All query modes use the same bounded population reader and search traversal.
+// All query modes use the same bounded payload reader and search traversal.
 // Decoder and output strategy are the variables under measurement.
 func (s *Store) directCBORReader(r *PositionalCBOR, reuse bool) func(*branchStore, uint64, []byte) ([]byte, error) {
-	var reader populationReader
+	var reader podsReader
 	decode := func(b *branchStore, number uint64, dst []byte, f *CBORFrame) ([]byte, error) {
 		raw, e := reader.read(b, number, s.row)
 		if e != nil {
@@ -463,7 +463,7 @@ func (s *Store) directCBORReader(r *PositionalCBOR, reuse bool) func(*branchStor
 		if e = r.Scan(raw, f); e != nil {
 			return nil, e
 		}
-		return s.expandFrame(b.assemblyRow(number), &f.Frame, dst)
+		return s.expandFrame(b.assemblyRow(number), &f.Frame, dst, b.rowLeaf(number))
 	}
 	if reuse {
 		var f CBORFrame
@@ -475,7 +475,7 @@ func (s *Store) directCBORReader(r *PositionalCBOR, reuse bool) func(*branchStor
 	}
 }
 func (s *Store) reusingPILReader() func(*branchStore, uint64, []byte) ([]byte, error) {
-	var reader populationReader
+	var reader podsReader
 	var f Frame
 	return func(b *branchStore, number uint64, dst []byte) ([]byte, error) {
 		raw, e := reader.read(b, number, s.row)
@@ -485,6 +485,6 @@ func (s *Store) reusingPILReader() func(*branchStore, uint64, []byte) ([]byte, e
 		if e = s.layout.Scan(raw, &f); e != nil {
 			return nil, e
 		}
-		return s.expandFrame(b.assemblyRow(number), &f, dst)
+		return s.expandFrame(b.assemblyRow(number), &f, dst, b.rowLeaf(number))
 	}
 }

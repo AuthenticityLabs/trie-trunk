@@ -28,7 +28,7 @@ func (s *Store) collectionIdentity() error {
 		return fmt.Errorf("collection index requires unsigned revision_id")
 	}
 	switch s.layout.Definition.Fields[s.layout.Revision].Type {
-	case "U8", "U16", "U32", "U64":
+	case "U8", "U16", "U24", "U32", "U64":
 		return nil
 	}
 	return fmt.Errorf("collection index requires unsigned revision_id")
@@ -173,7 +173,7 @@ func (s *Store) indexObjects(b *branchStore) error {
 	if through == tail {
 		return nil
 	}
-	reader := populationReader{}
+	reader := podsReader{}
 	var frame Frame
 	for through < tail {
 		end := min(through+1024, tail)
@@ -183,7 +183,7 @@ func (s *Store) indexObjects(b *branchStore) error {
 			if e != nil {
 				return e
 			}
-			if e = s.layout.IdentityFrame(raw, &frame); e != nil {
+			if e = s.layout.Scan(raw, &frame); e != nil {
 				return e
 			}
 			object := frame.Values[s.layout.Object]
@@ -219,7 +219,7 @@ func (s *Store) ObjectLocations(id Value) ([]ObjectLocation, error) {
 func (s *Store) objectLocations(id Value) ([]ObjectLocation, error) {
 	s.waitSealing()
 	if s.layout.Object >= 0 {
-		id = s.layout.IdentityValue(s.layout.Object, id)
+		id = s.layout.NormalizeIntegerWidth(s.layout.Object, id)
 	}
 	if e := s.check(); e != nil {
 		return nil, e
@@ -294,7 +294,7 @@ func (s *Store) objectRows(b *branchStore, id Value, from, to time.Time) ([]uint
 		if e != nil {
 			return
 		}
-		ms := b.hourOrigin() + int64(a.Hour)*TimeHourMS + indexDelta(b.row(row))
+		ms := b.rowTime(row)
 		if ms >= lo && ms < hi {
 			selected = append(selected, row)
 		}

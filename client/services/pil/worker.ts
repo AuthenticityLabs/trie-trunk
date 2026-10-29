@@ -1,13 +1,13 @@
 import { storagePort } from "../store/client.ts";
 import wasmURL from "../../assets/pil.wasm?url";
-import { workerService } from "./worker-runtime.ts";
+import { connectionWorker } from "./connection-worker.ts";
 import { checkResponse } from "./stream.ts";
 const modulePromise = fetch(wasmURL).then(async (response) => {
   await checkResponse(response);
   return WebAssembly.compileStreaming(response);
 });
 modulePromise.catch(() => {});
-const service = workerService(modulePromise);
+const service = connectionWorker(modulePromise);
 function connect(port: MessagePort) {
   port.onmessage = (event) => {
     if (event.data?.kind === "connect-storage" && event.ports[0])

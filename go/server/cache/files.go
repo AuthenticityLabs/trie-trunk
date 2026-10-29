@@ -82,7 +82,7 @@ func openFile(path, magic string, digest [32]byte, generation [16]byte, rowWidth
 	return f, nil
 }
 
-// A .journal commit is the publication point for previously synced row/pop bytes.
+// A .journal commit is the publication point for previously synced row/pods bytes.
 // An incomplete last journal record is discarded; a complete corrupt one fails.
 func records(f *os.File, visit func([]byte) error) error {
 	return boundedRecords(f, MaxFrame, visit)

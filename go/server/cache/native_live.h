@@ -10,6 +10,7 @@ void trunk_live_free(void *);
 bool trunk_live_room(const void *, int64_t);
 bool trunk_live_put(const void *, TrunkLiveRecord, const uint8_t *, uint64_t, bool, int64_t);
 TrunkLiveRecord trunk_live_get(const void *, TrunkLiveId, bool, int64_t);
+TrunkLiveRecord trunk_live_row(const void *, int64_t, uint64_t, int64_t);
 bool trunk_live_revision(const void *, const uint8_t *, uint64_t);
 void trunk_live_prune(const void *, int64_t);
 void trunk_live_finish(const void *, int64_t);

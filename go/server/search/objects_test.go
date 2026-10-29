@@ -32,7 +32,7 @@ func TestNamedObjectsShareVersionAndPILRetainsTap(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		data, err = codec.MarshalCompact(codec.Record{0: id, 1: uint64(1), 2: name}, codec.CBOR)
+		data, err = codec.MarshalCompact(codec.Record{0: id, 1: uint64(1), 2: name}, codec.PIL)
 		if err != nil {
 			t.Fatal(err)
 		}

@@ -1,7 +1,18 @@
 import { restoreCacheError } from "./errors.ts";
-import type { Archive } from "./protocol.ts";
+import type { Archive, Command } from "./protocol.ts";
 // The tab transfers this channel between the SharedWorker and its dedicated
 // file worker. PIL batches never pass through the UI on their way to storage.
+// Native PAC buffers are owned by the decoder's delivery callback. A queued
+// storage command consumes them; shared definitions/index chunks remain borrowed.
+export function storageTransfers(command:Command):ArrayBuffer[]{
+ if(command.kind==='save')return [command.batch.bytes,command.batch.rows.buffer as ArrayBuffer];
+ if(command.kind!=='native-records'&&command.kind!=='native-finish')return [];
+ const owned=new Set<ArrayBuffer>();
+ for(const {record} of command.records??[])if(record.kind==='pac')for(const bytes of [record.bytes,record.bounds]){
+  if(bytes.buffer instanceof ArrayBuffer&&bytes.byteOffset===0&&bytes.byteLength===bytes.buffer.byteLength)owned.add(bytes.buffer);
+ }
+ return [...owned];
+}
 export function storagePort(port: MessagePort): Archive {
   let next = 0;
   const pending = new Map<
@@ -26,9 +37,7 @@ export function storagePort(port: MessagePort): Archive {
       pending.set(id, { resolve, reject });
       port.postMessage(
         { id, token, command },
-        command.kind === "save"
-          ? [command.batch.bytes, command.batch.rows.buffer as ArrayBuffer]
-          : [],
+        storageTransfers(command),
       );
     });
   archive.close = () => {

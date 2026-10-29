@@ -1,24 +1,20 @@
 package codec
 
 import (
-	"bytes"
 	"encoding/json"
+	pil "github.com/AuthenticityLabs/pill-packer/go/codec"
 	"testing"
 )
 
 func TestSymbolWireBoundaries(t *testing.T) {
-	for _, tc := range []struct {
-		id    uint16
-		bytes []byte
-	}{
-		{1, []byte{1}}, {23, []byte{23}}, {24, []byte{0x18, 24}}, {255, []byte{0x18, 255}}, {256, []byte{0x19, 1, 0}}, {65535, []byte{0x19, 255, 255}},
-	} {
-		got, err := Ref(tc.id).MarshalCBOR()
-		if err != nil || !bytes.Equal(got, tc.bytes) {
-			t.Fatalf("%d: %x %v", tc.id, got, err)
+	for _, id := range []uint16{1, 23, 24, 255, 256, 65535} {
+		got, err := MarshalCompact(Ref(id), PIL)
+		var n uint64
+		if err != nil || pil.UnmarshalObject(got, &n) != nil || n != uint64(id) {
+			t.Fatal(id, err)
 		}
 	}
-	for _, format := range []Format{CompactJSON, CBOR} {
+	for _, format := range []Format{CompactJSON, PIL} {
 		data, err := Encode(Record{0: Ref(2), 1: Text("2")}, nil, nil, format)
 		if err != nil {
 			t.Fatal(err)
@@ -77,5 +73,14 @@ func TestDecodeRejectsMalformed(t *testing.T) {
 	}
 	if _, err := Decode([]byte{0xa2, 1, 2, 1, 3}, CBOR); err == nil {
 		t.Fatal("accepted duplicate CBOR keys")
+	}
+}
+
+func TestCBOROutputIsUnsupported(t *testing.T) {
+	if _, err := MarshalCompact(Record{1: "value"}, CBOR); err == nil {
+		t.Fatal("CBOR output is supported")
+	}
+	if _, err := Encode(Record{1: "value"}, nil, nil, CBOR); err == nil {
+		t.Fatal("CBOR output is supported")
 	}
 }

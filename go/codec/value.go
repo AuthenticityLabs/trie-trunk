@@ -36,7 +36,6 @@ func Object(values map[string]Value) Value {
 	return Value{r}
 }
 func (v Value) MarshalJSON() ([]byte, error) { return json.Marshal(v.data) }
-func (v Value) MarshalCBOR() ([]byte, error) { return enc.Marshal(v.data) }
 
 // LimitText limits UTF-8 bytes without splitting a code point.
 func LimitText(s string, max int) string {
@@ -89,3 +88,5 @@ func (v Value) Sanitize(maxText, maxItems, depth int, sensitive map[string]bool)
 		return v
 	}
 }
+
+func (v Value) PILValue() any { return v.data }

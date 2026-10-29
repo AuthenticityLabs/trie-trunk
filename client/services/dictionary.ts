@@ -47,6 +47,7 @@ export type LogEvent = Values & {
   readonly uuid: string;
   readonly millis: number;
   readonly pil?: true;
+  readonly stateLeaf?: number;
 };
 
 function object(value: unknown): Record<string, unknown> {
@@ -241,6 +242,11 @@ export function pack(value: unknown, field?: Field): unknown {
 }
 
 function packObject(value: unknown, fields: Fields): Values {
+  if(value instanceof Map){
+    const source=Object.create(null);
+    for(const [key,v] of value){const name=String(key);if(Object.hasOwn(source,name))throw Error("Duplicate projected field name.");source[name]=v}
+    value=source;
+  }
   const source = object(value);
   const shape = layout(fields, Object.keys(source), 1);
   const values = shape.keys.map((key, i) => pack(source[key], shape.fields[i]));

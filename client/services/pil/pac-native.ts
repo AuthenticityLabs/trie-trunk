@@ -1,3 +1,5 @@
+import {timeFromLowWord,seedKey} from '../seed-identity.ts';
+export const INDEX_ROW_BYTES=6;
 import type { PACHeader } from './pac.ts';
 export const nativePAC = 0x5454524b;
 export type PACPlacement = {
@@ -33,21 +35,12 @@ export function pacPlacement(pac:PACHeader):PACPlacement {
 }
 /** Immutable index rows are identical on both ends. Validate; do not rewrite. */
 export function pacLocalRows(p:PACPlacement,server:Uint8Array,lengths:Uint32Array):Uint8Array {
- if(BigInt(lengths.length)!==p.rows||server.length!==lengths.length*16)throw Error('PAC row count mismatch');
- const v=new DataView(server.buffer,server.byteOffset,server.byteLength);let end=0,marker=0;let previous=-1n;
- for(let i=0;i<lengths.length;i++) { const page=(p.memberStart+BigInt(end))/BigInt(p.pageSize);if(page!==previous){const m=p.pages[marker++];if(!m||m.row!==BigInt(i)||m.page!==page)throw Error("PAC page marker mismatch");previous=page} if(!lengths[i])throw Error('Empty PAC member');if(end>0xffffffff||v.getUint32(i*16+12,true)!==end)throw Error('PAC member start mismatch');end+=lengths[i]; }
+ if(BigInt(lengths.length)!==p.rows||server.length!==lengths.length*INDEX_ROW_BYTES)throw Error('PAC row count mismatch');
+ let end=0,marker=0;let previous=-1n;
+ for(let i=0;i<lengths.length;i++) { const page=(p.memberStart+BigInt(end))/BigInt(p.pageSize);if(page!==previous){const m=p.pages[marker++];if(!m||m.row!==BigInt(i)||m.page!==page)throw Error("PAC page marker mismatch");previous=page} if(!lengths[i])throw Error('Empty PAC member');end+=lengths[i]; }
  if(marker!==p.pages.length)throw Error("PAC page markers mismatch");
  if(BigInt(end)!==p.memberBytes)throw Error('PAC member extent mismatch');
  return server.slice();
 }
-export function indexMillis(row:Uint8Array,base:number):number { return base+row[0]*16384+row[1]*64+(row[2]>>>2); }
-export function indexUUID(row:Uint8Array,base:number):Uint8Array {
- if(row.length!==16)throw Error('Invalid index row');
- const id=new Uint8Array(16);let ms=indexMillis(row,base);
- for(let i=5;i>=0;i--){id[i]=ms%256;ms=Math.floor(ms/256);}
- // Work in small bit windows; no BigInt on the per-event decode path.
- id[6]=0x70|((row[2]&3)<<2)|(row[3]>>>6);
- id[7]=((row[3]&63)<<2)|(row[4]>>>6);
- id[8]=0x80|(row[4]&63);
- id.set(row.subarray(5,12),9);return id;
-}
+export function indexMillis(row:Uint8Array,base:number):number {if(row.length!==INDEX_ROW_BYTES)throw Error('Invalid index row');return timeFromLowWord(new DataView(row.buffer,row.byteOffset,row.byteLength).getUint32(0,true),base);}
+export function indexUUID(row:Uint8Array,base:number,ordinal:number):Uint8Array{return seedKey(ordinal,indexMillis(row,base));}

@@ -79,6 +79,10 @@ export default function Research(props:ResearchProps) {
   onCleanup(()=>{flush();generation++;cancel();removeEventListener('pagehide',flush)});
   async function load(query=draft(),saved?:ResearchState){
     const current=generation;
+    if(props.transient&&history()){
+      query={...query,to:new Date().toISOString().slice(0,-1)};
+      setTo(query.to);
+    }
     cancel();changes=new ChangeHistory();submitted={...query};restoring=!!saved;position=saved?.position??{top:0,left:0};
     const controller=new AbortController();abort=controller;
     setBusy(true);setError("");setFinished(false);setObserved(undefined);setValidation("");setVisibleCount(props.pageSize);scroll?.scrollTo({top:0});setSelected(undefined);

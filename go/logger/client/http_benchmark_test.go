@@ -18,7 +18,7 @@ func BenchmarkHTTP(b *testing.B) {
 			name = "Error"
 		}
 		b.Run(name, func(b *testing.B) {
-			l := testLogger(b, io.Discard, Config{Format: codec.CBOR, Service: codec.Ref(1)})
+			l := testLogger(b, io.Discard, Config{Format: codec.PIL, Service: codec.Ref(1)})
 			failure := models.New(models.INVALID_INPUT)
 			handler := l.Handle(func(w http.ResponseWriter, r *http.Request) error {
 				if failed {

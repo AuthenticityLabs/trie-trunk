@@ -1,3 +1,4 @@
+import { decodeObject, encodeObject } from "pill-packer/object";
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
@@ -6,20 +7,19 @@ import { PILStream } from "./pil/stream.ts";
 import { compile } from "./pil/metadata.ts";
 import { PILEvent } from "./pil/event.ts";
 import { read } from "./pil/layout.ts";
-import { cbor } from "./pil/cbor.ts";
-import { cb } from "./pil-fixtures.mjs";
+import { pilObject } from "./pil-fixtures.mjs";
 import { valueAt } from "./dictionary.ts";
 import { StoreCodec } from "./store/wasm.ts";
 const load = n => new Uint8Array(readFileSync(new URL(`./fixtures/native-pil/${n}`,import.meta.url)));
-const pil = load("definition.cbor"), original = load("frame.pil");
+const pil = load("definition.rx"), original = load("frame.pil");
 const module = await WebAssembly.compile(readFileSync(new URL("../assets/pil.wasm",import.meta.url)));
 test("REF16 translation metadata preserves ordinary PIL decoding in Rust/WASM and the view", async () => {
- const definition = new Uint8Array(readFileSync(new URL("./fixtures/references/definition.cbor", import.meta.url)));
+ const definition = new Uint8Array(readFileSync(new URL("./fixtures/references/definition.rx", import.meta.url)));
  const frame = new Uint8Array(readFileSync(new URL("./fixtures/references/frame.pil", import.meta.url)));
  const codec = new Codec(await WebAssembly.instantiate(module));
  const handle = codec.define(definition); codec.upload(frame);
  assert.equal(codec.scan(handle, 0, frame.length), frame.length);
- const layout = cbor(definition);
+ const layout = decodeObject(definition);
  assert.equal(layout.resource.references.length, 2);
  assert.deepEqual(read(frame, layout, 0), [4, 65535, 0]);
  assert.equal(read(frame, layout, 3), 65535);
@@ -38,10 +38,12 @@ test("Go HTTP native stream → WASM validator → byte-backed Snoot event",asyn
  });
  const bytes=load("collect.pil");for(let i=0;i<bytes.length;i+=17)await stream.feed(bytes.subarray(i,i+17));stream.finish();
  assert.equal(rows.length,1);assert.deepEqual(rows[0].encoded(),original);
- assert.equal(valueAt(rows[0],"id"),42);assert.equal(valueAt(rows[0],"revision_id"),1);
+ assert.equal(valueAt(rows[0],"id"),"00000000-0000-7000-8000-00000000002a");assert.equal(valueAt(rows[0],"revision_id"),1);
  assert.equal(valueAt(rows[0],"duration"),11);assert.equal(valueAt(rows[0],"state"),"authorized");assert.equal(valueAt(rows[0],"amount"),999);
  assert.equal(rows[0].dictionary.revisionIdentity?.name,"revision_id");
- assert.equal(rows[0].orderedKeys().length,7);stream.close();
+ assert.equal(rows[0].orderedKeys().length,8);
+ assert.equal(valueAt(rows[0],"@time"),rows[0].millis);
+ assert.equal(valueAt(rows[0],"@event_id"),undefined);stream.close();
 });
 test("native browser persistence keeps PIL bytes, including integer widths",async()=>{
  const mod=await WebAssembly.compile(readFileSync(new URL("../assets/trunk-store.wasm",import.meta.url)));
@@ -56,7 +58,7 @@ test("signed values and selectors crossing a byte retain their declared logical 
  const definition={pil:1,definition:"mixed",version:1,adaptive_integers:"16",fields:[{name:"a",type:"I16"},...Array.from({length:4},(_,i)=>({name:`b${i}`,type:"I64"})),{name:"text",type:"STRING"}]};
  // Five DIRECT values (9 selector bits), then an OFFSET string. All signed -1.
  const row=Uint8Array.of(0xaa,0xb0,0,0,255,255,255,255,255,1,0,120);
- const c=new Codec(await WebAssembly.instantiate(module));const h=c.define(cb(definition));c.upload(row);assert.equal(c.scan(h,0,row.length),row.length);
+ const c=new Codec(await WebAssembly.instantiate(module));const h=c.define(encodeObject(definition));c.upload(row);assert.equal(c.scan(h,0,row.length),row.length);
  for(let i=0;i<5;i++)assert.equal(read(row,definition,i),-1);assert.equal(read(row,definition,5),"x");
 });
 

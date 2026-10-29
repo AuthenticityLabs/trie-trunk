@@ -25,7 +25,7 @@ func TestPositionalCBORDifferential(t *testing.T) {
 		if e != nil {
 			t.Fatal(e)
 		}
-		b, e := codec.MarshalCompact(record, codec.CBOR)
+		b, e := marshalBlindCBOR(record)
 		if e != nil {
 			t.Fatal(e)
 		}
@@ -90,7 +90,7 @@ func TestPositionalCBORValidation(t *testing.T) {
 		}
 	}
 	bad := [][]byte{
-		{}, {0x80}, {0xbf, 0xff}, {0xa1, 0x20, 0}, {0xa1, 12, 0}, {0xa1, 0x61, 'a', 0},
+		{}, {0x80}, {0xbf, 0xff}, {0xa1, 0x20, 0}, {0xa1, 23, 0}, {0xa1, 0x61, 'a', 0},
 		{0xa2, 7, 0xf6, 7, 0x60}, // duplicate with NULL first
 		{0xa1, 7, 0x61, 0xff}, {0xa1, 7, 0x7f, 0xff},
 		{0xa1, 11, 0x1b, 0, 0, 0, 1, 0, 0, 0, 0},       // U32 overflow
@@ -107,7 +107,7 @@ func TestPositionalCBORValidation(t *testing.T) {
 }
 
 func TestPositionalCBORScalars(t *testing.T) {
-	types := []string{"I8", "I16", "I32", "I64", "U8", "U16", "U32", "U64", "REF16", "BOOL", "F32", "F64", "TIMESTAMP_MS", "TIMESTAMP_US", "TIMESTAMP_NS", "BYTES", "UUID"}
+	types := []string{"I8", "I16", "I32", "I64", "U8", "U16", "U24", "U32", "U64", "REF16", "BOOL", "F32", "F64", "TIMESTAMP_MS", "TIMESTAMP_US", "TIMESTAMP_NS", "BYTES", "UUID"}
 	for _, kind := range types {
 		t.Run(kind, func(t *testing.T) {
 			l := testLayout(t, false)
@@ -151,7 +151,7 @@ func TestPositionalCBORScalars(t *testing.T) {
 				values = []any{bytes.Repeat([]byte{0xab}, 16)}
 			}
 			for _, v := range values {
-				raw, e := codec.MarshalCompact(codec.Record{6: v}, codec.CBOR)
+				raw, e := marshalBlindCBOR(codec.Record{6: v})
 				if e != nil {
 					t.Fatal(e)
 				}
@@ -246,7 +246,7 @@ func FuzzPositionalCBOR(f *testing.F) {
 		if r.Scan(raw, &frame) != nil {
 			return
 		}
-		if e := decoder.Valid(raw); e != nil {
+		if e := ingressDecoder.Valid(raw); e != nil {
 			t.Fatalf("accepted invalid CBOR: %v", e)
 		}
 		pil, e := l.Encode(nil, frame.Values)
@@ -264,7 +264,7 @@ func TestPositionalCBORDefinitionAndNarrowTypes(t *testing.T) {
 	if _, e := CompilePositionalCBOR(nil); e == nil {
 		t.Fatal("accepted nil layout")
 	}
-	for _, kind := range []string{"ARRAY<U16>", "CBOR"} {
+	for _, kind := range []string{"ARRAY<U16>", "OBJECT"} {
 		d := testLayout(t, false).Definition
 		d.Fields[6].Type = kind
 		l, e := Compile(d)

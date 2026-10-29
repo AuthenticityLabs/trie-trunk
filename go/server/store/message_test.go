@@ -6,7 +6,7 @@ import (
 	"trie-trunk/go/codec"
 )
 
-func TestDictionaryMessageRemainsInPopulation(t *testing.T) {
+func TestDictionaryMessageRemainsInPayload(t *testing.T) {
 	d := testDefinition()
 	d.Fields[15] = codec.Field{Name: "message", Enums: map[uint16]string{1: "Successful transaction.", 2: "Transaction failed."}}
 	revision, _, err := d.Prepare()
@@ -26,7 +26,7 @@ func TestDictionaryMessageRemainsInPopulation(t *testing.T) {
 		data, err := codec.MarshalCompact(codec.Record{
 			8: id, 12: uint64(100),
 			3: uint64(3), 15: message,
-		}, codec.CBOR)
+		}, codec.PIL)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -37,12 +37,12 @@ func TestDictionaryMessageRemainsInPopulation(t *testing.T) {
 		if len(event.Path) != 1 || event.Path[0].Key != 3 {
 			t.Fatalf("message %v changed the trie lineage: %+v", message, event.Path)
 		}
-		var population map[codec.Key]any
-		if err := decoder.Unmarshal(event.Dynamic, &population); err != nil {
+		var payload map[codec.Key]any
+		if err := decoder.Unmarshal(event.Dynamic, &payload); err != nil {
 			t.Fatal(err)
 		}
-		if population[15] != message {
-			t.Fatalf("population message = %v, want %v", population[15], message)
+		if payload[15] != message {
+			t.Fatalf("payload message = %v, want %v", payload[15], message)
 		}
 	}
 }

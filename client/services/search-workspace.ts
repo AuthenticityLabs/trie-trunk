@@ -3,6 +3,7 @@ import type { Parameters } from './search';
 import type { ViewQuery } from './pil/view';
 import { normalizePosition, type ScrollPosition } from './ui-position.ts';
 export type TabState = {
+ connection?:string;
  queryText?:string; version:1; page:Page; collapsed:boolean; tap:string; range:string; from:string; to:string;
  localParameters:Parameters; localTap:string; localFrom:string; localTo:string;
  searchView?:'events'|'charts'; query?:ViewQuery; pageSize:number; scroll:number; positions?:Partial<Record<Page,ScrollPosition>>;
@@ -10,7 +11,8 @@ export type TabState = {
 export function restoreWorkspace(value:unknown):TabState|undefined {
  if(!value||typeof value!=='object')return;
  const state=value as TabState;
- if(!state||state.version!==1||!['Search','Dashboards','Alerts','Collections','Configs'].includes(state.page)||
+ if(!state||state.version!==1||!['Search','Dashboards','Alerts','Collections','Configs','Profile'].includes(state.page)||
+  (state.connection!==undefined&&typeof state.connection!=='string')||
   (state.queryText!==undefined&&typeof state.queryText!=='string')||
   (state.searchView!==undefined&&!['events','charts'].includes(state.searchView))||
   typeof state.collapsed!=='boolean'||

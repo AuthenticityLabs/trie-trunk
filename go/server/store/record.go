@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/fxamacker/cbor/v2"
+	pil "github.com/AuthenticityLabs/pill-packer/go/codec"
 	"trie-trunk/go/codec"
 )
 
@@ -16,8 +16,14 @@ var (
 	ErrClosed   = errors.New("store closed")
 	ErrInvalid  = errors.New("invalid log record")
 )
-var diskEncoder, _ = cbor.CoreDetEncOptions().EncMode()
-var decoder, _ = (cbor.DecOptions{DupMapKey: cbor.DupMapKeyEnforcedAPF, MaxNestedLevels: 16, MaxArrayElements: 1024, MaxMapPairs: 256, TagsMd: cbor.TagsForbidden, IndefLength: cbor.IndefLengthForbidden}).DecMode()
+
+type objectCodec struct{}
+
+func (objectCodec) Marshal(v any) ([]byte, error)   { return pil.MarshalObject(v) }
+func (objectCodec) Unmarshal(b []byte, v any) error { return pil.UnmarshalObject(b, v) }
+
+var diskEncoder objectCodec
+var decoder objectCodec
 
 type token struct {
 	Key   codec.Key
@@ -120,7 +126,7 @@ func (s *schema) decode(data []byte) (record, error) {
 	if len(data) == 0 || len(data) > codec.MaxFramePayload {
 		return out, codec.ErrFrameSize
 	}
-	var fields map[codec.Key]cbor.RawMessage
+	var fields map[codec.Key]pil.RawObject
 	if err := decoder.Unmarshal(data, &fields); err != nil {
 		return out, fmt.Errorf("%w: %v", ErrInvalid, err)
 	}
@@ -153,7 +159,7 @@ func (s *schema) decode(data []byte) (record, error) {
 
 	for _, k := range s.path {
 		raw, ok := fields[k]
-		if !ok || raw[0]>>5 != 0 {
+		if !ok || len(raw) < 3 || raw[2] != 3 {
 			continue
 		}
 		var v uint64
@@ -182,12 +188,12 @@ func dayOf(id codec.UUIDv7) time.Time {
 
 func bucketOf(id codec.UUIDv7) uint16 { return uint16((millis(id) / 1000 % 86400) / 300) }
 
-func (s *schema) validateField(f codec.Field, raw cbor.RawMessage) error {
-	if len(raw) == 0 || raw[0] == 0xf6 {
+func (s *schema) validateField(f codec.Field, raw pil.RawObject) error {
+	if len(raw) == 0 || isNullObject(raw) {
 		return ErrInvalid
 	}
 	if f.Object != nil {
-		var fields map[codec.Key]cbor.RawMessage
+		var fields map[codec.Key]pil.RawObject
 		if decoder.Unmarshal(raw, &fields) != nil || fields == nil {
 			return ErrInvalid
 		}
@@ -203,7 +209,7 @@ func (s *schema) validateField(f codec.Field, raw cbor.RawMessage) error {
 		return nil
 	}
 	if f.Array != nil {
-		var items []cbor.RawMessage
+		var items []pil.RawObject
 		if decoder.Unmarshal(raw, &items) != nil || items == nil {
 			return ErrInvalid
 		}
@@ -215,7 +221,7 @@ func (s *schema) validateField(f codec.Field, raw cbor.RawMessage) error {
 		return nil
 	}
 	if f.Domain != "" || len(f.Enums) > 0 {
-		if raw[0]>>5 == 0 {
+		if len(raw) >= 3 && raw[2] == 3 {
 			var ref uint16
 			if decoder.Unmarshal(raw, &ref) != nil {
 				return ErrInvalid
@@ -256,3 +262,5 @@ func (s *schema) validateField(f codec.Field, raw cbor.RawMessage) error {
 	}
 	return nil
 }
+
+func isNullObject(raw []byte) bool { var v any; return pil.UnmarshalObject(raw, &v) == nil && v == nil }

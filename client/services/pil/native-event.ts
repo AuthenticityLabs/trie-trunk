@@ -1,6 +1,8 @@
-import { indexUUID, indexMillis } from './pac-native.ts';
+import {INDEX_ROW_BYTES} from './pac-native.ts';
+import { decodeObject } from "./control.ts";
+import { indexMillis } from './pac-native.ts';
+import {Seed,bindSeed} from '../seed.ts';
 import { pack, type LogEvent } from "../dictionary.ts";
-import { cbor } from "./cbor.ts";
 import { integer, read, scalar, span, width } from "./layout.ts";
 import type { Mapping } from "./metadata.ts";
 
@@ -15,7 +17,7 @@ export class NativeTrie {
     this.mapping=mapping;
   }
   append(start:number,bytes:Uint8Array){
-    const nodes=cbor(bytes) as Record<string,unknown>[];
+    const nodes=decodeObject(bytes) as Record<string,unknown>[];
     if(!Array.isArray(nodes)||!Number.isInteger(start)||start<1||start>this.nodes.length||start+nodes.length>65536)
       throw Error("Invalid native trie prefix");
     const path=[...this.mapping.dictionary.path];
@@ -56,57 +58,52 @@ export class NativeTrie {
   }
 }
 
-// Direct view over the canonical row and local population. Ordinary native
-// populations are stripped; logger-compressed events are expanded before local
-// persistence and checked against their index/trie here.
+// Direct view over the canonical row and decoded PIL member bytes. Native
+// members can inherit values from their PAC common frame and shared trie.
 export class NativeEvent {
   readonly pil=true as const;
-  readonly uuid:string;
+  private uuidText?:string;
+  get uuid():string{return this.uuidText??=String.fromCharCode(...this.seed.keyBytes)}
   readonly millis:number;
   readonly dictionary;
   readonly fields;
-  private row:Uint8Array;
-  private population:Uint8Array;
+  private seed:Seed;
+  private payload:Uint8Array;
   private common?:Uint8Array;
   private trie:NativeTrie;
+  readonly stateLeaf:number;
+  get durationField(){return this.trie.mapping.definition.resource?.roles.duration;}
   private leaf:number;
-  constructor(row:Uint8Array,population:Uint8Array,trie:NativeTrie,common?:Uint8Array,epochBase=0){
+  constructor(row:Uint8Array,payload:Uint8Array,trie:NativeTrie,common?:Uint8Array,epochBase=0){
     this.common=common;
-    if(row.length!==16||!Number.isSafeInteger(epochBase))throw Error("Invalid native index row");
-    this.row=indexUUID(row,epochBase);this.population=population;this.trie=trie;
+    if(row.length!==INDEX_ROW_BYTES||!Number.isSafeInteger(epochBase))throw Error("Invalid native index row");
+    this.payload=payload;this.trie=trie;
     const def=trie.mapping.definition,name=def.resource?.roles.shared;
     const ref=name?def.fields.findIndex(f=>f.name===name):-1;
-    const refBody=ref>=0&&common&&span(common,def,ref).state!==0?common:population;
+    const refBody=ref>=0&&common&&span(common,def,ref).state!==0?common:payload;
     const value=ref>=0?read(refBody,def,ref):undefined;
-    this.leaf=value===undefined?0:Number(value);
+    this.stateLeaf=new DataView(row.buffer,row.byteOffset,row.byteLength).getUint16(4,true);
+    this.leaf=this.stateLeaf;
+    if(value!==undefined&&Number(value)!==this.leaf)throw Error("State leaf differs from index");
     if(!trie.has(this.leaf))throw Error("Missing native trie reference");
     this.dictionary=trie.mapping.dictionary;this.fields=this.dictionary.fields;
-    this.uuid=String.fromCharCode(...this.row);this.millis=indexMillis(row,epochBase);
-    // Population frames are validated by the shared WASM codec before creating
-    // views. Also enforce that storage metadata cannot shadow a payload field.
-    if(common)for(const key of [this.dictionary.id.key,...trie.keys(this.leaf)])
-      if(span(common,trie.mapping.definition,key).state!==0)throw Error("PAC prefix shadows native index/trie");
-    const event=span(population,trie.mapping.definition,this.dictionary.id.key);
-    if(event.state===2){
-      const id=population.subarray(event.start,event.end);
-      if(id.length!==16||id.some((v,i)=>v!==this.row[i]))throw Error("Decompressed identity differs from index");
-      for(const key of trie.keys(this.leaf)){
-        const value=span(population,trie.mapping.definition,key),node=trie.field(this.leaf,key)!;
-        const raw=population.subarray(value.start,value.end);
-        if(value.state!==2||raw.length!==node.raw.length||raw.some((v,i)=>v!==node.raw[i]))throw Error("Decompressed field differs from trie");
-      }
-    }else for(const key of [this.dictionary.id.key,...trie.keys(this.leaf)])
-      if(span(population,trie.mapping.definition,key).state!==0)throw Error("Population shadows native index/trie");
+    this.millis=indexMillis(row,epochBase);
+    this.seed=new Seed(bindSeed(def),payload,{time:this.millis,stateLeaf:this.stateLeaf,common});
+    // The PAC checksum and pill-packer framing have already been checked.
+    // The canonical index leaf supplies shared values without payload duplicates.
+
   }
-  private body(key:number){return this.common&&((this.common[key>>2]>>(6-2*(key%4)))&3)?this.common:this.population;}
+  private body(key:number){return this.common&&((this.common[key>>2]>>(6-2*(key%4)))&3)?this.common:this.payload;}
   read(key:number):unknown{
-    if(key===this.dictionary.id.key)return this.row.subarray(0,16);
+    if(key===this.dictionary.id.key)return undefined;
+    if(this.trie.mapping.definition.fields[key]?.name==="@leaf")return this.stateLeaf;
+    if(this.trie.mapping.definition.fields[key]?.name==="@time")return this.millis;
     const node=this.trie.field(this.leaf,key);if(node)return this.trie.read(node);
     if(!this.fields.keys.has(key))return undefined;
     return pack(read(this.body(key),this.trie.mapping.definition,key),this.fields.keys.get(key));
   }
   orderedKeys():number[]{
-    return this.trie.mapping.keys.filter(key=>key===this.dictionary.id.key||!!this.trie.field(this.leaf,key)||span(this.body(key),this.trie.mapping.definition,key).state!==0);
+    return this.trie.mapping.keys.filter(key=>key!==this.dictionary.id.key&&(this.trie.mapping.definition.fields[key]?.name==="@leaf"||this.trie.mapping.definition.fields[key]?.name==="@time"||!!this.trie.field(this.leaf,key)||span(this.body(key),this.trie.mapping.definition,key).state!==0));
   }
 }
 const compatible=(event:NativeEvent):LogEvent=>event;

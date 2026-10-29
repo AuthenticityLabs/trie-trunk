@@ -100,7 +100,7 @@ test('Fast projection reuses cached summary packets and never requests event bod
   const codec=new Codec((await WebAssembly.instantiate(readFileSync(new URL('../assets/pil.wasm',import.meta.url)))).instance),cache=new ViewCache(fetcher),definitions=new Map();
   for(let run=0;run<2;run++){
     const p=new FastProjection(request);
-    const view=await cache.query({tap:'demo/payment/*/*',from:new Date(request.from).toISOString(),to:new Date(request.to).toISOString(),include:'summary',size:1},'',new AbortController().signal,codec,definitions,undefined,false,(manifest,days)=>p.consume(manifest,days));
+    const view=await cache.query({engine:'tantivy',tap:'demo/payment/*/*',from:new Date(request.from).toISOString(),to:new Date(request.to).toISOString(),include:'summary',size:1},'',new AbortController().signal,codec,definitions,undefined,false,(manifest,days)=>p.consume(manifest,days));
     assert.equal(p.count,view.result.summary.count);assert.equal(view.batch.rows.length,0);
   }
   assert.equal(calls.filter(u=>u.startsWith('/events?')).length,2);

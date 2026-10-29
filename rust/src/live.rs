@@ -195,6 +195,13 @@ pub unsafe extern "C" fn trunk_live_get(
     LiveRecord::default()
 }
 #[unsafe(no_mangle)]
+pub unsafe extern "C" fn trunk_live_row(p:*const c_void, time:i64,row:u64,cutoff:i64)->LiveRecord {
+ if time<cutoff{return LiveRecord::default()}
+ let s=unsafe{live(p)}.state.lock().unwrap();
+ for id in s.hot.range(bound(time)..bound(time+1)){if let Some(e)=s.entries.get(id){if e.record.row==row{return e.record}}}
+ LiveRecord::default()
+}
+#[unsafe(no_mangle)]
 pub unsafe extern "C" fn trunk_live_revision(p: *const c_void, obj: *const u8, rev: u64) -> bool {
     unsafe { live(p) }
         .state
@@ -215,10 +222,11 @@ pub unsafe extern "C" fn trunk_live_finish(p: *const c_void, cutoff: i64) {
         if ms(&id) >= cutoff {
             break;
         }
+        // Publication replaces provisional IDs with final row ordinals. Remove
+        // the old identity from every view before the Go adapter inserts finals.
         s.detach_pending(id);
-        if !s.entries[&id].hot {
-            s.remove(id);
-        }
+        s.hot.remove(&id);
+        s.remove(id);
     }
 }
 #[unsafe(no_mangle)]

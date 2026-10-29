@@ -41,7 +41,7 @@ func TestSourceScopeSelection(t *testing.T) {
 	for _, scope := range []string{"demo/payment/*/*", "*/*/*/error"} {
 		r := httptest.NewRequest("GET", "/collect?format=native&tap="+url.QueryEscape(scope)+"&from=2026-10-16T12:00:00Z&to=2026-10-16T13:00:00Z", nil)
 		r.Header.Set("PIL-Version", "2")
-		r.Header.Set("PIL-Features", "event-gzip-v1,native-ranges")
+		r.Header.Set("PIL-Features", "native-ranges")
 		r.Header.Set("Accept", "application/pil")
 		r.Header.Set("Accept-Encoding", "gzip")
 		w := httptest.NewRecorder()

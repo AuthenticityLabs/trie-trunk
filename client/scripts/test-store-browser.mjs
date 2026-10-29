@@ -6,8 +6,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { build } from "vite";
 import { fileURLToPath } from "node:url";
-import { fixture, bytes, cb } from "../services/pil-fixtures.mjs";
-import { cbor } from "../services/pil/cbor.ts";
+import { fixture, bytes, pilObject } from "../services/pil-fixtures.mjs";
+import {decodeObject as cbor} from "../services/pil/control.ts";
 import {pacHeader} from "../services/pil/pac.ts";
 import {nativePAC} from "../services/pil/pac-native.ts";
 import {Codec} from "../services/pil/wasm.ts";
@@ -111,7 +111,7 @@ async function cmd(command, namespace = "test", worker = 0) {
               bytes: Array.from(new Uint8Array(r.batch.bytes)),
               rows: Array.from(r.batch.rows),
             };
-          if(r.nativePage)r.nativePage={...r.nativePage,rows:[...r.nativePage.rows],population:[...r.nativePage.population],offsets:[...r.nativePage.offsets]};
+          if(r.nativePage)r.nativePage={...r.nativePage,rows:[...r.nativePage.rows],payload:[...r.nativePage.payload],offsets:[...r.nativePage.offsets]};
           resolve(r);
         };
         w.addEventListener("message", receive);
@@ -177,7 +177,7 @@ try {
   assert.deepEqual(nativeSizes(await raw("inventory")),nativeBefore);
   const pageRequest={kind:"native-page",source,from:Date.parse(nativeSelection.from),to:Date.parse(nativeSelection.to)};
   const nativePage=(await cmd(pageRequest,"native")).nativePage;
-  assert.equal(nativePage.rows.length,16);assert.equal(nativePage.population.length>0,true);
+  assert.equal(nativePage.rows.length,16);assert.equal(nativePage.payload.length>0,true);
   await Promise.all([0,1].map(async worker=>{
     const session="concurrent-"+worker;
     await cmd({kind:"native-begin",session},"native",worker);
@@ -210,7 +210,7 @@ try {
   const nativeDB=await raw("inspect",{namespace:"native"});
   assert.ok(nativeDB.sources.length);assert.deepEqual(await page.evaluate(()=>indexedDB.databases()),[]);
   assert.equal((await cmd({kind:"definitions"},"native")).definitions.length,1);
-  console.log("PASS: native OPFS ranges + atomic trie commits, killed worker before completion, orphan-tail recovery, concurrent tabs, actual page reload, source-generation separation, exact lazy PIL population, zero IndexedDB databases");
+  console.log("PASS: native OPFS ranges + atomic trie commits, killed worker before completion, orphan-tail recovery, concurrent tabs, actual page reload, source-generation separation, exact lazy PIL payload, zero IndexedDB databases");
 
   // Real OPFS pages: disjoint hours, an intervening fill and head retention.
   const importHour=async(name,session=name)=>{
@@ -229,7 +229,7 @@ try {
   await page.reload();await page.evaluate(()=>{globalThis.workers=[new Worker("/harness.js",{type:"module"}),new Worker("/harness.js",{type:"module"})];});
   const pageProbe={kind:"native-page",source:pageSource,from:Date.parse("2026-10-19T14:00:00Z"),to:Date.parse("2026-10-19T15:00:00Z"),limit:1};
   const crossPage=(await cmd(pageProbe,"pac-pages")).nativePage;
-  assert.equal(crossPage.rows.length,16);assert.equal(crossPage.population.at(-1),101);
+  assert.equal(crossPage.rows.length,16);assert.equal(crossPage.payload.at(-1),101);
   await importHour("retired");
   assert.deepEqual((await cmd(pageProbe,"pac-pages")).nativePage,crossPage);
   await assert.rejects(importHour("gap-0","stale"),/Stale PAC retirement/);
@@ -266,7 +266,7 @@ try {
     if(record.kind!=="chunk"||record.file!=="state")continue;
     const value=cbor(record.bytes);value.Sequence=1201;
     for(const entry of value.Objects??[])if(Buffer.from(entry.ID).toString("hex")==="0000000000007000800000000000002a")entry.Token=1201;
-    record.bytes=cb(value);record.digest=Buffer.from(await crypto.subtle.digest("SHA-256",record.bytes)).toString("hex");
+    record.bytes=pilObject(value);record.digest=Buffer.from(await crypto.subtle.digest("SHA-256",record.bytes)).toString("hex");
   }
   await cmd({kind:"native-begin",session:"state-update"},"state-pages");
   for(const record of updatedState)await cmd(stateRecord("state-update",record),"state-pages");

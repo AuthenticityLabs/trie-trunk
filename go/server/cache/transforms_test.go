@@ -11,7 +11,7 @@ import (
 
 func TestIngressIdentityAndExplicitTransforms(t *testing.T) {
 	d := testLayout(t, false).Definition
-	d.Fields = append(d.Fields, Field{Name: "@fields", Type: "CBOR"})
+	d.Fields = append(d.Fields, Field{Name: "@fields", Type: "OBJECT"})
 	l, e := Compile(d)
 	if e != nil {
 		t.Fatal(e)

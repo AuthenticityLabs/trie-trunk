@@ -79,6 +79,9 @@ func viewStatistics(ctx context.Context, sources []*viewSource, observe ...func(
 		}
 	}
 	for _, s := range sources {
+		if !s.branch.Aggregates() {
+			continue
+		}
 		for _, span := range s.ranges {
 			out.Matched += span.end - span.at
 		}

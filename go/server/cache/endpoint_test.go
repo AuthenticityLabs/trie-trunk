@@ -28,7 +28,7 @@ func TestEndpointRegistration(t *testing.T) {
 		r := httptest.NewRequest(method, "/definitions", bytes.NewReader(raw))
 		r.Header.Set("PIL-Version", "2")
 		r.Header.Set("Definition-Version", digest)
-		r.Header.Set("Content-Type", "application/cbor")
+		r.Header.Set("Content-Type", "application/pil")
 		r.Header.Set("Authorization", "Bearer "+token)
 		w := httptest.NewRecorder()
 		p.Handler("secret").ServeHTTP(w, r)
@@ -64,7 +64,7 @@ func TestEndpointBlindFirstWrite(t *testing.T) {
 		t.Fatal(e)
 	}
 	defer p.Close()
-	raw, _ := encoder.Marshal(map[string]any{"message": "hello"})
+	raw, _ := ingressEncoder.Marshal(map[string]any{"message": "hello"})
 	r := httptest.NewRequest("POST", "/ingest", bytes.NewReader(raw))
 	r.Header.Set("Content-Type", "application/cbor")
 	w := httptest.NewRecorder()
