@@ -1,3 +1,4 @@
+import { createAbortScope } from './services/abort';
 import {zonedTimestamp,parseZonedTimestamp} from './services/time-zone';
 import { restoreWorkspace, type TabState } from './services/search-workspace';
 import { SummarySubscriptions } from "./components/summary-subscriptions";
@@ -366,12 +367,12 @@ function Workspace(props: {onLogout: () => void}) {
     const connections=JSON.parse(registrations()) as ServerConnection[],credentials=connectionTokens(),abort=new AbortController();
     setBootstraps(Object.fromEntries(connections.filter(c=>c.enabled).map(c=>[c.id,{loading:true}])));
     for(const connection of connections.filter(c=>c.enabled)){
-      const signal=AbortSignal.any([abort.signal,AbortSignal.timeout(30000)]);
+      const request=createAbortScope([abort.signal],30000),signal=request.signal;
       void loadTrunk(connection,credentials[connection.id]??'',signal).then(trunk=>{
         if(!abort.signal.aborted)setBootstraps(current=>({...current,[connection.id]:{loading:false,trunk}}));
       }).catch(cause=>{
         if(!abort.signal.aborted)setBootstraps(current=>({...current,[connection.id]:{loading:false,error:cause instanceof Error?cause.message:String(cause)}}));
-      });
+      }).finally(request.dispose);
     }
     onCleanup(()=>abort.abort());
   });

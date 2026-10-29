@@ -1,3 +1,4 @@
+import { createAbortScope } from '../abort.ts';
 import type { ViewQuery, ViewResponse, ViewSummary, ViewStatistics, NativeViewRecord } from '../pil/view.ts';
 import type { TrunkBootstrap } from '../pil/trunk.ts';
 import { collectNative } from '../pil/native-collect.ts';
@@ -41,8 +42,9 @@ const stats = (): ViewStatistics => ({
   }
 });
 export async function executeLocalSearch(trunk: TrunkBootstrap, query: ViewQuery, token: string, signal: AbortSignal, codec: Codec, definitions: Map<string, StoredDefinition>, archive: Archive, fetcher: typeof fetch, onPage?: ((page: ViewResponse) => void), completed?: Map<string, ViewSummary>): Promise<ViewResponse> {
-  const failed = new AbortController();
-  signal = AbortSignal.any([signal, failed.signal]);
+  const failed = createAbortScope([signal]);
+  signal = failed.signal;
+  try {
   const started = performance.now(),
     from = Date.parse(query.from),
     to = Date.parse(query.to);
@@ -394,6 +396,9 @@ export async function executeLocalSearch(trunk: TrunkBootstrap, query: ViewQuery
   const done = result(true);
   if (!published) onPage?.(done);
   return done;
+  } finally {
+    failed.dispose();
+  }
 }
 function mappingDuration(event: NativeEvent) {
   return event.durationField ?? 'duration';

@@ -1,3 +1,4 @@
+import { createAbortScope } from '../abort.ts';
 import {INDEX_ROW_BYTES} from './pac-native.ts';
 import { decodeObject } from "./control.ts";
 import { nativeCacheIssue } from "../store/errors.ts";
@@ -105,11 +106,13 @@ export function workerService(
     if (s.negotiation) return;
     if (!s.loading)
       s.loading = (async () => {
+        const request = createAbortScope([], 30000);
+        try {
         const response = await fetcher("/schemas", {
           method: "POST",
           headers: { ...headers(token), "Content-Type": "application/json" },
           body: JSON.stringify({ tap, known: [...s.definitions.keys()] }),
-          signal: AbortSignal.timeout(30000),
+          signal: request.signal,
           cache: "no-store",
         });
         const bindings: Binding[] = [];
@@ -124,7 +127,7 @@ export function workerService(
               throw Error("Unexpected event in schema response");
             },
           ),
-          AbortSignal.timeout(30000),
+          request.signal,
         );
         const negotiation = response.headers.get("Definition-Version");
         if (!negotiation || !/^[a-f0-9]{64}$/.test(negotiation))
@@ -138,6 +141,7 @@ export function workerService(
             bindings,
           });
         s.negotiation = negotiation;
+        } finally { request.dispose(); }
       })().finally(() => (s.loading = undefined));
     await s.loading;
   }

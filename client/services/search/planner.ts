@@ -1,3 +1,4 @@
+import { createAbortScope } from '../abort.ts';
 import type { TrunkBootstrap } from '../pil/trunk.ts';
 import type { Metadata } from '../pil/metadata.ts';
 import type { Archive } from '../store/protocol.ts';
@@ -40,8 +41,8 @@ export type SearchPlan = {
 
 /** Bounded tasks share cancellation and settle before a failure is returned. */
 export async function searchTasks<T, R>(items: readonly T[], signal: AbortSignal, work: (item: T, index: number, signal: AbortSignal) => Promise<R>): Promise<R[]> {
-  const failed = new AbortController(),
-    combined = AbortSignal.any([signal, failed.signal]);
+  const failed = createAbortScope([signal]),
+    combined = failed.signal;
   const out = new Array<R>(items.length);
   let next = 0;
   const tasks = Array.from({
@@ -62,6 +63,8 @@ export async function searchTasks<T, R>(items: readonly T[], signal: AbortSignal
     failed.abort(error);
     await Promise.allSettled(tasks);
     throw error;
+  } finally {
+    failed.dispose();
   }
 }
 

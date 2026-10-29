@@ -1,3 +1,4 @@
+import { createAbortScope } from '../abort.ts';
 import type {Archive} from '../store/protocol.ts';
 import type {TrunkBootstrap} from './trunk.ts';
 import {registeredPath} from './trunk.ts';
@@ -29,7 +30,8 @@ export async function loadTimeWindow(q:TimeWindowRequest,token:string,signal:Abo
  const from=Math.floor(q.from/HOUR)*HOUR,to=Math.ceil(q.to/HOUR)*HOUR;
  compactHour(from);compactHour(to);
  if(from>=to||to-from>8*366*24*HOUR)throw Error('Invalid time range');
- const canceled=new AbortController();signal=AbortSignal.any([signal,canceled.signal]);
+ const canceled=createAbortScope([signal]);signal=canceled.signal;
+ try {
  const result:TimeWindowResult={from,to,counts:Array((to-from)/HOUR).fill(0),errors:Array((to-from)/HOUR).fill(0),count:0,receivedHours:0};
  const targets=branchTargets(q.trunk,q.scope,q.diagnostics);
  let cursor=0;
@@ -63,4 +65,5 @@ export async function loadTimeWindow(q:TimeWindowRequest,token:string,signal:Abo
  const tasks=Array.from({length:Math.min(4,targets.length)},consume);
  try{await Promise.all(tasks)}catch(error){canceled.abort(error);await Promise.allSettled(tasks);throw error;}
  return result;
+ } finally { canceled.dispose(); }
 }

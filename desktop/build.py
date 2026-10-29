@@ -6,11 +6,11 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 def run(*args, **kwargs):
     subprocess.run([str(a) for a in args], check=True, **kwargs)
 def main():
-    ap=argparse.ArgumentParser();ap.add_argument('--arch',choices=['arm64','x64','universal'],default='universal');ap.add_argument('--min-macos',choices=['13.7','14.0'],default='14.0');ap.add_argument('--skip-web',action='store_true');ap.add_argument('--output-dir',type=pathlib.Path,default=ROOT/'desktop/dist');args=ap.parse_args()
+    ap=argparse.ArgumentParser();ap.add_argument('--arch',choices=['arm64','x64','universal'],default='universal');ap.add_argument('--min-macos',choices=['13.7','14.0'],default='14.0');ap.add_argument('--skip-web',action='store_true');ap.add_argument('--web-dir',type=pathlib.Path,default=ROOT/'web');ap.add_argument('--output-dir',type=pathlib.Path,default=ROOT/'desktop/dist');args=ap.parse_args()
     cache=ROOT/'desktop/cache';cache.mkdir(parents=True,exist_ok=True)
     runtime=build_runtime(ROOT,args.arch,args.min_macos)
     if not args.skip_web:run('npm','--prefix',ROOT/'client','run','build',cwd=ROOT)
-    if not (ROOT/'web/index.html').exists():raise SystemExit('Build the Snoot frontend first')
+    if not (args.web_dir/'index.html').exists():raise SystemExit('Build the Snoot frontend first')
     app=args.output_dir.resolve()/'Snoot.app';contents=app/'Contents';mac=contents/'MacOS';resources=contents/'Resources'
     if app.exists():shutil.rmtree(app)
     mac.mkdir(parents=True);resources.mkdir(parents=True)
@@ -24,7 +24,7 @@ def main():
     if len(binaries)==2:run('lipo','-create',*binaries,'-output',mac/'snoot')
     else:shutil.copy2(binaries[0],mac/'snoot')
     (mac/'snoot').chmod(0o755)
-    shutil.copytree(ROOT/'web',resources/'web',ignore=shutil.ignore_patterns('bench-native'))
+    shutil.copytree(args.web_dir,resources/'web',ignore=shutil.ignore_patterns('bench-native'))
     shutil.copy2(ROOT/'desktop/neutralino.config.json',resources/'neutralino.config.json')
     shutil.copy2(ROOT/'LICENSE',resources/'LICENSE')
     shutil.copy2(ROOT/'desktop/LICENSE.neutralino',resources/'LICENSE.neutralino')
