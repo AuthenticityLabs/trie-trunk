@@ -411,3 +411,11 @@ h1{font-size:43px;font-weight:500;letter-spacing:-1.7px;line-height:1.15}h2{font
 #layout .byte-lane strong{font-size:15px}#layout .byte-lane span{font-size:13px}
 @media(max-width:800px){.pil-byte-example{grid-template-columns:repeat(3,minmax(0,1fr))}.pil-explain-grid{grid-template-columns:1fr;gap:18px}.pil-binding{align-items:stretch;flex-direction:column;gap:14px}.pil-binding>span{transform:rotate(90deg);align-self:center}.pil-table th,.pil-table td{padding:12px}.pil-table{font-size:14px}}
 @media(max-width:480px){.pil-byte-example{grid-template-columns:repeat(2,minmax(0,1fr))}.pil-byte-example code{min-height:auto}.pil-detail{padding:16px}.pil-nav{gap:14px 20px}.pil-record{font-size:14px;padding:16px}.pil-table{min-width:430px}}
+
+.rx-install{margin:30px 0}
+.code-copy{display:inline-flex;align-items:center;gap:7px;border:0;background:transparent;color:var(--muted);font:inherit;cursor:pointer;padding:8px;min-height:36px}
+.code-copy:hover,.code-copy:focus-visible,.code-copy[data-copied]{color:var(--ink)}
+.code-copy:focus-visible{outline:2px solid var(--ink);outline-offset:2px;border-radius:4px}
+.code-copy svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.code-copy .copied-icon,.code-copy[data-copied] .copy-icon{display:none}
+.code-copy[data-copied] .copied-icon{display:block}

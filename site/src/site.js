@@ -179,3 +179,34 @@ const updateRetention=(gigabytes)=>{
  }));
 };
 retentionBudget?.addEventListener('input',()=>updateRetention(Number(retentionBudget.value)));
+
+// Clipboard feedback stays with the command and is announced to screen readers.
+for (const button of document.querySelectorAll('[data-copy-code]')) {
+ let reset;
+ button.addEventListener('click', async () => {
+  const code = document.getElementById(button.dataset.copyCode);
+  if (!code) return;
+  const feedback = button.querySelector('[data-copy-feedback]');
+  clearTimeout(reset);
+  button.disabled = true;
+  try {
+   await navigator.clipboard.writeText(code.textContent);
+   button.dataset.copied = 'true';
+   feedback.textContent = 'Copied';
+  } catch {
+   delete button.dataset.copied;
+   const range = document.createRange();
+   range.selectNodeContents(code);
+   const selection = window.getSelection();
+   selection.removeAllRanges();
+   selection.addRange(range);
+   feedback.textContent = 'Copy Selected Text';
+  } finally {
+   button.disabled = false;
+   reset = setTimeout(() => {
+    delete button.dataset.copied;
+    feedback.textContent = 'Copy';
+   }, 3000);
+  }
+ });
+}

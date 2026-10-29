@@ -2,6 +2,7 @@ import {mkdir,readFile,writeFile,cp,rm} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
 import {dirname,join} from 'node:path';
 import {createHash} from 'node:crypto';
+import {execFileSync} from 'node:child_process';
 import {render,stages,pages} from './src/pages.mjs';
 import {pagePath,redirects} from './src/routes.mjs';
 import {benchmark,measurementReport} from './src/measurements.mjs';
@@ -37,6 +38,11 @@ for(const name of ['snoot-forward.png','snoot-wordmark.png'])
  await cp(join(here,'../client/assets',name),join(out,'assets/brand',name));
 await cp(join(here,'../../pill-packer/schemas/definition.cddl'),join(out,'definition.cddl'));
 await cp(join(here,'../../pill-packer/rust/examples/nested_objects.cddl'),join(out,'purchase.cddl'));
+const pillRevision=execFileSync('git',['rev-parse','HEAD'],{cwd:join(here,'../../pill-packer'),encoding:'utf8'}).trim();
+if(!/^[0-9a-f]{40}$/.test(pillRevision))throw new Error('Invalid Pill Packer source revision');
+const installer=await readFile(join(here,'../../pill-packer/scripts/install-rx.sh'),'utf8');
+await writeFile(join(out,'install-rx.sh'),installer.replace('RX_DEFAULT_REVISION=main',`RX_DEFAULT_REVISION=${pillRevision}`));
+
 const pillReadme=await readFile(join(here,'../../pill-packer/README.md'),'utf8');
 const formatReference=pillReadme.split('## PIL Specification\n')[1]?.split(/\n## /)[0];
 if(!formatReference)throw new Error('Pill Packer README is missing its PIL Specification');
