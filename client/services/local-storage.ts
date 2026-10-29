@@ -1,3 +1,4 @@
+import {readPublishedFile,recoverPublications,removePublishedFile} from './store/publication.ts';
 import {localStorageRoot} from './store/io-error.ts';
 import {decodeObject,encodeObject} from './pil/control.ts';
 import {atomicFile} from './store/native-files.ts';
@@ -14,9 +15,10 @@ async function child(root:FileSystemDirectoryHandle,name:string){
  try{return await root.getDirectoryHandle(name)}catch(e){if(e instanceof DOMException&&e.name==='NotFoundError')return;throw e}
 }
 async function object(root:FileSystemDirectoryHandle,name:string):Promise<any>{
- try{const handle=await root.getFileHandle(name),file=await handle.getFile();return decodeObject(new Uint8Array(await file.arrayBuffer()))}catch(e){if(e instanceof DOMException&&e.name==='NotFoundError')return;throw e}
+ const bytes=await readPublishedFile(root,name);return bytes?decodeObject(bytes):undefined;
 }
 async function files(root:FileSystemDirectoryHandle,prefix=''):Promise<StorageNode[]>{
+ await recoverPublications(root);
  const out:StorageNode[]=[];
  for await(const entry of entries(root)){
   const id=prefix+'/'+entry.name;
@@ -121,7 +123,7 @@ export async function inspectLocalStorage(root:FileSystemDirectoryHandle,labels:
  const targets=(node:StorageNode,parent?:StorageNode):StorageNode=>{const next={...node,target:node.target??parent?.target,impact:node.impact??(!node.target?parent?.impact:undefined)};return {...next,children:next.children.map(child=>targets(child,next))}};
  return nodes.map(node=>targets(node));
 }
-async function remove(root:FileSystemDirectoryHandle,name:string){try{await root.removeEntry(name,{recursive:true})}catch(e){if(!(e instanceof DOMException&&e.name==='NotFoundError'))throw e}}
+async function remove(root:FileSystemDirectoryHandle,name:string){await removePublishedFile(root,name)}
 /** Keep reset counters durable: in-flight imports from any tab must not republish deleted pointers. */
 export async function clearReplicaContext(dir:FileSystemDirectoryHandle,scope?:string[],keys?:string[]){
  if(keys?.some(key=>!namespacePattern.test(key)))throw Error('Invalid saved branch');

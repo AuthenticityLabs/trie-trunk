@@ -1,4 +1,4 @@
-import {storageStep} from './io-error.ts';
+import {readPublishedFile} from './publication.ts';
 import {decodeObject,encodeObject} from '../pil/control.ts';
 import {registeredPath,type TrunkBootstrap,type TrunkSnapshot} from '../pil/trunk.ts';
 import type {Metadata} from '../pil/metadata.ts';
@@ -7,8 +7,7 @@ import {atomicFile} from './native-files.ts';
 const digest=/^[a-f0-9]{64}$/;
 type SavedTrunk=Pick<TrunkBootstrap,'version'|'catalog'|'bindings'>;
 async function rootManifest(root:FileSystemDirectoryHandle):Promise<SavedTrunk|undefined>{
- try{const bytes=await storageStep('Read Local Catalog',async()=>new Uint8Array(await (await (await root.getFileHandle('trunk.pil')).getFile()).arrayBuffer()));return bytes.length?decodeObject(bytes) as SavedTrunk:undefined;}
- catch(error){if(error instanceof DOMException&&error.name==='NotFoundError')return;throw error;}
+ const bytes=await readPublishedFile(root,'trunk.pil');return bytes?.length?decodeObject(bytes) as SavedTrunk:undefined;
 }
 export async function saveTrunk(root:FileSystemDirectoryHandle,snapshot:TrunkSnapshot){
  if(!digest.test(snapshot.version))throw Error('Invalid bootstrap version');
