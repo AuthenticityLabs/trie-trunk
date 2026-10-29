@@ -5,6 +5,9 @@ import {createHash} from 'node:crypto';
 import {render,stages,pages} from './src/pages.mjs';
 import {pagePath,redirects} from './src/routes.mjs';
 import {benchmark,measurementReport} from './src/measurements.mjs';
+import {layoutDefinition,layoutHex} from './src/pil.mjs';
+import {createCodec} from '../../pill-packer/npm/index.js';
+import {define,fill,pack,compress} from '../../pill-packer/npm/src/pack.ts';
 import {buildSnootPreview} from './snoot-preview/build.mjs';
 const here=dirname(fileURLToPath(import.meta.url)), out=join(here,'dist');
 await rm(out,{recursive:true,force:true});
@@ -36,9 +39,21 @@ await cp(join(here,'../../pill-packer/schemas/definition.cddl'),join(out,'defini
 await cp(join(here,'../../pill-packer/schemas/pil.rx'),join(out,'pil.rx'));
 await cp(join(here,'../../pill-packer/rust/examples/nested_objects.cddl'),join(out,'purchase.cddl'));
 const pillReadme=await readFile(join(here,'../../pill-packer/README.md'),'utf8');
-const formatReference=pillReadme.split('## Current Format Reference\n')[1]?.split('\n## License\n')[0];
-if(!formatReference)throw new Error('Pill Packer README is missing its Format Reference');
-await writeFile(join(out,'pill-packer.txt'),'# PIL Format Reference\n'+formatReference.replaceAll('](schemas/definition.cddl)','](/definition.cddl)'));
+const formatReference=pillReadme.split('## PIL Specification\n')[1]?.split(/\n## /)[0];
+if(!formatReference)throw new Error('Pill Packer README is missing its PIL Specification');
+await writeFile(join(out,'pill-packer.txt'),'# PIL Specification\n'+formatReference.replaceAll('](schemas/definition.cddl)','](https://trietrunk.com/definition.cddl)'));
+// Generate the documented bytes through Pill Packer, and fail the build if
+// its output no longer matches the annotated layout example.
+const codec=await createCodec(await readFile(join(here,'../../pill-packer/npm/codec.wasm')));
+const example=await define(codec.definitionFromJSON(JSON.stringify(layoutDefinition)),codec);
+const record=fill(example,[Uint8Array.of(42,0),Uint8Array.of(220,5,0,0),Uint8Array.of(1),new TextEncoder().encode('OK')]);
+if(Buffer.from(record).toString('hex')!==layoutHex.replaceAll(' ','').toLowerCase())throw new Error('PIL layout example disagrees with codec');
+const examplePack=pack(example,[record],{packing:{commonValues:false}});
+await writeFile(join(out,'pil-example.json'),JSON.stringify(layoutDefinition,null,2)+'\n');
+await writeFile(join(out,'pil-example.rx'),example.bytes);
+await writeFile(join(out,'pil-example.pil'),record);
+await writeFile(join(out,'pil-example.pac'),examplePack.bytes);
+await writeFile(join(out,'pil-example.compressed.pac'),compress(examplePack,{algorithm:'gzip',level:6}).bytes);
 await writeFile(join(out,'trunk-definition.cddl'), 'entry = trunk-definition\n' + await readFile(join(here,'../../pill-packer/schemas/definition.cddl'),'utf8') + await readFile(join(here,'../schemas/trunk-definition.cddl'),'utf8'));
 await writeFile(join(out,'measurements.txt'),measurementReport);
 await mkdir(join(out,'measurements'),{recursive:true});
