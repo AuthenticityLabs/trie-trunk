@@ -419,3 +419,9 @@ h1{font-size:43px;font-weight:500;letter-spacing:-1.7px;line-height:1.15}h2{font
 .code-copy svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
 .code-copy .copied-icon,.code-copy[data-copied] .copy-icon{display:none}
 .code-copy[data-copied] .copied-icon{display:block}
+
+.pil-lane-labels{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px;margin-bottom:8px;font-size:15px;color:var(--muted);text-align:center}
+.pil-lane-labels>span{padding:0 0 10px;border-bottom:1px solid var(--line)}
+.pil-lane-labels>span:first-child,.pil-lane-labels>span:last-child{grid-column:span 2}
+#layout .pil-lane-mobile-group{display:none}
+@media(max-width:760px){.pil-lane-labels{display:none}#layout .pil-lane-mobile-group{display:block;font-size:13px;font-weight:400}}
