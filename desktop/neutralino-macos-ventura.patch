@@ -1,0 +1,23 @@
+--- a/api/window/window.cpp
++++ b/api/window/window.cpp
+@@ -1269,9 +1269,9 @@
+     
+     CGImageRef imgRef = nil;
+ 
+-    #if defined(__APPLE__) && MAC_OS_X_VERSION_MIN_REQUIRED >= 120300
++    #if defined(__APPLE__) && MAC_OS_X_VERSION_MIN_REQUIRED >= 140000
+ 
+-    // Modern ScreenCaptureKit API (macOS 12.3+)
++    // SCScreenshotManager requires macOS 14, not ScreenCaptureKit's 12.3.
+     __block CGImageRef screenshotImage = nil;
+     dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
+     
+@@ -1298,7 +1298,7 @@
+     imgRef = screenshotImage;
+ 
+     #else
+-        // Fallback for macOS < 12.3
++        // Ventura uses the CoreGraphics window capture API.
+         imgRef = CGWindowListCreateImage(clientRect, kCGWindowListOptionIncludingWindow, winId, kCGWindowImageBoundsIgnoreFraming);
+     #endif
+ 

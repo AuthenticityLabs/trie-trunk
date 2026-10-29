@@ -12,12 +12,13 @@ VERSION = '6.10.0'
 SOURCE_SHA256 = 'fa8397f7ed8bb3fe877245ed7a2063c8b03cc6234e9c40aa8cf177fbe9051bda'
 
 
-def build_runtime(root, arch):
+def build_runtime(root, arch, minimum_macos='14.0'):
     cache = root / 'desktop/cache'
     cache.mkdir(parents=True, exist_ok=True)
-    patch = root / 'desktop/neutralino-macos-exit.patch'
-    key = hashlib.sha256(patch.read_bytes()).hexdigest()[:16]
-    binary = cache / f'neutralino-{VERSION}-{key}-{arch}'
+    patches = [root / 'desktop' / name for name in
+               ['neutralino-macos-exit.patch', 'neutralino-macos-ventura.patch']]
+    key = hashlib.sha256(b''.join(p.read_bytes() for p in patches)).hexdigest()[:16]
+    binary = cache / f'neutralino-{VERSION}-{key}-{arch}-macos{minimum_macos}'
     if binary.exists():
         return binary
     archive = cache / f'neutralinojs-source-v{VERSION}.tar.gz'
@@ -32,11 +33,12 @@ def build_runtime(root, arch):
         with tarfile.open(archive) as source:
             source.extractall(stage, filter='data')
         source = stage / f'neutralinojs-{VERSION}'
-        subprocess.run(['patch', '-p1', '-i', str(patch)], cwd=source, check=True)
+        for patch in patches:
+            subprocess.run(['patch', '-p1', '-i', str(patch)], cwd=source, check=True)
         architectures = {'arm64': 'arm64', 'x64': 'x86_64', 'universal': 'arm64;x86_64'}
         subprocess.run([
             'cmake', '-S', str(source), '-B', str(stage / 'build'),
-            '-DCMAKE_BUILD_TYPE=Release', '-DCMAKE_OSX_DEPLOYMENT_TARGET=14.0',
+            '-DCMAKE_BUILD_TYPE=Release', f'-DCMAKE_OSX_DEPLOYMENT_TARGET={minimum_macos}',
             f'-DCMAKE_OSX_ARCHITECTURES={architectures[arch]}',
         ], check=True)
         subprocess.run(['cmake', '--build', str(stage / 'build'), '--parallel',

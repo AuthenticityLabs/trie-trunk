@@ -604,6 +604,22 @@ Compiled runtimes are cached by architecture and patch hash; temporary compiler
 outputs are discarded. Local builds are ad-hoc signed;
 public distribution still needs Developer ID signing and notarization.
 
+For an Intel-only package targeting Ventura 13.7 (including 13.7.8), build into
+a separate directory so the installed universal app is preserved:
+
+```sh
+python3 desktop/build.py --skip-web --arch x64 --min-macos 13.7 \
+  --output-dir desktop/dist/intel-ventura
+```
+
+The runtime deployment target and app minimum OS version both follow
+`--min-macos`. Intel Go builds use the baseline AMD64 instruction set. Ventura
+builds also apply `desktop/neutralino-macos-ventura.patch` to exclude the
+macOS 14-only screenshot API from their native binary. The native JavaScript
+API remains disabled in Snoot. Ventura uses its installed WebKit; keep Safari
+updated. Cross-compilation and binary
+checks do not replace testing on an Intel Mac running Ventura.
+
 The native lifecycle regression test launches isolated windows and exercises the
 close button, Close Window, Quit, Command-W, Command-Q, repeated close requests,
 and termination signals. It verifies saved window state and bridge cleanup:
