@@ -34,4 +34,3 @@ export const previousSnootPreview = `<div class="hero-visual app-preview" aria-l
  <div class="mock-main">${[dash,search,alerts].map((content,i)=>`<div role="tabpanel" id="hero-snoot-panel-${i}" aria-labelledby="hero-snoot-${i}" tabindex="0" ${i?'hidden':''}>${content}</div>`).join('')}</div></div>
  <p class="preview-disclosure">Static product illustration · Sample data${' · Alerts preview is conceptual.'}</p>
 </div>`;
-
