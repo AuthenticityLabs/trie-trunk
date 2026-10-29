@@ -1,3 +1,4 @@
+import {localStorageRoot} from './store/io-error.ts';
 import {decodeObject,encodeObject} from './pil/control.ts';
 import {atomicFile} from './store/native-files.ts';
 import type {NativeSource,NativeControl} from './store/native.ts';
@@ -202,7 +203,7 @@ export async function clearLocalStorage(root:FileSystemDirectoryHandle,target:St
 }
 export async function storageInventory(labels:Record<string,string>):Promise<StorageInventory>{
  if(!navigator.storage?.getDirectory||!navigator.locks)throw Error('Local storage management is unavailable in this browser.');
- const nodes=await navigator.locks.request('trie-trunk-files-v1',async()=>inspectLocalStorage(await navigator.storage.getDirectory(),labels));
+ const nodes=await navigator.locks.request('trie-trunk-files-v1',async()=>inspectLocalStorage(await localStorageRoot(),labels));
  if(typeof caches!=='undefined'&&(await caches.keys()).includes('snoot-summary-days')){
   const cache=await caches.open('snoot-summary-days');let bytes=0;const keys=await cache.keys();
   for(const key of keys){const response=await cache.match(key);if(response){const size=Number(response.headers.get('Content-Length'));bytes+=Number.isFinite(size)&&size>0?size:(await response.blob()).size}}
@@ -212,7 +213,7 @@ export async function storageInventory(labels:Record<string,string>):Promise<Sto
 }
 export async function clearStorage(target:StorageTarget){
  await navigator.locks.request('trie-trunk-files-v1',async()=>{
-  await clearLocalStorage(await navigator.storage.getDirectory(),target);
+  await clearLocalStorage(await localStorageRoot(),target);
   if((target.kind==='all'||target.kind==='summaries')&&typeof caches!=='undefined')await caches.delete('snoot-summary-days');
  });
 }

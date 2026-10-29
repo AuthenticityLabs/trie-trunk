@@ -1,3 +1,4 @@
+import {storageStep} from './io-error.ts';
 import { decodeObject, encodeObject } from "../pil/control.ts";
 import { NativeStore, type NativeBackend, type NativeSource, type NativeControl } from './native.ts';
 import { directory, handle, entries } from './files.ts';
@@ -6,7 +7,7 @@ import {timeFileRanges,type ClientTimeTrie,type TimeRange} from './time-trie.ts'
 type Commit = { serial:number; sources:Record<string,number>; control:NativeControl };
 const empty = ():Commit=>({serial:0,sources:{},control:{serial:0,scopes:{}}});
 const optional=async(dir:FileSystemDirectoryHandle,name:string):Promise<Uint8Array|undefined>=>{
- try{return new Uint8Array(await (await (await dir.getFileHandle(name)).getFile()).arrayBuffer());}
+ try{return await storageStep(`Read Local File ${name}`,async()=>new Uint8Array(await (await (await dir.getFileHandle(name)).getFile()).arrayBuffer()));}
  catch(e){if(e instanceof DOMException&&e.name==='NotFoundError')return;throw e;}
 };
 export {atomicFile} from './atomic-file.ts';

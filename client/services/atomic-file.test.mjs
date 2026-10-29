@@ -24,3 +24,12 @@ test('sync publication flushes and closes a temporary file before replacing the 
 for(const failure of ['flush','move'])test(`${failure} failure preserves the prior commit and removes the temporary file`,async()=>{
  const dir=directory(failure);await assert.rejects(atomicFile(dir,'commit.pil',new Uint8Array([9])),new RegExp(failure));assert.deepEqual([...dir.files.get('commit.pil')],[1,2,3]);assert.deepEqual([...dir.files.keys()],['commit.pil']);
 });
+test('a published rename does not attempt to delete its now-absent temporary name',async()=>{
+ const dir=directory();dir.removeEntry=async()=>{throw new DOMException('transient','UnknownError')};
+ await atomicFile(dir,'commit.pil',new Uint8Array([8]));assert.deepEqual([...dir.files.get('commit.pil')],[8]);
+});
+test('failed temporary cleanup does not mask the failed publication',async()=>{
+ const dir=directory('move');dir.removeEntry=async()=>{throw new DOMException('cleanup failed','UnknownError')};
+ await assert.rejects(atomicFile(dir,'commit.pil',new Uint8Array([9])),/Publish Local File commit.pil — Error: move failed/);
+ assert.deepEqual([...dir.files.get('commit.pil')],[1,2,3]);
+});

@@ -36,7 +36,7 @@ globalThis.onmessage = (event: MessageEvent) => {
         port.postMessage({
           id: data.id,
           cacheIssue: nativeCacheIssue(error),
-          error: `Local event store: ${error instanceof Error ? error.message : String(error)}`,
+          error: `Local event store (${data.command.kind}): ${error instanceof Error ? error.message : String(error)}`,
         });
       }
     });

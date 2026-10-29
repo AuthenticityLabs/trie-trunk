@@ -1,6 +1,7 @@
 import type { Command, ArchiveReply, Collection, NativeSelection } from './protocol.ts';
 import type { Metadata } from '../pil/metadata.ts';
 import { directory } from './files.ts';
+import { localStorageRoot } from './io-error.ts';
 import { nativeBackend } from './native-files.ts';
 import { NativeStore } from './native.ts';
 import { nativeTransaction } from './transaction.ts';
@@ -17,7 +18,7 @@ export function createArchive(_modulePromise?:Promise<WebAssembly.Module>) {
  const collections=new Map<string,Collection>();
  const selections=new Map<string,NativeSelection[]>();
  return async(namespace:string,command:Command):Promise<ArchiveReply>=>{
-  const root=await directory(await navigator.storage.getDirectory(),'snoot-store',namespace);
+  const root=await directory(await localStorageRoot(),'snoot-store',namespace);
   const backend=nativeBackend(root),store=new NativeStore(backend),key=(id:string)=>`${namespace}:${id}`;
   switch(command.kind){
    case 'summary-read':return {summaryBytes:await store.summaryBytes(command.query)};
