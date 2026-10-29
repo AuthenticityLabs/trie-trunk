@@ -1,24 +1,20 @@
 #!/usr/bin/env python3
 """Build the native macOS app; Node is used only by the existing frontend build."""
-import argparse, hashlib, json, os, pathlib, plistlib, shutil, subprocess, tempfile, urllib.request, zipfile
+import argparse, os, pathlib, plistlib, shutil, subprocess, tempfile
+from runtime import build_runtime
 ROOT = pathlib.Path(__file__).resolve().parents[1]
-VERSION = '6.10.0'
-SHA256 = 'e633f480737f229f582d8ec6165a52d789340950aef062560702122389f08329'
 def run(*args, **kwargs):
     subprocess.run([str(a) for a in args], check=True, **kwargs)
 def main():
-    ap=argparse.ArgumentParser();ap.add_argument('--arch',choices=['arm64','x64','universal'],default='universal');ap.add_argument('--skip-web',action='store_true');args=ap.parse_args()
+    ap=argparse.ArgumentParser();ap.add_argument('--arch',choices=['arm64','x64','universal'],default='universal');ap.add_argument('--skip-web',action='store_true');ap.add_argument('--output-dir',type=pathlib.Path,default=ROOT/'desktop/dist');args=ap.parse_args()
     cache=ROOT/'desktop/cache';cache.mkdir(parents=True,exist_ok=True)
-    archive=cache/f'neutralinojs-v{VERSION}.zip'
-    if not archive.exists():
-        urllib.request.urlretrieve(f'https://github.com/neutralinojs/neutralinojs/releases/download/v{VERSION}/{archive.name}',archive)
-    if hashlib.sha256(archive.read_bytes()).hexdigest()!=SHA256:raise SystemExit('Neutralino archive checksum mismatch')
+    runtime=build_runtime(ROOT,args.arch)
     if not args.skip_web:run('npm','--prefix',ROOT/'client','run','build',cwd=ROOT)
     if not (ROOT/'web/index.html').exists():raise SystemExit('Build the Snoot frontend first')
-    app=ROOT/'desktop/dist/Snoot.app';contents=app/'Contents';mac=contents/'MacOS';resources=contents/'Resources'
+    app=args.output_dir.resolve()/'Snoot.app';contents=app/'Contents';mac=contents/'MacOS';resources=contents/'Resources'
     if app.exists():shutil.rmtree(app)
     mac.mkdir(parents=True);resources.mkdir(parents=True)
-    with zipfile.ZipFile(archive) as z:(mac/'neutralino').write_bytes(z.read(f'neutralino-mac_{args.arch}'))
+    shutil.copy2(runtime,mac/'neutralino')
     (mac/'neutralino').chmod(0o755)
     env=dict(os.environ,CGO_ENABLED='0',GOOS='darwin',GOCACHE=os.environ.get('GOCACHE','/tmp/trunk-go-build-cache'))
     arches=['arm64','amd64'] if args.arch=='universal' else ['amd64' if args.arch=='x64' else 'arm64']

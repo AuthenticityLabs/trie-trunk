@@ -147,7 +147,9 @@ func run() error {
 	defer func() {
 		shutdown, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
-		server.Shutdown(shutdown)
+		if err := server.Shutdown(shutdown); err != nil {
+			server.Close()
+		}
 	}()
 	log.Printf("Snoot listening on http://%s using %s", host, mode)
 	if *headless {
@@ -161,6 +163,7 @@ func run() error {
 	runtime := filepath.Join(filepath.Dir(exe), "neutralino")
 	args := []string{"--path=" + *root, "--res-mode=directory", "--url=http://" + host + "/?desktop-session=" + token, "--window-enable-inspector=" + strconv.FormatBool(*inspector)}
 	cmd := exec.CommandContext(ctx, runtime, args...)
+	configureRuntimeShutdown(cmd)
 	cmd.Dir = *state
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -176,7 +179,8 @@ func run() error {
 		stop()
 		select {
 		case <-exited:
-		case <-time.After(time.Second):
+		case <-time.After(cmd.WaitDelay + time.Second):
+			log.Print("Timed out waiting for the desktop runtime to exit")
 		}
 	}()
 	if *selfTest || *dashboardTest {

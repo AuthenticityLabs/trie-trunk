@@ -585,7 +585,7 @@ Snoot's desktop app runs the same frontend, workers, and pill-packer WASM codecs
 inside a Neutralino WebKit window. A bundled Go bridge serves the frontend and
 streams server requests. There is no Node.js runtime in the app.
 
-Build on macOS with Go, Python 3, Xcode command-line tools, and the existing
+Build on macOS with Go, Python 3.12+, CMake, Xcode command-line tools, and the existing
 frontend build dependencies installed:
 
 ```sh
@@ -597,8 +597,20 @@ python3 desktop/build.py --skip-web
 The default build produces `desktop/dist/Snoot.app` and
 `desktop/dist/Snoot-macOS-universal.zip` for Apple Silicon and Intel Macs running
 macOS 14 or later. The app uses the front-facing Snoot icon. Neutralino 6.10.0 is
-pinned and its download checksum is verified. Local builds are ad-hoc signed;
+pinned and its source checksum is verified. The build applies
+`desktop/neutralino-macos-exit.patch` to route Close, Quit, and termination signals
+through Cocoa's main queue, save window state, and let Cocoa finish shutdown.
+Compiled runtimes are cached by architecture and patch hash; temporary compiler
+outputs are discarded. Local builds are ad-hoc signed;
 public distribution still needs Developer ID signing and notarization.
+
+The native lifecycle regression test launches isolated windows and exercises the
+close button, Close Window, Quit, Command-W, Command-Q, repeated close requests,
+and termination signals. It verifies saved window state and bridge cleanup:
+
+```sh
+python3 desktop/tests/test_lifecycle.py desktop/dist/Snoot.app
+```
 
 Launch the app normally for HTTPS, or select a local Trunk socket:
 

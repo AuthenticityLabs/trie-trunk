@@ -1,0 +1,150 @@
+--- a/api/window/window.cpp
++++ b/api/window/window.cpp
+@@ -688,6 +688,28 @@
+     ((void (*)(id, SEL, bool))objc_msgSend)((id) windowHandle,
+                 "setHasShadow:"_sel, true);
+ 
++    // Snoot disables the native JS API, so install the standard Cocoa actions
++    // here rather than relying on a frontend-created menu.
++    window::setMainMenu(json::array({
++        {{"text", "Snoot"}, {"menuItems", json::array({
++            {{"text", "Hide Snoot"}, {"action", "hide:"}, {"shortcut", "h"}},
++            {{"text", "-"}},
++            {{"text", "Quit Snoot"}, {"action", "terminate:"}, {"shortcut", "q"}}
++        })}},
++        {{"text", "File"}, {"menuItems", json::array({
++            {{"text", "Close Window"}, {"action", "performClose:"}, {"shortcut", "w"}}
++        })}},
++        {{"text", "Edit"}, {"menuItems", json::array({
++            {{"text", "Undo"}, {"action", "undo:"}, {"shortcut", "z"}},
++            {{"text", "Redo"}, {"action", "redo:"}},
++            {{"text", "-"}},
++            {{"text", "Cut"}, {"action", "cut:"}, {"shortcut", "x"}},
++            {{"text", "Copy"}, {"action", "copy:"}, {"shortcut", "c"}},
++            {{"text", "Paste"}, {"action", "paste:"}, {"shortcut", "v"}},
++            {{"text", "Select All"}, {"action", "selectAll:"}, {"shortcut", "a"}}
++        })}}
++    }));
++
+     #elif defined(_WIN32)
+     windowHandle = (HWND) nativeWindow->window();
+     #endif
+@@ -731,10 +753,18 @@
+ }
+ 
+ void _close(int exitCode) {
++    #if defined(__APPLE__)
++    dispatch_async(dispatch_get_main_queue(), ^{
++        static bool closing = false;
++        if(closing || !nativeWindow) return;
++        closing = true;
++        if(windowProps.useSavedState) {
++            __saveWindowProps();
++        }
++        nativeWindow->terminate(exitCode);
++    });
++    #else
+     if(nativeWindow) {
+-        #if defined(__APPLE__)
+-        dispatch_sync(dispatch_get_main_queue(), ^{
+-		#endif
+         if(windowProps.useSavedState) {
+             __saveWindowProps();
+         }
+@@ -747,15 +777,13 @@
+         }
+         #endif
+         nativeWindow->terminate(exitCode);
+-		#if defined(__APPLE__)
+-		});
+-		#endif
+         #if defined(_WIN32)
+         FreeConsole();
+         #endif
+         delete nativeWindow;
+         nativeWindow = nullptr;
+     }
++    #endif
+ }
+ 
+ bool isSavedStateLoaded() {
+--- a/lib/webview/webview.h
++++ b/lib/webview/webview.h
+@@ -543,6 +543,13 @@
+     class_addProtocol(cls, objc_getProtocol("NSApplicationDelegate"));
+     class_addMethod(cls, "applicationShouldTerminateAfterLastWindowClosed:"_sel,
+                     (IMP)(+[](id, SEL, id) -> BOOL { return 0; }), "c@:@");
++    class_addMethod(cls, "applicationShouldTerminate:"_sel,
++                    (IMP)(+[](id self, SEL, id) -> unsigned long {
++                      auto engine = (cocoa_wkwebview_engine *)objc_getAssociatedObject(self, "webview");
++                      if(engine->m_terminating) return 1; // NSTerminateNow
++                      if(windowStateChange) windowStateChange(WEBVIEW_WINDOW_CLOSE);
++                      return 0; // NSTerminateCancel; queued close saves window state first.
++                    }), "L@:@");
+     class_addMethod(cls, "applicationShouldHandleReopen:hasVisibleWindows:"_sel,
+                     (IMP)(+[](id, SEL, id, BOOL hasVisibleWindows) -> BOOL {
+                         if(windowStateChange)
+@@ -791,10 +798,11 @@
+   void *window() { return (void *)m_window; }
+   void *wv() { return (void *)m_webview; }
+   void terminate(int exitCode = 0) {
+-    close();
+-    ((void (*)(id, SEL, id))objc_msgSend)("NSApp"_cls, "terminate:"_sel,
+-                                          nullptr);
+-    std::exit(exitCode);
++    (void)exitCode;
++    m_terminating = true;
++    id app = ((id(*)(id, SEL))objc_msgSend)("NSApplication"_cls,
++                                            "sharedApplication"_sel);
++    ((void (*)(id, SEL, id))objc_msgSend)(app, "terminate:"_sel, nullptr);
+   }
+   void run() {
+     id app = ((id(*)(id, SEL))objc_msgSend)("NSApplication"_cls,
+@@ -903,6 +911,7 @@
+ 
+ private:
+   void close() { ((void (*)(id, SEL))objc_msgSend)(m_window, "close"_sel); }
++  bool m_terminating = false;
+   id m_window;
+   id m_webview;
+   id m_manager;
+--- a/main.cpp
++++ b/main.cpp
+@@ -3,6 +3,9 @@
+ #include <string>
+ #include <thread>
+ #include <chrono>
++#if defined(__APPLE__)
++#include <dispatch/dispatch.h>
++#endif
+ #if defined(_WIN32)
+ #include <winsock2.h>
+ #include <websocketpp/error.hpp>
+@@ -60,8 +63,25 @@
+ #endif
+ 
+ void __registerCleanupHandlers() {
+-    signal(SIGINT, __signalHandler);
+-    signal(SIGTERM, __signalHandler);
++    #if defined(__APPLE__)
++    if(settings::getMode() == settings::AppModeWindow) {
++        // Cocoa cleanup must run on the main queue, never in a POSIX handler.
++        static dispatch_source_t sources[2];
++        int signals[] = {SIGINT, SIGTERM};
++        for(int i = 0; i < 2; ++i) {
++            signal(signals[i], SIG_IGN);
++            sources[i] = dispatch_source_create(DISPATCH_SOURCE_TYPE_SIGNAL,
++                signals[i], 0, dispatch_get_main_queue());
++            dispatch_source_set_event_handler(sources[i], ^{ app::exit(0); });
++            dispatch_resume(sources[i]);
++        }
++    }
++    else
++    #endif
++    {
++        signal(SIGINT, __signalHandler);
++        signal(SIGTERM, __signalHandler);
++    }
+     #if defined(_WIN32)
+     signal(SIGABRT, __signalHandler);
+     SetConsoleCtrlHandler(__consoleCtrlHandler, TRUE);
