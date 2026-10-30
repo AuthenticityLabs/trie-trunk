@@ -5,8 +5,9 @@ import {atomicFile} from './store/native-files.ts';
 import type {NativeSource,NativeControl} from './store/native.ts';
 import {entries} from './store/files.ts';
 import type {TrunkCatalog,TrunkFile} from './pil/trunk.ts';
+import {SearchesLRU} from './search/searches-lru.ts';
 
-export type StorageTarget={kind:'replicas';namespace?:string;scope?:string[]}|{kind:'branch';namespace:string;key:string}|{kind:'catalog';namespace:string;digest?:string}|{kind:'legacy';name:string;path?:string[]}|{kind:'summaries'}|{kind:'all'};
+export type StorageTarget={kind:'replicas';namespace?:string;scope?:string[]}|{kind:'branch';namespace:string;key:string}|{kind:'catalog';namespace:string;digest?:string}|{kind:'legacy';name:string;path?:string[]}|{kind:'summaries'}|{kind:'searches';signature?:string}|{kind:'all'};
 export type StorageNode={id:string;label:string;bytes:number;children:StorageNode[];target?:StorageTarget;note?:string;impact?:string;type?:string};
 export type StorageInventory={nodes:StorageNode[];bytes:number;usage?:number;quota?:number};
 const legacy=['trie-trunk-v1','trie-trunk-v2'];
@@ -186,6 +187,7 @@ async function clearCatalog(dir:FileSystemDirectoryHandle,digest?:string){
 }
 
 export async function clearLocalStorage(root:FileSystemDirectoryHandle,target:StorageTarget){
+ if(target.kind==='searches')return;
  if(target.kind==='legacy'){
   if(!legacy.includes(target.name))throw Error('Unknown local store');
   const parts=target.path??[];if(parts.some(p=>!p||p==='.'||p==='..'||p.includes('/')||p.includes('\\')))throw Error('Invalid storage path');
@@ -211,12 +213,26 @@ export async function storageInventory(labels:Record<string,string>):Promise<Sto
   for(const key of keys){const response=await cache.match(key);if(response){const size=Number(response.headers.get('Content-Length'));bytes+=Number.isFinite(size)&&size>0?size:(await response.blob()).size}}
   nodes.push({id:'summary-responses',label:'Cached Summary Responses',bytes,children:[],note:`${keys.length} packets`,target:{kind:'summaries'}});
  }
+ const searches=new SearchesLRU();
+ if(searches.available){
+  const children:StorageNode[]=(await searches.list()).map(entry=>({
+   id:'search:'+entry.signature,label:entry.label,type:'Query',bytes:new TextEncoder().encode(JSON.stringify(entry)).length,children:[],target:{kind:'searches',signature:entry.signature},
+   note:`${entry.uses} ${entry.uses===1?'search':'searches'} · Expires ${new Date(entry.expiresAt).toLocaleTimeString()}`,
+   impact:'Clears query metadata and its checkpoint. Collected events are kept.'
+  }));
+  if(children.length)nodes.push({id:'searches',label:'Recent Searches',type:'Metadata',bytes:sum(children),children,target:{kind:'searches'},note:'Up to 20 queries · Two-hour expiry'});
+ }
  const estimate=await navigator.storage.estimate();return {nodes,bytes:sum(nodes),usage:estimate.usage,quota:estimate.quota};
 }
 export async function clearStorage(target:StorageTarget){
+ const searches=new SearchesLRU();
+ if(target.kind==='searches'){await searches.clear(target.signature);return}
  await navigator.locks.request('trie-trunk-files-v1',async()=>{
   await clearLocalStorage(await localStorageRoot(),target);
   if((target.kind==='all'||target.kind==='summaries')&&typeof caches!=='undefined')await caches.delete('snoot-summary-days');
+  // Clearing any replica invalidates advisory query progress, without trying to
+  // maintain a second per-branch ownership/tracking structure in IndexedDB.
+  if(searches.available)await searches.clear();
  });
 }
 export function storageBytes(bytes:number){if(!Number.isFinite(bytes))return 'Unavailable';if(bytes===0)return '0 B';const units=['B','KB','MB','GB','TB'];const index=Math.min(4,Math.floor(Math.log10(Math.max(1,bytes))/3));return `${new Intl.NumberFormat(undefined,{maximumFractionDigits:index?2:0}).format(bytes/1000**index)} ${units[index]}`}

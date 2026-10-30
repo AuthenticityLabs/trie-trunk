@@ -469,12 +469,26 @@ end-to-end application latency or product comparisons.
 Dashboards has a collapsible Data Seeds directory and a Data Seeds dialog
 backed by the authorized `/caches` catalog. Subscriptions target services within a cache and automatically cover their
 current and future catalog resources. Resources are dashboard context, not
-individual subscriptions. IndexedDB is limited to the `snoot-profile` database
-and its `preferences` store: theme, user-authored highlighting rules, and service
+individual subscriptions. The `snoot-profile` IndexedDB database contains the
+`preferences` store: theme, user-authored highlighting rules, and service
 subscription choices. Selected service, drawer state, page, query, time window,
 and other tab settings live in session storage under readable `snoot:` keys.
 Search results, event bytes, definitions, and trie fragments are never copied
 into session storage. A reload reruns the query using the local file cache.
+
+The `snoot-searches` IndexedDB database holds bounded query metadata in
+`SearchesLRU`: up to 20 predicate signatures, expiring two hours after their last
+successful evaluation. Reads update recency without extending expiry. Signatures
+exclude window, ordering, taxonomy selection, and connection identity; a separate
+hashed context guards checkpoint reuse across sources, scopes, and Definitions.
+Each entry can hold one newest-common timestamp (the minimum of each scanned
+branch's newest timestamp), run counts, and measurements. Branch timestamps are
+transient, and no event bytes or credentials are stored here. Checkpoints are
+recorded only after full scans, before predicate rejection, with a one-millisecond
+overlap available for resumption. Current scans cover sealed data; this metadata
+does not yet narrow live collections or establish late-arrival completeness.
+Profile → Storage → Recent Searches clears individual entries or the whole cache.
+
 Subscription preferences use a `dashboard-services:` key partitioned by a
 SHA-256 digest of the trimmed connection token.
 The token itself is not stored there; changing credentials selects a separate
@@ -694,8 +708,8 @@ override it for one launch. `SNOOT_SOCKET`, `TRUNK_SOCKET`, or
 Keep the loopback port stable: WebKit associates storage with that origin.
 The bridge listens only on loopback and requires an application session cookie.
 
-Events remain in OPFS, profile preferences in IndexedDB, and page/search state
-in session storage. Desktop storage is separate from Safari's website storage.
+Events remain in OPFS, profile preferences and the bounded SearchesLRU metadata
+in IndexedDB, and page/search state in session storage. Desktop storage is separate from Safari's website storage.
 Neutralino does not remove WebKit's storage quotas; an adapter for native
 filesystem storage remains separate work.
 

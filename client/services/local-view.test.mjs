@@ -67,6 +67,27 @@ test('local duration predicates and definition-bound text run against the same r
  assert.ok(known.result.summary.count>0);assert.ok(f.events(known).every(e=>valueAt(e,'state')==='pending'));
  assert.equal(f.requests.length,2);
 });
+test('query checkpoint uses every scanned branch before predicates, including zero matches and descending reads',async()=>{
+ const f=await setup({twoBranches:true});
+ await f.search({tap:'demo/payment/transactions.v1/write',size:10});
+ const all=await f.search({size:20});
+ const newest=Math.max(...f.events(all).map(event=>event.millis));
+ assert.equal(all.result.searchProgress.checkpointEpochMs,newest);
+ for(const order of ['asc','desc']){
+  const filtered=await f.search({size:20,query:{filters:[{field:'duration',op:'>',value:{kind:'number',value:'99999999999'}}],order}});
+  assert.equal(filtered.result.summary.count,0);
+  assert.equal(filtered.result.searchProgress.checkpointEpochMs,newest);
+ }
+ const warm=await f.search({size:20});assert.deepEqual(warm.result.searchProgress,all.result.searchProgress);
+});
+test('unavailable IndexedDB metadata never prevents local search results',async()=>{
+ const original=globalThis.indexedDB;
+ try{
+  globalThis.indexedDB={open(){throw Error('Storage denied')}};
+  const f=await setup(),view=await f.search();assert.equal(view.result.summary.count,6);
+  await new Promise(resolve=>setImmediate(resolve));
+ }finally{if(original===undefined)delete globalThis.indexedDB;else globalThis.indexedDB=original}
+});
 test('descending local pages and partial-hour bounds preserve order without omissions',async()=>{
  const f=await setup(),all=await f.search({size:10}),ascending=f.events(all).map(e=>e.millis);let cursor,found=[];
  do{const page=await f.search({after:cursor,query:{filters:[],order:'desc'}});found.push(...f.events(page).map(e=>e.millis));cursor=page.result.next;}while(cursor);

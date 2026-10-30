@@ -1,4 +1,5 @@
 import {executeLocalSearch} from '../search/execute.ts';
+import {SearchesLRU} from '../search/searches-lru.ts';
 import {queryLocalSummaries} from '../search/summaries.ts';
 import {INDEX_ROW_BYTES} from './pac-native.ts';
 import {branchTargets} from "./time-window.ts";
@@ -27,12 +28,13 @@ export function validateStatistics(summary:ViewSummary):void {
 }
 export type ViewReference={stream:number;row:number;key:string;cached:boolean;provisional?:boolean;native?:{from:number;to:number;generation:string}};
 export type ViewBucket={key:string;stream:number;from:number;to:number;ranges:{Start:number;End:number}[];sealed:boolean};
-export type ViewResult={notice?:string;analytics?:DailyAnalytics;buckets?:ViewBucket[];coverage?:{complete:number;partial:number};cursor:string;snapshot:string;summaryVersion:string;summary?:ViewSummary;page:ViewReference[];next?:string;committedThrough:number;provisional:boolean};
+export type ViewResult={searchProgress?:{checkpointEpochMs?:number};notice?:string;analytics?:DailyAnalytics;buckets?:ViewBucket[];coverage?:{complete:number;partial:number};cursor:string;snapshot:string;summaryVersion:string;summary?:ViewSummary;page:ViewReference[];next?:string;committedThrough:number;provisional:boolean};
 export type ViewTimings={discovery?:number;planning?:number;request:number;response:number;summaries:number;events:number;client:number};
 export type ViewResponse={timings?:ViewTimings;result:ViewResult;definitions:Metadata[];bindings:Binding[];batch:Batch;native?:(NativeViewRecord|undefined)[]};
 export type NativeViewRecord={row:Uint8Array;base:number;trie:{start:number;bytes:Uint8Array}[]};
 type PackedRecord={bytes:Uint8Array;common?:Uint8Array;native?:NativeViewRecord};
 export class ViewCache {
+ private searches=new SearchesLRU();
  private trunk?:TrunkBootstrap;
  private localSummaries=new Map<string,ViewSummary>();
  private localPages=new Map<string,Pick<ViewResponse,'result'|'definitions'|'bindings'>>();
@@ -114,7 +116,22 @@ export class ViewCache {
   if(query.engine!=='tantivy'){
    if(!this.trunk||!archive)throw Error('Local search requires the trunk catalog and local storage. Reload the connection.');
    if(query.include==='summary'&&!query.query)return queryLocalSummaries(this.trunk,query,token,signal,archive,this.fetcher,projection);
-   return executeLocalSearch(this.trunk,query,token,signal,codec,definitions,archive,this.fetcher,onPage,this.localSummaries,this.localPageCache);
+   const started=performance.now();
+   // Metadata I/O runs beside execution, never on the first-page critical path.
+   // Pagination and summary-only dashboard refreshes do not replace a search's
+   // checkpoint with a partial scan. Credentials are only hashed, never stored.
+   const run=!query.after&&this.searches.available?this.searches.start(query.query,{
+    source:JSON.stringify([globalThis.location?.origin,token,this.trunk.version]),scope:query.tap,definitions:this.trunk.definitions.map(d=>d.digest)
+   },{from:Date.parse(query.from),to:Date.parse(query.to)}).catch(()=>undefined):Promise.resolve(undefined);
+   try{
+    const view=await executeLocalSearch(this.trunk,query,token,signal,codec,definitions,archive,this.fetcher,onPage,this.localSummaries,this.localPageCache);
+    const elapsedMs=performance.now()-started;
+    void run.then(ticket=>ticket&&this.searches.finish(ticket,{status:'complete',progress:view.result.searchProgress,measurements:{elapsedMs,matched:view.result.summary?.count,loaded:view.result.page.length}})).catch(()=>{});
+    return view;
+   }catch(error){
+    void run.then(ticket=>ticket&&this.searches.finish(ticket,{status:signal.aborted?'cancelled':'failed'})).catch(()=>{});
+    throw error;
+   }
   }
   if(query.query?.predicate)throw Error('Logical expressions require Local Search; turn off the Tantivy comparison.');
   const started=performance.now();

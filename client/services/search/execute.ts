@@ -5,7 +5,8 @@ import { collectNative } from '../pil/native-collect.ts';
 import { compile, type Binding } from '../pil/metadata.ts';
 import { NativeTrie, NativeEvent } from '../seeds/index.ts';
 import { StatePredicate } from './state-predicate.ts';
-import { INDEX_ROW_BYTES } from '../pil/pac-native.ts';
+import { INDEX_ROW_BYTES,indexMillis } from '../pil/pac-native.ts';
+import {newestCommonTimestamp} from './searches-lru.ts';
 import { prepareSearch, searchTasks, searchWindows } from './planner.ts';
 import { HOUR } from '../store/time-trie.ts';
 import type { Archive } from '../store/protocol.ts';
@@ -59,6 +60,7 @@ export async function executeLocalSearch(trunk: TrunkBootstrap, query: ViewQuery
   });
   const targets = plan.branches,
     receipts = targets.map(t => t.receipt);
+  const newest: (number|undefined)[]=Array(targets.length).fill(undefined);
   const bindings: Binding[] = targets.map((t, i) => ({
     stream: i + 1,
     digest: t.definition,
@@ -264,6 +266,13 @@ export async function executeLocalSearch(trunk: TrunkBootstrap, query: ViewQuery
           })).nativePage!;
           firstRead = false;
           if (!page.ordinals || page.rows.length !== page.ordinals.length * INDEX_ROW_BYTES) throw Error('Missing local record coordinates');
+          if(page.ordinals.length){
+            // Pages are time ordered. Read one boundary per page, before any
+            // predicate rejection; a zero-match query still made progress.
+            const j=order<0?0:page.ordinals.length-1;
+            const time=indexMillis(page.rows.subarray(j*INDEX_ROW_BYTES,(j+1)*INDEX_ROW_BYTES),page.bases[j]);
+            newest[i]=Math.max(newest[i]??time,time);
+          }
           for (let j = 0; j < page.ordinals.length; j++) {
             const row = page.rows.subarray(j * INDEX_ROW_BYTES, (j + 1) * INDEX_ROW_BYTES);
             if (!matcher.matchesLeaf(row[4] | row[5] << 8)) continue;
@@ -404,6 +413,7 @@ export async function executeLocalSearch(trunk: TrunkBootstrap, query: ViewQuery
     while (completed.size > 8) completed.delete(completed.keys().next().value!);
   }
   const done = result(true);
+  done.result.searchProgress={checkpointEpochMs:newestCommonTimestamp(newest)};
   pages?.set(pageKey,done);
   if (!published) onPage?.(done);
   return done;

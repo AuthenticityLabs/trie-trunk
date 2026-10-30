@@ -17,6 +17,10 @@ class Directory{
  async *values(){yield* this.children.values()}
 }
 const namespace='a'.repeat(64);
+test('clearing search metadata never routes to clearing native replica files',async()=>{
+ const {root,dir}=await fixture(),before=[...dir.children.keys()];
+ await clearLocalStorage(root,{kind:'searches'});assert.deepEqual([...dir.children.keys()],before);
+});
 const source=(key,tap)=>({key:key.repeat(64),tap,digest:'b'.repeat(64),generation:'c'.repeat(32),trieNodes:1,files:Object.fromEntries(['map','trie','state','index','sods'].map(k=>[k,{end:0,extents:[],blobs:[]}]))});
 async function fixture(){
  const root=new Directory(),stores=await root.getDirectoryHandle('snoot-store',{create:true}),dir=await stores.getDirectoryHandle(namespace,{create:true});

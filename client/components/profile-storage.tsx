@@ -28,8 +28,11 @@ export function ProfileStorage(props:{connections:ServerConnection[];tokens:Reco
  onMount(()=>void refresh());
  async function clear(){
   const selection=pending();if(!selection?.node.target||busy())return;
-  setBusy(true);setError('');props.onClearStart();
-  try{await clearStorage(selection.node.target);const channel=new BroadcastChannel('snoot-storage-reset');channel.postMessage('reload');channel.close();sessionStorage.setItem('snoot:profile:tab','storage');location.reload()}
+  setBusy(true);setError('');
+  try{
+   if(selection.node.target.kind==='searches'){await clearStorage(selection.node.target);await refresh();return}
+   props.onClearStart();await clearStorage(selection.node.target);const channel=new BroadcastChannel('snoot-storage-reset');channel.postMessage('reload');channel.close();sessionStorage.setItem('snoot:profile:tab','storage');location.reload()
+  }
   catch(cause){setError(cause instanceof Error?cause.message:String(cause));setBusy(false)}
  }
  return <section id="profile-storage-panel" role="tabpanel" aria-labelledby="profile-storage-tab" class="card profile-card storage-panel">
