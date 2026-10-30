@@ -2582,6 +2582,7 @@ nav {
 .performance-bar { display: flex; width: 84px; max-width: 100%; height: 7px; border-radius: 4px; overflow: hidden; background: var(--line, #ddd); }
 .performance-bar > span { height: 100%; }
 .performance-planning { background: #738c9b; }
+.performance-discovery { background: #a879d2; }
 .performance-request { background: #a879d2; }
 .performance-response { background: #5c9edf; }
 .performance-summaries { background: #56b7a2; }

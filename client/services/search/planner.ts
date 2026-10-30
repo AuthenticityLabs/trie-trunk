@@ -32,6 +32,7 @@ export type PackRequest = {
   to: number;
 };
 export type SearchPlan = {
+  discoveryMs?: number;
   from: number;
   to: number;
   branches: SearchBranch[];
@@ -70,28 +71,26 @@ export async function searchTasks<T, R>(items: readonly T[], signal: AbortSignal
 
 /** Collect whole hours before local matching. Completion bits control transfer,
  * never whether a record satisfies the user's predicates. */
-export async function planSearch(trunk: TrunkBootstrap, scope: string, from: number, to: number, token: string, archive: Archive, signal: AbortSignal = new AbortController().signal): Promise<SearchPlan> {
+export async function planSearch(trunk: TrunkBootstrap, scope: string, from: number, to: number, token: string, archive: Archive, signal: AbortSignal = new AbortController().signal, discovered?: TimeReceipt[]): Promise<SearchPlan> {
   if (!Number.isSafeInteger(from) || !Number.isSafeInteger(to) || from >= to) throw Error('Invalid search window');
   from = Math.floor(from / HOUR) * HOUR;
   to = Math.ceil(to / HOUR) * HOUR;
   const files = new Map(trunk.catalog.files.map(f => [f.path, f]));
-  const branches = await searchTasks(branchTargets(trunk, scope, true), signal, async ({
+  signal.throwIfAborted();
+  const targets=branchTargets(trunk,scope,true);
+  for(const {file,definition} of targets){const pods=files.get(file.path.slice(0,-3)+'pods');if(pods?.kind!=='pods'||pods.definition!==definition.digest)throw Error('Missing catalog pods artifact');}
+  const receipts=discovered??(targets.length?(await archive(token,{kind:'time-read-many',queries:targets.map(t=>({tap:t.tap,digest:t.definition.digest,from,to}))})).times:[]);
+  if(receipts?.length!==targets.length)throw Error('Missing time trie receipts');
+  signal.throwIfAborted();
+  const branches = targets.map(({
     file,
     tap,
     definition
-  }) => {
+  },i) => {
     const podsPath = file.path.slice(0, -3) + 'pods',
       pods = files.get(podsPath);
     if (pods?.kind !== 'pods' || pods.definition !== definition.digest) throw Error('Missing catalog pods artifact');
-    const receipt = (await archive(token, {
-      kind: 'time-read',
-      query: {
-        tap,
-        digest: definition.digest,
-        from,
-        to
-      }
-    })).time;
+    const receipt = receipts[i];
     if (!receipt) throw Error('Missing time trie receipt');
     const hours = receipt.rows.map(row => {
       const has = (bit: number) => (row.flags & bit) === bit;
@@ -123,10 +122,10 @@ export async function planSearch(trunk: TrunkBootstrap, scope: string, from: num
     packRequests: []
   };
   for (const branch of branches) {
-    let gap: PackRequest | undefined;
+    let gap: PackRequest | undefined, previousTime:number|undefined;
     for (const hour of branch.hours) {
       if (hour.count && !hour.events) {
-        if (gap && gap.to === hour.time) gap.to += HOUR;else {
+        if (gap && previousTime !== undefined && previousTime + HOUR === hour.time) gap.to = hour.time + HOUR;else {
           gap = {
             path: branch.podsPath,
             tap: branch.tap,
@@ -136,7 +135,8 @@ export async function planSearch(trunk: TrunkBootstrap, scope: string, from: num
           };
           plan.packRequests.push(gap);
         }
-      } else gap = undefined;
+      } else if(hour.count) gap = undefined;
+      previousTime=hour.time;
     }
   }
   return plan;
@@ -147,19 +147,23 @@ export async function prepareSearch(trunk: TrunkBootstrap, scope: string, from: 
     signal,
     archive
   } = options;
-  await loadTimeWindow({
+  const started = performance.now();
+  const discovery=await loadTimeWindow({
     trunk,
     scope,
     from,
     to,
     diagnostics: true
   }, token, signal, archive, options.fetcher);
+  const discoveryMs = performance.now() - started;
   signal.throwIfAborted();
-  return planSearch(trunk, scope, from, to, token, archive, signal);
+  const plan = await planSearch(trunk, scope, from, to, token, archive, signal, discovery.receipts);
+  return {...plan, discoveryMs};
 }
 
-/** First results need one hour, not an entire day. Remaining work batches at
- * most a day, skipping gaps and retaining the requested chronological order. */
+/** Retain the first-hour/first-day opportunity to publish a page promptly.
+ * Then hand the remaining time range to the existing streaming collector,
+ * which already bounds transfer/write batches. Calendar days are not I/O limits. */
 export function searchWindows(plan: SearchPlan, from: number, to: number, descending: boolean): {
   from: number;
   to: number;
@@ -182,5 +186,7 @@ export function searchWindows(plan: SearchPlan, from: number, to: number, descen
       to: z
     });
   }
-  return windows;
+  if(windows.length<=3)return windows;
+  const tail=windows.slice(2);
+  return [windows[0],windows[1],{from:Math.min(...tail.map(w=>w.from)),to:Math.max(...tail.map(w=>w.to))}];
 }

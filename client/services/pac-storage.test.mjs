@@ -4,7 +4,7 @@ import {readFileSync} from 'node:fs';
 import {Codec} from './pil/wasm.ts';
 import {PILStream} from './pil/stream.ts';
 import {NativeStore,committedRanges} from './store/native.ts';
-import {NativeEvent,NativeTrie} from './pil/native-event.ts';
+import {NativeEvent,NativeTrie} from './seeds/index.ts';
 import {compile} from './pil/metadata.ts';
 import {read} from './pil/layout.ts';
 import {Backend} from './native-backend-fixture.mjs';

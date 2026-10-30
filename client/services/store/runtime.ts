@@ -2,7 +2,7 @@ import type { Command, ArchiveReply, Collection, NativeSelection } from './proto
 import type { Metadata } from '../pil/metadata.ts';
 import { directory } from './files.ts';
 import { localStorageRoot } from './io-error.ts';
-import { nativeBackend } from './native-files.ts';
+import { nativeBackend,NativeSnapshotCache } from './native-files.ts';
 import { NativeStore } from './native.ts';
 import { nativeTransaction } from './transaction.ts';
 import type { NativeSession } from './native.ts';
@@ -13,16 +13,24 @@ export { conditions } from './conditions.ts';
 // Page working sets are session state. Durable event availability is exclusively
 // the committed branch trie; there is no per-event browser database or a separate record log.
 export function createArchive(_modulePromise?:Promise<WebAssembly.Module>) {
+ const snapshotCaches=new Map<string,{root:FileSystemDirectoryHandle;cache:NativeSnapshotCache}>();
  const sessions=new Map<string,NativeSession>();
  const definitions=new Map<string,Map<string,Metadata>>();
  const collections=new Map<string,Collection>();
  const selections=new Map<string,NativeSelection[]>();
  return async(namespace:string,command:Command):Promise<ArchiveReply>=>{
   const root=await directory(await localStorageRoot(),'snoot-store',namespace);
-  const backend=nativeBackend(root),store=new NativeStore(backend),key=(id:string)=>`${namespace}:${id}`;
+  let cached=snapshotCaches.get(namespace);
+  if(!cached||!await cached.root.isSameEntry(root)){cached={root,cache:new NativeSnapshotCache()};snapshotCaches.set(namespace,cached);}
+  // Four contexts cap retained snapshot weight at 32 MiB (raw trie bytes
+  // plus a conservative 4x allowance for decoded metadata). This isn't a JS heap limit.
+  snapshotCaches.delete(namespace);snapshotCaches.set(namespace,cached);
+  while(snapshotCaches.size>4)snapshotCaches.delete(snapshotCaches.keys().next().value!);
+  const backend=nativeBackend(root,cached.cache),store=new NativeStore(backend),key=(id:string)=>`${namespace}:${id}`;
   switch(command.kind){
    case 'summary-read':return {summaryBytes:await store.summaryBytes(command.query)};
    case 'summary-save':await nativeTransaction(backend,b=>new NativeStore(b).importSummary(command.input));return {};
+   case 'time-read-many':return {times:await store.timeWindows(command.queries)};
    case 'time-read':return {time:await store.timeWindow(command.query)};
    case 'time-save':await nativeTransaction(backend,b=>new NativeStore(b).importTime(command.input));return {};
    case 'trunk-save':await saveTrunk(root,command.snapshot);return {};

@@ -1,7 +1,7 @@
 import { decodeValue, valueAt } from '../dictionary.ts';
 import type { QueryPlan, Filter, Predicate } from '../query.ts';
 import type { Mapping } from '../pil/metadata.ts';
-import { NativeTrie, NativeEvent } from '../pil/native-event.ts';
+import { NativeTrie, NativeEvent } from '../seeds/index.ts';
 function numeric(text: string): number | bigint {
   if (/^[+-]?\d+$/.test(text)) {
     const n = BigInt(text);

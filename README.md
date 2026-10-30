@@ -35,6 +35,28 @@ Its reader currently brings payload bytes into memory before leaf rejection.
 A directly routed leaf/hour directory with paged occurrence lists remains design
 work; no lookup complexity or performance improvement is claimed for it yet.
 
+## Search Performance Verification
+
+The [historical comparison](benchmarks/client/2026-10-30-framework/results.json)
+rebuilds the preserved pre-redesign implementation and its original Pill Packer
+sources against identical 50,000-event inputs. Three isolated WebKit runs separate
+server-assisted retrieval from whole-window client collection. Matching INFO and
+error filters have identical result counts. Measurements end at data-ready delivery,
+not DOM paint; cold means an empty client replica, not cold server storage.
+
+The collector retains bounded 4 MiB/4096-record transfers, coalesced reads and
+publication after data writes. The planner preserves early-page delivery, then
+streams the remaining range without splitting every calendar day. Repeated queries
+reuse the existing bounded event cache after checking replica identity and coverage.
+Tests protect request counts, bounded concurrency, reset and retention invalidation.
+
+The query benchmark worker is `client/benchmarks/query-path.worker.ts`; the browser
+driver is `client/scripts/benchmark-query-path.mjs`. The recorded fixture is generated
+by each revision's `seed-demo`, with canonical ingress bytes hashed before encoding.
+The report includes wire bytes, request counts, first-page latency, full-result latency,
+source archive hashes and whole-server storage footprint. Broad cold client searches
+still perform substantially more work than the historical selected-page path.
+
 ## Architecture
 
 - **Go** manages HTTP connections, authentication, configuration, scheduling,

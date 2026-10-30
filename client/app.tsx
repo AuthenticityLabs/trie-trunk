@@ -1102,7 +1102,7 @@ function Workspace(props: {onLogout: () => void}) {
                 <button class="control time-window-trigger" type="button" aria-label="Search Time Window" onClick={openSearchWindow}>
                   <Icon name="clock" />{windowLabel(searchWindow().from,searchWindow().to,profile().timeZone)}
                 </button>
-                <label class="query-comparison"><input type="checkbox" checked={tantivyComparison()} onChange={event=>{setTantivyComparison(event.currentTarget.checked);setPagedQuery(undefined)}}/> Tantivy Comparison</label>
+                <label class="query-comparison"><input type="checkbox" checked={tantivyComparison()} onChange={event=>setTantivyComparison(event.currentTarget.checked)}/> Tantivy Comparison</label>
                 <span class="query-controls-spacer" />
                 <button
                   type="button"

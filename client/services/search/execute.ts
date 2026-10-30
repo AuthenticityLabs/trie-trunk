@@ -3,7 +3,7 @@ import type { ViewQuery, ViewResponse, ViewSummary, ViewStatistics, NativeViewRe
 import type { TrunkBootstrap } from '../pil/trunk.ts';
 import { collectNative } from '../pil/native-collect.ts';
 import { compile, type Binding } from '../pil/metadata.ts';
-import { NativeTrie, NativeEvent } from '../pil/native-event.ts';
+import { NativeTrie, NativeEvent } from '../seeds/index.ts';
 import { StatePredicate } from './state-predicate.ts';
 import { INDEX_ROW_BYTES } from '../pil/pac-native.ts';
 import { prepareSearch, searchTasks, searchWindows } from './planner.ts';
@@ -41,7 +41,7 @@ const stats = (): ViewStatistics => ({
     latency: []
   }
 });
-export async function executeLocalSearch(trunk: TrunkBootstrap, query: ViewQuery, token: string, signal: AbortSignal, codec: Codec, definitions: Map<string, StoredDefinition>, archive: Archive, fetcher: typeof fetch, onPage?: ((page: ViewResponse) => void), completed?: Map<string, ViewSummary>): Promise<ViewResponse> {
+export async function executeLocalSearch(trunk: TrunkBootstrap, query: ViewQuery, token: string, signal: AbortSignal, codec: Codec, definitions: Map<string, StoredDefinition>, archive: Archive, fetcher: typeof fetch, onPage?: ((page: ViewResponse) => void), completed?: Map<string, ViewSummary>, pages?: {get(key:string):ViewResponse|undefined;set(key:string,value:ViewResponse):void}): Promise<ViewResponse> {
   const failed = createAbortScope([signal]);
   signal = failed.signal;
   try {
@@ -67,6 +67,15 @@ export async function executeLocalSearch(trunk: TrunkBootstrap, query: ViewQuery
   const mappings = targets.map(t => compile(t.metadata, t.tap));
   const snapshot = await hash(JSON.stringify([trunk.version, query.tap, from, to, query.query, targets.map((t, i) => [t.tap, t.definition, receipts[i].serial, receipts[i].generation, receipts[i].sequence, receipts[i].rows.map(h => [h.time, h.count])])]));
   const prior = completed?.get(snapshot);
+  const pageKey=JSON.stringify([snapshot,query.after??'',query.size]);
+  // Validate origin identity and local completion before reusing the same page.
+  // Retention, reset, generation changes, and event-cache eviction all force work.
+  const cached=plan.packRequests.length===0?pages?.get(pageKey):undefined;
+  if(cached){
+    signal.throwIfAborted();
+    const done={...cached,timings:{discovery:plan.discoveryMs??0,planning:performance.now()-started-(plan.discoveryMs??0),request:0,response:0,summaries:0,events:0,client:0}};
+    onPage?.(done);return done;
+  }
   let after: string | undefined;
   if (query.after) {
     let cursor;
@@ -161,7 +170,8 @@ export async function executeLocalSearch(trunk: TrunkBootstrap, query: ViewQuery
       },
       native: selected.map(i => i.native),
       timings: {
-        planning: planned - started,
+        discovery: plan.discoveryMs ?? 0,
+        planning: planned - started - (plan.discoveryMs ?? 0),
         request: 0,
         response: 0,
         summaries: 0,
@@ -394,6 +404,7 @@ export async function executeLocalSearch(trunk: TrunkBootstrap, query: ViewQuery
     while (completed.size > 8) completed.delete(completed.keys().next().value!);
   }
   const done = result(true);
+  pages?.set(pageKey,done);
   if (!published) onPage?.(done);
   return done;
   } finally {

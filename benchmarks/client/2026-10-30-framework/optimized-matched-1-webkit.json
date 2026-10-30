@@ -1,0 +1,739 @@
+{
+  "variant": "optimized",
+  "engine": "webkit",
+  "results": [
+    {
+      "variant": "optimized-empty-today-e8318c68-bc37-47ff-bf0d-53aa8c1220c9",
+      "setupMs": 5,
+      "setupRequests": [],
+      "branches": 0,
+      "runs": [
+        {
+          "name": "empty-today",
+          "pass": 0,
+          "ms": 23,
+          "firstPageMs": 22,
+          "timings": {
+            "request": 6,
+            "response": 15,
+            "summaries": 1,
+            "events": 0,
+            "client": 0
+          },
+          "matched": 0,
+          "loaded": 0,
+          "commands": {},
+          "requests": [
+            {
+              "path": "/events?tap=&from=2026-10-30T00%3A00%3A00Z&to=2026-10-30T13%3A10%3A00Z&page=100&include=summary%2Cpage%2Cstatistics&query=%7B%22filters%22%3A%5B%5D%2C%22order%22%3A%22asc%22%7D",
+              "ms": 17,
+              "bytes": 27803
+            }
+          ]
+        },
+        {
+          "name": "empty-today",
+          "pass": 1,
+          "ms": 4,
+          "firstPageMs": 4,
+          "timings": {
+            "request": 3,
+            "response": 1,
+            "summaries": 0,
+            "events": 0,
+            "client": 0
+          },
+          "matched": 0,
+          "loaded": 0,
+          "commands": {},
+          "requests": [
+            {
+              "path": "/events?tap=&from=2026-10-30T00%3A00%3A00Z&to=2026-10-30T13%3A10%3A00Z&page=100&include=summary%2Cpage%2Cstatistics&query=%7B%22filters%22%3A%5B%5D%2C%22order%22%3A%22asc%22%7D",
+              "ms": 4,
+              "bytes": 8653
+            }
+          ]
+        },
+        {
+          "name": "empty-today",
+          "pass": 2,
+          "ms": 4,
+          "firstPageMs": 4,
+          "timings": {
+            "request": 3,
+            "response": 1,
+            "summaries": 0,
+            "events": 0,
+            "client": 0
+          },
+          "matched": 0,
+          "loaded": 0,
+          "commands": {},
+          "requests": [
+            {
+              "path": "/events?tap=&from=2026-10-30T00%3A00%3A00Z&to=2026-10-30T13%3A10%3A00Z&page=100&include=summary%2Cpage%2Cstatistics&query=%7B%22filters%22%3A%5B%5D%2C%22order%22%3A%22asc%22%7D",
+              "ms": 4,
+              "bytes": 8653
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "optimized-one-day-info-0ebdd64b-b841-4261-8114-73b438534332",
+      "setupMs": 3,
+      "setupRequests": [],
+      "branches": 0,
+      "runs": [
+        {
+          "name": "one-day-info",
+          "pass": 0,
+          "ms": 1010,
+          "firstPageMs": 1010,
+          "timings": {
+            "request": 83,
+            "response": 14,
+            "summaries": 0,
+            "events": 911,
+            "client": 1
+          },
+          "matched": 1527,
+          "loaded": 100,
+          "commands": {
+            "native-resolve": {
+              "count": 20,
+              "ms": 265
+            },
+            "native-begin": {
+              "count": 20,
+              "ms": 157
+            },
+            "native-coverage": {
+              "count": 20,
+              "ms": 512
+            },
+            "native-finish": {
+              "count": 20,
+              "ms": 1372
+            },
+            "native-dependencies": {
+              "count": 20,
+              "ms": 811
+            },
+            "native-rows": {
+              "count": 20,
+              "ms": 399
+            }
+          },
+          "requests": [
+            {
+              "path": "/events?tap=&from=2026-10-28T00%3A00%3A00Z&to=2026-10-29T00%3A00%3A00Z&page=100&include=summary%2Cpage%2Cstatistics&query=%7B%22filters%22%3A%5B%7B%22field%22%3A%22level%22%2C%22op%22%3A%22%3D%3D%22%2C%22value%22%3A%7B%22kind%22%3A%22string%22%2C%22value%22%3A%22INFO%22%7D%7D%5D%2C%22order%22%3A%22asc%22%7D",
+              "ms": 92,
+              "bytes": 57123
+            },
+            {
+              "path": "/collect?format=native&tap=demo%2Fvault%2Fsecrets.v1%2Fread&from=2026-10-28T00%3A00%3A00.000Z&to=2026-10-28T01%3A00%3A00.000Z&definition=edfaeea1b19cc00dd26847d887efde26110854e2858ae75f6e423299e9448b61",
+              "ms": 5,
+              "bytes": 17943
+            },
+            {
+              "path": "/collect?format=native&tap=demo%2Fworker%2Fjobs.v1%2Fread&from=2026-10-28T00%3A00%3A00.000Z&to=2026-10-28T01%3A00%3A00.000Z&definition=dcb5b1dfd9d3493652fafbddbe99fdc3a5c51a61e40d87bf4e75f1bdf2d9dc1b",
+              "ms": 5,
+              "bytes": 17878
+            },
+            {
+              "path": "/collect?format=native&tap=demo%2Fpayment%2Ftransactions.v1%2Fread&from=2026-10-28T00%3A00%3A00.000Z&to=2026-10-28T01%3A00%3A00.000Z&definition=a27aba95dcd35c049613cd23af2f0e8b6f4a3f28b53bb81987b9b0692b6204d3",
+              "ms": 6,
+              "bytes": 17560
+            },
+            {
+              "path": "/collect?format=native&tap=demo%2Fgateway%2Froutes.v1%2Fwrite&from=2026-10-28T00%3A00%3A00.000Z&to=2026-10-28T01%3A00%3A00.000Z&definition=99f2c2dddc407b484c92cd9a00eda00f54b2a2980566e9b7d256fc8852c2e971",
+              "ms": 7,
+              "bytes": 18263
+            },
+            {
+              "path": "/collect?format=native&tap=demo%2Fbilling%2Finvoices.v1%2Fwrite&from=2026-10-28T00%3A00%3A00.000Z&to=2026-10-28T01%3A00%3A00.000Z&definition=14f8c56a63ae03b0cda09df16c320b81b72c7250b53f30e683141efa6f326bd7",
+              "ms": 3,
+              "bytes": 18069
+            },
+            {
+              "path": "/collect?format=native&tap=demo%2Fvault%2Fsecrets.v1%2Fwrite&from=2026-10-28T00%3A00%3A00.000Z&to=2026-10-28T01%3A00%3A00.000Z&definition=edfaeea1b19cc00dd26847d887efde26110854e2858ae75f6e423299e9448b61",
+              "ms": 3,
+              "bytes": 18318
+            },
+            {
+              "path": "/collect?format=native&tap=demo%2Fworker%2Fjobs.v1%2Fwrite&from=2026-10-28T00%3A00%3A00.000Z&to=2026-10-28T01%3A00%3A00.000Z&definition=dcb5b1dfd9d3493652fafbddbe99fdc3a5c51a61e40d87bf4e75f1bdf2d9dc1b",
+              "ms": 3,
+              "bytes": 18257
+            },
+            {
+              "path": "/collect?format=native&tap=demo%2Fpayment%2Ftransactions.v1%2Fwrite&from=2026-10-28T00%3A00%3A00.000Z&to=2026-10-28T01%3A00%3A00.000Z&definition=a27aba95dcd35c049613cd23af2f0e8b6f4a3f28b53bb81987b9b0692b6204d3",
+              "ms": 3,
+              "bytes": 17956
+            },
+            {
+              "path": "/collect?format=native&tap=demo%2Fgateway%2Froutes.v1%2Fread&from=2026-10-28T00%3A00%3A00.000Z&to=2026-10-28T01%3A00%3A00.000Z&definition=99f2c2dddc407b484c92cd9a00eda00f54b2a2980566e9b7d256fc8852c2e971",
+              "ms": 3,
+              "bytes": 17790
+            },
+            {
+              "path": "/collect?format=native&tap=demo%2Fbilling%2Finvoices.v1%2Fread&from=2026-10-28T00%3A00%3A00.000Z&to=2026-10-28T01%3A00%3A00.000Z&definition=14f8c56a63ae03b0cda09df16c320b81b72c7250b53f30e683141efa6f326bd7",
+              "ms": 3,
+              "bytes": 17594
+            },
+            {
+              "path": "/collect?format=native&tap=demo%2Fvault%2Fsecrets.v1%2Fwrite&from=2026-10-28T01%3A00%3A00.000Z&to=2026-10-28T02%3A00%3A00.000Z&definition=edfaeea1b19cc00dd26847d887efde26110854e2858ae75f6e423299e9448b61",
+              "ms": 2,
+              "bytes": 2755
+            },
+            {
+              "path": "/collect?format=native&tap=demo%2Fworker%2Fjobs.v1%2Fwrite&from=2026-10-28T01%3A00%3A00.000Z&to=2026-10-28T02%3A00%3A00.000Z&definition=dcb5b1dfd9d3493652fafbddbe99fdc3a5c51a61e40d87bf4e75f1bdf2d9dc1b",
+              "ms": 2,
+              "bytes": 2761
+            },
+            {
+              "path": "/collect?format=native&tap=demo%2Fpayment%2Ftransactions.v1%2Fwrite&from=2026-10-28T01%3A00%3A00.000Z&to=2026-10-28T02%3A00%3A00.000Z&definition=a27aba95dcd35c049613cd23af2f0e8b6f4a3f28b53bb81987b9b0692b6204d3",
+              "ms": 2,
+              "bytes": 2787
+            },
+            {
+              "path": "/collect?format=native&tap=demo%2Fgateway%2Froutes.v1%2Fread&from=2026-10-28T01%3A00%3A00.000Z&to=2026-10-28T02%3A00%3A00.000Z&definition=99f2c2dddc407b484c92cd9a00eda00f54b2a2980566e9b7d256fc8852c2e971",
+              "ms": 3,
+              "bytes": 2433
+            },
+            {
+              "path": "/collect?format=native&tap=demo%2Fbilling%2Finvoices.v1%2Fread&from=2026-10-28T01%3A00%3A00.000Z&to=2026-10-28T02%3A00%3A00.000Z&definition=14f8c56a63ae03b0cda09df16c320b81b72c7250b53f30e683141efa6f326bd7",
+              "ms": 2,
+              "bytes": 2434
+            },
+            {
+              "path": "/collect?format=native&tap=demo%2Fvault%2Fsecrets.v1%2Fread&from=2026-10-28T01%3A00%3A00.000Z&to=2026-10-28T02%3A00%3A00.000Z&definition=edfaeea1b19cc00dd26847d887efde26110854e2858ae75f6e423299e9448b61",
+              "ms": 3,
+              "bytes": 2429
+            },
+            {
+              "path": "/collect?format=native&tap=demo%2Fworker%2Fjobs.v1%2Fread&from=2026-10-28T01%3A00%3A00.000Z&to=2026-10-28T02%3A00%3A00.000Z&definition=dcb5b1dfd9d3493652fafbddbe99fdc3a5c51a61e40d87bf4e75f1bdf2d9dc1b",
+              "ms": 2,
+              "bytes": 2425
+            },
+            {
+              "path": "/collect?format=native&tap=demo%2Fpayment%2Ftransactions.v1%2Fread&from=2026-10-28T01%3A00%3A00.000Z&to=2026-10-28T02%3A00%3A00.000Z&definition=a27aba95dcd35c049613cd23af2f0e8b6f4a3f28b53bb81987b9b0692b6204d3",
+              "ms": 3,
+              "bytes": 2442
+            },
+            {
+              "path": "/collect?format=native&tap=demo%2Fgateway%2Froutes.v1%2Fwrite&from=2026-10-28T01%3A00%3A00.000Z&to=2026-10-28T02%3A00%3A00.000Z&definition=99f2c2dddc407b484c92cd9a00eda00f54b2a2980566e9b7d256fc8852c2e971",
+              "ms": 2,
+              "bytes": 2771
+            },
+            {
+              "path": "/collect?format=native&tap=demo%2Fbilling%2Finvoices.v1%2Fwrite&from=2026-10-28T01%3A00%3A00.000Z&to=2026-10-28T02%3A00%3A00.000Z&definition=14f8c56a63ae03b0cda09df16c320b81b72c7250b53f30e683141efa6f326bd7",
+              "ms": 2,
+              "bytes": 2724
+            }
+          ]
+        },
+        {
+          "name": "one-day-info",
+          "pass": 1,
+          "ms": 51,
+          "firstPageMs": 51,
+          "timings": {
+            "request": 50,
+            "response": 1,
+            "summaries": 0,
+            "events": 0,
+            "client": 0
+          },
+          "matched": 1527,
+          "loaded": 100,
+          "commands": {},
+          "requests": [
+            {
+              "path": "/events?tap=&from=2026-10-28T00%3A00%3A00Z&to=2026-10-29T00%3A00%3A00Z&page=100&include=summary%2Cpage%2Cstatistics&query=%7B%22filters%22%3A%5B%7B%22field%22%3A%22level%22%2C%22op%22%3A%22%3D%3D%22%2C%22value%22%3A%7B%22kind%22%3A%22string%22%2C%22value%22%3A%22INFO%22%7D%7D%5D%2C%22order%22%3A%22asc%22%7D",
+              "ms": 51,
+              "bytes": 36637
+            }
+          ]
+        },
+        {
+          "name": "one-day-info",
+          "pass": 2,
+          "ms": 41,
+          "firstPageMs": 41,
+          "timings": {
+            "request": 41,
+            "response": 0,
+            "summaries": 0,
+            "events": 0,
+            "client": 0
+          },
+          "matched": 1527,
+          "loaded": 100,
+          "commands": {},
+          "requests": [
+            {
+              "path": "/events?tap=&from=2026-10-28T00%3A00%3A00Z&to=2026-10-29T00%3A00%3A00Z&page=100&include=summary%2Cpage%2Cstatistics&query=%7B%22filters%22%3A%5B%7B%22field%22%3A%22level%22%2C%22op%22%3A%22%3D%3D%22%2C%22value%22%3A%7B%22kind%22%3A%22string%22%2C%22value%22%3A%22INFO%22%7D%7D%5D%2C%22order%22%3A%22asc%22%7D",
+              "ms": 41,
+              "bytes": 36637
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "optimized-one-day-errors-f4a2615d-0591-450e-b26d-4b657dc36519",
+      "setupMs": 3,
+      "setupRequests": [],
+      "branches": 0,
+      "runs": [
+        {
+          "name": "one-day-errors",
+          "pass": 0,
+          "ms": 1209,
+          "firstPageMs": 1209,
+          "timings": {
+            "request": 41,
+            "response": 15,
+            "summaries": 0,
+            "events": 1152,
+            "client": 0
+          },
+          "matched": 30,
+          "loaded": 30,
+          "commands": {
+            "native-resolve": {
+              "count": 30,
+              "ms": 470
+            },
+            "native-begin": {
+              "count": 30,
+              "ms": 260
+            },
+            "native-coverage": {
+              "count": 30,
+              "ms": 606
+            },
+            "native-finish": {
+              "count": 30,
+              "ms": 1474
+            },
+            "native-dependencies": {
+              "count": 30,
+              "ms": 979
+            },
+            "native-rows": {
+              "count": 30,
+              "ms": 547
+            }
+          },
+          "requests": [
+            {
+              "path": "/events?tap=&from=2026-10-28T00%3A00%3A00Z&to=2026-10-29T00%3A00%3A00Z&page=100&include=summary%2Cpage%2Cstatistics&query=%7B%22filters%22%3A%5B%7B%22field%22%3A%22http_status%22%2C%22op%22%3A%22%3D%3D%22%2C%22value%22%3A%7B%22kind%22%3A%22number%22%2C%22value%22%3A%22503%22%7D%7D%5D%2C%22order%22%3A%22asc%22%7D",
+              "ms": 51,
+              "bytes": 36285
+            },
+            {
+              "path": "/collect?format=native&tap=demo%2Fgateway%2Froutes.v1%2Ferror&from=2026-10-28T03%3A00%3A00.000Z&to=2026-10-28T04%3A00%3A00.000Z&definition=99f2c2dddc407b484c92cd9a00eda00f54b2a2980566e9b7d256fc8852c2e971",
+              "ms": 3,
+              "bytes": 17715
+            },
+            {
+              "path": "/collect?format=native&tap=demo%2Fbilling%2Finvoices.v1%2Ferror&from=2026-10-28T03%3A00%3A00.000Z&to=2026-10-28T04%3A00%3A00.000Z&definition=14f8c56a63ae03b0cda09df16c320b81b72c7250b53f30e683141efa6f326bd7",
+              "ms": 3,
+              "bytes": 17517
+            },
+            {
+              "path": "/collect?format=native&tap=demo%2Fvault%2Fsecrets.v1%2Ferror&from=2026-10-28T03%3A00%3A00.000Z&to=2026-10-28T04%3A00%3A00.000Z&definition=edfaeea1b19cc00dd26847d887efde26110854e2858ae75f6e423299e9448b61",
+              "ms": 3,
+              "bytes": 17843
+            },
+            {
+              "path": "/collect?format=native&tap=demo%2Fworker%2Fjobs.v1%2Ferror&from=2026-10-28T03%3A00%3A00.000Z&to=2026-10-28T04%3A00%3A00.000Z&definition=dcb5b1dfd9d3493652fafbddbe99fdc3a5c51a61e40d87bf4e75f1bdf2d9dc1b",
+              "ms": 4,
+              "bytes": 17774
+            },
+            {
+              "path": "/collect?format=native&tap=demo%2Fpayment%2Ftransactions.v1%2Ferror&from=2026-10-28T03%3A00%3A00.000Z&to=2026-10-28T04%3A00%3A00.000Z&definition=a27aba95dcd35c049613cd23af2f0e8b6f4a3f28b53bb81987b9b0692b6204d3",
+              "ms": 3,
+              "bytes": 17461
+            },
+            {
+              "path": "/collect?format=native&tap=demo%2Fgateway%2Froutes.v1%2Ferror&from=2026-10-28T07%3A00%3A00.000Z&to=2026-10-28T08%3A00%3A00.000Z&definition=99f2c2dddc407b484c92cd9a00eda00f54b2a2980566e9b7d256fc8852c2e971",
+              "ms": 3,
+              "bytes": 2337
+            },
+            {
+              "path": "/collect?format=native&tap=demo%2Fbilling%2Finvoices.v1%2Ferror&from=2026-10-28T07%3A00%3A00.000Z&to=2026-10-28T08%3A00%3A00.000Z&definition=14f8c56a63ae03b0cda09df16c320b81b72c7250b53f30e683141efa6f326bd7",
+              "ms": 2,
+              "bytes": 2341
+            },
+            {
+              "path": "/collect?format=native&tap=demo%2Fvault%2Fsecrets.v1%2Ferror&from=2026-10-28T07%3A00%3A00.000Z&to=2026-10-28T08%3A00%3A00.000Z&definition=edfaeea1b19cc00dd26847d887efde26110854e2858ae75f6e423299e9448b61",
+              "ms": 3,
+              "bytes": 2333
+            },
+            {
+              "path": "/collect?format=native&tap=demo%2Fworker%2Fjobs.v1%2Ferror&from=2026-10-28T07%3A00%3A00.000Z&to=2026-10-28T08%3A00%3A00.000Z&definition=dcb5b1dfd9d3493652fafbddbe99fdc3a5c51a61e40d87bf4e75f1bdf2d9dc1b",
+              "ms": 2,
+              "bytes": 2330
+            },
+            {
+              "path": "/collect?format=native&tap=demo%2Fpayment%2Ftransactions.v1%2Ferror&from=2026-10-28T07%3A00%3A00.000Z&to=2026-10-28T08%3A00%3A00.000Z&definition=a27aba95dcd35c049613cd23af2f0e8b6f4a3f28b53bb81987b9b0692b6204d3",
+              "ms": 3,
+              "bytes": 2349
+            },
+            {
+              "path": "/collect?format=native&tap=demo%2Fgateway%2Froutes.v1%2Ferror&from=2026-10-28T11%3A00%3A00.000Z&to=2026-10-28T12%3A00%3A00.000Z&definition=99f2c2dddc407b484c92cd9a00eda00f54b2a2980566e9b7d256fc8852c2e971",
+              "ms": 2,
+              "bytes": 2337
+            },
+            {
+              "path": "/collect?format=native&tap=demo%2Fbilling%2Finvoices.v1%2Ferror&from=2026-10-28T11%3A00%3A00.000Z&to=2026-10-28T12%3A00%3A00.000Z&definition=14f8c56a63ae03b0cda09df16c320b81b72c7250b53f30e683141efa6f326bd7",
+              "ms": 2,
+              "bytes": 2341
+            },
+            {
+              "path": "/collect?format=native&tap=demo%2Fvault%2Fsecrets.v1%2Ferror&from=2026-10-28T11%3A00%3A00.000Z&to=2026-10-28T12%3A00%3A00.000Z&definition=edfaeea1b19cc00dd26847d887efde26110854e2858ae75f6e423299e9448b61",
+              "ms": 3,
+              "bytes": 2333
+            },
+            {
+              "path": "/collect?format=native&tap=demo%2Fworker%2Fjobs.v1%2Ferror&from=2026-10-28T11%3A00%3A00.000Z&to=2026-10-28T12%3A00%3A00.000Z&definition=dcb5b1dfd9d3493652fafbddbe99fdc3a5c51a61e40d87bf4e75f1bdf2d9dc1b",
+              "ms": 3,
+              "bytes": 2330
+            },
+            {
+              "path": "/collect?format=native&tap=demo%2Fpayment%2Ftransactions.v1%2Ferror&from=2026-10-28T11%3A00%3A00.000Z&to=2026-10-28T12%3A00%3A00.000Z&definition=a27aba95dcd35c049613cd23af2f0e8b6f4a3f28b53bb81987b9b0692b6204d3",
+              "ms": 2,
+              "bytes": 2349
+            },
+            {
+              "path": "/collect?format=native&tap=demo%2Fgateway%2Froutes.v1%2Ferror&from=2026-10-28T14%3A00%3A00.000Z&to=2026-10-28T15%3A00%3A00.000Z&definition=99f2c2dddc407b484c92cd9a00eda00f54b2a2980566e9b7d256fc8852c2e971",
+              "ms": 3,
+              "bytes": 2337
+            },
+            {
+              "path": "/collect?format=native&tap=demo%2Fbilling%2Finvoices.v1%2Ferror&from=2026-10-28T14%3A00%3A00.000Z&to=2026-10-28T15%3A00%3A00.000Z&definition=14f8c56a63ae03b0cda09df16c320b81b72c7250b53f30e683141efa6f326bd7",
+              "ms": 2,
+              "bytes": 2341
+            },
+            {
+              "path": "/collect?format=native&tap=demo%2Fvault%2Fsecrets.v1%2Ferror&from=2026-10-28T14%3A00%3A00.000Z&to=2026-10-28T15%3A00%3A00.000Z&definition=edfaeea1b19cc00dd26847d887efde26110854e2858ae75f6e423299e9448b61",
+              "ms": 2,
+              "bytes": 2333
+            },
+            {
+              "path": "/collect?format=native&tap=demo%2Fworker%2Fjobs.v1%2Ferror&from=2026-10-28T14%3A00%3A00.000Z&to=2026-10-28T15%3A00%3A00.000Z&definition=dcb5b1dfd9d3493652fafbddbe99fdc3a5c51a61e40d87bf4e75f1bdf2d9dc1b",
+              "ms": 3,
+              "bytes": 2330
+            },
+            {
+              "path": "/collect?format=native&tap=demo%2Fpayment%2Ftransactions.v1%2Ferror&from=2026-10-28T14%3A00%3A00.000Z&to=2026-10-28T15%3A00%3A00.000Z&definition=a27aba95dcd35c049613cd23af2f0e8b6f4a3f28b53bb81987b9b0692b6204d3",
+              "ms": 3,
+              "bytes": 2348
+            },
+            {
+              "path": "/collect?format=native&tap=demo%2Fgateway%2Froutes.v1%2Ferror&from=2026-10-28T18%3A00%3A00.000Z&to=2026-10-28T19%3A00%3A00.000Z&definition=99f2c2dddc407b484c92cd9a00eda00f54b2a2980566e9b7d256fc8852c2e971",
+              "ms": 2,
+              "bytes": 2336
+            },
+            {
+              "path": "/collect?format=native&tap=demo%2Fbilling%2Finvoices.v1%2Ferror&from=2026-10-28T18%3A00%3A00.000Z&to=2026-10-28T19%3A00%3A00.000Z&definition=14f8c56a63ae03b0cda09df16c320b81b72c7250b53f30e683141efa6f326bd7",
+              "ms": 3,
+              "bytes": 2339
+            },
+            {
+              "path": "/collect?format=native&tap=demo%2Fvault%2Fsecrets.v1%2Ferror&from=2026-10-28T18%3A00%3A00.000Z&to=2026-10-28T19%3A00%3A00.000Z&definition=edfaeea1b19cc00dd26847d887efde26110854e2858ae75f6e423299e9448b61",
+              "ms": 2,
+              "bytes": 2333
+            },
+            {
+              "path": "/collect?format=native&tap=demo%2Fworker%2Fjobs.v1%2Ferror&from=2026-10-28T18%3A00%3A00.000Z&to=2026-10-28T19%3A00%3A00.000Z&definition=dcb5b1dfd9d3493652fafbddbe99fdc3a5c51a61e40d87bf4e75f1bdf2d9dc1b",
+              "ms": 3,
+              "bytes": 2330
+            },
+            {
+              "path": "/collect?format=native&tap=demo%2Fpayment%2Ftransactions.v1%2Ferror&from=2026-10-28T18%3A00%3A00.000Z&to=2026-10-28T19%3A00%3A00.000Z&definition=a27aba95dcd35c049613cd23af2f0e8b6f4a3f28b53bb81987b9b0692b6204d3",
+              "ms": 2,
+              "bytes": 2346
+            },
+            {
+              "path": "/collect?format=native&tap=demo%2Fgateway%2Froutes.v1%2Ferror&from=2026-10-28T22%3A00%3A00.000Z&to=2026-10-28T23%3A00%3A00.000Z&definition=99f2c2dddc407b484c92cd9a00eda00f54b2a2980566e9b7d256fc8852c2e971",
+              "ms": 2,
+              "bytes": 2333
+            },
+            {
+              "path": "/collect?format=native&tap=demo%2Fbilling%2Finvoices.v1%2Ferror&from=2026-10-28T22%3A00%3A00.000Z&to=2026-10-28T23%3A00%3A00.000Z&definition=14f8c56a63ae03b0cda09df16c320b81b72c7250b53f30e683141efa6f326bd7",
+              "ms": 2,
+              "bytes": 2341
+            },
+            {
+              "path": "/collect?format=native&tap=demo%2Fvault%2Fsecrets.v1%2Ferror&from=2026-10-28T22%3A00%3A00.000Z&to=2026-10-28T23%3A00%3A00.000Z&definition=edfaeea1b19cc00dd26847d887efde26110854e2858ae75f6e423299e9448b61",
+              "ms": 3,
+              "bytes": 2333
+            },
+            {
+              "path": "/collect?format=native&tap=demo%2Fworker%2Fjobs.v1%2Ferror&from=2026-10-28T22%3A00%3A00.000Z&to=2026-10-28T23%3A00%3A00.000Z&definition=dcb5b1dfd9d3493652fafbddbe99fdc3a5c51a61e40d87bf4e75f1bdf2d9dc1b",
+              "ms": 2,
+              "bytes": 2330
+            },
+            {
+              "path": "/collect?format=native&tap=demo%2Fpayment%2Ftransactions.v1%2Ferror&from=2026-10-28T22%3A00%3A00.000Z&to=2026-10-28T23%3A00%3A00.000Z&definition=a27aba95dcd35c049613cd23af2f0e8b6f4a3f28b53bb81987b9b0692b6204d3",
+              "ms": 2,
+              "bytes": 2347
+            }
+          ]
+        },
+        {
+          "name": "one-day-errors",
+          "pass": 1,
+          "ms": 41,
+          "firstPageMs": 41,
+          "timings": {
+            "request": 40,
+            "response": 1,
+            "summaries": 0,
+            "events": 0,
+            "client": 0
+          },
+          "matched": 30,
+          "loaded": 30,
+          "commands": {},
+          "requests": [
+            {
+              "path": "/events?tap=&from=2026-10-28T00%3A00%3A00Z&to=2026-10-29T00%3A00%3A00Z&page=100&include=summary%2Cpage%2Cstatistics&query=%7B%22filters%22%3A%5B%7B%22field%22%3A%22http_status%22%2C%22op%22%3A%22%3D%3D%22%2C%22value%22%3A%7B%22kind%22%3A%22number%22%2C%22value%22%3A%22503%22%7D%7D%5D%2C%22order%22%3A%22asc%22%7D",
+              "ms": 41,
+              "bytes": 15061
+            }
+          ]
+        },
+        {
+          "name": "one-day-errors",
+          "pass": 2,
+          "ms": 40,
+          "firstPageMs": 40,
+          "timings": {
+            "request": 39,
+            "response": 0,
+            "summaries": 0,
+            "events": 0,
+            "client": 1
+          },
+          "matched": 30,
+          "loaded": 30,
+          "commands": {},
+          "requests": [
+            {
+              "path": "/events?tap=&from=2026-10-28T00%3A00%3A00Z&to=2026-10-29T00%3A00%3A00Z&page=100&include=summary%2Cpage%2Cstatistics&query=%7B%22filters%22%3A%5B%7B%22field%22%3A%22http_status%22%2C%22op%22%3A%22%3D%3D%22%2C%22value%22%3A%7B%22kind%22%3A%22number%22%2C%22value%22%3A%22503%22%7D%7D%5D%2C%22order%22%3A%22asc%22%7D",
+              "ms": 39,
+              "bytes": 15061
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "optimized-30-days-info-3c390cb0-7a19-491c-9399-d7e07431b1de",
+      "setupMs": 4,
+      "setupRequests": [],
+      "branches": 0,
+      "runs": [
+        {
+          "name": "30-days-info",
+          "pass": 0,
+          "ms": 924,
+          "firstPageMs": 924,
+          "timings": {
+            "request": 100,
+            "response": 15,
+            "summaries": 0,
+            "events": 808,
+            "client": 0
+          },
+          "matched": 45342,
+          "loaded": 100,
+          "commands": {
+            "native-resolve": {
+              "count": 20,
+              "ms": 256
+            },
+            "native-begin": {
+              "count": 20,
+              "ms": 137
+            },
+            "native-coverage": {
+              "count": 20,
+              "ms": 465
+            },
+            "native-finish": {
+              "count": 20,
+              "ms": 1150
+            },
+            "native-dependencies": {
+              "count": 20,
+              "ms": 729
+            },
+            "native-rows": {
+              "count": 20,
+              "ms": 374
+            }
+          },
+          "requests": [
+            {
+              "path": "/events?tap=&from=2026-09-30T00%3A00%3A00Z&to=2026-10-30T00%3A00%3A00Z&page=100&include=summary%2Cpage%2Cstatistics&query=%7B%22filters%22%3A%5B%7B%22field%22%3A%22level%22%2C%22op%22%3A%22%3D%3D%22%2C%22value%22%3A%7B%22kind%22%3A%22string%22%2C%22value%22%3A%22INFO%22%7D%7D%5D%2C%22order%22%3A%22asc%22%7D",
+              "ms": 105,
+              "bytes": 56954
+            },
+            {
+              "path": "/collect?format=native&tap=demo%2Fgateway%2Froutes.v1%2Fread&from=2026-09-30T00%3A00%3A00.000Z&to=2026-09-30T01%3A00%3A00.000Z&definition=99f2c2dddc407b484c92cd9a00eda00f54b2a2980566e9b7d256fc8852c2e971",
+              "ms": 4,
+              "bytes": 17987
+            },
+            {
+              "path": "/collect?format=native&tap=demo%2Fbilling%2Finvoices.v1%2Fread&from=2026-09-30T00%3A00%3A00.000Z&to=2026-09-30T01%3A00%3A00.000Z&definition=14f8c56a63ae03b0cda09df16c320b81b72c7250b53f30e683141efa6f326bd7",
+              "ms": 4,
+              "bytes": 17791
+            },
+            {
+              "path": "/collect?format=native&tap=demo%2Fvault%2Fsecrets.v1%2Fread&from=2026-09-30T00%3A00%3A00.000Z&to=2026-09-30T01%3A00%3A00.000Z&definition=edfaeea1b19cc00dd26847d887efde26110854e2858ae75f6e423299e9448b61",
+              "ms": 4,
+              "bytes": 18111
+            },
+            {
+              "path": "/collect?format=native&tap=demo%2Fworker%2Fjobs.v1%2Fread&from=2026-09-30T00%3A00%3A00.000Z&to=2026-09-30T01%3A00%3A00.000Z&definition=dcb5b1dfd9d3493652fafbddbe99fdc3a5c51a61e40d87bf4e75f1bdf2d9dc1b",
+              "ms": 6,
+              "bytes": 18045
+            },
+            {
+              "path": "/collect?format=native&tap=demo%2Fpayment%2Ftransactions.v1%2Fread&from=2026-09-30T00%3A00%3A00.000Z&to=2026-09-30T01%3A00%3A00.000Z&definition=a27aba95dcd35c049613cd23af2f0e8b6f4a3f28b53bb81987b9b0692b6204d3",
+              "ms": 3,
+              "bytes": 17732
+            },
+            {
+              "path": "/collect?format=native&tap=demo%2Fgateway%2Froutes.v1%2Fwrite&from=2026-09-30T00%3A00%3A00.000Z&to=2026-09-30T01%3A00%3A00.000Z&definition=99f2c2dddc407b484c92cd9a00eda00f54b2a2980566e9b7d256fc8852c2e971",
+              "ms": 3,
+              "bytes": 18044
+            },
+            {
+              "path": "/collect?format=native&tap=demo%2Fbilling%2Finvoices.v1%2Fwrite&from=2026-09-30T00%3A00%3A00.000Z&to=2026-09-30T01%3A00%3A00.000Z&definition=14f8c56a63ae03b0cda09df16c320b81b72c7250b53f30e683141efa6f326bd7",
+              "ms": 2,
+              "bytes": 17850
+            },
+            {
+              "path": "/collect?format=native&tap=demo%2Fvault%2Fsecrets.v1%2Fwrite&from=2026-09-30T00%3A00%3A00.000Z&to=2026-09-30T01%3A00%3A00.000Z&definition=edfaeea1b19cc00dd26847d887efde26110854e2858ae75f6e423299e9448b61",
+              "ms": 2,
+              "bytes": 18158
+            },
+            {
+              "path": "/collect?format=native&tap=demo%2Fworker%2Fjobs.v1%2Fwrite&from=2026-09-30T00%3A00%3A00.000Z&to=2026-09-30T01%3A00%3A00.000Z&definition=dcb5b1dfd9d3493652fafbddbe99fdc3a5c51a61e40d87bf4e75f1bdf2d9dc1b",
+              "ms": 2,
+              "bytes": 18095
+            },
+            {
+              "path": "/collect?format=native&tap=demo%2Fpayment%2Ftransactions.v1%2Fwrite&from=2026-09-30T00%3A00%3A00.000Z&to=2026-09-30T01%3A00%3A00.000Z&definition=a27aba95dcd35c049613cd23af2f0e8b6f4a3f28b53bb81987b9b0692b6204d3",
+              "ms": 3,
+              "bytes": 17790
+            },
+            {
+              "path": "/collect?format=native&tap=demo%2Fgateway%2Froutes.v1%2Fwrite&from=2026-09-30T01%3A00%3A00.000Z&to=2026-09-30T02%3A00%3A00.000Z&definition=99f2c2dddc407b484c92cd9a00eda00f54b2a2980566e9b7d256fc8852c2e971",
+              "ms": 3,
+              "bytes": 2770
+            },
+            {
+              "path": "/collect?format=native&tap=demo%2Fbilling%2Finvoices.v1%2Fwrite&from=2026-09-30T01%3A00%3A00.000Z&to=2026-09-30T02%3A00%3A00.000Z&definition=14f8c56a63ae03b0cda09df16c320b81b72c7250b53f30e683141efa6f326bd7",
+              "ms": 2,
+              "bytes": 2774
+            },
+            {
+              "path": "/collect?format=native&tap=demo%2Fvault%2Fsecrets.v1%2Fwrite&from=2026-09-30T01%3A00%3A00.000Z&to=2026-09-30T02%3A00%3A00.000Z&definition=edfaeea1b19cc00dd26847d887efde26110854e2858ae75f6e423299e9448b61",
+              "ms": 2,
+              "bytes": 2750
+            },
+            {
+              "path": "/collect?format=native&tap=demo%2Fworker%2Fjobs.v1%2Fwrite&from=2026-09-30T01%3A00%3A00.000Z&to=2026-09-30T02%3A00%3A00.000Z&definition=dcb5b1dfd9d3493652fafbddbe99fdc3a5c51a61e40d87bf4e75f1bdf2d9dc1b",
+              "ms": 2,
+              "bytes": 2755
+            },
+            {
+              "path": "/collect?format=native&tap=demo%2Fpayment%2Ftransactions.v1%2Fwrite&from=2026-09-30T01%3A00%3A00.000Z&to=2026-09-30T02%3A00%3A00.000Z&definition=a27aba95dcd35c049613cd23af2f0e8b6f4a3f28b53bb81987b9b0692b6204d3",
+              "ms": 2,
+              "bytes": 2782
+            },
+            {
+              "path": "/collect?format=native&tap=demo%2Fgateway%2Froutes.v1%2Fread&from=2026-09-30T01%3A00%3A00.000Z&to=2026-09-30T02%3A00%3A00.000Z&definition=99f2c2dddc407b484c92cd9a00eda00f54b2a2980566e9b7d256fc8852c2e971",
+              "ms": 2,
+              "bytes": 2433
+            },
+            {
+              "path": "/collect?format=native&tap=demo%2Fbilling%2Finvoices.v1%2Fread&from=2026-09-30T01%3A00%3A00.000Z&to=2026-09-30T02%3A00%3A00.000Z&definition=14f8c56a63ae03b0cda09df16c320b81b72c7250b53f30e683141efa6f326bd7",
+              "ms": 3,
+              "bytes": 2434
+            },
+            {
+              "path": "/collect?format=native&tap=demo%2Fvault%2Fsecrets.v1%2Fread&from=2026-09-30T01%3A00%3A00.000Z&to=2026-09-30T02%3A00%3A00.000Z&definition=edfaeea1b19cc00dd26847d887efde26110854e2858ae75f6e423299e9448b61",
+              "ms": 2,
+              "bytes": 2424
+            },
+            {
+              "path": "/collect?format=native&tap=demo%2Fworker%2Fjobs.v1%2Fread&from=2026-09-30T01%3A00%3A00.000Z&to=2026-09-30T02%3A00%3A00.000Z&definition=dcb5b1dfd9d3493652fafbddbe99fdc3a5c51a61e40d87bf4e75f1bdf2d9dc1b",
+              "ms": 2,
+              "bytes": 2426
+            },
+            {
+              "path": "/collect?format=native&tap=demo%2Fpayment%2Ftransactions.v1%2Fread&from=2026-09-30T01%3A00%3A00.000Z&to=2026-09-30T02%3A00%3A00.000Z&definition=a27aba95dcd35c049613cd23af2f0e8b6f4a3f28b53bb81987b9b0692b6204d3",
+              "ms": 2,
+              "bytes": 2419
+            }
+          ]
+        },
+        {
+          "name": "30-days-info",
+          "pass": 1,
+          "ms": 87,
+          "firstPageMs": 87,
+          "timings": {
+            "request": 86,
+            "response": 1,
+            "summaries": 0,
+            "events": 0,
+            "client": 0
+          },
+          "matched": 45342,
+          "loaded": 100,
+          "commands": {},
+          "requests": [
+            {
+              "path": "/events?tap=&from=2026-09-30T00%3A00%3A00Z&to=2026-10-30T00%3A00%3A00Z&page=100&include=summary%2Cpage%2Cstatistics&query=%7B%22filters%22%3A%5B%7B%22field%22%3A%22level%22%2C%22op%22%3A%22%3D%3D%22%2C%22value%22%3A%7B%22kind%22%3A%22string%22%2C%22value%22%3A%22INFO%22%7D%7D%5D%2C%22order%22%3A%22asc%22%7D",
+              "ms": 87,
+              "bytes": 36356
+            }
+          ]
+        },
+        {
+          "name": "30-days-info",
+          "pass": 2,
+          "ms": 83,
+          "firstPageMs": 83,
+          "timings": {
+            "request": 81,
+            "response": 1,
+            "summaries": 0,
+            "events": 0,
+            "client": 1
+          },
+          "matched": 45342,
+          "loaded": 100,
+          "commands": {},
+          "requests": [
+            {
+              "path": "/events?tap=&from=2026-09-30T00%3A00%3A00Z&to=2026-10-30T00%3A00%3A00Z&page=100&include=summary%2Cpage%2Cstatistics&query=%7B%22filters%22%3A%5B%7B%22field%22%3A%22level%22%2C%22op%22%3A%22%3D%3D%22%2C%22value%22%3A%7B%22kind%22%3A%22string%22%2C%22value%22%3A%22INFO%22%7D%7D%5D%2C%22order%22%3A%22asc%22%7D",
+              "ms": 81,
+              "bytes": 36356
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

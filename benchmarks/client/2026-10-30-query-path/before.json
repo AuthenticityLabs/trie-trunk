@@ -1,0 +1,224 @@
+{
+  "variant": "before",
+  "branches": 25,
+  "runs": [
+    {
+      "name": "today-empty",
+      "pass": 0,
+      "ms": 732.5999999940395,
+      "firstPageMs": 732.5999999940395,
+      "timings": {
+        "discovery": 448.59999999403954,
+        "planning": 283,
+        "request": 0,
+        "response": 0,
+        "summaries": 0,
+        "events": 0.20000000298023224,
+        "client": 0
+      },
+      "matched": 0,
+      "loaded": 0,
+      "commands": {
+        "time-read": {
+          "count": 50,
+          "ms": 1761.9999999850988
+        },
+        "time-save": {
+          "count": 25,
+          "ms": 893.8999999761581
+        }
+      },
+      "network": {
+        "requests": 25,
+        "bytes": 7600,
+        "trieRequests": 25,
+        "packRequests": 0
+      }
+    },
+    {
+      "name": "today-empty",
+      "pass": 1,
+      "ms": 554.7999999970198,
+      "firstPageMs": 554.7999999970198,
+      "timings": {
+        "discovery": 278,
+        "planning": 276.59999999403954,
+        "request": 0,
+        "response": 0,
+        "summaries": 0,
+        "events": 0.09999999403953552,
+        "client": 0
+      },
+      "matched": 0,
+      "loaded": 0,
+      "commands": {
+        "time-read": {
+          "count": 50,
+          "ms": 2078.7000000029802
+        }
+      },
+      "network": {
+        "requests": 0,
+        "bytes": 0,
+        "trieRequests": 0,
+        "packRequests": 0
+      }
+    },
+    {
+      "name": "today-empty",
+      "pass": 2,
+      "ms": 542.4000000059605,
+      "firstPageMs": 542.4000000059605,
+      "timings": {
+        "discovery": 273.20000000298023,
+        "planning": 269.20000000298023,
+        "request": 0,
+        "response": 0,
+        "summaries": 0,
+        "events": 0,
+        "client": 0
+      },
+      "matched": 0,
+      "loaded": 0,
+      "commands": {
+        "time-read": {
+          "count": 50,
+          "ms": 2028.7999999970198
+        }
+      },
+      "network": {
+        "requests": 0,
+        "bytes": 0,
+        "trieRequests": 0,
+        "packRequests": 0
+      }
+    },
+    {
+      "name": "one-day",
+      "pass": 0,
+      "ms": 7284.29999999702,
+      "firstPageMs": 7255.20000000298,
+      "timings": {
+        "discovery": 687,
+        "planning": 273.59999999403954,
+        "request": 0,
+        "response": 0,
+        "summaries": 0,
+        "events": 6323.70000000298,
+        "client": 0
+      },
+      "matched": 1667,
+      "loaded": 100,
+      "commands": {
+        "time-read": {
+          "count": 50,
+          "ms": 2211.400000050664
+        },
+        "time-save": {
+          "count": 25,
+          "ms": 1361.2999999970198
+        },
+        "native-begin": {
+          "count": 124,
+          "ms": 5164.100000023842
+        },
+        "native-coverage": {
+          "count": 124,
+          "ms": 5464.29999999702
+        },
+        "native-finish": {
+          "count": 124,
+          "ms": 10256.499999925494
+        },
+        "native-resolve": {
+          "count": 45,
+          "ms": 2036.5999999195337
+        },
+        "native-page": {
+          "count": 50,
+          "ms": 714.9000000059605
+        }
+      },
+      "network": {
+        "requests": 149,
+        "bytes": 1044831,
+        "trieRequests": 25,
+        "packRequests": 124
+      }
+    },
+    {
+      "name": "one-day",
+      "pass": 1,
+      "ms": 1320.1000000089407,
+      "firstPageMs": 1292.6000000089407,
+      "timings": {
+        "discovery": 498.09999999403954,
+        "planning": 499.00000001490116,
+        "request": 0,
+        "response": 0,
+        "summaries": 0,
+        "events": 323,
+        "client": 0
+      },
+      "matched": 1667,
+      "loaded": 100,
+      "commands": {
+        "time-read": {
+          "count": 50,
+          "ms": 3738.8999999910593
+        },
+        "native-resolve": {
+          "count": 25,
+          "ms": 358.5999999344349
+        },
+        "native-page": {
+          "count": 50,
+          "ms": 739.4999999850988
+        }
+      },
+      "network": {
+        "requests": 0,
+        "bytes": 0,
+        "trieRequests": 0,
+        "packRequests": 0
+      }
+    },
+    {
+      "name": "one-day",
+      "pass": 2,
+      "ms": 1323.5999999940395,
+      "firstPageMs": 1298.0999999940395,
+      "timings": {
+        "discovery": 495.3999999910593,
+        "planning": 497.5,
+        "request": 0,
+        "response": 0,
+        "summaries": 0,
+        "events": 330.6000000089407,
+        "client": 0
+      },
+      "matched": 1667,
+      "loaded": 100,
+      "commands": {
+        "time-read": {
+          "count": 50,
+          "ms": 3732.000000014901
+        },
+        "native-resolve": {
+          "count": 25,
+          "ms": 372
+        },
+        "native-page": {
+          "count": 50,
+          "ms": 758.4000000357628
+        }
+      },
+      "network": {
+        "requests": 0,
+        "bytes": 0,
+        "trieRequests": 0,
+        "packRequests": 0
+      }
+    }
+  ]
+}

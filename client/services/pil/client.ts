@@ -5,7 +5,7 @@ import { viewEvents } from "./view-events.ts";
 import type { ViewResponse, ViewQuery, ViewResult } from "./view.ts";
 import type { Collection } from "../store/protocol.ts";
 import { PILEvent } from "./event.ts";
-import { NativeEvent, NativeTrie } from "./native-event.ts";
+import { NativeEvent, NativeTrie } from "../seeds/index.ts";
 import { valueAt } from "../dictionary.ts";
 import { compile, Choices, type Metadata, type Mapping, type Binding } from "./metadata.ts";
 import type { Request, Reply } from "./protocol.ts";

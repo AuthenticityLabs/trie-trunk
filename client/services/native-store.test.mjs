@@ -10,7 +10,7 @@ import {readFileSync} from "node:fs";
 import {NativeStore,missing,resolve,committedRanges} from "./store/native.ts";
 import {Codec} from "./pil/wasm.ts";
 import {PILStream} from "./pil/stream.ts";
-import {NativeTrie,NativeEvent} from "./pil/native-event.ts";
+import {NativeTrie,NativeEvent} from "./seeds/index.ts";
 import {compile} from "./pil/metadata.ts";
 import {valueAt} from "./dictionary.ts";
 import {collectNative} from "./pil/native-collect.ts";
@@ -23,6 +23,34 @@ async function fixture(){
  try{await s.feed(wire);s.finish();return {records,definitions};}finally{s.close();}
 }
 import { Backend } from "./native-backend-fixture.mjs";
+test('invalid persisted spans identify every affected resource and allow scoped refresh',async()=>{
+ const {cacheRefreshSources,cacheErrorMessage}=await import('./store/errors.ts');
+ const f=await fixture(),backend=new Backend(),store=new NativeStore(backend),session=store.begin();
+ await ingest(store,session,f);await store.finish(session);
+ const [original]=await backend.list();
+ const broken=structuredClone(original),other=structuredClone(original),healthy=structuredClone(original);
+ broken.contexts[0].placement.memberStart=0n;
+ other.key='b'.repeat(64);other.tap='demo/billing/invoices.v1/write';other.contexts[0].placement.memberStart=0n;
+ healthy.key='c'.repeat(64);healthy.tap='demo/identity/sessions.v1/write';
+ await backend.put([broken,other,healthy]);
+ const restarted=new NativeStore(backend);
+ let issue;
+ await assert.rejects(restarted.coverage(),error=>{
+  issue=nativeCacheIssue(error);
+  assert.equal(issue.reason,'invalid-native-span');assert.equal(issue.conflicts.length,2);
+  assert.ok(Number(issue.conflicts[0].detail.start)<0);
+  assert.match(cacheErrorMessage(error),/Refresh these local copies together/);
+  return true;
+ });
+ assert.equal((await restarted.coverage(healthy.tap)).length,1,'healthy scopes remain usable');
+ const stale=restarted.begin();
+ assert.equal(await restarted.rebaseMany(cacheRefreshSources(issue)),2);
+ assert.equal((await restarted.coverage()).length,1,'refresh leaves unrelated data intact');
+ await assert.rejects(ingest(restarted,stale,f),/cache rebased/);
+ const retry=restarted.begin(await restarted.serial());await ingest(restarted,retry,f);await restarted.finish(retry);
+ assert.equal((await new NativeStore(backend).coverage()).length,2,'freshly collected ranges work after restart');
+});
+
 function rebound(records){
  for(const r of records)if(r.kind==="manifest"&&r.manifest.TimeTrie)r.manifest.TimeTrie.set(r.manifest.Generation,48);
  const ids=new Map(records.filter(r=>r.kind==="manifest").map(r=>[r.binding.stream,r.manifest.Generation]));

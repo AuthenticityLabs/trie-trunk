@@ -58,10 +58,14 @@ export interface NativeBackend {
 export const hex = (b: Uint8Array) => [...b].map(v => v.toString(16).padStart(2,"0")).join("");
 const hash = async (b: Uint8Array) => hex(new Uint8Array(await crypto.subtle.digest("SHA-256", b.slice().buffer)));
 const integer = (v: unknown): v is number => typeof v === "number" && Number.isSafeInteger(v) && v >= 0;
+class NativeSpanError extends Error {
+  readonly span:Span;
+  constructor(span:Span){super('Invalid native span');this.span=span;}
+}
 export function normalize(spans: Span[]): Span[] {
   const out: Span[] = [];
   for (const r of [...spans].sort((a,b) => a.Start-b.Start)) {
-    if (!integer(r.Start) || !integer(r.End) || r.End <= r.Start) throw Error("Invalid native span");
+    if (!integer(r.Start) || !integer(r.End) || r.End <= r.Start) throw new NativeSpanError(r);
     const last = out.at(-1);
     if (last && r.Start <= last.End) last.End = Math.max(last.End,r.End);
     else out.push({...r});
@@ -153,9 +157,14 @@ export class NativeStore {
     if(!source||source.retiredBy||missingHours(source.timeTrie,q.from,q.to).length)return;
     return this.dependencies(key);
   }
-  async timeWindow(q:TimeQuery):Promise<TimeReceipt>{
-    const serial=await this.serial();
-    const sources=(await this.backend.list()).filter(s=>!s.retiredBy&&s.tap===q.tap&&s.digest===q.digest&&s.timeTrie);
+  async timeWindow(q:TimeQuery):Promise<TimeReceipt>{return (await this.timeWindows([q]))[0];}
+  /** One immutable snapshot per planning batch, not one full store read per branch. */
+  async timeWindows(queries:TimeQuery[]):Promise<TimeReceipt[]>{
+    const serial=await this.serial(),all=await this.backend.list();
+    const grouped=new Map<string,NativeSource[]>();
+    for(const source of all){if(source.retiredBy||!source.timeTrie)continue;const key=source.tap+':'+source.digest;const group=grouped.get(key)??[];group.push(source);grouped.set(key,group);}
+    return queries.map(q=>{
+    const sources=grouped.get(q.tap+':'+q.digest)??[];
     sources.sort((a,b)=>(b.generationSequence??0)-(a.generationSequence??0));
     const source=sources[0],tree=source?.timeTrie;
     if(source&&sources.some(s=>s.key!==source.key&&s.generationSequence===source.generationSequence))throw Error('Conflicting time trie generations');
@@ -165,6 +174,7 @@ export class NativeStore {
     const rows:TimeReceipt['rows']=[];
     for(let at=Math.floor(q.from/HOUR)*HOUR;at<q.to;at+=HOUR){const item=timeLeaf(tree,at);if(item)rows.push({time:at,count:item.count,flags:item.flags})}
     return {serial,generation:source?.generation,sequence:source?.generationSequence,rows,missing:gaps};
+    });
   }
   private async summarySource(q:SummaryQuery){
     return (await this.backend.list()).find(s=>!s.retiredBy&&s.tap===q.tap&&s.digest===q.digest&&s.generation===q.generation);
@@ -636,10 +646,23 @@ export class NativeStore {
     return missingHours(s?.retiredBy?undefined:s?.timeTrie,from,to);
   }
   async coverage(tap?:string){
-    return (await this.backend.list()).filter(s=>!s.retiredBy&&matchesSource(tap??"",s.tap)).filter(s=>s.state).map(s=>({
-      Definition:unhex(s.digest),Generation:unhex(s.generation),Index:committedRanges(s).index,MemberRanges:committedRanges(s).sods,TrieNodes:s.trieNodes,
-      ...(s.state?{StateKnown:true,StateEpoch:unhex(s.state.epoch),StateSequence:s.state.sequence}:{}),
-    }));
+    const conflicts:{source:string;reason:string;detail:Record<string,string>}[]=[];
+    const coverage=[];
+    for(const s of await this.backend.list()){
+      if(s.retiredBy||!s.state||!matchesSource(tap??"",s.tap))continue;
+      try{
+        const ranges=committedRanges(s);
+        coverage.push({Definition:unhex(s.digest),Generation:unhex(s.generation),Index:ranges.index,MemberRanges:ranges.sods,TrieNodes:s.trieNodes,
+          StateKnown:true,StateEpoch:unhex(s.state.epoch),StateSequence:s.state.sequence});
+      }catch(error){
+        // Only persisted coverage is recoverable by refreshing a local copy.
+        // Invalid incoming manifests still fail validation without a reset.
+        if(!(error instanceof NativeSpanError))throw error;
+        conflicts.push({source:s.tap,reason:'invalid-native-span',detail:{start:String(error.span.Start),end:String(error.span.End),generation:s.generation,key:s.key}});
+      }
+    }
+    if(conflicts.length)throw new NativeCacheError('Invalid cached event ranges',{code:'native-cache-conflict',source:conflicts[0].source,reason:'invalid-native-span',conflicts});
+    return coverage;
   }
   async objectState(query:ObjectQuery):Promise<{token:string;sequence:number}>{
     objectParameters(query);

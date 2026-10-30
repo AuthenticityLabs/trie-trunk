@@ -35,6 +35,11 @@ export function cacheErrorMessage(error:unknown):string {
   const issue=nativeCacheIssue(error);
   if(issue?.code==='native-cache-conflict'){
     const resources=cacheRefreshSources(issue).map(s=>s.split('/').slice(0,3).join('/'));
+    if(issue.reason==='invalid-native-span'||issue.conflicts?.every(c=>c.reason==='invalid-native-span')){
+      return resources.length>1
+        ? `Local cache ranges for ${resources.join(', ')} are invalid. Refresh these local copies together to continue.`
+        : `${resources[0]?resources[0]+': ':''}Local cache ranges are invalid. Refresh its local copy to continue.`;
+    }
     if(resources.length>1)return `Local caches for ${resources.join(', ')} no longer match the server. Refresh these local copies together to continue.`;
     return `${resources[0]?resources[0]+': ':''}The local cache no longer matches the server. Refresh its local copy to continue.`;
   }

@@ -49,6 +49,7 @@ export function PagedResults(props:{
  const refreshedResources=new Set<string>();
  const resource=(source:string)=>source.split('/').slice(0,3).join('/');
  const repeatedConflict=()=>{const issue=cacheIssue();return !!issue&&cacheRefreshSources(issue).some(source=>refreshedResources.has(resource(source)));};
+ const showCacheDetails=()=>repeatedConflict()||cacheIssue()?.conflicts?.some(c=>c.reason==='invalid-native-span');
  function describeError(cause:unknown){
   const issue=nativeCacheIssue(cause);
   if(issue){setCacheIssue(issue);console.warn('Native Cache Conflict',issue);if(cacheRefreshSources(issue).some(source=>refreshedResources.has(resource(source))))return 'Local cache refresh did not resolve this conflict. See Conflict Details.';}
@@ -125,6 +126,8 @@ export function PagedResults(props:{
    persist(next.view);
   }catch(e){if(!controller.signal.aborted&&abort===controller){
    const message=describeError(e);
+   const failed:SearchTiming={kind:delivered?'Charts':after?'Page':'Search',ms:performance.now()-started,failed:true};
+   if(delivered)setChartTiming(failed);else if(after)setPageTiming(failed);else setTiming(failed);
    if(delivered)setChartError(message);else setError(message);
   }}
   finally{if(abort===controller){abort=undefined;setBusy(false);setChartLoading(false)}}
@@ -169,7 +172,7 @@ export function PagedResults(props:{
    <div class="results-toolbar"><strong>Event Activity</strong><span role="status">Loading Charts…</span></div>
    <div style={{height:'148px'}} />
   </section></Show>
-  <Show when={chartError()}><div class="notice" role="alert">Charts could not be loaded: {chartError()}
+  <Show when={chartError()}><div class="notice" role="alert">Charts could not be loaded: {chartError()} <SearchPerformance timing={chartTiming()} />
    <button class="text-button" onClick={()=>restart()}>Retry</button>
   </div></Show>
   <Show when={result()?.summary}>{s=><section class="card activity-card">
@@ -186,9 +189,9 @@ export function PagedResults(props:{
     <button class="text-button" type="button" disabled={busy()} onClick={()=>restart()}>Refresh</button>
    </div></div>
    <Show when={sessionWarning()}><div class="notice" role="status">{sessionWarning()}</div></Show>
-   <Show when={cacheWarning()}><div class="notice" role="status">{cacheWarning()}<Show when={repeatedConflict()}><details class="cache-conflict-details"><summary>Conflict Details</summary><pre>{JSON.stringify(cacheIssue(),null,2)}</pre></details></Show><Show when={canRepair()}>{repairButton()}</Show></div></Show>
+   <Show when={cacheWarning()}><div class="notice" role="status">{cacheWarning()}<Show when={showCacheDetails()}><details class="cache-conflict-details"><summary>Conflict Details</summary><pre>{JSON.stringify(cacheIssue(),null,2)}</pre></details></Show><Show when={canRepair()}>{repairButton()}</Show></div></Show>
    <Show when={error()}><div class="notice error-notice" role="alert">{error()}
-    <Show when={repeatedConflict()}><details class="cache-conflict-details"><summary>Conflict Details</summary><pre>{JSON.stringify(cacheIssue(),null,2)}</pre></details></Show>
+    <Show when={showCacheDetails()}><details class="cache-conflict-details"><summary>Conflict Details</summary><pre>{JSON.stringify(cacheIssue(),null,2)}</pre></details></Show>
     <Show when={canRepair()} fallback={<>
      <button class="text-button" disabled={busy()||repairing()} onClick={()=>void fetchPage(result()?.next??query.after)}>Retry</button>
      <button class="text-button" onClick={()=>restart()}>Restart Search</button>

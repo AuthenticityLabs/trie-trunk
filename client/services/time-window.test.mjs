@@ -19,7 +19,7 @@ async function setup(){
  const path=b.tap.slice(0,b.tap.lastIndexOf('/'))+'/0/'+b.tap.split('/').at(-1)+'.tri';
  const trunk={version:'',catalog:{files:[{path,kind:'tri',definition:b.digest,bootstrap:false,size:0}]},bindings:[b],definitions:[definition]};
  const backend=new Backend(),store=new NativeStore(backend);
- const archive=async(_token,c)=>c.kind==='time-read'?{time:await store.timeWindow(c.query)}:await nativeTransaction(backend,x=>new NativeStore(x).importTime(c.input)).then(()=>({}));
+ const archive=async(_token,c)=>c.kind==='time-read-many'?{times:await store.timeWindows(c.queries)}:await nativeTransaction(backend,x=>new NativeStore(x).importTime(c.input)).then(()=>({}));
  const input={tap:b.tap,definition,generation,sequence,serial:0,bytes:m.TimeTrie};
  const response=()=>new Response(m.TimeTrie,{headers:{'Trunk-Format':'time-trie/0','Trunk-Path':path,'Trunk-Source':b.tap,'Definition-Version':b.digest,'Trunk-Generation':generation,'Trunk-Generation-Sequence':String(sequence)}});
  return {records,definitions,backend,store,archive,input,response,query:{trunk,scope:'',from,to},from,to};
@@ -33,7 +33,7 @@ test('time replication reuses durable leaves without certifying events or indexe
  const [source]=await f.backend.list();assert.equal(timeLeaf(source.timeTrie,f.from).flags,0);
  assert.equal((await f.store.coverage()).length,0);
  const second=await loadTimeWindow(f.query,'',signal,f.archive,fetcher);
- assert.deepEqual(second,first);assert.equal(calls,1);
+ const {receipts,...counts}=second;assert.deepEqual(counts,first);assert.equal(receipts.length,1);assert.equal(calls,1);
 });
 test('time receipt preserves already committed SODS and index bits',async()=>{
  const f=await setup(),session=f.store.begin();

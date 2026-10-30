@@ -1,4 +1,4 @@
-import { NativeEvent, NativeTrie } from './native-event.ts';
+import { NativeEvent, NativeTrie } from '../seeds/index.ts';
 import type { LogEvent } from '../dictionary.ts';
 import { PILEvent } from './event.ts';
 import { compile } from './metadata.ts';

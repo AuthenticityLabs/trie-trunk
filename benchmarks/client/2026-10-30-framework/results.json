@@ -1,0 +1,442 @@
+{
+  "date": "2026-10-30",
+  "input_events": 50000,
+  "input_days": 30,
+  "input_sha256": "7196075905e569b72208a7ec84e7c9031f1485bb3fb48cbdb01673dde0104160",
+  "engine": "Playwright WebKit 2336 on macOS; isolated persistent profiles",
+  "cold_trials": 3,
+  "warm_trials": 6,
+  "methodology": [
+    "Production ViewCache, codecs, storage worker and OPFS; actual Go HTTP endpoints. No mocked data or Node server.",
+    "Cold means an empty client replica, not cold server RAM or filesystem caches. Each workload has its own namespace; warm passes reuse normal application caches.",
+    "Timings end at data-ready delivery. First-page delivery is measured separately. DOM painting and layout are not included.",
+    "Three independent browser profiles per variant, run sequentially. Setup/bootstrap is recorded separately in raw results.",
+    "Canonical ingress bytes hash identically across all three server builds. Explicit INFO and status-503 filters avoid differing default diagnostic scope.",
+    "Historical matching runs on the server. Current Tantivy retains that path for library-strategy comparison. Current local matching replicates the complete selected window and runs in the client; its work is substantially larger.",
+    "Command durations include worker queueing and overlap; do not sum them as CPU time.",
+    "The screenshot's particular Safari cache was not replayed. These measurements do not prove its exact 21-second latency is eliminated."
+  ],
+  "sources": {
+    "historical": "c892d35: original pre-centralization implementation; unfiltered reference only",
+    "optimized": "preserved 2026-10-27-pac-index-baseline source archives; original Go, Rust, WASM and JavaScript dependency sources",
+    "current_base": "4bbc1cc7eaf950d77278b737120299308ee8185e",
+    "archive_sha256": {
+      "trie-trunk-source.tar.gz": "69dacdb9f2ee1f8f1e6112931fef5af5e4c913a89ddd6e24e681d33a832e3545",
+      "pill-packer-source.tar.gz": "08912c792c0d6c072a9856e360d4e089206361294ad337d7e13560f6ab9e51d8"
+    }
+  },
+  "results": [
+    {
+      "variant": "optimized",
+      "workload": "empty-today",
+      "matched": 0,
+      "cold_median_ms": 23,
+      "cold_range_ms": [
+        23,
+        24
+      ],
+      "first_page_median_ms": 23,
+      "warm_median_ms": 4.5,
+      "cold_requests": 1,
+      "cold_wire_bytes": 27803
+    },
+    {
+      "variant": "optimized",
+      "workload": "one-day-info",
+      "matched": 1527,
+      "cold_median_ms": 972,
+      "cold_range_ms": [
+        940,
+        1010
+      ],
+      "first_page_median_ms": 972,
+      "warm_median_ms": 42.5,
+      "cold_requests": 21,
+      "cold_wire_bytes": 262712
+    },
+    {
+      "variant": "optimized",
+      "workload": "one-day-errors",
+      "matched": 30,
+      "cold_median_ms": 1146,
+      "cold_range_ms": [
+        1140,
+        1209
+      ],
+      "first_page_median_ms": 1145,
+      "warm_median_ms": 41.5,
+      "cold_requests": 31,
+      "cold_wire_bytes": 183032
+    },
+    {
+      "variant": "optimized",
+      "workload": "30-days-info",
+      "matched": 45342,
+      "cold_median_ms": 924,
+      "cold_range_ms": [
+        921,
+        929
+      ],
+      "first_page_median_ms": 924,
+      "warm_median_ms": 84.5,
+      "cold_requests": 21,
+      "cold_wire_bytes": 262524
+    },
+    {
+      "variant": "current-tantivy",
+      "workload": "empty-today",
+      "matched": 0,
+      "cold_median_ms": 7,
+      "cold_range_ms": [
+        7,
+        9
+      ],
+      "first_page_median_ms": 7,
+      "warm_median_ms": 3.5,
+      "cold_requests": 1,
+      "cold_wire_bytes": 5926
+    },
+    {
+      "variant": "current-tantivy",
+      "workload": "one-day-info",
+      "matched": 1527,
+      "cold_median_ms": 549,
+      "cold_range_ms": [
+        536,
+        559
+      ],
+      "first_page_median_ms": 549,
+      "warm_median_ms": 6.0,
+      "cold_requests": 21,
+      "cold_wire_bytes": 237661
+    },
+    {
+      "variant": "current-tantivy",
+      "workload": "one-day-errors",
+      "matched": 30,
+      "cold_median_ms": 671,
+      "cold_range_ms": [
+        668,
+        672
+      ],
+      "first_page_median_ms": 671,
+      "warm_median_ms": 4.0,
+      "cold_requests": 31,
+      "cold_wire_bytes": 160849
+    },
+    {
+      "variant": "current-tantivy",
+      "workload": "30-days-info",
+      "matched": 45342,
+      "cold_median_ms": 500,
+      "cold_range_ms": [
+        496,
+        508
+      ],
+      "first_page_median_ms": 500,
+      "warm_median_ms": 15.0,
+      "cold_requests": 21,
+      "cold_wire_bytes": 237515
+    },
+    {
+      "variant": "current",
+      "workload": "empty-today",
+      "matched": 0,
+      "cold_median_ms": 300,
+      "cold_range_ms": [
+        295,
+        319
+      ],
+      "first_page_median_ms": 300,
+      "warm_median_ms": 5.0,
+      "cold_requests": 25,
+      "cold_wire_bytes": 7600
+    },
+    {
+      "variant": "current",
+      "workload": "one-day-info",
+      "matched": 1527,
+      "cold_median_ms": 1311,
+      "cold_range_ms": [
+        1294,
+        1318
+      ],
+      "first_page_median_ms": 1288,
+      "warm_median_ms": 7.5,
+      "cold_requests": 60,
+      "cold_wire_bytes": 933091
+    },
+    {
+      "variant": "current",
+      "workload": "one-day-errors",
+      "matched": 30,
+      "cold_median_ms": 1295,
+      "cold_range_ms": [
+        1290,
+        1307
+      ],
+      "first_page_median_ms": 1295,
+      "warm_median_ms": 7.0,
+      "cold_requests": 60,
+      "cold_wire_bytes": 933091
+    },
+    {
+      "variant": "current",
+      "workload": "30-days-info",
+      "matched": 45342,
+      "cold_median_ms": 10607,
+      "cold_range_ms": [
+        10605,
+        10690
+      ],
+      "first_page_median_ms": 1342,
+      "warm_median_ms": 239.0,
+      "cold_requests": 85,
+      "cold_wire_bytes": 15724558
+    }
+  ],
+  "server_footprint": {
+    "historical": {
+      "files": 822,
+      "logical_bytes": 18722598,
+      "allocated_bytes": 21598208,
+      "by_extension": {
+        ".json": {
+          "files": 51,
+          "bytes": 327240
+        },
+        ".tri": {
+          "files": 31,
+          "bytes": 3572240
+        },
+        ".cfg": {
+          "files": 1,
+          "bytes": 400
+        },
+        ".lock": {
+          "files": 51,
+          "bytes": 0
+        },
+        ".map": {
+          "files": 6,
+          "bytes": 4977
+        },
+        ".idx": {
+          "files": 122,
+          "bytes": 2479097
+        },
+        ".state": {
+          "files": 5,
+          "bytes": 84402
+        },
+        ".pods": {
+          "files": 25,
+          "bytes": 4531671
+        },
+        ".stats": {
+          "files": 5,
+          "bytes": 3295
+        },
+        ".sum": {
+          "files": 15,
+          "bytes": 693979
+        },
+        ".journal": {
+          "files": 25,
+          "bytes": 2815372
+        },
+        ".seed": {
+          "files": 25,
+          "bytes": 2200
+        },
+        ".fieldnorm": {
+          "files": 92,
+          "bytes": 2588388
+        },
+        ".term": {
+          "files": 92,
+          "bytes": 1049528
+        },
+        ".store": {
+          "files": 92,
+          "bytes": 214241
+        },
+        ".pos": {
+          "files": 92,
+          "bytes": 124257
+        },
+        ".fast": {
+          "files": 92,
+          "bytes": 231311
+        }
+      }
+    },
+    "optimized": {
+      "files": 984,
+      "logical_bytes": 24299452,
+      "allocated_bytes": 28606464,
+      "by_extension": {
+        ".json": {
+          "files": 51,
+          "bytes": 336930
+        },
+        ".tri": {
+          "files": 31,
+          "bytes": 3745756
+        },
+        ".cfg": {
+          "files": 1,
+          "bytes": 400
+        },
+        ".lock": {
+          "files": 51,
+          "bytes": 0
+        },
+        ".map": {
+          "files": 1,
+          "bytes": 808
+        },
+        ".idx": {
+          "files": 149,
+          "bytes": 2473219
+        },
+        ".state": {
+          "files": 5,
+          "bytes": 161088
+        },
+        ".pods": {
+          "files": 25,
+          "bytes": 4539637
+        },
+        ".stats": {
+          "files": 5,
+          "bytes": 13080
+        },
+        ".sum": {
+          "files": 15,
+          "bytes": 712109
+        },
+        ".journal": {
+          "files": 25,
+          "bytes": 7946061
+        },
+        ".seed": {
+          "files": 25,
+          "bytes": 2200
+        },
+        ".rx": {
+          "files": 5,
+          "bytes": 9218
+        },
+        ".fieldnorm": {
+          "files": 119,
+          "bytes": 2599254
+        },
+        ".pos": {
+          "files": 119,
+          "bytes": 127838
+        },
+        ".term": {
+          "files": 119,
+          "bytes": 1176842
+        },
+        ".fast": {
+          "files": 119,
+          "bytes": 236932
+        },
+        ".store": {
+          "files": 119,
+          "bytes": 218080
+        }
+      }
+    },
+    "current": {
+      "files": 846,
+      "logical_bytes": 24889486,
+      "allocated_bytes": 28532736,
+      "by_extension": {
+        ".json": {
+          "files": 51,
+          "bytes": 355908
+        },
+        ".cfg": {
+          "files": 1,
+          "bytes": 394
+        },
+        ".lock": {
+          "files": 51,
+          "bytes": 0
+        },
+        ".map": {
+          "files": 1,
+          "bytes": 808
+        },
+        ".tri": {
+          "files": 31,
+          "bytes": 3526156
+        },
+        ".idx": {
+          "files": 126,
+          "bytes": 2058911
+        },
+        ".state": {
+          "files": 5,
+          "bytes": 161088
+        },
+        ".pods": {
+          "files": 25,
+          "bytes": 4850657
+        },
+        ".stats": {
+          "files": 5,
+          "bytes": 13080
+        },
+        ".sum": {
+          "files": 15,
+          "bytes": 713553
+        },
+        ".journal": {
+          "files": 25,
+          "bytes": 7946061
+        },
+        ".seed": {
+          "files": 25,
+          "bytes": 2200
+        },
+        ".rx": {
+          "files": 5,
+          "bytes": 10088
+        },
+        ".term": {
+          "files": 96,
+          "bytes": 1675896
+        },
+        ".fast": {
+          "files": 96,
+          "bytes": 337428
+        },
+        ".store": {
+          "files": 96,
+          "bytes": 214631
+        },
+        ".fieldnorm": {
+          "files": 96,
+          "bytes": 2890866
+        },
+        ".pos": {
+          "files": 96,
+          "bytes": 131761
+        }
+      }
+    }
+  },
+  "findings": [
+    "The prior collector already supported arbitrary time ranges, bounded 4 MiB/4096-record transfers, coalesced reads and publication after data writes.",
+    "The new planner split long ranges by day, reopening collection sessions and republishing metadata. Keep early-hour/day page delivery, then stream the remaining range through the existing collector.",
+    "The new local path bypassed the existing 32 MiB event cache. It now reuses that cache after identity and completion checks, with reset and retention invalidation.",
+    "Batch time-receipt queries; reuse unchanged discovery receipts instead of repeating the same metadata read.",
+    "Reuse bounded decoded immutable metadata revisions while rereading the commit root under each lease.",
+    "Broad cold client searches remain slower than server-selected pages. The 30-day client workload transfers 15.72 MB, versus 0.24\u20130.26 MB for the server-selected page.",
+    "The local timing groups are currently coarse instrumentation, not a mandatory planner pipeline. Fine-grained action, preparation and rendering spans remain unmeasured."
+  ]
+}

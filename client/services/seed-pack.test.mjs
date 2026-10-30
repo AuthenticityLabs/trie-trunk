@@ -33,3 +33,31 @@ test('materialized live events expose the ordinal, not a counterfeit producer UU
  const event=new PILEvent(raw,mapping);
  assert.equal(event.read(0),undefined);assert.equal(event.read(1),7);assert.equal(event.read(3),15);assert.deepEqual(event.orderedKeys(),[1,2,3]);assert.equal(event.millis,ms);
 });
+
+test('Seed builders preserve packing, row context, borrowed views, and sealed snapshots',async()=>{
+ const {Prescription,encodeHeaders}=await import('pill-packer/pack');
+ const rx=new Prescription(definition),hour=Date.UTC(2026,9,29,12);
+ for(const index of [false,{addressBytes:2},{addressBytes:3},{addressBytes:4}])for(const fixed of [false,true]){
+  const original=fill(definition,[absent,absent,Uint8Array.of(0,0,0),absent,absent]);
+  const next=fill(definition,[absent,absent,Uint8Array.of(1,0,0),absent,absent]);
+  const builder=Pack.create(rx,{hour,taxonomyLeaf:7},encodeHeaders({source:Uint8Array.of(99)}),{index,layout:fixed?{kind:'fixed',recordWidth:original.length}:{kind:'variable'}});
+  builder.push(original,{time:hour+10,stateLeaf:15});builder.push(next,{time:hour+20,stateLeaf:16});
+  assert.equal(builder.get(0).payload.buffer,original.buffer);
+  assert.equal(builder.offset(original.length).eventId,1);
+  assert.throws(()=>builder.push(next,{time:hour+3600000,stateLeaf:0}));assert.equal(builder.count,2);
+  assert.throws(()=>builder.push(Uint8Array.of(255),{time:hour,stateLeaf:0}));assert.equal(builder.count,2);assert.equal(builder.rows.length,12);
+  const saved=await builder.seal({algorithm:'gzip'}).unseal();
+  const popped=builder.pop();assert.equal(popped.eventId,1);assert.equal(popped.time,hour+20);assert.equal(popped.field('@leaf'),16);
+  builder.push(original,{time:hour+30,stateLeaf:17});assert.equal(popped.time,hour+20);assert.equal(saved.get(1).time,hour+20);
+  const h=(await import('pill-packer/pac')).pacHeader(saved.bytes,0);
+  assert.equal(h.addressBytes,index?index.addressBytes:0);assert.equal(!!h.recordWidth,fixed);assert.deepEqual(h.headers.source,Uint8Array.of(99));
+  saved.pop();assert.equal(saved.count,1);assert.equal(saved.rows.length,6);
+  const replicated=await Pack.open(definition,builder.bytes,builder.rows,{hour});assert.throws(()=>replicated.pop(),/immutable/);
+ }
+});
+test('Seed reads rebase across low-word rollover and retain dictionary IDs for query matching',()=>{
+ const time=Math.ceil(2**40/3600000)*3600000,record=fill(definition,[absent,Uint8Array.of(1),Uint8Array.of(0,0,0),absent,absent]);
+ const rows=new Uint8Array(6);new DataView(rows.buffer).setUint32(0,time%2**32,true);
+ const seed=new Pack(pack(definition,[record]),rows,{hour:time}).get(0);
+ assert.equal(seed.field('status'),'paid');assert.equal(seed.value(1),1);assert.equal(seed.time,time);
+});

@@ -4,6 +4,21 @@ import { NativeStore, type NativeBackend, type NativeSource, type NativeControl 
 import { directory, handle, entries } from './files.ts';
 import {timeFileRanges,type ClientTimeTrie,type TimeRange} from './time-trie.ts';
 
+/** Bounded decoded immutable revisions. The commit root is re-read under every
+ * lease; a different directory identity or revision can never reuse a snapshot. */
+export class NativeSnapshotCache {
+ private entries=new Map<string,{source:NativeSource;size:number}>();private size=0;
+ readonly limit:number;
+ constructor(limit=8*1024*1024){this.limit=limit;}
+ get(key:string){const entry=this.entries.get(key);if(entry){this.entries.delete(key);this.entries.set(key,entry);}return entry?.source;}
+ put(key:string,source:NativeSource,size:number){
+  const old=this.entries.get(key);if(old){this.size-=old.size;this.entries.delete(key);}
+  if(size>this.limit)return;
+  this.entries.set(key,{source,size});this.size+=size;
+  while(this.size>this.limit){const first=this.entries.keys().next().value!;this.size-=this.entries.get(first)!.size;this.entries.delete(first);}
+ }
+ retain(sources:Record<string,number>){for(const [id,entry] of this.entries){const at=id.lastIndexOf(':');if(sources[id.slice(0,at)]!==Number(id.slice(at+1))){this.entries.delete(id);this.size-=entry.size;}}}
+}
 type Commit = { serial:number; sources:Record<string,number>; control:NativeControl };
 const empty = ():Commit=>({serial:0,sources:{},control:{serial:0,scopes:{}}});
 const optional=readPublishedFile;
@@ -14,16 +29,18 @@ async function atomicTimeFile(dir:FileSystemDirectoryHandle,name:string,tree:Cli
 }
 /** The surrounding worker holds the origin-wide file lease. Immutable branch
  * snapshots are published together by one atomic commit-root replacement.
- * Create a backend per leased command; cached roots never cross a lease.
+ * Create a backend per leased command; commit roots never cross a lease.
+ * Only immutable decoded snapshots can be reused after revision checks.
  * branch.tri is the raw time trie; layout.pil stores allocation and decoding
  * context only. No package manifests or duplicate coverage ranges are retained. */
-export function nativeBackend(root:FileSystemDirectoryHandle):NativeBackend {
+export function nativeBackend(root:FileSystemDirectoryHandle,cache?:NativeSnapshotCache):NativeBackend {
  let committed:Promise<Commit>|undefined;
- const load=():Promise<Commit>=>committed??=(async()=>{const raw=await optional(root,'commit.pil');return raw?.length?decodeObject(raw) as Commit:empty();})();
+ const load=():Promise<Commit>=>committed??=(async()=>{const raw=await optional(root,'commit.pil'),state=raw?.length?decodeObject(raw) as Commit:empty();cache?.retain(state.sources);return state;})();
  const dirs=new Map<string,Promise<FileSystemDirectoryHandle>>();
  const branch=(key:string)=>{if(!/^[a-f0-9]{64}$/.test(key))throw Error('Invalid native source');let dir=dirs.get(key);if(!dir){dir=directory(root,'branches',key);dirs.set(key,dir);}return dir;};
  const snapshots=new Map<string,Promise<NativeSource>>();
  const readFileSource=async(key:string,revision:number):Promise<NativeSource>=>{
+  const cached=cache?.get(`${key}:${revision}`);if(cached)return cached;
   const dir=await branch(key),raw=await optional(dir,`layout.${revision}.pil`);
   if(!raw)throw Error('Missing committed branch layout');
   const {timeRanges,...source}=decodeObject(raw) as NativeSource & {timeRanges?:TimeRange[]};
@@ -34,6 +51,7 @@ export function nativeBackend(root:FileSystemDirectoryHandle):NativeBackend {
     if(name in p)(p as unknown as Record<string,unknown>)[name]=BigInt((p as unknown as Record<string,number|bigint>)[name]);
    for(const page of p.pages){page.row=BigInt(page.row);page.page=BigInt(page.page);}
   }
+  cache?.put(`${key}:${revision}`,source,raw.byteLength*4+(trie?.byteLength??0)+1024);
   return source;
  };
  const read=(key:string,revision:number)=>{const id=`${key}:${revision}`;let source=snapshots.get(id);if(!source){source=readFileSource(key,revision);snapshots.set(id,source);}return source.then(s=>structuredClone(s));};

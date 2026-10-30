@@ -28,13 +28,31 @@ export function validateStatistics(summary:ViewSummary):void {
 export type ViewReference={stream:number;row:number;key:string;cached:boolean;provisional?:boolean;native?:{from:number;to:number;generation:string}};
 export type ViewBucket={key:string;stream:number;from:number;to:number;ranges:{Start:number;End:number}[];sealed:boolean};
 export type ViewResult={notice?:string;analytics?:DailyAnalytics;buckets?:ViewBucket[];coverage?:{complete:number;partial:number};cursor:string;snapshot:string;summaryVersion:string;summary?:ViewSummary;page:ViewReference[];next?:string;committedThrough:number;provisional:boolean};
-export type ViewTimings={planning?:number;request:number;response:number;summaries:number;events:number;client:number};
+export type ViewTimings={discovery?:number;planning?:number;request:number;response:number;summaries:number;events:number;client:number};
 export type ViewResponse={timings?:ViewTimings;result:ViewResult;definitions:Metadata[];bindings:Binding[];batch:Batch;native?:(NativeViewRecord|undefined)[]};
 export type NativeViewRecord={row:Uint8Array;base:number;trie:{start:number;bytes:Uint8Array}[]};
 type PackedRecord={bytes:Uint8Array;common?:Uint8Array;native?:NativeViewRecord};
 export class ViewCache {
  private trunk?:TrunkBootstrap;
  private localSummaries=new Map<string,ViewSummary>();
+ private localPages=new Map<string,Pick<ViewResponse,'result'|'definitions'|'bindings'>>();
+ private localPageCache={
+  get:(key:string):ViewResponse|undefined=>{
+   const view=this.localPages.get(key);if(!view)return;
+   const records=view.result.page.map(ref=>this.events.get(ref.key));
+   if(records.some(record=>!record)){this.localPages.delete(key);return;}
+   const bytes=new Uint8Array(records.reduce((n,r)=>n+r!.bytes.length,0)),rows=new Uint32Array(records.length*3);
+   let offset=0;records.forEach((record,i)=>{bytes.set(record!.bytes,offset);rows.set([view.result.page[i].stream,offset,offset+record!.bytes.length],i*3);offset+=record!.bytes.length;});
+   return {...view,batch:{bytes:bytes.buffer,rows,common:records.map(r=>r!.common)},native:records.map(r=>r!.native)};
+  },
+  set:(key:string,view:ViewResponse)=>{
+   // Reuse the existing 32 MB event cache, including shared trie/common accounting.
+   // Page metadata does not retain a second copy of the record buffers.
+   this.remember(view);const {result,definitions,bindings}=view;
+   this.localPages.set(key,{result,definitions,bindings});
+   while(this.localPages.size>8)this.localPages.delete(this.localPages.keys().next().value!);
+  }
+ };
  setTrunk(trunk:TrunkBootstrap){this.trunk=trunk;}
 
  private summaryDays=new SummaryDayCache();
@@ -74,7 +92,7 @@ export class ViewCache {
  private fetcher:typeof fetch;
  constructor(fetcher:typeof fetch=fetch){this.fetcher=fetcher}
  resetEvents(){
-  this.localSummaries.clear();this.nativeHours.clear();this.events.clear();this.prefixes.clear();this.tries.clear();this.bytes=0;
+  this.localSummaries.clear();this.localPages.clear();this.nativeHours.clear();this.events.clear();this.prefixes.clear();this.tries.clear();this.bytes=0;
   this.pages.clear();this.versions.clear();this.summaries.clear();this.persisted.clear();this.coverage=new ViewCoverage();
  }
 
@@ -96,7 +114,7 @@ export class ViewCache {
   if(query.engine!=='tantivy'){
    if(!this.trunk||!archive)throw Error('Local search requires the trunk catalog and local storage. Reload the connection.');
    if(query.include==='summary'&&!query.query)return queryLocalSummaries(this.trunk,query,token,signal,archive,this.fetcher,projection);
-   return executeLocalSearch(this.trunk,query,token,signal,codec,definitions,archive,this.fetcher,onPage,this.localSummaries);
+   return executeLocalSearch(this.trunk,query,token,signal,codec,definitions,archive,this.fetcher,onPage,this.localSummaries,this.localPageCache);
   }
   if(query.query?.predicate)throw Error('Logical expressions require Local Search; turn off the Tantivy comparison.');
   const started=performance.now();

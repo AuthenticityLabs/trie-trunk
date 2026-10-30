@@ -1,4 +1,4 @@
-import { defineConfig, loadEnv } from "vite";
+import { defineConfig, loadEnv, searchForWorkspaceRoot } from "vite";
 import solid from "vite-plugin-solid";
 
 export default defineConfig(({ mode }) => {
@@ -6,7 +6,9 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [solid()],
     // Optional local API for development; production requests stay same-origin.
-    server: api ? {
+    server: {
+      fs: {allow: [searchForWorkspaceRoot("."), "../../pill-packer/npm/codec.wasm"]},
+      ...(api ? {
       host: "127.0.0.1",
       port: 5173,
       strictPort: true,
@@ -17,7 +19,8 @@ export default defineConfig(({ mode }) => {
           path, api,
         ]),
       ),
-    } : undefined,
+    } : {}),
+    },
     build: {
       outDir: "../web",
       emptyOutDir: true,

@@ -1,11 +1,12 @@
 import { createAbortScope } from '../abort.ts';
+import type {TimeReceipt} from '../store/native.ts';
 import type {Archive} from '../store/protocol.ts';
 import type {TrunkBootstrap} from './trunk.ts';
 import {registeredPath} from './trunk.ts';
 import {matchesSource} from '../source.ts';
 import {HOUR,mergeTimeWindow,timeLeaf} from '../store/time-trie.ts';
 export type TimeWindowRequest={trunk:TrunkBootstrap;scope:string;from:number;to:number;diagnostics?:boolean};
-export type TimeWindowResult={from:number;to:number;counts:number[];errors:number[];count:number;receivedHours:number};
+export type TimeWindowResult={from:number;to:number;counts:number[];errors:number[];count:number;receivedHours:number;receipts?:TimeReceipt[]};
 export function compactHour(ms:number){
  const d=new Date(ms),year=d.getUTCFullYear();
  if(!Number.isSafeInteger(ms)||ms%HOUR||year<2000||year>2099)throw Error('Time range must use UTC hours in 2000–2099');
@@ -34,11 +35,14 @@ export async function loadTimeWindow(q:TimeWindowRequest,token:string,signal:Abo
  try {
  const result:TimeWindowResult={from,to,counts:Array((to-from)/HOUR).fill(0),errors:Array((to-from)/HOUR).fill(0),count:0,receivedHours:0};
  const targets=branchTargets(q.trunk,q.scope,q.diagnostics);
+ signal.throwIfAborted();
+ const receipts=archive&&targets.length?(await archive(token,{kind:'time-read-many',queries:targets.map(t=>({tap:t.tap,digest:t.definition.digest,from,to}))})).times:undefined;
+ if(archive&&targets.length&&receipts?.length!==targets.length)throw Error('Missing time trie receipts');
+ if(receipts?.every(r=>r.missing.length===0))result.receipts=receipts;
  let cursor=0;
  const consume=async()=>{while(cursor<targets.length){
-  const {file,tap,definition}=targets[cursor++];signal.throwIfAborted();
-  const query={tap,digest:definition.digest,from,to};
-  let saved=(await archive?.(token,{kind:'time-read',query}))?.time;
+  const i=cursor++,{file,tap,definition}=targets[i];signal.throwIfAborted();
+  const saved=receipts?.[i];
   const rows=new Map((saved?.rows??[]).map(r=>[r.time,r]));
   for(const gap of saved?.missing??[{from,to}]){
    signal.throwIfAborted();

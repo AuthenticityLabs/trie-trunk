@@ -1,7 +1,7 @@
 import {PILStream,consume,type StoredDefinition} from './stream.ts';
 import {compile,type Metadata,type Binding} from './metadata.ts';
 import {decodeObject} from './control.ts';
-import {NativeTrie} from './native-event.ts';
+import {NativeTrie} from '../seeds/index.ts';
 import type {Codec} from './wasm.ts';
 import {validSource} from '../source.ts';
 

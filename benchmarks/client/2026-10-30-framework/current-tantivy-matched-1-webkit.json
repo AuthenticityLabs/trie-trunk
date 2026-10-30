@@ -1,0 +1,775 @@
+{
+  "variant": "current",
+  "engine": "webkit",
+  "results": [
+    {
+      "variant": "current-empty-today-c53de1eb-83ef-4a03-bf82-24cec98597ec",
+      "setupMs": 32,
+      "setupRequests": [
+        {
+          "path": "/trunk",
+          "ms": 17,
+          "bytes": 58231
+        }
+      ],
+      "branches": 25,
+      "runs": [
+        {
+          "name": "empty-today",
+          "pass": 0,
+          "ms": 7,
+          "firstPageMs": 7,
+          "timings": {
+            "planning": 0,
+            "request": 5,
+            "response": 1,
+            "summaries": 0,
+            "events": 0,
+            "client": 0
+          },
+          "matched": 0,
+          "loaded": 0,
+          "commands": {},
+          "requests": [
+            {
+              "path": "/events?tap=&from=2026-10-30T00%3A00%3A00Z&to=2026-10-30T13%3A10%3A00Z&page=100&include=summary%2Cpage%2Cstatistics&query=%7B%22filters%22%3A%5B%5D%2C%22order%22%3A%22asc%22%7D",
+              "ms": 5,
+              "bytes": 5926
+            }
+          ]
+        },
+        {
+          "name": "empty-today",
+          "pass": 1,
+          "ms": 4,
+          "firstPageMs": 4,
+          "timings": {
+            "planning": 0,
+            "request": 4,
+            "response": 0,
+            "summaries": 0,
+            "events": 0,
+            "client": 0
+          },
+          "matched": 0,
+          "loaded": 0,
+          "commands": {},
+          "requests": [
+            {
+              "path": "/events?tap=&from=2026-10-30T00%3A00%3A00Z&to=2026-10-30T13%3A10%3A00Z&page=100&include=summary%2Cpage%2Cstatistics&query=%7B%22filters%22%3A%5B%5D%2C%22order%22%3A%22asc%22%7D",
+              "ms": 4,
+              "bytes": 5412
+            }
+          ]
+        },
+        {
+          "name": "empty-today",
+          "pass": 2,
+          "ms": 5,
+          "firstPageMs": 5,
+          "timings": {
+            "planning": 0,
+            "request": 4,
+            "response": 1,
+            "summaries": 0,
+            "events": 0,
+            "client": 0
+          },
+          "matched": 0,
+          "loaded": 0,
+          "commands": {},
+          "requests": [
+            {
+              "path": "/events?tap=&from=2026-10-30T00%3A00%3A00Z&to=2026-10-30T13%3A10%3A00Z&page=100&include=summary%2Cpage%2Cstatistics&query=%7B%22filters%22%3A%5B%5D%2C%22order%22%3A%22asc%22%7D",
+              "ms": 4,
+              "bytes": 5412
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "current-one-day-info-eb733a38-9c03-4c37-8786-80d536a9ff7c",
+      "setupMs": 27,
+      "setupRequests": [
+        {
+          "path": "/trunk",
+          "ms": 16,
+          "bytes": 58231
+        }
+      ],
+      "branches": 25,
+      "runs": [
+        {
+          "name": "one-day-info",
+          "pass": 0,
+          "ms": 536,
+          "firstPageMs": 536,
+          "timings": {
+            "planning": 0,
+            "request": 5,
+            "response": 1,
+            "summaries": 0,
+            "events": 528,
+            "client": 1
+          },
+          "matched": 1527,
+          "loaded": 100,
+          "commands": {
+            "native-resolve": {
+              "count": 20,
+              "ms": 147
+            },
+            "native-begin": {
+              "count": 20,
+              "ms": 102
+            },
+            "native-coverage": {
+              "count": 20,
+              "ms": 169
+            },
+            "native-finish": {
+              "count": 20,
+              "ms": 857
+            },
+            "native-dependencies": {
+              "count": 20,
+              "ms": 518
+            },
+            "native-rows": {
+              "count": 20,
+              "ms": 229
+            }
+          },
+          "requests": [
+            {
+              "path": "/events?tap=&from=2026-10-28T00%3A00%3A00Z&to=2026-10-29T00%3A00%3A00Z&page=100&include=summary%2Cpage%2Cstatistics&query=%7B%22filters%22%3A%5B%7B%22field%22%3A%22level%22%2C%22op%22%3A%22%3D%3D%22%2C%22value%22%3A%7B%22kind%22%3A%22string%22%2C%22value%22%3A%22INFO%22%7D%7D%5D%2C%22order%22%3A%22asc%22%7D",
+              "ms": 6,
+              "bytes": 32685
+            },
+            {
+              "path": "/demo/vault/secrets.v1/0/read.pods?begin=2630100&end=2630101",
+              "ms": 2,
+              "bytes": 17911
+            },
+            {
+              "path": "/demo/worker/jobs.v1/0/read.pods?begin=2630100&end=2630101",
+              "ms": 4,
+              "bytes": 17834
+            },
+            {
+              "path": "/demo/payment/transactions.v1/0/read.pods?begin=2630100&end=2630101",
+              "ms": 4,
+              "bytes": 17521
+            },
+            {
+              "path": "/demo/gateway/routes.v1/0/write.pods?begin=2630100&end=2630101",
+              "ms": 5,
+              "bytes": 18233
+            },
+            {
+              "path": "/demo/billing/invoices.v1/0/write.pods?begin=2630100&end=2630101",
+              "ms": 3,
+              "bytes": 18039
+            },
+            {
+              "path": "/demo/vault/secrets.v1/0/write.pods?begin=2630100&end=2630101",
+              "ms": 4,
+              "bytes": 18291
+            },
+            {
+              "path": "/demo/worker/jobs.v1/0/write.pods?begin=2630100&end=2630101",
+              "ms": 3,
+              "bytes": 18230
+            },
+            {
+              "path": "/demo/payment/transactions.v1/0/write.pods?begin=2630100&end=2630101",
+              "ms": 2,
+              "bytes": 17929
+            },
+            {
+              "path": "/demo/gateway/routes.v1/0/read.pods?begin=2630100&end=2630101",
+              "ms": 3,
+              "bytes": 17758
+            },
+            {
+              "path": "/demo/billing/invoices.v1/0/read.pods?begin=2630100&end=2630101",
+              "ms": 2,
+              "bytes": 17566
+            },
+            {
+              "path": "/demo/vault/secrets.v1/0/write.pods?begin=2630101&end=2630102",
+              "ms": 2,
+              "bytes": 2731
+            },
+            {
+              "path": "/demo/worker/jobs.v1/0/write.pods?begin=2630101&end=2630102",
+              "ms": 2,
+              "bytes": 2737
+            },
+            {
+              "path": "/demo/payment/transactions.v1/0/write.pods?begin=2630101&end=2630102",
+              "ms": 2,
+              "bytes": 2763
+            },
+            {
+              "path": "/demo/gateway/routes.v1/0/read.pods?begin=2630101&end=2630102",
+              "ms": 2,
+              "bytes": 2397
+            },
+            {
+              "path": "/demo/billing/invoices.v1/0/read.pods?begin=2630101&end=2630102",
+              "ms": 3,
+              "bytes": 2396
+            },
+            {
+              "path": "/demo/vault/secrets.v1/0/read.pods?begin=2630101&end=2630102",
+              "ms": 2,
+              "bytes": 2393
+            },
+            {
+              "path": "/demo/worker/jobs.v1/0/read.pods?begin=2630101&end=2630102",
+              "ms": 2,
+              "bytes": 2394
+            },
+            {
+              "path": "/demo/payment/transactions.v1/0/read.pods?begin=2630101&end=2630102",
+              "ms": 2,
+              "bytes": 2403
+            },
+            {
+              "path": "/demo/gateway/routes.v1/0/write.pods?begin=2630101&end=2630102",
+              "ms": 2,
+              "bytes": 2747
+            },
+            {
+              "path": "/demo/billing/invoices.v1/0/write.pods?begin=2630101&end=2630102",
+              "ms": 2,
+              "bytes": 2703
+            }
+          ]
+        },
+        {
+          "name": "one-day-info",
+          "pass": 1,
+          "ms": 7,
+          "firstPageMs": 7,
+          "timings": {
+            "planning": 0,
+            "request": 6,
+            "response": 1,
+            "summaries": 0,
+            "events": 0,
+            "client": 0
+          },
+          "matched": 1527,
+          "loaded": 100,
+          "commands": {},
+          "requests": [
+            {
+              "path": "/events?tap=&from=2026-10-28T00%3A00%3A00Z&to=2026-10-29T00%3A00%3A00Z&page=100&include=summary%2Cpage%2Cstatistics&query=%7B%22filters%22%3A%5B%7B%22field%22%3A%22level%22%2C%22op%22%3A%22%3D%3D%22%2C%22value%22%3A%7B%22kind%22%3A%22string%22%2C%22value%22%3A%22INFO%22%7D%7D%5D%2C%22order%22%3A%22asc%22%7D",
+              "ms": 6,
+              "bytes": 30835
+            }
+          ]
+        },
+        {
+          "name": "one-day-info",
+          "pass": 2,
+          "ms": 6,
+          "firstPageMs": 6,
+          "timings": {
+            "planning": 0,
+            "request": 5,
+            "response": 1,
+            "summaries": 0,
+            "events": 0,
+            "client": 0
+          },
+          "matched": 1527,
+          "loaded": 100,
+          "commands": {},
+          "requests": [
+            {
+              "path": "/events?tap=&from=2026-10-28T00%3A00%3A00Z&to=2026-10-29T00%3A00%3A00Z&page=100&include=summary%2Cpage%2Cstatistics&query=%7B%22filters%22%3A%5B%7B%22field%22%3A%22level%22%2C%22op%22%3A%22%3D%3D%22%2C%22value%22%3A%7B%22kind%22%3A%22string%22%2C%22value%22%3A%22INFO%22%7D%7D%5D%2C%22order%22%3A%22asc%22%7D",
+              "ms": 5,
+              "bytes": 30835
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "current-one-day-errors-ca4ad26f-bb1c-4555-a497-1b785d1be6b3",
+      "setupMs": 29,
+      "setupRequests": [
+        {
+          "path": "/trunk",
+          "ms": 18,
+          "bytes": 58231
+        }
+      ],
+      "branches": 25,
+      "runs": [
+        {
+          "name": "one-day-errors",
+          "pass": 0,
+          "ms": 668,
+          "firstPageMs": 668,
+          "timings": {
+            "planning": 0,
+            "request": 4,
+            "response": 1,
+            "summaries": 0,
+            "events": 662,
+            "client": 0
+          },
+          "matched": 30,
+          "loaded": 30,
+          "commands": {
+            "native-resolve": {
+              "count": 30,
+              "ms": 218
+            },
+            "native-begin": {
+              "count": 30,
+              "ms": 168
+            },
+            "native-coverage": {
+              "count": 30,
+              "ms": 217
+            },
+            "native-finish": {
+              "count": 30,
+              "ms": 883
+            },
+            "native-dependencies": {
+              "count": 30,
+              "ms": 657
+            },
+            "native-rows": {
+              "count": 30,
+              "ms": 307
+            }
+          },
+          "requests": [
+            {
+              "path": "/events?tap=&from=2026-10-28T00%3A00%3A00Z&to=2026-10-29T00%3A00%3A00Z&page=100&include=summary%2Cpage%2Cstatistics&query=%7B%22filters%22%3A%5B%7B%22field%22%3A%22http_status%22%2C%22op%22%3A%22%3D%3D%22%2C%22value%22%3A%7B%22kind%22%3A%22number%22%2C%22value%22%3A%22503%22%7D%7D%5D%2C%22order%22%3A%22asc%22%7D",
+              "ms": 4,
+              "bytes": 14402
+            },
+            {
+              "path": "/demo/gateway/routes.v1/0/error.pods?begin=2630103&end=2630104",
+              "ms": 5,
+              "bytes": 17704
+            },
+            {
+              "path": "/demo/billing/invoices.v1/0/error.pods?begin=2630103&end=2630104",
+              "ms": 4,
+              "bytes": 17508
+            },
+            {
+              "path": "/demo/vault/secrets.v1/0/error.pods?begin=2630103&end=2630104",
+              "ms": 4,
+              "bytes": 17830
+            },
+            {
+              "path": "/demo/worker/jobs.v1/0/error.pods?begin=2630103&end=2630104",
+              "ms": 4,
+              "bytes": 17764
+            },
+            {
+              "path": "/demo/payment/transactions.v1/0/error.pods?begin=2630103&end=2630104",
+              "ms": 3,
+              "bytes": 17442
+            },
+            {
+              "path": "/demo/gateway/routes.v1/0/error.pods?begin=2630107&end=2630108",
+              "ms": 3,
+              "bytes": 2324
+            },
+            {
+              "path": "/demo/billing/invoices.v1/0/error.pods?begin=2630107&end=2630108",
+              "ms": 2,
+              "bytes": 2330
+            },
+            {
+              "path": "/demo/vault/secrets.v1/0/error.pods?begin=2630107&end=2630108",
+              "ms": 2,
+              "bytes": 2322
+            },
+            {
+              "path": "/demo/worker/jobs.v1/0/error.pods?begin=2630107&end=2630108",
+              "ms": 2,
+              "bytes": 2324
+            },
+            {
+              "path": "/demo/payment/transactions.v1/0/error.pods?begin=2630107&end=2630108",
+              "ms": 2,
+              "bytes": 2334
+            },
+            {
+              "path": "/demo/gateway/routes.v1/0/error.pods?begin=2630111&end=2630112",
+              "ms": 3,
+              "bytes": 2324
+            },
+            {
+              "path": "/demo/billing/invoices.v1/0/error.pods?begin=2630111&end=2630112",
+              "ms": 2,
+              "bytes": 2329
+            },
+            {
+              "path": "/demo/vault/secrets.v1/0/error.pods?begin=2630111&end=2630112",
+              "ms": 2,
+              "bytes": 2321
+            },
+            {
+              "path": "/demo/worker/jobs.v1/0/error.pods?begin=2630111&end=2630112",
+              "ms": 2,
+              "bytes": 2321
+            },
+            {
+              "path": "/demo/payment/transactions.v1/0/error.pods?begin=2630111&end=2630112",
+              "ms": 2,
+              "bytes": 2332
+            },
+            {
+              "path": "/demo/gateway/routes.v1/0/error.pods?begin=2630114&end=2630115",
+              "ms": 2,
+              "bytes": 2330
+            },
+            {
+              "path": "/demo/billing/invoices.v1/0/error.pods?begin=2630114&end=2630115",
+              "ms": 2,
+              "bytes": 2333
+            },
+            {
+              "path": "/demo/vault/secrets.v1/0/error.pods?begin=2630114&end=2630115",
+              "ms": 2,
+              "bytes": 2327
+            },
+            {
+              "path": "/demo/worker/jobs.v1/0/error.pods?begin=2630114&end=2630115",
+              "ms": 2,
+              "bytes": 2324
+            },
+            {
+              "path": "/demo/payment/transactions.v1/0/error.pods?begin=2630114&end=2630115",
+              "ms": 2,
+              "bytes": 2338
+            },
+            {
+              "path": "/demo/gateway/routes.v1/0/error.pods?begin=2630118&end=2630119",
+              "ms": 2,
+              "bytes": 2328
+            },
+            {
+              "path": "/demo/billing/invoices.v1/0/error.pods?begin=2630118&end=2630119",
+              "ms": 3,
+              "bytes": 2333
+            },
+            {
+              "path": "/demo/vault/secrets.v1/0/error.pods?begin=2630118&end=2630119",
+              "ms": 2,
+              "bytes": 2324
+            },
+            {
+              "path": "/demo/worker/jobs.v1/0/error.pods?begin=2630118&end=2630119",
+              "ms": 2,
+              "bytes": 2324
+            },
+            {
+              "path": "/demo/payment/transactions.v1/0/error.pods?begin=2630118&end=2630119",
+              "ms": 3,
+              "bytes": 2336
+            },
+            {
+              "path": "/demo/gateway/routes.v1/0/error.pods?begin=2630122&end=2630123",
+              "ms": 2,
+              "bytes": 2328
+            },
+            {
+              "path": "/demo/billing/invoices.v1/0/error.pods?begin=2630122&end=2630123",
+              "ms": 2,
+              "bytes": 2332
+            },
+            {
+              "path": "/demo/vault/secrets.v1/0/error.pods?begin=2630122&end=2630123",
+              "ms": 2,
+              "bytes": 2324
+            },
+            {
+              "path": "/demo/worker/jobs.v1/0/error.pods?begin=2630122&end=2630123",
+              "ms": 2,
+              "bytes": 2322
+            },
+            {
+              "path": "/demo/payment/transactions.v1/0/error.pods?begin=2630122&end=2630123",
+              "ms": 2,
+              "bytes": 2335
+            }
+          ]
+        },
+        {
+          "name": "one-day-errors",
+          "pass": 1,
+          "ms": 6,
+          "firstPageMs": 6,
+          "timings": {
+            "planning": 0,
+            "request": 5,
+            "response": 1,
+            "summaries": 0,
+            "events": 0,
+            "client": 0
+          },
+          "matched": 30,
+          "loaded": 30,
+          "commands": {},
+          "requests": [
+            {
+              "path": "/events?tap=&from=2026-10-28T00%3A00%3A00Z&to=2026-10-29T00%3A00%3A00Z&page=100&include=summary%2Cpage%2Cstatistics&query=%7B%22filters%22%3A%5B%7B%22field%22%3A%22http_status%22%2C%22op%22%3A%22%3D%3D%22%2C%22value%22%3A%7B%22kind%22%3A%22number%22%2C%22value%22%3A%22503%22%7D%7D%5D%2C%22order%22%3A%22asc%22%7D",
+              "ms": 5,
+              "bytes": 11814
+            }
+          ]
+        },
+        {
+          "name": "one-day-errors",
+          "pass": 2,
+          "ms": 4,
+          "firstPageMs": 4,
+          "timings": {
+            "planning": 0,
+            "request": 3,
+            "response": 1,
+            "summaries": 0,
+            "events": 0,
+            "client": 0
+          },
+          "matched": 30,
+          "loaded": 30,
+          "commands": {},
+          "requests": [
+            {
+              "path": "/events?tap=&from=2026-10-28T00%3A00%3A00Z&to=2026-10-29T00%3A00%3A00Z&page=100&include=summary%2Cpage%2Cstatistics&query=%7B%22filters%22%3A%5B%7B%22field%22%3A%22http_status%22%2C%22op%22%3A%22%3D%3D%22%2C%22value%22%3A%7B%22kind%22%3A%22number%22%2C%22value%22%3A%22503%22%7D%7D%5D%2C%22order%22%3A%22asc%22%7D",
+              "ms": 3,
+              "bytes": 11814
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "current-30-days-info-2ef01e0f-2f0f-46ff-8ce9-4cbab84a8714",
+      "setupMs": 28,
+      "setupRequests": [
+        {
+          "path": "/trunk",
+          "ms": 15,
+          "bytes": 58231
+        }
+      ],
+      "branches": 25,
+      "runs": [
+        {
+          "name": "30-days-info",
+          "pass": 0,
+          "ms": 496,
+          "firstPageMs": 496,
+          "timings": {
+            "planning": 0,
+            "request": 29,
+            "response": 1,
+            "summaries": 0,
+            "events": 464,
+            "client": 0
+          },
+          "matched": 45342,
+          "loaded": 100,
+          "commands": {
+            "native-resolve": {
+              "count": 20,
+              "ms": 138
+            },
+            "native-begin": {
+              "count": 20,
+              "ms": 109
+            },
+            "native-coverage": {
+              "count": 20,
+              "ms": 155
+            },
+            "native-finish": {
+              "count": 20,
+              "ms": 674
+            },
+            "native-dependencies": {
+              "count": 20,
+              "ms": 478
+            },
+            "native-rows": {
+              "count": 20,
+              "ms": 209
+            }
+          },
+          "requests": [
+            {
+              "path": "/events?tap=&from=2026-09-30T00%3A00%3A00Z&to=2026-10-30T00%3A00%3A00Z&page=100&include=summary%2Cpage%2Cstatistics&query=%7B%22filters%22%3A%5B%7B%22field%22%3A%22level%22%2C%22op%22%3A%22%3D%3D%22%2C%22value%22%3A%7B%22kind%22%3A%22string%22%2C%22value%22%3A%22INFO%22%7D%7D%5D%2C%22order%22%3A%22asc%22%7D",
+              "ms": 29,
+              "bytes": 32512
+            },
+            {
+              "path": "/demo/gateway/routes.v1/0/read.pods?begin=2627300&end=2627301",
+              "ms": 4,
+              "bytes": 17939
+            },
+            {
+              "path": "/demo/billing/invoices.v1/0/read.pods?begin=2627300&end=2627301",
+              "ms": 5,
+              "bytes": 17744
+            },
+            {
+              "path": "/demo/vault/secrets.v1/0/read.pods?begin=2627300&end=2627301",
+              "ms": 5,
+              "bytes": 18068
+            },
+            {
+              "path": "/demo/worker/jobs.v1/0/read.pods?begin=2627300&end=2627301",
+              "ms": 3,
+              "bytes": 18004
+            },
+            {
+              "path": "/demo/payment/transactions.v1/0/read.pods?begin=2627300&end=2627301",
+              "ms": 3,
+              "bytes": 17686
+            },
+            {
+              "path": "/demo/gateway/routes.v1/0/write.pods?begin=2627300&end=2627301",
+              "ms": 3,
+              "bytes": 18029
+            },
+            {
+              "path": "/demo/billing/invoices.v1/0/write.pods?begin=2627300&end=2627301",
+              "ms": 3,
+              "bytes": 17835
+            },
+            {
+              "path": "/demo/vault/secrets.v1/0/write.pods?begin=2627300&end=2627301",
+              "ms": 2,
+              "bytes": 18143
+            },
+            {
+              "path": "/demo/worker/jobs.v1/0/write.pods?begin=2627300&end=2627301",
+              "ms": 3,
+              "bytes": 18080
+            },
+            {
+              "path": "/demo/payment/transactions.v1/0/write.pods?begin=2627300&end=2627301",
+              "ms": 2,
+              "bytes": 17775
+            },
+            {
+              "path": "/demo/gateway/routes.v1/0/write.pods?begin=2627301&end=2627302",
+              "ms": 2,
+              "bytes": 2751
+            },
+            {
+              "path": "/demo/billing/invoices.v1/0/write.pods?begin=2627301&end=2627302",
+              "ms": 2,
+              "bytes": 2755
+            },
+            {
+              "path": "/demo/vault/secrets.v1/0/write.pods?begin=2627301&end=2627302",
+              "ms": 2,
+              "bytes": 2731
+            },
+            {
+              "path": "/demo/worker/jobs.v1/0/write.pods?begin=2627301&end=2627302",
+              "ms": 2,
+              "bytes": 2736
+            },
+            {
+              "path": "/demo/payment/transactions.v1/0/write.pods?begin=2627301&end=2627302",
+              "ms": 2,
+              "bytes": 2763
+            },
+            {
+              "path": "/demo/gateway/routes.v1/0/read.pods?begin=2627301&end=2627302",
+              "ms": 2,
+              "bytes": 2395
+            },
+            {
+              "path": "/demo/billing/invoices.v1/0/read.pods?begin=2627301&end=2627302",
+              "ms": 3,
+              "bytes": 2395
+            },
+            {
+              "path": "/demo/vault/secrets.v1/0/read.pods?begin=2627301&end=2627302",
+              "ms": 2,
+              "bytes": 2391
+            },
+            {
+              "path": "/demo/worker/jobs.v1/0/read.pods?begin=2627301&end=2627302",
+              "ms": 2,
+              "bytes": 2392
+            },
+            {
+              "path": "/demo/payment/transactions.v1/0/read.pods?begin=2627301&end=2627302",
+              "ms": 2,
+              "bytes": 2391
+            }
+          ]
+        },
+        {
+          "name": "30-days-info",
+          "pass": 1,
+          "ms": 15,
+          "firstPageMs": 15,
+          "timings": {
+            "planning": 0,
+            "request": 14,
+            "response": 1,
+            "summaries": 0,
+            "events": 0,
+            "client": 0
+          },
+          "matched": 45342,
+          "loaded": 100,
+          "commands": {},
+          "requests": [
+            {
+              "path": "/events?tap=&from=2026-09-30T00%3A00%3A00Z&to=2026-10-30T00%3A00%3A00Z&page=100&include=summary%2Cpage%2Cstatistics&query=%7B%22filters%22%3A%5B%7B%22field%22%3A%22level%22%2C%22op%22%3A%22%3D%3D%22%2C%22value%22%3A%7B%22kind%22%3A%22string%22%2C%22value%22%3A%22INFO%22%7D%7D%5D%2C%22order%22%3A%22asc%22%7D",
+              "ms": 14,
+              "bytes": 30550
+            }
+          ]
+        },
+        {
+          "name": "30-days-info",
+          "pass": 2,
+          "ms": 15,
+          "firstPageMs": 15,
+          "timings": {
+            "planning": 0,
+            "request": 14,
+            "response": 1,
+            "summaries": 0,
+            "events": 0,
+            "client": 0
+          },
+          "matched": 45342,
+          "loaded": 100,
+          "commands": {},
+          "requests": [
+            {
+              "path": "/events?tap=&from=2026-09-30T00%3A00%3A00Z&to=2026-10-30T00%3A00%3A00Z&page=100&include=summary%2Cpage%2Cstatistics&query=%7B%22filters%22%3A%5B%7B%22field%22%3A%22level%22%2C%22op%22%3A%22%3D%3D%22%2C%22value%22%3A%7B%22kind%22%3A%22string%22%2C%22value%22%3A%22INFO%22%7D%7D%5D%2C%22order%22%3A%22asc%22%7D",
+              "ms": 14,
+              "bytes": 30550
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

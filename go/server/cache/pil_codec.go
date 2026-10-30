@@ -1,8 +1,10 @@
 package cache
 
 import (
+	"fmt"
 	pil "github.com/AuthenticityLabs/pill-packer/go/codec"
 	"io"
+	"unicode/utf8"
 )
 
 type State = pil.State
@@ -24,7 +26,7 @@ const (
 	PACCompressedHeaderSize = pil.PACCompressedHeaderSize
 	PACCommon               = pil.PACCommon
 	PACGzip                 = pil.PACGzip
-	PACSource               = pil.PACSource
+	PACSource               = uint32(1) // Trie-Trunk source binding; opaque to Pill Packer
 	PACNative               = uint32(0x5454524b)
 	PACMaximum              = pil.PACMaximum
 	PACMaximumMembers       = pil.PACMaximumMembers
@@ -59,7 +61,16 @@ func factorPAC(l *Layout, f [][]byte, e []PACExtension, p bool) (*PAC, error) {
 	return pil.FactorPAC(l.Layout, f, e, p)
 }
 func ParsePAC(l *Layout, b []byte, s map[uint32]bool) (*PAC, error) {
-	return pil.ParsePAC(l.Layout, b, s)
+	p, err := pil.ParsePAC(l.Layout, b, s)
+	if err != nil {
+		return nil, err
+	}
+	for _, e := range p.Extensions {
+		if e.Type == PACSource && !utf8.Valid(e.Data) {
+			return nil, fmt.Errorf("invalid Trie-Trunk source UTF-8")
+		}
+	}
+	return p, nil
 }
 func ResolvePAC(l *Layout, c, m []byte) ([]byte, error) { return pil.ResolvePAC(l.Layout, c, m) }
 func CompilePositionalCBOR(l *Layout) (*PositionalCBOR, error) {

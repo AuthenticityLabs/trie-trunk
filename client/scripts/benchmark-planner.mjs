@@ -75,7 +75,8 @@ const importMs = performance.now() - start,
 const archive = async (_token, c) => {
   commands++;
   switch (c.kind) {
-    case 'time-read':
+    case 'time-read-many':return {times:await store.timeWindows(c.queries)};
+   case 'time-read':
       return {
         time: await store.timeWindow(c.query)
       };

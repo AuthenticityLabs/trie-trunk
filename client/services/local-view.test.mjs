@@ -6,7 +6,7 @@ import {PILStream} from './pil/stream.ts';
 import {NativeStore} from './store/native.ts';
 import {Backend} from './native-backend-fixture.mjs';
 import {ViewCache,validateStatistics} from './pil/view.ts';
-import {NativeTrie,NativeEvent} from './pil/native-event.ts';
+import {NativeTrie,NativeEvent} from './seeds/index.ts';
 import {compile} from './pil/metadata.ts';
 import {parseQuery,formatQuery} from './query.ts';
 import {valueAt} from './dictionary.ts';
@@ -21,8 +21,9 @@ async function setup({twoBranches=false}={}){
  const backend=new Backend(),store=new NativeStore(backend),sessions=new Map(),requests=[],commands=[];
  const archive=async(_token,c)=>{
   commands.push(c);
-  if(twoBranches){c=structuredClone(c);if(c.query?.tap)c.query.tap=b.tap;if(c.tap)c.tap=b.tap;}
+  if(twoBranches){c=structuredClone(c);if(c.query?.tap)c.query.tap=b.tap;if(c.queries)for(const q of c.queries)q.tap=b.tap;if(c.tap)c.tap=b.tap;}
   switch(c.kind){
+   case 'time-read-many':return {times:await store.timeWindows(c.queries)};
    case 'time-read':return {time:await store.timeWindow(c.query)};
    case 'time-save':await store.importTime(c.input);return {};
    case 'native-begin':sessions.set(c.session,store.begin(await store.serial()));return {};
@@ -115,4 +116,14 @@ test('equal timestamps across branches page without collisions in both direction
   do{const page=await f.search({size:3,after,query:{filters:[],order}});keys.push(...page.result.page.map(p=>p.key));after=page.result.next}while(after);
   assert.deepEqual(keys,expected);
  }
+});
+
+
+test('repeated local queries reuse the existing event cache only while replica coverage is complete',async()=>{
+ const f=await setup();const first=await f.search();const old=f.commands.length;
+ const again=await f.search();assert.deepEqual(again.result,first.result);assert.deepEqual(f.events(again).map(e=>e.millis),f.events(first).map(e=>e.millis));
+ assert.deepEqual(f.commands.slice(old).map(c=>c.kind),['time-read-many']);
+ const tap=f.commands.find(c=>c.kind==='native-resolve').tap;await f.store.rebase(tap);
+ const restart=f.commands.length;await f.search();
+ assert.ok(f.commands.slice(restart).some(c=>c.kind==='native-page'));
 });

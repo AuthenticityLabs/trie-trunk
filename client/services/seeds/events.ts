@@ -1,10 +1,10 @@
-import {INDEX_ROW_BYTES} from './pac-native.ts';
-import { decodeObject } from "./control.ts";
-import { indexMillis } from './pac-native.ts';
+import {INDEX_ROW_BYTES} from '../pil/pac-native.ts';
+import { decodeObject } from "../pil/control.ts";
+import { indexMillis } from '../pil/pac-native.ts';
 import {Seed,bindSeed} from '../seed.ts';
 import { pack, type LogEvent } from "../dictionary.ts";
-import { integer, read, scalar, span, width } from "./layout.ts";
-import type { Mapping } from "./metadata.ts";
+import { integer, read, scalar, span, width } from "../pil/layout.ts";
+import type { Mapping } from "../pil/metadata.ts";
 
 type Node = { parent:number; field:number; raw:Uint8Array; value?:unknown; decoded?:boolean };
 // One shared trie per immutable map/source. Values are decoded at most once per
@@ -48,6 +48,8 @@ export class NativeTrie {
   keys(leaf:number):number[]{
     const keys:number[]=[];for(let p=leaf;p;){const n=this.node(p);keys.push(n.field);p=n.parent;}return keys;
   }
+  hasField(leaf:number,key:number):boolean {return !!this.field(leaf,key);}
+  readField(leaf:number,key:number):unknown {const node=this.field(leaf,key);return node?this.read(node):undefined;}
   read(node:Node){
     if(!node.decoded){
       const f=this.mapping.definition.fields[node.field];
@@ -68,18 +70,15 @@ export class NativeEvent {
   readonly dictionary;
   readonly fields;
   private seed:Seed;
-  private payload:Uint8Array;
-  private common?:Uint8Array;
   private trie:NativeTrie;
   readonly stateLeaf:number;
   get durationField(){return this.trie.mapping.definition.resource?.roles.duration;}
   private leaf:number;
   constructor(row:Uint8Array,payload:Uint8Array,trie:NativeTrie,common?:Uint8Array,epochBase=0){
-    this.common=common;
     if(row.length!==INDEX_ROW_BYTES||!Number.isSafeInteger(epochBase))throw Error("Invalid native index row");
-    this.payload=payload;this.trie=trie;
-    const def=trie.mapping.definition,name=def.resource?.roles.shared;
-    const ref=name?def.fields.findIndex(f=>f.name===name):-1;
+    this.trie=trie;
+    const def=trie.mapping.definition,binding=bindSeed(def);
+    const ref=binding.sharedField??-1;
     const refBody=ref>=0&&common&&span(common,def,ref).state!==0?common:payload;
     const value=ref>=0?read(refBody,def,ref):undefined;
     this.stateLeaf=new DataView(row.buffer,row.byteOffset,row.byteLength).getUint16(4,true);
@@ -88,23 +87,16 @@ export class NativeEvent {
     if(!trie.has(this.leaf))throw Error("Missing native trie reference");
     this.dictionary=trie.mapping.dictionary;this.fields=this.dictionary.fields;
     this.millis=indexMillis(row,epochBase);
-    this.seed=new Seed(bindSeed(def),payload,{time:this.millis,stateLeaf:this.stateLeaf,common});
+    this.seed=new Seed(binding,payload,{time:this.millis,stateLeaf:this.stateLeaf,common,state:trie});
     // The PAC checksum and pill-packer framing have already been checked.
     // The canonical index leaf supplies shared values without payload duplicates.
 
   }
-  private body(key:number){return this.common&&((this.common[key>>2]>>(6-2*(key%4)))&3)?this.common:this.payload;}
-  read(key:number):unknown{
-    if(key===this.dictionary.id.key)return undefined;
-    if(this.trie.mapping.definition.fields[key]?.name==="@leaf")return this.stateLeaf;
-    if(this.trie.mapping.definition.fields[key]?.name==="@time")return this.millis;
-    const node=this.trie.field(this.leaf,key);if(node)return this.trie.read(node);
-    if(!this.fields.keys.has(key))return undefined;
-    return pack(read(this.body(key),this.trie.mapping.definition,key),this.fields.keys.get(key));
+  read(key:number):unknown {
+    return pack(this.seed.value(key),this.fields.keys.get(key));
   }
-  orderedKeys():number[]{
-    return this.trie.mapping.keys.filter(key=>key!==this.dictionary.id.key&&(this.trie.mapping.definition.fields[key]?.name==="@leaf"||this.trie.mapping.definition.fields[key]?.name==="@time"||!!this.trie.field(this.leaf,key)||span(this.body(key),this.trie.mapping.definition,key).state!==0));
-  }
+  orderedKeys():number[]{return this.trie.mapping.keys.filter(key=>this.seed.has(key));}
+
 }
 const compatible=(event:NativeEvent):LogEvent=>event;
 void compatible;

@@ -1,6 +1,6 @@
 // Explicit benchmark entry, excluded from the app build. Uses an isolated OPFS namespace.
 import wasmURL from '../assets/pil.wasm?url';
-import { NativeEvent, NativeTrie } from '../services/pil/native-event.ts';
+import { NativeEvent, NativeTrie } from '../services/seeds/index.ts';
 import { compile } from '../services/pil/metadata.ts';
 import { Codec } from '../services/pil/wasm.ts';
 import { PILStream } from '../services/pil/stream.ts';

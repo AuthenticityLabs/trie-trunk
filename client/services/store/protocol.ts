@@ -23,6 +23,7 @@ export type NativeInput = {record:NativeRecord;definition?:Metadata};
 export type Command =
   | {kind:'summary-read';query:import('./native.ts').SummaryQuery}
   | {kind:'summary-save';input:import('./native.ts').SummaryImport}
+  | {kind:'time-read-many';queries:import('./native.ts').TimeQuery[]}
   | {kind:'time-read';query:import('./native.ts').TimeQuery}
   | {kind:'time-save';input:import('./native.ts').TimeImport}
   | {kind:'trunk-save';snapshot:import('../pil/trunk.ts').TrunkSnapshot}
@@ -65,6 +66,7 @@ export type Command =
   | { kind: "release"; cursor: string };
 export type ArchiveReply = {
   summaryBytes?:Uint8Array;
+  times?:import('./native.ts').TimeReceipt[];
   time?:import('./native.ts').TimeReceipt;
   nativeObjectState?: { token:string; sequence:number };
   nativeSelections?: NativeSelection[];

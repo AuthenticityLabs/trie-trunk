@@ -1,0 +1,1580 @@
+{
+  "variant": "current",
+  "engine": "webkit",
+  "results": [
+    {
+      "variant": "current-empty-today-7341b804-79f0-478e-b103-08622d91e236",
+      "setupMs": 33,
+      "setupRequests": [
+        {
+          "path": "/trunk",
+          "ms": 18,
+          "bytes": 58231
+        }
+      ],
+      "branches": 25,
+      "runs": [
+        {
+          "name": "empty-today",
+          "pass": 0,
+          "ms": 313,
+          "firstPageMs": 313,
+          "timings": {
+            "discovery": 302,
+            "planning": 8,
+            "request": 0,
+            "response": 0,
+            "summaries": 0,
+            "events": 0,
+            "client": 0
+          },
+          "matched": 0,
+          "loaded": 0,
+          "commands": {
+            "time-read-many": {
+              "count": 2,
+              "ms": 9
+            },
+            "time-save": {
+              "count": 25,
+              "ms": 1067
+            }
+          },
+          "requests": [
+            {
+              "path": "/demo/billing/invoices.v1/0/error.tri?begin=2630300&end=2630314",
+              "ms": 3,
+              "bytes": 304
+            },
+            {
+              "path": "/demo/billing/invoices.v1/0/debug.tri?begin=2630300&end=2630314",
+              "ms": 3,
+              "bytes": 304
+            },
+            {
+              "path": "/demo/billing/invoices.v1/0/read.tri?begin=2630300&end=2630314",
+              "ms": 5,
+              "bytes": 304
+            },
+            {
+              "path": "/demo/billing/invoices.v1/0/trace.tri?begin=2630300&end=2630314",
+              "ms": 5,
+              "bytes": 304
+            },
+            {
+              "path": "/demo/billing/invoices.v1/0/write.tri?begin=2630300&end=2630314",
+              "ms": 2,
+              "bytes": 304
+            },
+            {
+              "path": "/demo/gateway/routes.v1/0/debug.tri?begin=2630300&end=2630314",
+              "ms": 3,
+              "bytes": 304
+            },
+            {
+              "path": "/demo/gateway/routes.v1/0/error.tri?begin=2630300&end=2630314",
+              "ms": 1,
+              "bytes": 304
+            },
+            {
+              "path": "/demo/gateway/routes.v1/0/read.tri?begin=2630300&end=2630314",
+              "ms": 2,
+              "bytes": 304
+            },
+            {
+              "path": "/demo/gateway/routes.v1/0/trace.tri?begin=2630300&end=2630314",
+              "ms": 2,
+              "bytes": 304
+            },
+            {
+              "path": "/demo/gateway/routes.v1/0/write.tri?begin=2630300&end=2630314",
+              "ms": 1,
+              "bytes": 304
+            },
+            {
+              "path": "/demo/payment/transactions.v1/0/debug.tri?begin=2630300&end=2630314",
+              "ms": 2,
+              "bytes": 304
+            },
+            {
+              "path": "/demo/payment/transactions.v1/0/error.tri?begin=2630300&end=2630314",
+              "ms": 1,
+              "bytes": 304
+            },
+            {
+              "path": "/demo/payment/transactions.v1/0/read.tri?begin=2630300&end=2630314",
+              "ms": 2,
+              "bytes": 304
+            },
+            {
+              "path": "/demo/payment/transactions.v1/0/trace.tri?begin=2630300&end=2630314",
+              "ms": 2,
+              "bytes": 304
+            },
+            {
+              "path": "/demo/payment/transactions.v1/0/write.tri?begin=2630300&end=2630314",
+              "ms": 2,
+              "bytes": 304
+            },
+            {
+              "path": "/demo/vault/secrets.v1/0/debug.tri?begin=2630300&end=2630314",
+              "ms": 1,
+              "bytes": 304
+            },
+            {
+              "path": "/demo/vault/secrets.v1/0/error.tri?begin=2630300&end=2630314",
+              "ms": 1,
+              "bytes": 304
+            },
+            {
+              "path": "/demo/vault/secrets.v1/0/read.tri?begin=2630300&end=2630314",
+              "ms": 1,
+              "bytes": 304
+            },
+            {
+              "path": "/demo/vault/secrets.v1/0/trace.tri?begin=2630300&end=2630314",
+              "ms": 1,
+              "bytes": 304
+            },
+            {
+              "path": "/demo/vault/secrets.v1/0/write.tri?begin=2630300&end=2630314",
+              "ms": 1,
+              "bytes": 304
+            },
+            {
+              "path": "/demo/worker/jobs.v1/0/debug.tri?begin=2630300&end=2630314",
+              "ms": 4,
+              "bytes": 304
+            },
+            {
+              "path": "/demo/worker/jobs.v1/0/error.tri?begin=2630300&end=2630314",
+              "ms": 2,
+              "bytes": 304
+            },
+            {
+              "path": "/demo/worker/jobs.v1/0/read.tri?begin=2630300&end=2630314",
+              "ms": 1,
+              "bytes": 304
+            },
+            {
+              "path": "/demo/worker/jobs.v1/0/trace.tri?begin=2630300&end=2630314",
+              "ms": 2,
+              "bytes": 304
+            },
+            {
+              "path": "/demo/worker/jobs.v1/0/write.tri?begin=2630300&end=2630314",
+              "ms": 2,
+              "bytes": 304
+            }
+          ]
+        },
+        {
+          "name": "empty-today",
+          "pass": 1,
+          "ms": 5,
+          "firstPageMs": 5,
+          "timings": {
+            "discovery": 4,
+            "planning": 1,
+            "request": 0,
+            "response": 0,
+            "summaries": 0,
+            "events": 0,
+            "client": 0
+          },
+          "matched": 0,
+          "loaded": 0,
+          "commands": {
+            "time-read-many": {
+              "count": 1,
+              "ms": 3
+            }
+          },
+          "requests": []
+        },
+        {
+          "name": "empty-today",
+          "pass": 2,
+          "ms": 5,
+          "firstPageMs": 5,
+          "timings": {
+            "discovery": 4,
+            "planning": 1,
+            "request": 0,
+            "response": 0,
+            "summaries": 0,
+            "events": 0,
+            "client": 0
+          },
+          "matched": 0,
+          "loaded": 0,
+          "commands": {
+            "time-read-many": {
+              "count": 1,
+              "ms": 4
+            }
+          },
+          "requests": []
+        }
+      ]
+    },
+    {
+      "variant": "current-one-day-fbd6bbb6-d6fa-4165-af58-b2e237dec3be",
+      "setupMs": 30,
+      "setupRequests": [
+        {
+          "path": "/trunk",
+          "ms": 16,
+          "bytes": 58231
+        }
+      ],
+      "branches": 25,
+      "runs": [
+        {
+          "name": "one-day",
+          "pass": 0,
+          "ms": 1356,
+          "firstPageMs": 1336,
+          "timings": {
+            "discovery": 234,
+            "planning": 11,
+            "request": 0,
+            "response": 0,
+            "summaries": 0,
+            "events": 1110,
+            "client": 0
+          },
+          "matched": 1667,
+          "loaded": 100,
+          "commands": {
+            "time-read-many": {
+              "count": 2,
+              "ms": 12
+            },
+            "time-save": {
+              "count": 25,
+              "ms": 815
+            },
+            "native-begin": {
+              "count": 35,
+              "ms": 290
+            },
+            "native-coverage": {
+              "count": 35,
+              "ms": 380
+            },
+            "native-finish": {
+              "count": 35,
+              "ms": 1655
+            },
+            "native-resolve": {
+              "count": 35,
+              "ms": 1212
+            },
+            "native-page": {
+              "count": 40,
+              "ms": 355
+            }
+          },
+          "requests": [
+            {
+              "path": "/demo/billing/invoices.v1/0/debug.tri?begin=2630100&end=2630200",
+              "ms": 2,
+              "bytes": 464
+            },
+            {
+              "path": "/demo/billing/invoices.v1/0/trace.tri?begin=2630100&end=2630200",
+              "ms": 2,
+              "bytes": 464
+            },
+            {
+              "path": "/demo/billing/invoices.v1/0/error.tri?begin=2630100&end=2630200",
+              "ms": 3,
+              "bytes": 464
+            },
+            {
+              "path": "/demo/billing/invoices.v1/0/read.tri?begin=2630100&end=2630200",
+              "ms": 4,
+              "bytes": 464
+            },
+            {
+              "path": "/demo/billing/invoices.v1/0/write.tri?begin=2630100&end=2630200",
+              "ms": 1,
+              "bytes": 464
+            },
+            {
+              "path": "/demo/gateway/routes.v1/0/debug.tri?begin=2630100&end=2630200",
+              "ms": 2,
+              "bytes": 464
+            },
+            {
+              "path": "/demo/gateway/routes.v1/0/error.tri?begin=2630100&end=2630200",
+              "ms": 2,
+              "bytes": 464
+            },
+            {
+              "path": "/demo/gateway/routes.v1/0/read.tri?begin=2630100&end=2630200",
+              "ms": 1,
+              "bytes": 464
+            },
+            {
+              "path": "/demo/gateway/routes.v1/0/trace.tri?begin=2630100&end=2630200",
+              "ms": 2,
+              "bytes": 464
+            },
+            {
+              "path": "/demo/gateway/routes.v1/0/write.tri?begin=2630100&end=2630200",
+              "ms": 2,
+              "bytes": 464
+            },
+            {
+              "path": "/demo/payment/transactions.v1/0/debug.tri?begin=2630100&end=2630200",
+              "ms": 2,
+              "bytes": 464
+            },
+            {
+              "path": "/demo/payment/transactions.v1/0/error.tri?begin=2630100&end=2630200",
+              "ms": 2,
+              "bytes": 464
+            },
+            {
+              "path": "/demo/payment/transactions.v1/0/read.tri?begin=2630100&end=2630200",
+              "ms": 1,
+              "bytes": 464
+            },
+            {
+              "path": "/demo/payment/transactions.v1/0/trace.tri?begin=2630100&end=2630200",
+              "ms": 2,
+              "bytes": 464
+            },
+            {
+              "path": "/demo/payment/transactions.v1/0/write.tri?begin=2630100&end=2630200",
+              "ms": 1,
+              "bytes": 464
+            },
+            {
+              "path": "/demo/vault/secrets.v1/0/debug.tri?begin=2630100&end=2630200",
+              "ms": 1,
+              "bytes": 464
+            },
+            {
+              "path": "/demo/vault/secrets.v1/0/error.tri?begin=2630100&end=2630200",
+              "ms": 1,
+              "bytes": 464
+            },
+            {
+              "path": "/demo/vault/secrets.v1/0/read.tri?begin=2630100&end=2630200",
+              "ms": 1,
+              "bytes": 464
+            },
+            {
+              "path": "/demo/vault/secrets.v1/0/trace.tri?begin=2630100&end=2630200",
+              "ms": 1,
+              "bytes": 464
+            },
+            {
+              "path": "/demo/vault/secrets.v1/0/write.tri?begin=2630100&end=2630200",
+              "ms": 1,
+              "bytes": 464
+            },
+            {
+              "path": "/demo/worker/jobs.v1/0/debug.tri?begin=2630100&end=2630200",
+              "ms": 2,
+              "bytes": 464
+            },
+            {
+              "path": "/demo/worker/jobs.v1/0/error.tri?begin=2630100&end=2630200",
+              "ms": 1,
+              "bytes": 464
+            },
+            {
+              "path": "/demo/worker/jobs.v1/0/read.tri?begin=2630100&end=2630200",
+              "ms": 1,
+              "bytes": 464
+            },
+            {
+              "path": "/demo/worker/jobs.v1/0/trace.tri?begin=2630100&end=2630200",
+              "ms": 2,
+              "bytes": 464
+            },
+            {
+              "path": "/demo/worker/jobs.v1/0/write.tri?begin=2630100&end=2630200",
+              "ms": 1,
+              "bytes": 464
+            },
+            {
+              "path": "/demo/billing/invoices.v1/0/read.pods?begin=2630100&end=2630101",
+              "ms": 4,
+              "bytes": 17566
+            },
+            {
+              "path": "/demo/billing/invoices.v1/0/write.pods?begin=2630100&end=2630101",
+              "ms": 4,
+              "bytes": 18039
+            },
+            {
+              "path": "/demo/gateway/routes.v1/0/read.pods?begin=2630100&end=2630101",
+              "ms": 4,
+              "bytes": 17758
+            },
+            {
+              "path": "/demo/gateway/routes.v1/0/write.pods?begin=2630100&end=2630101",
+              "ms": 3,
+              "bytes": 18233
+            },
+            {
+              "path": "/demo/payment/transactions.v1/0/read.pods?begin=2630100&end=2630101",
+              "ms": 3,
+              "bytes": 17521
+            },
+            {
+              "path": "/demo/payment/transactions.v1/0/write.pods?begin=2630100&end=2630101",
+              "ms": 2,
+              "bytes": 17929
+            },
+            {
+              "path": "/demo/vault/secrets.v1/0/read.pods?begin=2630100&end=2630101",
+              "ms": 2,
+              "bytes": 17911
+            },
+            {
+              "path": "/demo/vault/secrets.v1/0/write.pods?begin=2630100&end=2630101",
+              "ms": 2,
+              "bytes": 18291
+            },
+            {
+              "path": "/demo/worker/jobs.v1/0/read.pods?begin=2630100&end=2630101",
+              "ms": 2,
+              "bytes": 17834
+            },
+            {
+              "path": "/demo/worker/jobs.v1/0/write.pods?begin=2630100&end=2630101",
+              "ms": 3,
+              "bytes": 18230
+            },
+            {
+              "path": "/demo/billing/invoices.v1/0/debug.pods?begin=2630101&end=2630123",
+              "ms": 3,
+              "bytes": 33440
+            },
+            {
+              "path": "/demo/billing/invoices.v1/0/error.pods?begin=2630103&end=2630123",
+              "ms": 3,
+              "bytes": 23684
+            },
+            {
+              "path": "/demo/billing/invoices.v1/0/read.pods?begin=2630101&end=2630200",
+              "ms": 3,
+              "bytes": 29821
+            },
+            {
+              "path": "/demo/billing/invoices.v1/0/trace.pods?begin=2630102&end=2630200",
+              "ms": 3,
+              "bytes": 22572
+            },
+            {
+              "path": "/demo/billing/invoices.v1/0/write.pods?begin=2630101&end=2630200",
+              "ms": 3,
+              "bytes": 38713
+            },
+            {
+              "path": "/demo/gateway/routes.v1/0/debug.pods?begin=2630101&end=2630123",
+              "ms": 4,
+              "bytes": 34721
+            },
+            {
+              "path": "/demo/gateway/routes.v1/0/error.pods?begin=2630103&end=2630123",
+              "ms": 10,
+              "bytes": 23867
+            },
+            {
+              "path": "/demo/gateway/routes.v1/0/read.pods?begin=2630101&end=2630200",
+              "ms": 3,
+              "bytes": 29809
+            },
+            {
+              "path": "/demo/gateway/routes.v1/0/trace.pods?begin=2630102&end=2630200",
+              "ms": 3,
+              "bytes": 22753
+            },
+            {
+              "path": "/demo/gateway/routes.v1/0/write.pods?begin=2630101&end=2630200",
+              "ms": 3,
+              "bytes": 38537
+            },
+            {
+              "path": "/demo/payment/transactions.v1/0/debug.pods?begin=2630101&end=2630123",
+              "ms": 3,
+              "bytes": 32243
+            },
+            {
+              "path": "/demo/payment/transactions.v1/0/error.pods?begin=2630103&end=2630123",
+              "ms": 2,
+              "bytes": 23616
+            },
+            {
+              "path": "/demo/payment/transactions.v1/0/read.pods?begin=2630101&end=2630200",
+              "ms": 2,
+              "bytes": 29851
+            },
+            {
+              "path": "/demo/payment/transactions.v1/0/trace.pods?begin=2630102&end=2630200",
+              "ms": 3,
+              "bytes": 22494
+            },
+            {
+              "path": "/demo/payment/transactions.v1/0/write.pods?begin=2630101&end=2630200",
+              "ms": 3,
+              "bytes": 38881
+            },
+            {
+              "path": "/demo/vault/secrets.v1/0/debug.pods?begin=2630101&end=2630123",
+              "ms": 4,
+              "bytes": 33652
+            },
+            {
+              "path": "/demo/vault/secrets.v1/0/error.pods?begin=2630103&end=2630123",
+              "ms": 2,
+              "bytes": 23982
+            },
+            {
+              "path": "/demo/vault/secrets.v1/0/read.pods?begin=2630101&end=2630200",
+              "ms": 2,
+              "bytes": 29747
+            },
+            {
+              "path": "/demo/vault/secrets.v1/0/trace.pods?begin=2630102&end=2630200",
+              "ms": 3,
+              "bytes": 22872
+            },
+            {
+              "path": "/demo/vault/secrets.v1/0/write.pods?begin=2630101&end=2630200",
+              "ms": 3,
+              "bytes": 38251
+            },
+            {
+              "path": "/demo/worker/jobs.v1/0/debug.pods?begin=2630101&end=2630123",
+              "ms": 4,
+              "bytes": 33625
+            },
+            {
+              "path": "/demo/worker/jobs.v1/0/error.pods?begin=2630103&end=2630123",
+              "ms": 2,
+              "bytes": 23923
+            },
+            {
+              "path": "/demo/worker/jobs.v1/0/read.pods?begin=2630101&end=2630200",
+              "ms": 3,
+              "bytes": 29899
+            },
+            {
+              "path": "/demo/worker/jobs.v1/0/trace.pods?begin=2630102&end=2630200",
+              "ms": 2,
+              "bytes": 22805
+            },
+            {
+              "path": "/demo/worker/jobs.v1/0/write.pods?begin=2630101&end=2630200",
+              "ms": 3,
+              "bytes": 38421
+            }
+          ]
+        },
+        {
+          "name": "one-day",
+          "pass": 1,
+          "ms": 8,
+          "firstPageMs": 8,
+          "timings": {
+            "discovery": 6,
+            "planning": 2,
+            "request": 0,
+            "response": 0,
+            "summaries": 0,
+            "events": 0,
+            "client": 0
+          },
+          "matched": 1667,
+          "loaded": 100,
+          "commands": {
+            "time-read-many": {
+              "count": 1,
+              "ms": 5
+            }
+          },
+          "requests": []
+        },
+        {
+          "name": "one-day",
+          "pass": 2,
+          "ms": 8,
+          "firstPageMs": 8,
+          "timings": {
+            "discovery": 7,
+            "planning": 1,
+            "request": 0,
+            "response": 0,
+            "summaries": 0,
+            "events": 0,
+            "client": 0
+          },
+          "matched": 1667,
+          "loaded": 100,
+          "commands": {
+            "time-read-many": {
+              "count": 1,
+              "ms": 7
+            }
+          },
+          "requests": []
+        }
+      ]
+    },
+    {
+      "variant": "current-one-day-errors-b73b6e40-7861-495d-ae37-2d04fadf0d2b",
+      "setupMs": 29,
+      "setupRequests": [
+        {
+          "path": "/trunk",
+          "ms": 16,
+          "bytes": 58231
+        }
+      ],
+      "branches": 25,
+      "runs": [
+        {
+          "name": "one-day-errors",
+          "pass": 0,
+          "ms": 1375,
+          "firstPageMs": 1375,
+          "timings": {
+            "discovery": 234,
+            "planning": 9,
+            "request": 0,
+            "response": 0,
+            "summaries": 0,
+            "events": 1131,
+            "client": 0
+          },
+          "matched": 30,
+          "loaded": 30,
+          "commands": {
+            "time-read-many": {
+              "count": 2,
+              "ms": 10
+            },
+            "time-save": {
+              "count": 25,
+              "ms": 805
+            },
+            "native-begin": {
+              "count": 35,
+              "ms": 304
+            },
+            "native-coverage": {
+              "count": 35,
+              "ms": 392
+            },
+            "native-finish": {
+              "count": 35,
+              "ms": 1659
+            },
+            "native-resolve": {
+              "count": 35,
+              "ms": 1247
+            },
+            "native-page": {
+              "count": 40,
+              "ms": 453
+            }
+          },
+          "requests": [
+            {
+              "path": "/demo/billing/invoices.v1/0/debug.tri?begin=2630100&end=2630200",
+              "ms": 2,
+              "bytes": 464
+            },
+            {
+              "path": "/demo/billing/invoices.v1/0/error.tri?begin=2630100&end=2630200",
+              "ms": 2,
+              "bytes": 464
+            },
+            {
+              "path": "/demo/billing/invoices.v1/0/read.tri?begin=2630100&end=2630200",
+              "ms": 3,
+              "bytes": 464
+            },
+            {
+              "path": "/demo/billing/invoices.v1/0/trace.tri?begin=2630100&end=2630200",
+              "ms": 3,
+              "bytes": 464
+            },
+            {
+              "path": "/demo/billing/invoices.v1/0/write.tri?begin=2630100&end=2630200",
+              "ms": 2,
+              "bytes": 464
+            },
+            {
+              "path": "/demo/gateway/routes.v1/0/debug.tri?begin=2630100&end=2630200",
+              "ms": 2,
+              "bytes": 464
+            },
+            {
+              "path": "/demo/gateway/routes.v1/0/error.tri?begin=2630100&end=2630200",
+              "ms": 2,
+              "bytes": 464
+            },
+            {
+              "path": "/demo/gateway/routes.v1/0/read.tri?begin=2630100&end=2630200",
+              "ms": 1,
+              "bytes": 464
+            },
+            {
+              "path": "/demo/gateway/routes.v1/0/trace.tri?begin=2630100&end=2630200",
+              "ms": 2,
+              "bytes": 464
+            },
+            {
+              "path": "/demo/gateway/routes.v1/0/write.tri?begin=2630100&end=2630200",
+              "ms": 1,
+              "bytes": 464
+            },
+            {
+              "path": "/demo/payment/transactions.v1/0/debug.tri?begin=2630100&end=2630200",
+              "ms": 1,
+              "bytes": 464
+            },
+            {
+              "path": "/demo/payment/transactions.v1/0/error.tri?begin=2630100&end=2630200",
+              "ms": 2,
+              "bytes": 464
+            },
+            {
+              "path": "/demo/payment/transactions.v1/0/read.tri?begin=2630100&end=2630200",
+              "ms": 1,
+              "bytes": 464
+            },
+            {
+              "path": "/demo/payment/transactions.v1/0/trace.tri?begin=2630100&end=2630200",
+              "ms": 1,
+              "bytes": 464
+            },
+            {
+              "path": "/demo/payment/transactions.v1/0/write.tri?begin=2630100&end=2630200",
+              "ms": 2,
+              "bytes": 464
+            },
+            {
+              "path": "/demo/vault/secrets.v1/0/debug.tri?begin=2630100&end=2630200",
+              "ms": 1,
+              "bytes": 464
+            },
+            {
+              "path": "/demo/vault/secrets.v1/0/error.tri?begin=2630100&end=2630200",
+              "ms": 1,
+              "bytes": 464
+            },
+            {
+              "path": "/demo/vault/secrets.v1/0/read.tri?begin=2630100&end=2630200",
+              "ms": 1,
+              "bytes": 464
+            },
+            {
+              "path": "/demo/vault/secrets.v1/0/trace.tri?begin=2630100&end=2630200",
+              "ms": 1,
+              "bytes": 464
+            },
+            {
+              "path": "/demo/vault/secrets.v1/0/write.tri?begin=2630100&end=2630200",
+              "ms": 2,
+              "bytes": 464
+            },
+            {
+              "path": "/demo/worker/jobs.v1/0/debug.tri?begin=2630100&end=2630200",
+              "ms": 1,
+              "bytes": 464
+            },
+            {
+              "path": "/demo/worker/jobs.v1/0/error.tri?begin=2630100&end=2630200",
+              "ms": 2,
+              "bytes": 464
+            },
+            {
+              "path": "/demo/worker/jobs.v1/0/read.tri?begin=2630100&end=2630200",
+              "ms": 2,
+              "bytes": 464
+            },
+            {
+              "path": "/demo/worker/jobs.v1/0/trace.tri?begin=2630100&end=2630200",
+              "ms": 2,
+              "bytes": 464
+            },
+            {
+              "path": "/demo/worker/jobs.v1/0/write.tri?begin=2630100&end=2630200",
+              "ms": 2,
+              "bytes": 464
+            },
+            {
+              "path": "/demo/billing/invoices.v1/0/read.pods?begin=2630100&end=2630101",
+              "ms": 3,
+              "bytes": 17566
+            },
+            {
+              "path": "/demo/billing/invoices.v1/0/write.pods?begin=2630100&end=2630101",
+              "ms": 3,
+              "bytes": 18039
+            },
+            {
+              "path": "/demo/gateway/routes.v1/0/read.pods?begin=2630100&end=2630101",
+              "ms": 4,
+              "bytes": 17758
+            },
+            {
+              "path": "/demo/gateway/routes.v1/0/write.pods?begin=2630100&end=2630101",
+              "ms": 3,
+              "bytes": 18233
+            },
+            {
+              "path": "/demo/payment/transactions.v1/0/read.pods?begin=2630100&end=2630101",
+              "ms": 2,
+              "bytes": 17521
+            },
+            {
+              "path": "/demo/payment/transactions.v1/0/write.pods?begin=2630100&end=2630101",
+              "ms": 2,
+              "bytes": 17929
+            },
+            {
+              "path": "/demo/vault/secrets.v1/0/read.pods?begin=2630100&end=2630101",
+              "ms": 3,
+              "bytes": 17911
+            },
+            {
+              "path": "/demo/vault/secrets.v1/0/write.pods?begin=2630100&end=2630101",
+              "ms": 2,
+              "bytes": 18291
+            },
+            {
+              "path": "/demo/worker/jobs.v1/0/read.pods?begin=2630100&end=2630101",
+              "ms": 3,
+              "bytes": 17834
+            },
+            {
+              "path": "/demo/worker/jobs.v1/0/write.pods?begin=2630100&end=2630101",
+              "ms": 3,
+              "bytes": 18230
+            },
+            {
+              "path": "/demo/billing/invoices.v1/0/debug.pods?begin=2630101&end=2630123",
+              "ms": 3,
+              "bytes": 33440
+            },
+            {
+              "path": "/demo/billing/invoices.v1/0/error.pods?begin=2630103&end=2630123",
+              "ms": 3,
+              "bytes": 23684
+            },
+            {
+              "path": "/demo/billing/invoices.v1/0/read.pods?begin=2630101&end=2630200",
+              "ms": 3,
+              "bytes": 29821
+            },
+            {
+              "path": "/demo/billing/invoices.v1/0/trace.pods?begin=2630102&end=2630200",
+              "ms": 3,
+              "bytes": 22572
+            },
+            {
+              "path": "/demo/billing/invoices.v1/0/write.pods?begin=2630101&end=2630200",
+              "ms": 3,
+              "bytes": 38713
+            },
+            {
+              "path": "/demo/gateway/routes.v1/0/debug.pods?begin=2630101&end=2630123",
+              "ms": 3,
+              "bytes": 34721
+            },
+            {
+              "path": "/demo/gateway/routes.v1/0/error.pods?begin=2630103&end=2630123",
+              "ms": 3,
+              "bytes": 23867
+            },
+            {
+              "path": "/demo/gateway/routes.v1/0/read.pods?begin=2630101&end=2630200",
+              "ms": 3,
+              "bytes": 29809
+            },
+            {
+              "path": "/demo/gateway/routes.v1/0/trace.pods?begin=2630102&end=2630200",
+              "ms": 3,
+              "bytes": 22753
+            },
+            {
+              "path": "/demo/gateway/routes.v1/0/write.pods?begin=2630101&end=2630200",
+              "ms": 2,
+              "bytes": 38537
+            },
+            {
+              "path": "/demo/payment/transactions.v1/0/debug.pods?begin=2630101&end=2630123",
+              "ms": 3,
+              "bytes": 32243
+            },
+            {
+              "path": "/demo/payment/transactions.v1/0/error.pods?begin=2630103&end=2630123",
+              "ms": 3,
+              "bytes": 23616
+            },
+            {
+              "path": "/demo/payment/transactions.v1/0/read.pods?begin=2630101&end=2630200",
+              "ms": 3,
+              "bytes": 29851
+            },
+            {
+              "path": "/demo/payment/transactions.v1/0/trace.pods?begin=2630102&end=2630200",
+              "ms": 3,
+              "bytes": 22494
+            },
+            {
+              "path": "/demo/payment/transactions.v1/0/write.pods?begin=2630101&end=2630200",
+              "ms": 3,
+              "bytes": 38881
+            },
+            {
+              "path": "/demo/vault/secrets.v1/0/debug.pods?begin=2630101&end=2630123",
+              "ms": 3,
+              "bytes": 33652
+            },
+            {
+              "path": "/demo/vault/secrets.v1/0/error.pods?begin=2630103&end=2630123",
+              "ms": 3,
+              "bytes": 23982
+            },
+            {
+              "path": "/demo/vault/secrets.v1/0/read.pods?begin=2630101&end=2630200",
+              "ms": 3,
+              "bytes": 29747
+            },
+            {
+              "path": "/demo/vault/secrets.v1/0/trace.pods?begin=2630102&end=2630200",
+              "ms": 3,
+              "bytes": 22872
+            },
+            {
+              "path": "/demo/vault/secrets.v1/0/write.pods?begin=2630101&end=2630200",
+              "ms": 3,
+              "bytes": 38251
+            },
+            {
+              "path": "/demo/worker/jobs.v1/0/debug.pods?begin=2630101&end=2630123",
+              "ms": 3,
+              "bytes": 33625
+            },
+            {
+              "path": "/demo/worker/jobs.v1/0/error.pods?begin=2630103&end=2630123",
+              "ms": 3,
+              "bytes": 23923
+            },
+            {
+              "path": "/demo/worker/jobs.v1/0/read.pods?begin=2630101&end=2630200",
+              "ms": 3,
+              "bytes": 29899
+            },
+            {
+              "path": "/demo/worker/jobs.v1/0/trace.pods?begin=2630102&end=2630200",
+              "ms": 3,
+              "bytes": 22805
+            },
+            {
+              "path": "/demo/worker/jobs.v1/0/write.pods?begin=2630101&end=2630200",
+              "ms": 3,
+              "bytes": 38421
+            }
+          ]
+        },
+        {
+          "name": "one-day-errors",
+          "pass": 1,
+          "ms": 7,
+          "firstPageMs": 7,
+          "timings": {
+            "discovery": 6,
+            "planning": 1,
+            "request": 0,
+            "response": 0,
+            "summaries": 0,
+            "events": 0,
+            "client": 0
+          },
+          "matched": 30,
+          "loaded": 30,
+          "commands": {
+            "time-read-many": {
+              "count": 1,
+              "ms": 6
+            }
+          },
+          "requests": []
+        },
+        {
+          "name": "one-day-errors",
+          "pass": 2,
+          "ms": 7,
+          "firstPageMs": 7,
+          "timings": {
+            "discovery": 5,
+            "planning": 1,
+            "request": 0,
+            "response": 0,
+            "summaries": 0,
+            "events": 0,
+            "client": 0
+          },
+          "matched": 30,
+          "loaded": 30,
+          "commands": {
+            "time-read-many": {
+              "count": 1,
+              "ms": 5
+            }
+          },
+          "requests": []
+        }
+      ]
+    },
+    {
+      "variant": "current-30-days-d6ac8569-74d4-47bc-b503-a988e843549f",
+      "setupMs": 29,
+      "setupRequests": [
+        {
+          "path": "/trunk",
+          "ms": 17,
+          "bytes": 58231
+        }
+      ],
+      "branches": 25,
+      "runs": [
+        {
+          "name": "30-days",
+          "pass": 0,
+          "ms": 10834,
+          "firstPageMs": 1382,
+          "timings": {
+            "discovery": 262,
+            "planning": 40,
+            "request": 0,
+            "response": 0,
+            "summaries": 0,
+            "events": 10529,
+            "client": 0
+          },
+          "matched": 50000,
+          "loaded": 100,
+          "commands": {
+            "time-read-many": {
+              "count": 2,
+              "ms": 39
+            },
+            "time-save": {
+              "count": 25,
+              "ms": 879
+            },
+            "native-begin": {
+              "count": 60,
+              "ms": 925
+            },
+            "native-coverage": {
+              "count": 60,
+              "ms": 5264
+            },
+            "native-finish": {
+              "count": 60,
+              "ms": 16937
+            },
+            "native-resolve": {
+              "count": 60,
+              "ms": 11101
+            },
+            "native-page": {
+              "count": 90,
+              "ms": 2126
+            }
+          },
+          "requests": [
+            {
+              "path": "/demo/billing/invoices.v1/0/debug.tri?begin=2627300&end=2630300",
+              "ms": 3,
+              "bytes": 11568
+            },
+            {
+              "path": "/demo/billing/invoices.v1/0/trace.tri?begin=2627300&end=2630300",
+              "ms": 3,
+              "bytes": 11520
+            },
+            {
+              "path": "/demo/billing/invoices.v1/0/read.tri?begin=2627300&end=2630300",
+              "ms": 5,
+              "bytes": 11600
+            },
+            {
+              "path": "/demo/billing/invoices.v1/0/error.tri?begin=2627300&end=2630300",
+              "ms": 5,
+              "bytes": 11552
+            },
+            {
+              "path": "/demo/billing/invoices.v1/0/write.tri?begin=2627300&end=2630300",
+              "ms": 2,
+              "bytes": 11600
+            },
+            {
+              "path": "/demo/gateway/routes.v1/0/debug.tri?begin=2627300&end=2630300",
+              "ms": 3,
+              "bytes": 11568
+            },
+            {
+              "path": "/demo/gateway/routes.v1/0/error.tri?begin=2627300&end=2630300",
+              "ms": 1,
+              "bytes": 11552
+            },
+            {
+              "path": "/demo/gateway/routes.v1/0/read.tri?begin=2627300&end=2630300",
+              "ms": 2,
+              "bytes": 11600
+            },
+            {
+              "path": "/demo/gateway/routes.v1/0/trace.tri?begin=2627300&end=2630300",
+              "ms": 2,
+              "bytes": 11520
+            },
+            {
+              "path": "/demo/gateway/routes.v1/0/write.tri?begin=2627300&end=2630300",
+              "ms": 2,
+              "bytes": 11600
+            },
+            {
+              "path": "/demo/payment/transactions.v1/0/debug.tri?begin=2627300&end=2630300",
+              "ms": 1,
+              "bytes": 11568
+            },
+            {
+              "path": "/demo/payment/transactions.v1/0/error.tri?begin=2627300&end=2630300",
+              "ms": 1,
+              "bytes": 11552
+            },
+            {
+              "path": "/demo/payment/transactions.v1/0/read.tri?begin=2627300&end=2630300",
+              "ms": 2,
+              "bytes": 11600
+            },
+            {
+              "path": "/demo/payment/transactions.v1/0/trace.tri?begin=2627300&end=2630300",
+              "ms": 2,
+              "bytes": 11520
+            },
+            {
+              "path": "/demo/payment/transactions.v1/0/write.tri?begin=2627300&end=2630300",
+              "ms": 2,
+              "bytes": 11600
+            },
+            {
+              "path": "/demo/vault/secrets.v1/0/debug.tri?begin=2627300&end=2630300",
+              "ms": 2,
+              "bytes": 11568
+            },
+            {
+              "path": "/demo/vault/secrets.v1/0/error.tri?begin=2627300&end=2630300",
+              "ms": 2,
+              "bytes": 11552
+            },
+            {
+              "path": "/demo/vault/secrets.v1/0/read.tri?begin=2627300&end=2630300",
+              "ms": 2,
+              "bytes": 11600
+            },
+            {
+              "path": "/demo/vault/secrets.v1/0/trace.tri?begin=2627300&end=2630300",
+              "ms": 2,
+              "bytes": 11520
+            },
+            {
+              "path": "/demo/vault/secrets.v1/0/write.tri?begin=2627300&end=2630300",
+              "ms": 1,
+              "bytes": 11600
+            },
+            {
+              "path": "/demo/worker/jobs.v1/0/debug.tri?begin=2627300&end=2630300",
+              "ms": 1,
+              "bytes": 11568
+            },
+            {
+              "path": "/demo/worker/jobs.v1/0/error.tri?begin=2627300&end=2630300",
+              "ms": 1,
+              "bytes": 11552
+            },
+            {
+              "path": "/demo/worker/jobs.v1/0/read.tri?begin=2627300&end=2630300",
+              "ms": 2,
+              "bytes": 11600
+            },
+            {
+              "path": "/demo/worker/jobs.v1/0/trace.tri?begin=2627300&end=2630300",
+              "ms": 1,
+              "bytes": 11520
+            },
+            {
+              "path": "/demo/worker/jobs.v1/0/write.tri?begin=2627300&end=2630300",
+              "ms": 1,
+              "bytes": 11600
+            },
+            {
+              "path": "/demo/billing/invoices.v1/0/read.pods?begin=2627300&end=2627301",
+              "ms": 3,
+              "bytes": 17744
+            },
+            {
+              "path": "/demo/billing/invoices.v1/0/write.pods?begin=2627300&end=2627301",
+              "ms": 3,
+              "bytes": 17835
+            },
+            {
+              "path": "/demo/gateway/routes.v1/0/read.pods?begin=2627300&end=2627301",
+              "ms": 3,
+              "bytes": 17939
+            },
+            {
+              "path": "/demo/gateway/routes.v1/0/write.pods?begin=2627300&end=2627301",
+              "ms": 2,
+              "bytes": 18029
+            },
+            {
+              "path": "/demo/payment/transactions.v1/0/read.pods?begin=2627300&end=2627301",
+              "ms": 3,
+              "bytes": 17686
+            },
+            {
+              "path": "/demo/payment/transactions.v1/0/write.pods?begin=2627300&end=2627301",
+              "ms": 3,
+              "bytes": 17775
+            },
+            {
+              "path": "/demo/vault/secrets.v1/0/read.pods?begin=2627300&end=2627301",
+              "ms": 2,
+              "bytes": 18068
+            },
+            {
+              "path": "/demo/vault/secrets.v1/0/write.pods?begin=2627300&end=2627301",
+              "ms": 3,
+              "bytes": 18143
+            },
+            {
+              "path": "/demo/worker/jobs.v1/0/read.pods?begin=2627300&end=2627301",
+              "ms": 3,
+              "bytes": 18004
+            },
+            {
+              "path": "/demo/worker/jobs.v1/0/write.pods?begin=2627300&end=2627301",
+              "ms": 3,
+              "bytes": 18080
+            },
+            {
+              "path": "/demo/billing/invoices.v1/0/debug.pods?begin=2627302&end=2627400",
+              "ms": 4,
+              "bytes": 33393
+            },
+            {
+              "path": "/demo/billing/invoices.v1/0/error.pods?begin=2627303&end=2627400",
+              "ms": 3,
+              "bytes": 23693
+            },
+            {
+              "path": "/demo/billing/invoices.v1/0/read.pods?begin=2627301&end=2627400",
+              "ms": 3,
+              "bytes": 29832
+            },
+            {
+              "path": "/demo/billing/invoices.v1/0/trace.pods?begin=2627305&end=2627400",
+              "ms": 3,
+              "bytes": 21336
+            },
+            {
+              "path": "/demo/billing/invoices.v1/0/write.pods?begin=2627301&end=2627400",
+              "ms": 3,
+              "bytes": 37786
+            },
+            {
+              "path": "/demo/gateway/routes.v1/0/debug.pods?begin=2627302&end=2627400",
+              "ms": 4,
+              "bytes": 33579
+            },
+            {
+              "path": "/demo/gateway/routes.v1/0/error.pods?begin=2627303&end=2627400",
+              "ms": 3,
+              "bytes": 23868
+            },
+            {
+              "path": "/demo/gateway/routes.v1/0/read.pods?begin=2627301&end=2627400",
+              "ms": 3,
+              "bytes": 29728
+            },
+            {
+              "path": "/demo/gateway/routes.v1/0/trace.pods?begin=2627305&end=2627400",
+              "ms": 3,
+              "bytes": 21514
+            },
+            {
+              "path": "/demo/gateway/routes.v1/0/write.pods?begin=2627301&end=2627400",
+              "ms": 3,
+              "bytes": 37744
+            },
+            {
+              "path": "/demo/payment/transactions.v1/0/debug.pods?begin=2627302&end=2627400",
+              "ms": 3,
+              "bytes": 33356
+            },
+            {
+              "path": "/demo/payment/transactions.v1/0/error.pods?begin=2627303&end=2627400",
+              "ms": 2,
+              "bytes": 23637
+            },
+            {
+              "path": "/demo/payment/transactions.v1/0/read.pods?begin=2627301&end=2627400",
+              "ms": 3,
+              "bytes": 29868
+            },
+            {
+              "path": "/demo/payment/transactions.v1/0/trace.pods?begin=2627305&end=2627400",
+              "ms": 3,
+              "bytes": 21271
+            },
+            {
+              "path": "/demo/payment/transactions.v1/0/write.pods?begin=2627301&end=2627400",
+              "ms": 3,
+              "bytes": 37872
+            },
+            {
+              "path": "/demo/vault/secrets.v1/0/debug.pods?begin=2627302&end=2627400",
+              "ms": 2,
+              "bytes": 33628
+            },
+            {
+              "path": "/demo/vault/secrets.v1/0/error.pods?begin=2627303&end=2627400",
+              "ms": 3,
+              "bytes": 23998
+            },
+            {
+              "path": "/demo/vault/secrets.v1/0/read.pods?begin=2627301&end=2627400",
+              "ms": 3,
+              "bytes": 29733
+            },
+            {
+              "path": "/demo/vault/secrets.v1/0/trace.pods?begin=2627305&end=2627400",
+              "ms": 4,
+              "bytes": 21647
+            },
+            {
+              "path": "/demo/vault/secrets.v1/0/write.pods?begin=2627301&end=2627400",
+              "ms": 3,
+              "bytes": 37322
+            },
+            {
+              "path": "/demo/worker/jobs.v1/0/debug.pods?begin=2627302&end=2627400",
+              "ms": 3,
+              "bytes": 33610
+            },
+            {
+              "path": "/demo/worker/jobs.v1/0/error.pods?begin=2627303&end=2627400",
+              "ms": 3,
+              "bytes": 23940
+            },
+            {
+              "path": "/demo/worker/jobs.v1/0/read.pods?begin=2627301&end=2627400",
+              "ms": 3,
+              "bytes": 29782
+            },
+            {
+              "path": "/demo/worker/jobs.v1/0/trace.pods?begin=2627305&end=2627400",
+              "ms": 2,
+              "bytes": 21576
+            },
+            {
+              "path": "/demo/worker/jobs.v1/0/write.pods?begin=2627301&end=2627400",
+              "ms": 3,
+              "bytes": 37462
+            },
+            {
+              "path": "/demo/billing/invoices.v1/0/debug.pods?begin=2627400&end=2630223",
+              "ms": 11,
+              "bytes": 507799
+            },
+            {
+              "path": "/demo/billing/invoices.v1/0/error.pods?begin=2627400&end=2630222",
+              "ms": 24,
+              "bytes": 240367
+            },
+            {
+              "path": "/demo/billing/invoices.v1/0/read.pods?begin=2627400&end=2630300",
+              "ms": 25,
+              "bytes": 871236
+            },
+            {
+              "path": "/demo/billing/invoices.v1/0/trace.pods?begin=2627400&end=2630220",
+              "ms": 7,
+              "bytes": 162260
+            },
+            {
+              "path": "/demo/billing/invoices.v1/0/write.pods?begin=2627400&end=2630300",
+              "ms": 16,
+              "bytes": 1134534
+            },
+            {
+              "path": "/demo/gateway/routes.v1/0/error.pods?begin=2627400&end=2630222",
+              "ms": 6,
+              "bytes": 233841
+            },
+            {
+              "path": "/demo/gateway/routes.v1/0/debug.pods?begin=2627400&end=2630223",
+              "ms": 16,
+              "bytes": 507794
+            },
+            {
+              "path": "/demo/gateway/routes.v1/0/read.pods?begin=2627400&end=2630300",
+              "ms": 15,
+              "bytes": 869654
+            },
+            {
+              "path": "/demo/gateway/routes.v1/0/trace.pods?begin=2627400&end=2630220",
+              "ms": 5,
+              "bytes": 160679
+            },
+            {
+              "path": "/demo/gateway/routes.v1/0/write.pods?begin=2627400&end=2630300",
+              "ms": 70,
+              "bytes": 1133690
+            },
+            {
+              "path": "/demo/payment/transactions.v1/0/debug.pods?begin=2627400&end=2630223",
+              "ms": 12,
+              "bytes": 508967
+            },
+            {
+              "path": "/demo/payment/transactions.v1/0/error.pods?begin=2627400&end=2630222",
+              "ms": 5,
+              "bytes": 234338
+            },
+            {
+              "path": "/demo/payment/transactions.v1/0/read.pods?begin=2627400&end=2630300",
+              "ms": 17,
+              "bytes": 873817
+            },
+            {
+              "path": "/demo/payment/transactions.v1/0/trace.pods?begin=2627400&end=2630220",
+              "ms": 5,
+              "bytes": 161941
+            },
+            {
+              "path": "/demo/payment/transactions.v1/0/write.pods?begin=2627400&end=2630300",
+              "ms": 19,
+              "bytes": 1137911
+            },
+            {
+              "path": "/demo/vault/secrets.v1/0/debug.pods?begin=2627400&end=2630223",
+              "ms": 10,
+              "bytes": 501545
+            },
+            {
+              "path": "/demo/vault/secrets.v1/0/error.pods?begin=2627400&end=2630222",
+              "ms": 7,
+              "bytes": 233586
+            },
+            {
+              "path": "/demo/vault/secrets.v1/0/read.pods?begin=2627400&end=2630300",
+              "ms": 16,
+              "bytes": 867639
+            },
+            {
+              "path": "/demo/vault/secrets.v1/0/trace.pods?begin=2627400&end=2630220",
+              "ms": 5,
+              "bytes": 160373
+            },
+            {
+              "path": "/demo/vault/secrets.v1/0/write.pods?begin=2627400&end=2630300",
+              "ms": 16,
+              "bytes": 1120992
+            },
+            {
+              "path": "/demo/worker/jobs.v1/0/debug.pods?begin=2627400&end=2630223",
+              "ms": 12,
+              "bytes": 503783
+            },
+            {
+              "path": "/demo/worker/jobs.v1/0/error.pods?begin=2627400&end=2630222",
+              "ms": 7,
+              "bytes": 239754
+            },
+            {
+              "path": "/demo/worker/jobs.v1/0/read.pods?begin=2627400&end=2630300",
+              "ms": 16,
+              "bytes": 872073
+            },
+            {
+              "path": "/demo/worker/jobs.v1/0/trace.pods?begin=2627400&end=2630220",
+              "ms": 5,
+              "bytes": 160347
+            },
+            {
+              "path": "/demo/worker/jobs.v1/0/write.pods?begin=2627400&end=2630300",
+              "ms": 16,
+              "bytes": 1125960
+            }
+          ]
+        },
+        {
+          "name": "30-days",
+          "pass": 1,
+          "ms": 229,
+          "firstPageMs": 229,
+          "timings": {
+            "discovery": 225,
+            "planning": 4,
+            "request": 0,
+            "response": 0,
+            "summaries": 0,
+            "events": 0,
+            "client": 0
+          },
+          "matched": 50000,
+          "loaded": 100,
+          "commands": {
+            "time-read-many": {
+              "count": 1,
+              "ms": 223
+            }
+          },
+          "requests": []
+        },
+        {
+          "name": "30-days",
+          "pass": 2,
+          "ms": 242,
+          "firstPageMs": 242,
+          "timings": {
+            "discovery": 239,
+            "planning": 3,
+            "request": 0,
+            "response": 0,
+            "summaries": 0,
+            "events": 0,
+            "client": 0
+          },
+          "matched": 50000,
+          "loaded": 100,
+          "commands": {
+            "time-read-many": {
+              "count": 1,
+              "ms": 237
+            }
+          },
+          "requests": []
+        }
+      ]
+    }
+  ]
+}

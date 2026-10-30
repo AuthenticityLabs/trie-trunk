@@ -9,7 +9,7 @@ import { fileURLToPath } from "node:url";
 import { fixture, bytes, pilObject } from "../services/pil-fixtures.mjs";
 import {decodeObject as cbor} from "../services/pil/control.ts";
 import {pacHeader} from "../services/pil/pac.ts";
-import {nativePAC} from "../services/pil/pac-native.ts";
+import {nativePAC,INDEX_ROW_BYTES} from "../services/pil/pac-native.ts";
 import {Codec} from "../services/pil/wasm.ts";
 import {PILStream} from "../services/pil/stream.ts";
 const drivers = await import(
@@ -104,7 +104,7 @@ async function cmd(command, namespace = "test", worker = 0) {
         const receive = ({ data }) => {
           if (data.id !== id) return;
           w.removeEventListener("message", receive);
-          if (data.error) return reject(Error(data.error));
+          if (data.error) return resolve({__error:data.error,cacheIssue:data.cacheIssue});
           const r = data.result;
           if (r.batch)
             r.batch = {
@@ -118,7 +118,11 @@ async function cmd(command, namespace = "test", worker = 0) {
         w.postMessage({ id, namespace, command });
       }),
     { id: ++sequence, command, namespace, worker },
-  );
+  ).then(result=>{
+    // Playwright's exception transport discards custom Error properties.
+    if(result.__error)throw Object.assign(Error(result.__error),{cacheIssue:result.cacheIssue});
+    return result;
+  });
 }
 const f = fixture(),
   millis = Number(
@@ -177,7 +181,7 @@ try {
   assert.deepEqual(nativeSizes(await raw("inventory")),nativeBefore);
   const pageRequest={kind:"native-page",source,from:Date.parse(nativeSelection.from),to:Date.parse(nativeSelection.to)};
   const nativePage=(await cmd(pageRequest,"native")).nativePage;
-  assert.equal(nativePage.rows.length,16);assert.equal(nativePage.payload.length>0,true);
+  assert.equal(nativePage.rows.length,INDEX_ROW_BYTES);assert.equal(nativePage.payload.length>0,true);
   await Promise.all([0,1].map(async worker=>{
     const session="concurrent-"+worker;
     await cmd({kind:"native-begin",session},"native",worker);
@@ -229,7 +233,7 @@ try {
   await page.reload();await page.evaluate(()=>{globalThis.workers=[new Worker("/harness.js",{type:"module"}),new Worker("/harness.js",{type:"module"})];});
   const pageProbe={kind:"native-page",source:pageSource,from:Date.parse("2026-10-19T14:00:00Z"),to:Date.parse("2026-10-19T15:00:00Z"),limit:1};
   const crossPage=(await cmd(pageProbe,"pac-pages")).nativePage;
-  assert.equal(crossPage.rows.length,16);assert.equal(crossPage.payload.at(-1),101);
+  assert.equal(crossPage.rows.length,INDEX_ROW_BYTES);assert.equal(crossPage.payload.at(-1),101);
   await importHour("retired");
   assert.deepEqual((await cmd(pageProbe,"pac-pages")).nativePage,crossPage);
   await assert.rejects(importHour("gap-0","stale"),/Stale PAC retirement/);
@@ -275,7 +279,7 @@ try {
   assert.equal(updatedToken.sequence,1201);assert.equal(updatedToken.token.slice(-16),"b104000000000000");
   await cmd({kind:"native-begin",session:"state-before-compaction"},"state-pages",1);
   for(const record of updatedState)await cmd(stateRecord("state-before-compaction",record),"state-pages",1);
-  const stateFiles=inventory=>Object.entries(inventory).filter(([path])=>path.includes("/state-pages/native/"+stateSource+"/collection.state"));
+  const stateFiles=inventory=>Object.entries(inventory).filter(([path])=>path.includes("/state-pages/branches/"+stateSource+"/collection.state"));
   const bytesBefore=stateFiles(await raw("inventory")).reduce((n,[,size])=>n+size,0);
   const measurements=[];
   for(let i=0;i<5;i++)measurements.push((await raw("compact-native-state",{namespace:"state-pages",source:stateSource})).elapsedMs);
@@ -323,6 +327,13 @@ try {
   console.log("PASS: ordered retention generations, atomic working-set retirement, stale response rejection, OPFS reclamation, and replacement-only restoration after reload");
   await cmd({kind:"native-begin",session:"before-rebase"},"generation",1);
   for(const record of replacementRecords)await cmd(nativeRecord("before-rebase",record),"generation",1);
+  await raw('invalidate-native-span',{namespace:'generation',source:replacement});
+  await assert.rejects(cmd({kind:'native-coverage'},'generation'),error=>{
+    assert.equal(error.cacheIssue?.reason,'invalid-native-span');
+    assert.equal(error.cacheIssue.conflicts[0].source,sequenced[0].binding.tap);
+    assert.ok(Number(error.cacheIssue.conflicts[0].detail.start)<0);
+    return true;
+  });
   await cmd({kind:"native-rebase",sources:[sequenced.find(r=>r.kind==="manifest").binding.tap]},"generation");
   assert.equal((await cmd({kind:"native-coverage"},"generation")).nativeCoverage.length,0);
   await assert.rejects(cmd({kind:"native-finish",session:"before-rebase"},"generation",1),/cache rebased/);

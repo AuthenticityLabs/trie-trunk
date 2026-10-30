@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {nativeBackend} from './store/native-files.ts';
+import {nativeBackend,NativeSnapshotCache} from './store/native-files.ts';
 import {NativeStore,committedRanges} from './store/native.ts';
 import {Codec} from './pil/wasm.ts';
 import {PILStream} from './pil/stream.ts';
@@ -135,4 +135,21 @@ test('bootstrap commits all artifacts before publication and restores definition
  const corrupt=structuredClone(snapshot);corrupt.files[0].bytes[0]^=1;
  await assert.rejects(saveTrunk(root,corrupt),/digest/);
  assert.deepEqual(root.children.get('trunk.pil').data,saved);
+});
+
+
+test('decoded metadata cache avoids repeated file reads but observes new and failed commits across leases',async()=>{
+ const root=new Directory(),cache=new NativeSnapshotCache(),key='a'.repeat(64);
+ await nativeBackend(root).put([{key,tap:'demo/payment/events.v1/read',contexts:[]}]);
+ const branch=root.children.get('branches').children.get(key);let metadataReads=0,rootReads=0;
+ for(const file of branch.children.values()){const get=file.getFile;file.getFile=async()=>{metadataReads++;return get();};}
+ const commit=root.children.get('commit.pil'),get=commit.getFile;commit.getFile=async()=>{rootReads++;return get();};
+ const first=await nativeBackend(root,cache).get(key);assert.equal(metadataReads,2);
+ first.tap='do-not-publish';
+ for(let i=0;i<5;i++)assert.equal((await nativeBackend(root,cache).get(key)).tap,'demo/payment/events.v1/read');
+ assert.equal(metadataReads,2,'immutable layout and trie are decoded once across leases');assert.ok(rootReads>=6,'every lease rechecks the published root');
+ const next={...first,tap:'demo/payment/events.v1/write'};
+ root.failCommit=true;await assert.rejects(nativeBackend(root).put([next]),/commit interrupted/);
+ assert.equal((await nativeBackend(root,cache).get(key)).tap,'demo/payment/events.v1/read','failed publication never changes visible state');
+ await nativeBackend(root).put([next]);assert.equal((await nativeBackend(root,cache).get(key)).tap,next.tap,'another writer invalidates the cached revision');
 });
