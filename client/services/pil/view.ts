@@ -5,7 +5,7 @@ import {queryLocalSummaries} from '../search/summaries.ts';
 import {INDEX_ROW_BYTES} from './pac-native.ts';
 import {branchTargets} from "./time-window.ts";
 import type {TrunkBootstrap} from "./trunk.ts";
-import { nativeCacheIssue, combineCacheErrors } from "../store/errors.ts";
+import { nativeCacheIssue, cacheRefreshSources, combineCacheErrors } from "../store/errors.ts";
 import { SummaryDayCache, mergeDailyAnalytics, type DailyAnalytics } from './summaries.ts';
 import type { Archive } from '../store/protocol.ts';
 import { collectNative } from './native-collect.ts';
@@ -128,7 +128,20 @@ export class ViewCache {
    },{from:Date.parse(query.from),to:Date.parse(query.to)}).catch(()=>undefined):Promise.resolve(undefined);
    try{
     const ticket=query.now?await run:undefined;
-    const view=await executeLocalSearch(this.trunk,query,token,signal,codec,definitions,archive,this.fetcher,onPage,this.localSummaries,this.localPageCache,query.now?{cache:this.windows,run:ticket}:undefined);
+    let view:ViewResponse;
+    for(let attempt=0;;attempt++){
+     try{view=await executeLocalSearch(this.trunk,query,token,signal,codec,definitions,archive,this.fetcher,onPage,this.localSummaries,this.localPageCache,query.now?{cache:this.windows,run:ticket}:undefined);break;}
+     catch(error){
+      const issue=nativeCacheIssue(error),conflicts=issue?.conflicts;
+      // Only intrinsically invalid local coordinates are disposable. Server
+      // generation conflicts and incoming format errors still require review.
+      if(attempt||query.after||signal.aborted||issue?.code!=='native-cache-conflict'||!conflicts?.length||conflicts.some(c=>c.reason!=='invalid-native-span'))throw error;
+      await archive(token,{kind:'native-rebase',sources:cacheRefreshSources(issue)});
+      this.resetEvents();
+      // A narrowed request must never replace data lost by the local reset.
+      // Clearing the window cache forces collection from the original window.
+     }
+    }
     const elapsedMs=performance.now()-started;
     void run.then(ticket=>ticket&&this.searches.finish(ticket,{status:'complete',progress:view.result.searchProgress,window:view.result.summary?{from:view.result.summary.from,to:view.result.summary.to}:undefined,measurements:{elapsedMs,matched:view.result.summary?.count,loaded:view.result.page.length}})).catch(()=>{});
     return view;

@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {nativeBackend,NativeSnapshotCache} from './store/native-files.ts';
+import {nativeBackend,NativeSnapshotCache,NativeSnapshotPool} from './store/native-files.ts';
 import {NativeStore,committedRanges} from './store/native.ts';
 import {Codec} from './pil/wasm.ts';
 import {PILStream} from './pil/stream.ts';
@@ -152,4 +152,17 @@ test('decoded metadata cache avoids repeated file reads but observes new and fai
  root.failCommit=true;await assert.rejects(nativeBackend(root).put([next]),/commit interrupted/);
  assert.equal((await nativeBackend(root,cache).get(key)).tap,'demo/payment/events.v1/read','failed publication never changes visible state');
  await nativeBackend(root).put([next]);assert.equal((await nativeBackend(root,cache).get(key)).tap,next.tap,'another writer invalidates the cached revision');
+});
+
+test('connections share one bounded snapshot budget without mixing identities or revisions',()=>{
+ const pool=new NativeSnapshotPool(30),a=new NativeSnapshotCache(pool),b=new NativeSnapshotCache(pool);
+ const first={tap:'first'},second={tap:'second'},third={tap:'third'};
+ a.put('key:1',first,10);a.put('other:1',second,10);a.put('third:1',third,10);
+ assert.equal(a.get('key:1'),first,'one active connection can use the entire shared budget');
+ b.put('key:1',second,10);
+ assert.equal(a.get('other:1'),undefined,'the shared budget evicts the least recently used entry');
+ assert.equal(a.get('key:1'),first);assert.equal(b.get('key:1'),second,'identical source IDs cannot cross connection scopes');
+ b.retain({key:2});assert.equal(b.get('key:1'),undefined);assert.equal(a.get('key:1'),first,'revision checks are connection-scoped');
+ b.put('key:2',second,10);a.clear();assert.equal(a.get('key:1'),undefined);assert.equal(b.get('key:2'),second,'closing a context releases only its own snapshots');
+ b.put('oversized:1',third,31);assert.equal(b.get('oversized:1'),undefined,'oversized snapshots cannot exceed the budget');
 });

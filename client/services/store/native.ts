@@ -161,6 +161,8 @@ export class NativeStore {
   /** One immutable snapshot per planning batch, not one full store read per branch. */
   async timeWindows(queries:TimeQuery[]):Promise<TimeReceipt[]>{
     const serial=await this.serial(),all=await this.backend.list();
+    const requested=new Set(queries.map(q=>q.tap+':'+q.digest));
+    assertNativeLayouts(all.filter(s=>requested.has(s.tap+':'+s.digest)));
     const grouped=new Map<string,NativeSource[]>();
     for(const source of all){if(source.retiredBy||!source.timeTrie)continue;const key=source.tap+':'+source.digest;const group=grouped.get(key)??[];group.push(source);grouped.set(key,group);}
     return queries.map(q=>{
@@ -474,6 +476,9 @@ export class NativeStore {
   async finish(session:NativeSession){
     if(session.finished||session.active.size||session.packages.some(p=>!p.closed))throw Error("Incomplete native response");
     if(await this.serial()!==session.serial)throw new NativeCacheError("Native cache rebased; retry collection",{code:"native-cache-race",reason:"Native cache rebased"});
+    // Live-only responses have no durable packages. Do not walk every sealed
+    // branch just to finish an unchanged ephemeral window.
+    if(!session.packages.length){session.finished=true;return;}
     const changed=new Map<string,NativeSource>();
     for(const p of session.packages){
       const s=changed.get(p.key)??await this.backend.get(p.key);
@@ -833,6 +838,22 @@ function rangeReader(file:FileIO,extents:Extent[],windowBytes=1<<20){
     for(const p of parts)result.set(readFile(file,p.local,p.End-p.Start),p.Start-wanted.Start);
     return result;
   };
+}
+
+/** Reject unusable persisted decoding coordinates before trusting completion bits.
+ * This validates the current layout; invalid replicas must be recollected. */
+function assertNativeLayouts(sources:NativeSource[]):void {
+ const conflicts:{source:string;reason:string;detail:Record<string,string>}[]=[];
+ for(const s of sources){
+  if(s.retiredBy)continue;
+  for(const {placement:p} of s.contexts??[]){
+   if(!p.rows)continue;
+   const span={Start:Number(p.memberStart)-4*Number(p.rows)-4,End:Number(p.memberStart+p.memberBytes)};
+   if(integer(span.Start)&&integer(span.End)&&span.End>span.Start)continue;
+   conflicts.push({source:s.tap,reason:'invalid-native-span',detail:{start:String(span.Start),end:String(span.End),memberStart:String(p.memberStart),rows:String(p.rows),generation:s.generation,key:s.key}});break;
+  }
+ }
+ if(conflicts.length)throw new NativeCacheError('Invalid cached event ranges',{code:'native-cache-conflict',source:conflicts[0].source,reason:'invalid-native-span',conflicts});
 }
 
 /** Derive wire coverage only from published branch leaves and their segments. */

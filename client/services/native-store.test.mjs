@@ -29,8 +29,8 @@ test('invalid persisted spans identify every affected resource and allow scoped 
  await ingest(store,session,f);await store.finish(session);
  const [original]=await backend.list();
  const broken=structuredClone(original),other=structuredClone(original),healthy=structuredClone(original);
- broken.contexts[0].placement.memberStart=0n;
- other.key='b'.repeat(64);other.tap='demo/billing/invoices.v1/write';other.contexts[0].placement.memberStart=0n;
+ broken.contexts[0].placement.memberStart=4n;
+ other.key='b'.repeat(64);other.tap='demo/billing/invoices.v1/write';other.contexts[0].placement.memberStart=4n;
  healthy.key='c'.repeat(64);healthy.tap='demo/identity/sessions.v1/write';
  await backend.put([broken,other,healthy]);
  const restarted=new NativeStore(backend);
@@ -41,6 +41,9 @@ test('invalid persisted spans identify every affected resource and allow scoped 
   assert.ok(Number(issue.conflicts[0].detail.start)<0);
   assert.match(cacheErrorMessage(error),/Refresh these local copies together/);
   return true;
+ });
+ await assert.rejects(restarted.timeWindows([broken,other].map(s=>({tap:s.tap,digest:s.digest,from:Number(s.contexts[0].placement.from),to:Number(s.contexts[0].placement.to)}))),error=>{
+  const issue=nativeCacheIssue(error);assert.equal(issue.conflicts.length,2);assert.equal(issue.conflicts[0].detail.memberStart,'4');return true;
  });
  assert.equal((await restarted.coverage(healthy.tap)).length,1,'healthy scopes remain usable');
  const stale=restarted.begin();
@@ -575,4 +578,13 @@ test("manifest omission cannot certify nonempty hours without their actual index
   await ingest(store,session,f,records);await assert.rejects(store.finish(session),/gap|Missing complete hourly payload/);
   for(const s of await b.list()){assert.deepEqual(committedRanges(s),{index:[],sods:[]});}
  }
+});
+
+test('finishing a live-only response checks the cache serial without walking sealed branches',async()=>{
+ const backend=new Backend(),store=new NativeStore(backend),session=store.begin();
+ backend.list=async()=>{throw Error('Unnecessary sealed branch scan');};
+ await store.finish(session);assert.equal(session.finished,true);
+ await assert.rejects(store.finish(session),/Incomplete native response/);
+ const stale=store.begin();await backend.put([],{serial:1,scopes:{}});
+ await assert.rejects(store.finish(stale),/cache rebased/,'a live-only response still honors cache reset fencing');
 });

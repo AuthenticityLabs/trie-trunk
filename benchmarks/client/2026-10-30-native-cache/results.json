@@ -1,0 +1,134 @@
+{
+  "date": "2026-10-30",
+  "baselineCommit": "1d972f3",
+  "browser": "Playwright WebKit 2336, macOS",
+  "origin": "https://snoot.trietrunk.com",
+  "query": "events | where duration >= 10000",
+  "window": "Today (UTC), ending at now()",
+  "setup": "Same broad existing replica of 25 demo branches before and after. Run 0 is first query after reopening the app, not an empty disk cache. Runs 1 and 2 repeat within that session. WebKit may share origin OPFS across temporary profiles; no origin data was cleared between these measurements.",
+  "timing": "Application search start through data readiness; excludes painting. Small sample, not a general benchmark or percentile claim. Baseline includes temporary per-storage-command diagnostic instrumentation; final deployed build has none.",
+  "before": [
+    {
+      "run": 0,
+      "elapsedMs": 1858,
+      "matched": 0,
+      "loaded": 0,
+      "phases": [
+        "Search PerformanceMatched Events 0Loaded Events 0Source Sync0 msLocal Planning470 msRetrieval & Matching1.38 sOther Elapsed15 msTime until event data is ready; charts load separately. Includes network and local reads. Excludes painting and background cache writes.",
+        "Charts PerformanceSource Sync0 msLocal Planning470 msRetrieval & Matching1.38 sOther Elapsed16 msTime from search start until chart data is ready. Includes network and local reads. Excludes painting and background cache writes."
+      ]
+    },
+    {
+      "run": 1,
+      "elapsedMs": 1096,
+      "matched": 0,
+      "loaded": 0,
+      "phases": [
+        "Search PerformanceMatched Events 0Loaded Events 0Source Sync0 msLocal Planning410 msRetrieval & Matching677 msOther Elapsed11 msTime until event data is ready; charts load separately. Includes network and local reads. Excludes painting and background cache writes.",
+        "Charts PerformanceSource Sync0 msLocal Planning410 msRetrieval & Matching677 msOther Elapsed11 msTime from search start until chart data is ready. Includes network and local reads. Excludes painting and background cache writes."
+      ]
+    },
+    {
+      "run": 2,
+      "elapsedMs": 993,
+      "matched": 0,
+      "loaded": 0,
+      "phases": [
+        "Search PerformanceMatched Events 0Loaded Events 0Source Sync0 msLocal Planning415 msRetrieval & Matching571 msOther Elapsed9 msTime until event data is ready; charts load separately. Includes network and local reads. Excludes painting and background cache writes.",
+        "Charts PerformanceSource Sync0 msLocal Planning415 msRetrieval & Matching571 msOther Elapsed10 msTime from search start until chart data is ready. Includes network and local reads. Excludes painting and background cache writes."
+      ]
+    }
+  ],
+  "deployed": [
+    {
+      "run": 0,
+      "elapsedMs": 1290,
+      "matched": 0,
+      "loaded": 0,
+      "phases": [
+        "Search PerformanceMatched Events 0Loaded Events 0Source Sync0 msLocal Planning323 msRetrieval & Matching956 msOther Elapsed15 msTime until event data is ready; charts load separately. Includes network and local reads. Excludes painting and background cache writes.",
+        "Charts PerformanceSource Sync0 msLocal Planning323 msRetrieval & Matching956 msOther Elapsed16 msTime from search start until chart data is ready. Includes network and local reads. Excludes painting and background cache writes."
+      ]
+    },
+    {
+      "run": 1,
+      "elapsedMs": 283,
+      "matched": 0,
+      "loaded": 0,
+      "phases": [
+        "Search PerformanceMatched Events 0Loaded Events 0Source Sync0 msLocal Planning90 msRetrieval & Matching189 msOther Elapsed6 msTime until event data is ready; charts load separately. Includes network and local reads. Excludes painting and background cache writes.",
+        "Charts PerformanceSource Sync0 msLocal Planning90 msRetrieval & Matching189 msOther Elapsed7 msTime from search start until chart data is ready. Includes network and local reads. Excludes painting and background cache writes."
+      ]
+    },
+    {
+      "run": 2,
+      "elapsedMs": 195,
+      "matched": 0,
+      "loaded": 0,
+      "phases": [
+        "Search PerformanceMatched Events 0Loaded Events 0Source Sync0 msLocal Planning86 msRetrieval & Matching105 msOther Elapsed6 msTime until event data is ready; charts load separately. Includes network and local reads. Excludes painting and background cache writes.",
+        "Charts PerformanceSource Sync0 msLocal Planning86 msRetrieval & Matching105 msOther Elapsed7 msTime from search start until chart data is ready. Includes network and local reads. Excludes painting and background cache writes."
+      ]
+    }
+  ],
+  "metadata": {
+    "branches": 25,
+    "layoutBytes": 7441715,
+    "timeTrieBytes": 3734800,
+    "estimatedCacheWeightBytes": 33527260,
+    "oldPerContextBudgetBytes": 8388608,
+    "totalBudgetBeforeAndAfterBytes": 33554432,
+    "change": "Share the existing total LRU budget across at most four connection contexts, rather than reserving equal unused slices."
+  },
+  "recovery": {
+    "origin": "http://127.0.0.1:3159",
+    "query": "events",
+    "window": "Last 60 Days",
+    "injection": {
+      "memberStart": 4,
+      "rows": 7,
+      "calculatedStart": -28
+    },
+    "runs": [
+      {
+        "run": 0,
+        "elapsedMs": 6919,
+        "matched": 50000,
+        "loaded": 100,
+        "phases": [
+          "Search PerformanceMatched Events 50,000Loaded Events 100Source Sync0 msLocal Planning462 msRetrieval & Matching6.01 sOther Elapsed26 msTime until event data is ready; charts load separately. Includes network and local reads. Excludes painting and background cache writes.",
+          "Charts PerformanceSource Sync0 msLocal Planning462 msRetrieval & Matching6.44 sOther Elapsed20 msTime from search start until chart data is ready. Includes network and local reads. Excludes painting and background cache writes."
+        ]
+      },
+      {
+        "run": 1,
+        "elapsedMs": 7324,
+        "matched": 50000,
+        "loaded": 100,
+        "phases": [
+          "Search PerformanceMatched Events 50,000Loaded Events 100Source Sync0 msLocal Planning470 msRetrieval & Matching5.94 sOther Elapsed525 msTime until event data is ready; charts load separately. Includes network and local reads. Excludes painting and background cache writes.",
+          "Charts PerformanceSource Sync0 msLocal Planning470 msRetrieval & Matching6.33 sOther Elapsed522 msTime from search start until chart data is ready. Includes network and local reads. Excludes painting and background cache writes."
+        ]
+      },
+      {
+        "run": 2,
+        "elapsedMs": 2369,
+        "matched": 50000,
+        "loaded": 100,
+        "phases": [
+          "Search PerformanceMatched Events 50,000Loaded Events 100Source Sync0 msLocal Planning453 msRetrieval & Matching1.52 sOther Elapsed12 msTime until event data is ready; charts load separately. Includes network and local reads. Excludes painting and background cache writes.",
+          "Charts PerformanceSource Sync0 msLocal Planning453 msRetrieval & Matching1.91 sOther Elapsed8 msTime from search start until chart data is ready. Includes network and local reads. Excludes painting and background cache writes."
+        ]
+      }
+    ],
+    "result": "One affected resource automatically rebased and recollected; all 50,000 matches preserved; subsequent search succeeds. The test modifies only the localhost replica."
+  },
+  "remaining": "First search after app reopen still takes about 1.3 seconds with this replica. Broad 50,000-match searches and scoped recovery are slower; these results do not claim those paths are fully optimized.",
+  "verification": {
+    "clientTests": 423,
+    "typecheck": "passed",
+    "cleanReleaseBrowserRecovery": "passed",
+    "universalMacOSPackage": "built and signed",
+    "intelVenturaPackage": "built and signed"
+  }
+}

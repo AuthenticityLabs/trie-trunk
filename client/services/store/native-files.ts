@@ -6,18 +6,35 @@ import {timeFileRanges,type ClientTimeTrie,type TimeRange} from './time-trie.ts'
 
 /** Bounded decoded immutable revisions. The commit root is re-read under every
  * lease; a different directory identity or revision can never reuse a snapshot. */
-export class NativeSnapshotCache {
+/** One bounded LRU budget shared by connection-specific caches. */
+export class NativeSnapshotPool {
  private entries=new Map<string,{source:NativeSource;size:number}>();private size=0;
  readonly limit:number;
- constructor(limit=8*1024*1024){this.limit=limit;}
+ constructor(limit:number){this.limit=limit;}
  get(key:string){const entry=this.entries.get(key);if(entry){this.entries.delete(key);this.entries.set(key,entry);}return entry?.source;}
  put(key:string,source:NativeSource,size:number){
-  const old=this.entries.get(key);if(old){this.size-=old.size;this.entries.delete(key);}
+  this.remove(key);
   if(size>this.limit)return;
   this.entries.set(key,{source,size});this.size+=size;
-  while(this.size>this.limit){const first=this.entries.keys().next().value!;this.size-=this.entries.get(first)!.size;this.entries.delete(first);}
+  while(this.size>this.limit)this.remove(this.entries.keys().next().value!);
  }
- retain(sources:Record<string,number>){for(const [id,entry] of this.entries){const at=id.lastIndexOf(':');if(sources[id.slice(0,at)]!==Number(id.slice(at+1))){this.entries.delete(id);this.size-=entry.size;}}}
+ private remove(key:string){const old=this.entries.get(key);if(old){this.size-=old.size;this.entries.delete(key);}}
+ retain(prefix:string,sources?:Record<string,number>){
+  for(const id of this.entries.keys())if(id.startsWith(prefix)){
+   const key=id.slice(prefix.length),at=key.lastIndexOf(':');
+   if(!sources||sources[key.slice(0,at)]!==Number(key.slice(at+1)))this.remove(id);
+  }
+ }
+}
+let nextSnapshotScope=0;
+export class NativeSnapshotCache {
+ private pool:NativeSnapshotPool;private prefix=`${++nextSnapshotScope}/`;
+ readonly limit:number;
+ constructor(budget:number|NativeSnapshotPool=8*1024*1024){this.pool=typeof budget==='number'?new NativeSnapshotPool(budget):budget;this.limit=this.pool.limit;}
+ get(key:string){return this.pool.get(this.prefix+key);}
+ put(key:string,source:NativeSource,size:number){this.pool.put(this.prefix+key,source,size);}
+ retain(sources:Record<string,number>){this.pool.retain(this.prefix,sources);}
+ clear(){this.pool.retain(this.prefix);}
 }
 type Commit = { serial:number; sources:Record<string,number>; control:NativeControl };
 const empty = ():Commit=>({serial:0,sources:{},control:{serial:0,scopes:{}}});

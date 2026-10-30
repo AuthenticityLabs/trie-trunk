@@ -15,11 +15,12 @@ async function fixture(promotion=false){
  const storeBytes=load('definition.rx'),digest=createHash('sha256').update(storeBytes).digest('hex'),metadata={digest,store:storeBytes,pil:storeBytes};
  const tap='demo/payment/transactions.v1/write',path='demo/payment/transactions.v1/0/write',from=Date.UTC(2026,9,30,12);
  const trunk={version:'collection-test',catalog:{files:['tri','pods'].map(kind=>({path:path+'.'+kind,kind,definition:digest,bootstrap:false,size:0}))},bindings:[{stream:0,tap,digest}],definitions:[metadata]};
- const codec=new Codec(await WebAssembly.instantiate(wasm)),definitions=new Map([[digest,{...metadata,definition:compile(metadata,tap).definition,handle:codec.define(storeBytes)}]]),store=new NativeStore(new Backend()),sessions=new Map(),requests=[],commands=[];
+ const codec=new Codec(await WebAssembly.instantiate(wasm)),definitions=new Map([[digest,{...metadata,definition:compile(metadata,tap).definition,handle:codec.define(storeBytes)}]]),backend=new Backend(),store=new NativeStore(backend),sessions=new Map(),requests=[],commands=[];
  let failFinish=false;
  const archive=async(_token,c)=>{
   commands.push(c);
   switch(c.kind){
+   case 'native-rebase':await store.rebaseMany(c.sources);return {};
    case 'time-read-many':return {times:await store.timeWindows(c.queries)};
    case 'time-save':await store.importTime(c.input);return {};
    case 'native-begin':sessions.set(c.session,store.begin(await store.serial()));return {};
@@ -46,7 +47,7 @@ async function fixture(promotion=false){
  };
  reset();
  const query={now:true,tap,from:new Date(from).toISOString(),to:new Date(from+end[0]).toISOString(),size:20};
- return {store,requests,commands,snapshots,query,reset,failNextFinish:()=>{failFinish=true},setStep:n=>step=n,search:async (patch,signal=new AbortController().signal)=>cache.query({...query,...patch},'',signal,codec,definitions,archive),events:view=>view.result.page.map((r,i)=>{const b=view.bindings.find(b=>b.stream===r.stream),m=compile(view.definitions.find(d=>d.digest===b.digest),b.tap),n=view.native[i],trie=new NativeTrie(m);for(const part of n.trie)trie.append(part.start,part.bytes);return new NativeEvent(n.row,new Uint8Array(view.batch.bytes).subarray(view.batch.rows[i*3+1],view.batch.rows[i*3+2]),trie,view.batch.common?.[i],n.base)})};
+ return {backend,store,requests,commands,snapshots,query,reset,failNextFinish:()=>{failFinish=true},setStep:n=>step=n,search:async (patch,signal=new AbortController().signal)=>cache.query({...query,...patch},'',signal,codec,definitions,archive),events:view=>view.result.page.map((r,i)=>{const b=view.bindings.find(b=>b.stream===r.stream),m=compile(view.definitions.find(d=>d.digest===b.digest),b.tap),n=view.native[i],trie=new NativeTrie(m);for(const part of n.trie)trie.append(part.start,part.bytes);return new NativeEvent(n.row,new Uint8Array(view.batch.bytes).subarray(view.batch.rows[i*3+1],view.batch.rows[i*3+2]),trie,view.batch.common?.[i],n.base)})};
 }
 test('now refresh appends to the original window and replaces live rows only after sealed storage commits',async()=>{
  const f=await fixture();let view=await f.search();assert.equal(view.result.summary.count,2);assert.equal(view.result.summary.status,'live-snapshot');
@@ -99,4 +100,29 @@ test('changing the requested lower bound trims only records outside that window'
  const from=Date.parse(f.query.from)+45000,view=await f.search({from:new Date(from).toISOString()});
  assert.equal(view.result.summary.count,1);assert.equal(f.events(view)[0].millis,Date.parse(f.query.from)+60000);
  assert.equal(f.requests.at(-1).from,Date.parse(f.query.from)+59999);
+});
+
+
+test('invalid cached placement is reset once before planning and recollected from the original window',async()=>{
+ const f=await fixture();f.setStep(5);const before=await f.search();assert.equal(before.result.summary.count,4);
+ const [source]=await f.backend.list(),broken=structuredClone(source),healthy=structuredClone(source);
+ broken.contexts[0].placement.memberStart=4n;
+ healthy.key='f'.repeat(64);healthy.tap='test/payment/transactions.v1/write';
+ await f.backend.put([broken,healthy]);
+ const view=await f.search();assert.equal(view.result.summary.count,4);
+ assert.equal(f.requests.at(-1).from,Date.parse(f.query.from),'never resume from the checkpoint after removing its sealed data');
+ assert.equal(f.commands.filter(c=>c.kind==='native-rebase').length,1);
+ assert.deepEqual(await f.backend.get(healthy.key),healthy,'unrelated replicas remain untouched');
+ const requests=f.requests.length;await f.search();assert.equal(f.requests.length,requests+1);
+ assert.equal(f.commands.filter(c=>c.kind==='native-rebase').length,1,'successful refresh stays healthy');
+});
+
+test('invalid placement recovery is bounded; other conflicts never trigger automatic disposal',async()=>{
+ const {NativeCacheError}=await import('./store/errors.ts');
+ for(const reason of ['invalid-native-span','generation-fork']){
+  const f=await fixture();f.store.timeWindows=async()=>{throw new NativeCacheError('injected',{code:'native-cache-conflict',reason,conflicts:[{source:'demo/payment/transactions.v1/write',reason}]})};
+  await assert.rejects(f.search(),/injected/);
+  assert.equal(f.commands.filter(c=>c.kind==='native-rebase').length,reason==='invalid-native-span'?1:0);
+  assert.equal(f.requests.length,0);
+ }
 });

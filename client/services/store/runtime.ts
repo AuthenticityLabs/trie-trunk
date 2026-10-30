@@ -2,7 +2,7 @@ import type { Command, ArchiveReply, Collection, NativeSelection } from './proto
 import type { Metadata } from '../pil/metadata.ts';
 import { directory } from './files.ts';
 import { localStorageRoot } from './io-error.ts';
-import { nativeBackend,NativeSnapshotCache } from './native-files.ts';
+import { nativeBackend,NativeSnapshotCache,NativeSnapshotPool } from './native-files.ts';
 import { NativeStore } from './native.ts';
 import { nativeTransaction } from './transaction.ts';
 import type { NativeSession } from './native.ts';
@@ -13,6 +13,7 @@ export { conditions } from './conditions.ts';
 // Page working sets are session state. Durable event availability is exclusively
 // the committed branch trie; there is no per-event browser database or a separate record log.
 export function createArchive(_modulePromise?:Promise<WebAssembly.Module>) {
+ const snapshotPool=new NativeSnapshotPool(32*1024*1024);
  const snapshotCaches=new Map<string,{root:FileSystemDirectoryHandle;cache:NativeSnapshotCache}>();
  const sessions=new Map<string,NativeSession>();
  const definitions=new Map<string,Map<string,Metadata>>();
@@ -21,11 +22,12 @@ export function createArchive(_modulePromise?:Promise<WebAssembly.Module>) {
  return async(namespace:string,command:Command):Promise<ArchiveReply>=>{
   const root=await directory(await localStorageRoot(),'snoot-store',namespace);
   let cached=snapshotCaches.get(namespace);
-  if(!cached||!await cached.root.isSameEntry(root)){cached={root,cache:new NativeSnapshotCache()};snapshotCaches.set(namespace,cached);}
-  // Four contexts cap retained snapshot weight at 32 MiB (raw trie bytes
-  // plus a conservative 4x allowance for decoded metadata). This isn't a JS heap limit.
+  if(!cached||!await cached.root.isSameEntry(root)){cached?.cache.clear();cached={root,cache:new NativeSnapshotCache(snapshotPool)};snapshotCaches.set(namespace,cached);}
+  // Share 32 MiB across at most four contexts instead of reserving 8 MiB each.
+  // Weight includes raw trie bytes plus a conservative 4x allowance for decoded
+  // metadata; this is not a JS heap limit.
   snapshotCaches.delete(namespace);snapshotCaches.set(namespace,cached);
-  while(snapshotCaches.size>4)snapshotCaches.delete(snapshotCaches.keys().next().value!);
+  while(snapshotCaches.size>4){const oldest=snapshotCaches.keys().next().value!;snapshotCaches.get(oldest)!.cache.clear();snapshotCaches.delete(oldest);}
   const backend=nativeBackend(root,cached.cache),store=new NativeStore(backend),key=(id:string)=>`${namespace}:${id}`;
   switch(command.kind){
    case 'summary-read':return {summaryBytes:await store.summaryBytes(command.query)};
@@ -55,7 +57,8 @@ export function createArchive(_modulePromise?:Promise<WebAssembly.Module>) {
    }
    case 'native-finish':{
     const s=sessions.get(key(command.session));if(!s)throw Error('Unknown collection session');
-    await nativeTransaction(backend,async b=>{const staged=new NativeStore(b);for(const item of command.records??[])await staged.record(s,item.record,item.definition);await staged.finish(s);});await store.maintain();
+    await nativeTransaction(backend,async b=>{const staged=new NativeStore(b);for(const item of command.records??[])await staged.record(s,item.record,item.definition);await staged.finish(s);});
+    if(s.packages.length)await store.maintain();
     if(command.collection&&command.selection){
      const where=conditions(command.selection);if(!where)throw Error('Unsupported local predicate');
      selections.set(key(command.collection),s.packages.filter(p=>!p.manifest.Provisional&&!p.manifest.TimeRetired).map(p=>({source:p.key,from:p.manifest.From*1000,to:p.manifest.To*1000,where})));
