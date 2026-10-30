@@ -39,6 +39,29 @@ export class NativeSnapshotCache {
 type Commit = { serial:number; sources:Record<string,number>; control:NativeControl };
 const empty = ():Commit=>({serial:0,sources:{},control:{serial:0,scopes:{}}});
 const optional=readPublishedFile;
+// Compare detached working metadata with the immutable committed snapshot.
+// Avoid serializing unchanged hour directories just to discover that no new
+// bytes or completion flags were published. This never compares event payloads.
+function sameMetadata(a:unknown,b:unknown):boolean {
+ if(a===b)return true;
+ if(a===null||b===null||typeof a!=='object'||typeof b!=='object')return false;
+ if(a instanceof Uint8Array||b instanceof Uint8Array){
+  if(!(a instanceof Uint8Array)||!(b instanceof Uint8Array)||a.length!==b.length)return false;
+  for(let i=0;i<a.length;i++)if(a[i]!==b[i])return false;
+  return true;
+ }
+ if(Array.isArray(a)||Array.isArray(b)){
+  if(!Array.isArray(a)||!Array.isArray(b)||a.length!==b.length)return false;
+  for(let i=0;i<a.length;i++)if(!sameMetadata(a[i],b[i]))return false;
+  return true;
+ }
+ const ap=Object.getPrototypeOf(a),bp=Object.getPrototypeOf(b);
+ if(ap!==null&&ap!==Object.prototype||bp!==null&&bp!==Object.prototype)return false;
+ const left=a as Record<string,unknown>,right=b as Record<string,unknown>;
+ for(const key in left)if(Object.hasOwn(left,key)&&(!Object.hasOwn(right,key)||!sameMetadata(left[key],right[key])))return false;
+ for(const key in right)if(Object.hasOwn(right,key)&&!Object.hasOwn(left,key))return false;
+ return true;
+}
 export {atomicFile} from './atomic-file.ts';
 import {atomicFile,atomicReplace} from './atomic-file.ts';
 async function atomicTimeFile(dir:FileSystemDirectoryHandle,name:string,tree:ClientTimeTrie|undefined){
@@ -71,26 +94,39 @@ export function nativeBackend(root:FileSystemDirectoryHandle,cache?:NativeSnapsh
   cache?.put(`${key}:${revision}`,source,raw.byteLength*4+(trie?.byteLength??0)+1024);
   return source;
  };
- const read=(key:string,revision:number)=>{const id=`${key}:${revision}`;let source=snapshots.get(id);if(!source){source=readFileSource(key,revision);snapshots.set(id,source);}return source.then(s=>structuredClone(s));};
+ const snapshot=(key:string,revision:number)=>{const id=`${key}:${revision}`;let source=snapshots.get(id);if(!source){source=readFileSource(key,revision);snapshots.set(id,source);}return source;};
+ const read=(key:string,revision:number)=>snapshot(key,revision).then(s=>structuredClone(s));
  return {
   async get(key){const state=await load();return state.sources[key]===undefined?undefined:read(key,state.sources[key]);},
   async list(){const state=await load();return Promise.all(Object.entries(state.sources).map(([key,n])=>read(key,n)));},
   async control(){return structuredClone((await load()).control); },
   async put(sources,control){
-   const old=await load(),next:Commit={serial:old.serial+1,sources:{...old.sources},control:control??old.control};
-   if(!Number.isSafeInteger(next.serial))throw Error('Local commit sequence exhausted');
+   const old=await load(),changed:NativeSource[]=[];
    for(const source of sources){
+    const revision=old.sources[source.key];
+    if(revision===undefined||!sameMetadata(source,await snapshot(source.key,revision)))changed.push(source);
+   }
+   if(!changed.length&&(!control||sameMetadata(control,old.control)))return;
+   const next:Commit={serial:old.serial+1,sources:{...old.sources},control:control??old.control};
+   if(!Number.isSafeInteger(next.serial))throw Error('Local commit sequence exhausted');
+   const weights=new Map<string,number>();
+   for(const source of changed){
     const dir=await branch(source.key),{timeTrie,...layout}=source;
-    await atomicFile(dir,`layout.${next.serial}.pil`,encodeObject({...layout,...(timeTrie?{timeRanges:timeTrie.ranges}:{})}));
+    const bytes=encodeObject({...layout,...(timeTrie?{timeRanges:timeTrie.ranges}:{})});
+    await atomicFile(dir,`layout.${next.serial}.pil`,bytes);
     await atomicTimeFile(dir,`branch.${next.serial}.tri`,timeTrie);
+    weights.set(source.key,bytes.byteLength*4+(timeTrie?.bytes.byteLength??0)+1024);
     next.sources[source.key]=next.serial;
    }
    await atomicFile(root,'commit.pil',encodeObject(next));
    committed=Promise.resolve(next);
-   for(const source of sources)snapshots.set(`${source.key}:${next.serial}`,Promise.resolve(structuredClone(source)));
+   for(const source of changed){
+    const id=`${source.key}:${next.serial}`,saved=structuredClone(source);
+    snapshots.set(id,Promise.resolve(saved));cache?.put(id,saved,weights.get(source.key)!);
+   }
    // Only remove unreachable metadata after publication. Data-file reclamation
    // remains ordered by the selected branch state.
-   for(const source of sources){
+   for(const source of changed){
     const dir=await branch(source.key),keep=next.sources[source.key];
     for await(const entry of entries(dir))if(/^(layout\.\d+\.pil|branch\.\d+\.tri)$/.test(entry.name)&&entry.name!==`layout.${keep}.pil`&&entry.name!==`branch.${keep}.tri`)
      await dir.removeEntry(entry.name).catch(()=>{});

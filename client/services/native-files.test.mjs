@@ -66,6 +66,11 @@ test('a bounded collection publishes once; failed commit cannot expose leaves an
  root.failCommit=true;await assert.rejects(receive(),/commit interrupted/);
  assert.deepEqual(await nativeBackend(root).list(),[]);assert.equal(commits,0);
  await receive();assert.equal(commits,1,'one commit for the complete response, not one per control/PAC');
+ const activity=dir=>dir.events.length+[...dir.children.values()].filter(e=>e.kind==='directory').reduce((n,d)=>n+activity(d),0);
+ const before=activity(root);
+ await receive();
+ assert.equal(commits,1,'an identical sealed response does not publish another revision');
+ assert.equal(activity(root),before,'an identical sealed response does not write metadata or flush data files');
  const backend=nativeBackend(root),store=new NativeStore(backend),[source]=await backend.list(),from=Date.UTC(2026,9,16,12),to=from+3600000;
  const scope={tap:source.tap,digest:source.digest,generation:source.generation,from,to};
  assert.equal((await store.resolveHour(scope)).source.key,source.key);
@@ -152,6 +157,28 @@ test('decoded metadata cache avoids repeated file reads but observes new and fai
  root.failCommit=true;await assert.rejects(nativeBackend(root).put([next]),/commit interrupted/);
  assert.equal((await nativeBackend(root,cache).get(key)).tap,'demo/payment/events.v1/read','failed publication never changes visible state');
  await nativeBackend(root).put([next]);assert.equal((await nativeBackend(root,cache).get(key)).tap,next.tap,'another writer invalidates the cached revision');
+});
+
+test('no-op publication preserves revisions; real field, byte and control changes remain durable',async()=>{
+ const root=new Directory(),cache=new NativeSnapshotCache(),key='b'.repeat(64);
+ const source={key,tap:'demo/payment/events.v1/read',contexts:[{common:new Uint8Array([1,2]),placement:{from:0n,to:1n,firstRow:0n,rows:1n,memberStart:8n,memberBytes:8n,pages:[]}}]};
+ await nativeBackend(root,cache).put([source]);
+ const branch=root.children.get('branches').children.get(key),committed=()=>decodeObject(root.children.get('commit.pil').data);
+ const first=committed(),writes=branch.events.length;
+ await nativeBackend(root,cache).put([structuredClone(source)],structuredClone(first.control));
+ assert.deepEqual(committed(),first);assert.equal(branch.events.length,writes);
+ const next=structuredClone(source);next.contexts[0].common[1]=3;next.contexts[0].placement.rows=2n;
+ await nativeBackend(root,cache).put([next]);
+ assert.equal(committed().serial,first.serial+1);
+ // Published metadata is already decoded; a new lease need only read the root.
+ for(const file of branch.children.values())file.getFile=async()=>{throw Error('unnecessary metadata reload');};
+ next.contexts[0].common[1]=9;
+ const saved=await nativeBackend(root,cache).get(key);
+ assert.equal(saved.contexts[0].common[1],3);assert.equal(saved.contexts[0].placement.rows,2n);
+ const revision=committed().sources[key],branchWrites=branch.events.length;
+ await nativeBackend(root,cache).put([],{serial:1,scopes:{'demo/payment':1}});
+ assert.equal(committed().sources[key],revision);assert.equal(branch.events.length,branchWrites);
+ assert.deepEqual(await nativeBackend(root,cache).control(),{serial:1,scopes:{'demo/payment':1}});
 });
 
 test('connections share one bounded snapshot budget without mixing identities or revisions',()=>{

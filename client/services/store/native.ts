@@ -404,8 +404,11 @@ export class NativeStore {
   }
   private retiredHeader(h:FileIO,value:number){
     if(this.retiredHeaders.get(h)===value)return;
-    const header=new Uint8Array(8);new DataView(header.buffer).setBigUint64(0,BigInt(value),true);
-    write(h,header,0);this.retiredHeaders.set(h,value);
+    const header=readFile(h,0,8),view=new DataView(header.buffer);
+    if(view.getBigUint64(0,true)!==BigInt(value)){
+      view.setBigUint64(0,BigInt(value),true);write(h,header,0);
+    }
+    this.retiredHeaders.set(h,value);
   }
   private async range(s:NativeSource,kind:"index"|"sods",start:number,bytes:Uint8Array){
     const f=s.files[kind], wanted={Start:start,End:start+bytes.length};
