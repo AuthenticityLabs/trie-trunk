@@ -10,7 +10,10 @@ import {layoutDefinition,layoutHex} from './src/pil.mjs';
 import {createCodec} from '../../pill-packer/npm/index.js';
 import {define,fill,pack,compress} from '../../pill-packer/npm/src/pack.ts';
 import {buildSnootPreview} from './snoot-preview/build.mjs';
-const here=dirname(fileURLToPath(import.meta.url)), out=join(here,'dist');
+const here=dirname(fileURLToPath(import.meta.url));
+// Local previews use a separate directory from the deployable release.
+const benchPreview=process.env.BENCH_PREVIEW==='1';
+const outputDirectory=benchPreview?'artifacts/bench-preview':'dist', out=join(here,outputDirectory);
 await rm(out,{recursive:true,force:true});
 await mkdir(join(out,'assets'),{recursive:true});
 const asset=async(name,raw)=>{
@@ -18,7 +21,7 @@ const asset=async(name,raw)=>{
  const filename=name.replace('.',`-${hash}.`);
  await writeFile(join(out,'assets',filename),raw);return filename;
 };
-const css=await asset('site.css',(await readFile(join(here,'src/site.css'),'utf8'))+'\n'+await readFile(join(here,'src/landing.css'),'utf8')+'\n'+await readFile(join(here,'src/archived-homepage-charts.css'),'utf8')+'\n'+await readFile(join(here,'../shared/select-controls.css'),'utf8'));
+const css=await asset('site.css',(await readFile(join(here,'src/site.css'),'utf8'))+'\n'+await readFile(join(here,'src/landing.css'),'utf8')+'\n'+await readFile(join(here,'src/bench.css'),'utf8')+'\n'+await readFile(join(here,'src/archived-homepage-charts.css'),'utf8')+'\n'+await readFile(join(here,'../shared/select-controls.css'),'utf8'));
 // Keep the browser module tiny: do not ship page HTML or build-time templates.
 const data=`export const stages=${JSON.stringify(stages)};`;
 const dataName=await asset('lifecycle.js',data);
@@ -32,6 +35,7 @@ for(const name of Object.keys(pages)){
  await writeFile(join(out,name,'index.html'),render(name,css,js));
 }
 await writeFile(join(out,'index.html'),render('trunk',css,js));
+await cp(join(here,'bench/proposed-run.json'),join(out,'bench-proposed-run.json'));
 await writeFile(join(out,'_redirects'),redirects.map(({from,to,status})=>`${from} ${to} ${status}`).join('\n')+'\n');
 await cp(join(here,'assets'),join(out,'assets'),{recursive:true});
 for(const name of ['snoot-forward.png','snoot-wordmark.png'])
@@ -64,6 +68,6 @@ await mkdir(join(out,'measurements'),{recursive:true});
 for(const name of ['footprint.json','compression.json','compression-timing.json','summary-comparison.json','metadata.json'])
  await cp(join(here,'../benchmarks/storage',benchmark,name),join(out,'measurements',name));
 await buildSnootPreview(join(out,'snoot-preview'));
-await writeFile(join(out,'robots.txt'),'User-agent: *\nAllow: /\nSitemap: https://trietrunk.com/sitemap.xml\n');
+await writeFile(join(out,'robots.txt'),benchPreview?'User-agent: *\nDisallow: /\n':'User-agent: *\nAllow: /\nSitemap: https://trietrunk.com/sitemap.xml\n');
 await writeFile(join(out,'sitemap.xml'),`<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${Object.keys(pages).filter(p=>!pages[p].hidden).map(p=>`<url><loc>https://trietrunk.com${pagePath(p)}</loc></url>`).join('')}</urlset>`);
-console.log(`Built site/dist — ${Object.keys(pages).map(pagePath).join(', ')}`);
+console.log(`Built site/${outputDirectory}${benchPreview?' (local preview)':''} — ${Object.keys(pages).map(pagePath).join(', ')}`);

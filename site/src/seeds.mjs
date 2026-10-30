@@ -4,14 +4,16 @@ const tabs = ['Overview', 'Definitions', 'Collections', 'Messaging'];
 const path = tab => tab === 'Overview' ? 'seeds' : `seeds/${tab.toLowerCase()}`;
 const row = (title, copy) => `<div class="seed-explanation"><h3>${title}</h3><p>${copy}</p></div>`;
 
-const overview = `
+export const seedPackComparison = `
 <section class="seed-comparison" aria-labelledby="seed-comparison-title">
  <div class="seed-section-heading"><p class="project-line">1,000,000 Events · Same Synthetic Dataset</p><h2 id="seed-comparison-title">Expanded JSON → Seed Packs</h2></div>
  <div class="seed-size"><div><h3>Expanded JSON Array</h3><strong>${mb(storage.expandedArray)} <span>MB</span></strong></div><div class="seed-size-track"><span style="width:100%"></span></div></div>
  <div class="seed-size seed-size-packed"><div><h3>Seed Packs <span>Implementation of PIL PACs</span></h3><strong>${mb(storage.standalonePacks)} <span>MB</span></strong></div><div class="seed-size-track"><span style="width:${100 * storage.standalonePacks / storage.expandedArray}%"></span></div></div>
  <div class="seed-result"><strong>${(100 * (1 - storage.standalonePacks / storage.expandedArray)).toFixed(1)}% <span>Less Storage</span></strong><p>Complete standalone seed packs at default gzip-1, including UUIDs and definitions.</p></div>
  <details class="seed-evidence"><summary>Measurement Details</summary><p>One million synthetic events across five resources over 30 days, with repeated messages and dictionary values. The JSON array retains expanded field names and routing context. Its size is derived from the verified JSONL export by replacing separators and adding brackets: one extra byte.</p><p>All branches, including writes, use compression. Complete event identities stay in this standalone comparison; nothing is moved into an external index. Definition and packet overhead are included. The full indexed datastore is measured separately on the Trunk page.</p><a href="/measurements.txt" class="text-link">Read the Measurements ↗</a></details>
-</section>
+</section>`;
+
+const overview = `${seedPackComparison}
 ${storage.showCompressionComparison ? `<section class="seed-section"><h2>Smaller After Compression, Too</h2><p class="seed-lead">Same million events. Same hourly boundaries. Same gzip implementation and level.</p>
 ${storage.compression.map(row=>`<table class="seed-compression-table"><caption>Gzip-${row.gzip_level}${row.gzip_level===1?' · Default':''}</caption><thead><tr><th scope="col">Format</th><th scope="col">Size</th><th scope="col">Compress</th><th scope="col">Decompress</th></tr></thead><tbody>
 ${[['jsonl','JSONL',row.jsonl_hourly_bytes],['seed_packs','Seed Packs',row.standalone_pac_bytes]].map(([key,label,size])=>{const t=row.timing.find(t=>t.format===key);return `<tr><th scope="row">${label}</th><td>${mb(size)} MB</td><td>${(t.encode_ms/1000).toFixed(2)} s</td><td>${(t.decode_ms/1000).toFixed(2)} s</td></tr>`}).join('')}

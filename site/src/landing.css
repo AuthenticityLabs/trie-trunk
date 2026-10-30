@@ -1,7 +1,8 @@
-/* Four snap destinations; Trunk, taxonomy, and Lifecycle keep document styling. */
+/* Five snap destinations, retaining document styling outside the Snoot slice. */
 :root:has(.landing-site){--hero-header:94px;scroll-snap-type:y mandatory;scroll-padding-top:var(--hero-header)}
 .landing-pages>[data-page-section]{min-height:calc(100svh - var(--hero-header));scroll-snap-align:start;scroll-snap-stop:always;scroll-margin-top:0}
 .trie-document{max-width:1120px;padding-block:38px}
+@media(max-width:760px){.site-header nav a{flex:1 1 auto}}
 .landing-site .document-rail .rail-launch{margin-top:26px}
 #trunk.document-page{overflow:clip}
 #trunk .document-rail{position:relative;z-index:2}

@@ -219,6 +219,8 @@ for(const group of document.querySelectorAll('[data-pil-tabs]')){
  const panels=tabs.map(tab=>document.getElementById(tab.getAttribute('aria-controls')));
  const select=(index,focus=false,link=false)=>{
   tabs.forEach((tab,i)=>{tab.setAttribute('aria-selected',String(i===index));tab.tabIndex=i===index?0:-1;panels[i].hidden=i!==index;});
+  const copy=group.querySelector('.pil-code-footer [data-copy-code]');
+  if(copy){copy.dataset.copyCode=panels[index].querySelector('code').id;copy.setAttribute('aria-label',`Copy ${tabs[index].textContent} Example`);delete copy.dataset.copied;copy.querySelector('[data-copy-feedback]').textContent='Copy';}
   if(focus)tabs[index].focus();
   if(link&&group.hasAttribute('data-pil-deep-links')){
    history.replaceState(null,'',`#${panels[index].id}`);

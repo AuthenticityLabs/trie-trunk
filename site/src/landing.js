@@ -14,6 +14,11 @@ function selectHeroTab(group,index,focus=false){
  });
  if(focus)tabs[index].focus();
 }
+function revealBenchPanel(target){
+ const panel=target?.closest('[data-bench-panel]');
+ const tab=panel&&heroTabs.find(tab=>tab.getAttribute('aria-controls')===panel.id);
+ if(tab)selectHeroTab('bench',Number(tab.dataset.heroIndex));
+}
 heroTabs.forEach(tab=>{
  const group=tab.dataset.heroGroup,index=Number(tab.dataset.heroIndex);
  tab.addEventListener('click',()=>selectHeroTab(group,index));
@@ -64,14 +69,28 @@ if(pageSections.length){
  const scheduleActivePage=()=>{
   if(!framePending){framePending=true;requestAnimationFrame(updateActivePage)}
  };
+ // A tab is a direct destination. Smooth fragment navigation can stop at an
+ // intermediate mandatory snap point in WebKit, particularly after a resize.
+ const directLinks=[...pageLinks,...document.querySelectorAll('a[href="#bench-storage"]')];
+ directLinks.forEach(link=>{
+  const target=document.getElementById(link.hash.slice(1));
+  if(!target)return;
+  link.addEventListener('click',event=>{
+   if(event.defaultPrevented||event.button!==0||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;
+   event.preventDefault();
+   revealBenchPanel(target);
+   target.scrollIntoView({block:'start',behavior:'instant'});
+   updateActivePage();
+  });
+ });
  // Apply an incoming section link before tracking scroll position; the initial
  // Trunk view can erase the hash before the browser scrolls to it.
  const initialHash=location.hash;
  const initialize=async()=>{
   await document.fonts.ready;
   await new Promise(requestAnimationFrame);
-  const target=pageSections.find(page=>`#${page.id}`===initialHash);
-  if(target)target.scrollIntoView({block:'start',behavior:'instant'});
+  const target=document.getElementById(initialHash.slice(1));
+  if(target){revealBenchPanel(target);target.scrollIntoView({block:'start',behavior:'instant'})}
   window.addEventListener('scroll',scheduleActivePage,{passive:true});
   window.addEventListener('resize',scheduleActivePage);
   requestAnimationFrame(updateActivePage);

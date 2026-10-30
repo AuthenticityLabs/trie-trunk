@@ -166,16 +166,23 @@ Do not replace that Tunnel when deploying the public website.
 
 ### Public Website
 
-The separate Cloudflare Pages project is `trietrunk`, with navigation for
-`/trunk`, `/seeds`, `/logger`, and `/snoot` at `trietrunk.com`. Seeds includes
-Overview, Definitions, Collections, and Messaging; `/PIL` holds the underlying
-specification and Pill Packer library reference. Build and deploy with:
+The separate Cloudflare Pages project is `trietrunk`. Its homepage contains
+Trunk, Snoot, Seeds, and Bench sections. Bench has Performance, Storage, and
+Transit tabs. Performance currently displays explicitly labelled sample values;
+Storage and Transit use the measured million-event fixture.
+`/PIL` holds the format, library examples, and Definitions notebook. The earlier
+detail pages remain at `/hidden`. After committing website changes, publish with:
 
 ```sh
-node site/build.mjs
-cd site
-wrangler pages deploy dist --project-name trietrunk --branch main
+node site/publish.mjs
 ```
+
+Publishing rebuilds all routes together from the current source and refuses
+uncommitted website changes. Do not deploy an older temporary artifact to update
+one page. `/release.json` records the commit and homepage/PIL hashes so the
+combined release can be verified. `node site/build.mjs` remains available for
+local builds; `BENCH_PREVIEW=1` writes a noindex local preview to
+`site/artifacts/bench-preview`, separate from the production output.
 
 The website uses checked benchmark JSON at build time and generates its
 measurement download without depending on local Markdown reports. Shared artwork

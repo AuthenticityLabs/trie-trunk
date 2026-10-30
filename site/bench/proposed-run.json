@@ -1,0 +1,119 @@
+{
+  "status": "proposal",
+  "results": null,
+  "scope": "Structured events and logs; not metrics-only or distributed tracing",
+  "platforms": [
+    {"id": "trie-trunk", "release": null, "configuration": null},
+    {"id": "clickhouse", "release": null, "configuration": null},
+    {"id": "elasticsearch", "release": null, "configuration": null},
+    {"id": "loki", "release": null, "configuration": null}
+  ],
+  "hardware": {
+    "server_count": 1,
+    "vcpu": 8,
+    "memory_gib": 32,
+    "disk": "Local NVMe; pin exact model, capacity, filesystem, and IOPS before running",
+    "replica_copies": 1,
+    "load_generator": "Separate host; measure CPU, memory, network, and encoding cost independently",
+    "host_model": null,
+    "os": null,
+    "region": null
+  },
+  "corpus": {
+    "event_counts": [1000000, 10000000, 100000000],
+    "preview_event_count": 10000000,
+    "history_days": 30,
+    "retention_days": 45,
+    "source": "One deterministic, shared event corpus; begin from the existing million-event generator",
+    "fields": "Preserve timestamps, full messages, service/resource identity, typed attributes, and event identifiers",
+    "canonical_jsonl_sha256": null,
+    "generator_revision": null,
+    "generator_seed": 42,
+    "payload_size_distribution": null,
+    "service_resource_counts": null,
+    "time_anchor": null,
+    "rule": "Scale the generator, never obtain larger datasets by repeating the same records"
+  },
+  "profiles": {
+    "state_combination_counts": [16, 256, 4096, 32768],
+    "identifier_cardinality": [1000, 100000, 1000000],
+    "value_frequency": ["uniform", "Zipf with exponent 1.1"],
+    "distribution_shift": "Swap common and rare state frequencies halfway through live replay",
+    "late_arrivals": ["none", "1% arriving up to one hour late"],
+    "message_profiles": ["repeated templates", "variable messages with high-entropy identifiers"],
+    "reporting": "Independent cases, not a full Cartesian product and not a pooled score"
+  },
+  "durability": {
+    "required_failure_model": "process crash",
+    "acknowledged_events_must_survive": true,
+    "acknowledgement_and_flush_settings": null,
+    "validation": "Crash and restart; reconcile acknowledged event IDs and exact counts",
+    "power_loss": "Separate profile requiring a documented fsync guarantee; do not equate it with process-crash survival",
+    "non_equivalent_guarantees": "Do not rank throughput together when acknowledgement guarantees differ"
+  },
+  "phases": [
+    "Capability and query-result conformance preflight",
+    "Bulk load, including index/summary construction and all required preprocessing",
+    "Read-only query runs with explicit cold and warm cache conditions",
+    "Live mixed read/write replay with new timestamps and controlled offered load",
+    "Storage and resource sampling during ingest and after declared settling",
+    "Separate common-dashboard client/server measurement"
+  ],
+  "load": {
+    "batch_events": 1000,
+    "max_batch_wait_ms": 100,
+    "writers": 4,
+    "query_clients": [1, 8],
+    "query_arrival_rate_per_second": 4,
+    "mixed_run_minutes": 30,
+    "warmup_minutes": 5,
+    "arrival_model": "Open-loop scheduled requests; include queue delay, backpressure, timeouts, and failures",
+    "freshness_p95_limit_ms": 1000,
+    "freshness_clock": "Load-generator send time to first query visibility, including request and queue delay; also record acknowledgement-to-visible separately",
+    "throughput_qualification": "Highest sustained rate with matching durability, no data loss or unbounded backlog, and P95 freshness <= 1 second",
+    "overload_results": "Publish failures and lag; do not silently omit unsuccessful requests"
+  },
+  "queries": [
+    {"id": "field-filter", "window": "last 24 hours at a fixed corpus anchor", "predicate": "service/resource plus product=premiere and type=new_service", "limit": 100, "order": "event timestamp descending, stable event ID tie-break", "variants": ["common state", "rare state"]},
+    {"id": "text-search", "window": "last 24 hours at a fixed corpus anchor", "predicate": "exact lowercase token timeout in a controlled space-delimited message corpus", "limit": 100, "order": "event timestamp descending, stable event ID tie-break", "variants": ["common token", "rare token"], "rule": "Validate token boundaries and returned IDs; do not substitute substring search"},
+    {"id": "hourly-counts", "window": "last seven days at a fixed corpus anchor", "group_by": ["UTC hour", "service", "product", "type"], "precision": "exact counts", "empty_buckets": "same zero-fill convention"},
+    {"id": "high-cardinality", "window": "last seven days at a fixed corpus anchor", "operation": "identifier lookup and exact distinct count", "rule": "Secondary capability test; mark unsupported rather than fabricating an equivalent operation"}
+  ],
+  "query_measurement": {
+    "repetitions_per_query_per_warm_run": 1000,
+    "independent_runs": 5,
+    "warm_statistics": ["P50", "P95", "P99", "errors", "sample count"],
+    "summary": "Median of five per-run P95 values, with range and raw samples linked; never pool different query semantics",
+    "cold": "Declare OS/page-cache and engine-cache reset procedure; report individual first-run timings, not an invented percentile from a few samples",
+    "result_cache": "Disabled for primary query measurement",
+    "precomputation": "Record every index and summary. Compare raw-query and equivalent precomputed-dashboard profiles separately; include construction, refresh lag, and storage costs",
+    "unsupported": "Null result with an explicit reason; never zero or simulated latency"
+  },
+  "metrics": {
+    "stored_bytes": null,
+    "accepted_events_per_second": null,
+    "searchable_delay_p95_ms": null,
+    "filtered_search_p95_ms": null,
+    "text_search_p95_ms": null,
+    "hourly_counts_p95_ms": null,
+    "peak_server_rss_bytes": null,
+    "load_cpu_seconds_per_million_events": null
+  },
+  "accounting": {
+    "storage": "Allocated bytes for all required data, indexes, summaries, journals, metadata, and any local/object-store files; include the full event detail",
+    "settling": "Report end-of-load, peak, and settled footprint; declare wait duration and compaction state rather than silently force-merging one engine",
+    "cpu": "All required server processes and preprocessing; record client-side encoding separately",
+    "memory": "Sum simultaneous RSS across required server processes; also report cgroup/host memory including file cache separately",
+    "client": "Separate dashboard profile: browser CPU, peak memory, compressed wire bytes, and time to equivalent complete results",
+    "cost": "Derive only after fixing measured resource use and dated hardware/service prices; do not mix self-hosted and SaaS list prices"
+  },
+  "references": [
+    "https://github.com/ClickHouse/ClickBench",
+    "https://github.com/elastic/rally-tracks/tree/master/http_logs",
+    "https://esrally.readthedocs.io/en/stable/summary_report.html",
+    "https://pkg.go.dev/github.com/grafana/loki/v3/pkg/logql/bench",
+    "https://github.com/timescale/tsbs",
+    "https://grafana.com/docs/loki/latest/get-started/labels/cardinality/",
+    "https://opentelemetry.io/docs/specs/otel/logs/data-model/"
+  ]
+}

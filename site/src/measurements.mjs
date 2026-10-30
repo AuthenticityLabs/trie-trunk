@@ -12,7 +12,7 @@ const dense = compression.levels.find(row=>row.gzip_level===6);
 if(fixture.events!==1_000_000 || fixture.object_index!==false || fixture.pac_gzip_level!==1 ||
    (c['collection.idx']||0)!==0 || c['.sum']!==summary.new_file_bytes ||
    compression.events!==fixture.events || compression.source_bytes!==fixture.expanded_jsonl_bytes ||
-   compression.source_sha256!==fixture.expanded_jsonl_sha256 || timing.source_sha256!==compression.source_sha256 || timing.events!==fixture.events || timing.hourly_packets!==compression.hourly_packets || !fast || !dense) {
+   compression.source_sha256!==fixture.expanded_jsonl_sha256 || timing.source_sha256!==compression.source_sha256 || timing.events!==fixture.events || timing.hourly_packets!==compression.hourly_packets || !Number.isSafeInteger(compression.plain_pac_bytes) || compression.plain_pac_bytes<=0 || !fast || !dense) {
  throw new Error('Website measurements require the verified million-event, collections-disabled fixture and matching compression results.');
 }
 for (const row of compression.levels) {
@@ -27,6 +27,7 @@ export const storage = {
  // N compact objects plus N line feeds become N-1 commas and two brackets.
  expandedArray: fixture.expanded_jsonl_bytes + 1,
  seedPacks: c['.pods'], standalonePacks: fast.standalone_pac_bytes,
+ standalonePlainPacks: compression.plain_pac_bytes,
  dailyMedian: summary.whole_day_median_bytes,
  compression: compression.levels.map(row=>({...row,timing:timing.rows.filter(t=>t.gzip_level===row.gzip_level)})),
  timing,
@@ -62,6 +63,7 @@ objects in brackets (+1 byte). No pretty-printing is added.
 Median Daily Summary Transfer: ${storage.dailyMedian.toLocaleString('en-US')} bytes
 
 Standalone Seed Packs vs JSONL — Identical Hourly Boundaries
+Uncompressed PIL PACs + Definitions: ${storage.standalonePlainPacks.toLocaleString('en-US')} bytes
 ${compression.levels.map(row=>`Gzip-${row.gzip_level}:
   Hourly JSONL: ${row.jsonl_hourly_bytes.toLocaleString('en-US')} bytes
   Hourly PIL PACs + Definitions: ${row.standalone_pac_bytes.toLocaleString('en-US')} bytes

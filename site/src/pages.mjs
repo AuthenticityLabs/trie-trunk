@@ -6,6 +6,7 @@ import {storage,mb,kb} from './measurements.mjs';
 import {seedPages} from './seeds.mjs';
 import {pagePath} from './routes.mjs';
 import {landing} from './landing.mjs';
+import {bench} from './bench.mjs';
 import {previousSnootPreview} from './archived-snoot-preview.mjs';
 import {homepageCharts as archivedHomepageCharts} from './archived-homepage-charts.mjs';
 
@@ -178,19 +179,19 @@ const archivedSeeds = Object.entries(originalSeeds).map(([name,page])=>{
 }).join('');
 const archiveIndex=[['storage','Storage'],['retention','Retention'],['analytics','Analytics'],['definitions','Definitions'],['tries','Tries'],['time-trie','Time Trie'],['event-state-trie','State Trie'],['archived-snoot','Snoot'],['archived-snoot-preview','Previous Snoot Preview'],['archived-homepage-charts','Previous Homepage Charts'],['archived-homepage-dashboard','Previous Homepage Dashboard'],['seeds-overview','Seeds Overview'],['seeds-definitions','Seeds Definitions'],['seeds-collections','Seeds Collections'],['seeds-messaging','Seeds Messaging'],['logger','Logger']];
 export const pages = {
- trunk:{title:'Trie-Trunk — Time-Series Database',description:'An open-source time-series database for typed events, temporal search, and precomputed columnar summaries. Collect data locally for browser analytics.',landing:true,body:landing(lifecycle,brand)},
+ trunk:{title:'Trie-Trunk — Time-Series Database',description:'An open-source time-series database for typed events, temporal search, and precomputed columnar summaries. Collect data locally for browser analytics.',landing:true,body:landing(lifecycle,brand,bench(performance))},
  PIL:{title:'PIL — Positional Interchange Layout',description:'Definition-driven binary records for full objects, partial changes, dictionaries, and PAC containers. Portable Pill Packer libraries for Rust, JavaScript/WASM, and Go.',body:pil},
  hidden:{title:'Hidden — Archived Content',description:'Content set aside from the public navigation for later review and reintegration.',hidden:true,body:`<aside class="wrap archive-heading"><h1>Hidden</h1><p>Original pages and sections, preserved for later reintegration.</p><nav class="archive-index" aria-label="Archived Sections">${archiveIndex.map(([id,name])=>`<a class="text-link" href="#${id}">${name}</a>`).join('')}</nav></aside><div class="archive-group" id="archived-trunk"><p class="wrap archive-label">Trunk / Previous Page</p>${archivedTrunk}</div><div class="archive-group" id="archived-snoot"><p class="wrap archive-label">Snoot / Previous Page</p>${archivedSnoot}</div><section class="wrap archive-group" id="archived-snoot-preview"><p class="archive-label">Snoot / Previous Preview</p>${previousSnootPreview}</section><section class="wrap archive-group" id="archived-homepage-charts"><p class="archive-label">Trunk / Previous Homepage Charts</p>${archivedHomepageCharts}</section><section class="wrap archive-group" id="archived-homepage-dashboard"><p class="archive-label">Trunk / Previous Full Dashboard Embed</p><a class="text-link" href="/snoot-preview/?view=dashboard">Open the Full Dashboard With Sample Data ↗</a></section>${archivedSeeds}<div class="archive-group" id="logger"><p class="wrap archive-label">Logger / Previous Page</p>${logger}</div>`}
 };
 const attribute = value => value.replaceAll('&','&amp;').replaceAll('"','&quot;').replaceAll('<','&lt;');
-const navigation = ['trunk','snoot','seeds'];
+const navigation = ['trunk','snoot','seeds','bench'];
 export function render(name,css,js) {
  const p=pages[name], canonical=`https://trietrunk.com${pagePath(name)}`;
  const title=attribute(p.title), description=attribute(p.description);
  const shareImage='https://trietrunk.com/assets/brand/trie-trunk-gray.jpg';
  return `<!doctype html><html lang="en"><head>
  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
- <title>${title}</title><meta name="description" content="${description}">${p.hidden?'<meta name="robots" content="noindex, nofollow">':''}
+ <title>${title}</title><meta name="description" content="${description}">${p.hidden||(p.landing&&process.env.BENCH_PREVIEW==='1')?'<meta name="robots" content="noindex, nofollow">':''}
  <meta name="color-scheme" content="light dark"><meta name="theme-color" content="#fafafa">
  <script>try{const p=localStorage.getItem('trietrunk.theme');const mode=['light','dark'].includes(p)?p:'auto';const dark=mode==='dark'||mode==='auto'&&matchMedia('(prefers-color-scheme: dark)').matches;document.documentElement.dataset.theme=dark?'dark':'light';document.documentElement.dataset.themePreference=mode;document.querySelector('meta[name="theme-color"]').content=dark?'#181818':'#fafafa';}catch{document.documentElement.dataset.theme=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';}</script>
  <meta property="og:type" content="website"><meta property="og:site_name" content="Trie-Trunk">

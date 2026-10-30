@@ -427,9 +427,22 @@ h1{font-size:43px;font-weight:500;letter-spacing:-1.7px;line-height:1.15}h2{font
 @media(max-width:760px){.pil-lane-labels{display:none}#layout .pil-lane-mobile-group{display:block;font-size:13px;font-weight:400}}
 
 /* PIL language examples and Definition notebook. */
-.pil-library-code{margin:28px 0;border:1px solid var(--line);border-radius:10px;background:var(--surface);overflow:hidden;box-shadow:0 10px 28px #00000010;min-width:0}
-.pil-library-code pre{height:360px;overflow:auto;margin:0;padding:24px;font:14px/1.8 var(--mono);tab-size:4}
-.pil-language-tabs{display:flex;flex-wrap:wrap;border-top:1px solid var(--line);padding:8px;gap:5px;background:var(--canvas)}
+.pil-library-code{margin:28px 0;border:1px solid var(--line);border-radius:10px;background:var(--surface);min-width:0}
+.pil-library-code pre{margin:0;padding:24px;font:14px/1.8 var(--mono);tab-size:4;white-space:pre-wrap;overflow-wrap:anywhere}
+.pil-code-footer{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:4px;border-top:1px solid var(--line);padding:8px;background:var(--canvas);border-radius:0 0 10px 10px}
+.pil-language-tabs{display:flex;flex-wrap:wrap;gap:5px;min-width:0}
+.pil-code-footer>.code-copy{font-size:12px;margin-left:auto;min-height:44px}
+.pil-library-code .code-comment{color:var(--muted)}
+.pil-library-code .code-keyword{color:#77568c}
+.pil-library-code .code-string{color:#537253}
+.pil-library-code .code-number{color:#946a3a}
+.pil-library-code .code-function{color:#486e8b}
+.pil-library-code .code-type{color:#6f627d}
+:root[data-theme=dark] .pil-library-code .code-keyword{color:#b5a0ca}
+:root[data-theme=dark] .pil-library-code .code-string{color:#a7bc9b}
+:root[data-theme=dark] .pil-library-code .code-number{color:#c9b08c}
+:root[data-theme=dark] .pil-library-code .code-function{color:#9db8cb}
+:root[data-theme=dark] .pil-library-code .code-type{color:#b8aec8}
 .pil-language-tabs button,.pil-definition-tabs button{font:inherit;color:var(--muted);border:1px solid transparent;background:transparent;cursor:pointer;border-radius:6px;padding:12px 18px;min-height:44px}
 .pil-language-tabs button[aria-selected=true],.pil-definition-tabs button[aria-selected=true]{color:var(--ink);background:var(--surface);border-color:var(--line);box-shadow:0 2px 6px #00000012}
 .pil-language-tabs button:hover,.pil-definition-tabs button:hover{color:var(--ink)}
@@ -439,7 +452,7 @@ h1{font-size:43px;font-weight:500;letter-spacing:-1.7px;line-height:1.15}h2{font
 .pil-notebook-pages{min-width:0;padding:28px;border:1px solid var(--line);border-radius:0 10px 10px 10px;box-shadow:0 10px 28px #0000000b}
 .pil-notebook-pages [role=tabpanel]>h3:first-child{margin-top:0!important}
 .pil-notebook-pages .seed-lead{font-size:18px;margin-top:16px}
-.pil-notebook-pages .query-example{margin:24px 0}.pil-notebook-pages .query-example pre{font-size:14px;line-height:1.8;padding:20px;overflow:auto;max-width:100%}
+.pil-notebook-pages .query-example{margin:24px 0}.pil-notebook-pages .query-example pre{font-size:14px;line-height:1.8;padding:20px;white-space:pre-wrap;overflow-wrap:anywhere;max-width:100%}
 .pil-notebook-pages [role=tabpanel],.pil-library-code [role=tabpanel]{min-width:0;scroll-margin-top:145px}
 .pil-notebook [hidden],.pil-library-code [hidden]{display:none!important}
 .pil-agent-card{position:relative;margin-top:26px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
