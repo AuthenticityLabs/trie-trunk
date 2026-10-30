@@ -425,3 +425,25 @@ h1{font-size:43px;font-weight:500;letter-spacing:-1.7px;line-height:1.15}h2{font
 .pil-lane-labels>span:first-child,.pil-lane-labels>span:last-child{grid-column:span 2}
 #layout .pil-lane-mobile-group{display:none}
 @media(max-width:760px){.pil-lane-labels{display:none}#layout .pil-lane-mobile-group{display:block;font-size:13px;font-weight:400}}
+
+/* PIL language examples and Definition notebook. */
+.pil-library-code{margin:28px 0;border:1px solid var(--line);border-radius:10px;background:var(--surface);overflow:hidden;box-shadow:0 10px 28px #00000010;min-width:0}
+.pil-library-code pre{height:360px;overflow:auto;margin:0;padding:24px;font:14px/1.8 var(--mono);tab-size:4}
+.pil-language-tabs{display:flex;flex-wrap:wrap;border-top:1px solid var(--line);padding:8px;gap:5px;background:var(--canvas)}
+.pil-language-tabs button,.pil-definition-tabs button{font:inherit;color:var(--muted);border:1px solid transparent;background:transparent;cursor:pointer;border-radius:6px;padding:12px 18px;min-height:44px}
+.pil-language-tabs button[aria-selected=true],.pil-definition-tabs button[aria-selected=true]{color:var(--ink);background:var(--surface);border-color:var(--line);box-shadow:0 2px 6px #00000012}
+.pil-language-tabs button:hover,.pil-definition-tabs button:hover{color:var(--ink)}
+.pil-notebook{display:grid;grid-template-columns:112px minmax(0,1fr);gap:18px;margin-top:32px;align-items:start}
+.pil-definition-tabs{display:flex;flex-direction:column;gap:8px;position:sticky;top:140px}
+.pil-definition-tabs button{text-align:left;padding:14px 16px;border-radius:7px 0 0 7px}
+.pil-notebook-pages{min-width:0;padding:28px;border:1px solid var(--line);border-radius:0 10px 10px 10px;box-shadow:0 10px 28px #0000000b}
+.pil-notebook-pages [role=tabpanel]>h3:first-child{margin-top:0!important}
+.pil-notebook-pages .seed-lead{font-size:18px;margin-top:16px}
+.pil-notebook-pages .query-example{margin:24px 0}.pil-notebook-pages .query-example pre{font-size:14px;line-height:1.8;padding:20px;overflow:auto;max-width:100%}
+.pil-notebook-pages [role=tabpanel],.pil-library-code [role=tabpanel]{min-width:0;scroll-margin-top:145px}
+.pil-notebook [hidden],.pil-library-code [hidden]{display:none!important}
+.pil-agent-card{position:relative;margin-top:26px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+.pil-agent-card>.code-copy{position:absolute;right:12px;top:10px;z-index:1}
+.pil-agent-details summary{padding:19px 100px 19px 20px;cursor:pointer;font-size:15px;min-height:60px;box-sizing:border-box}
+.pil-agent-details pre{margin:0;padding:20px;border-top:1px solid var(--line);font:14px/1.8 var(--mono);white-space:pre-wrap;overflow-wrap:anywhere}
+@media(max-width:650px){.pil-notebook{grid-template-columns:70px minmax(0,1fr);gap:8px}.pil-definition-tabs button{font-size:14px;padding:12px 8px}.pil-notebook-pages{padding:16px}.pil-notebook-pages h3{font-size:23px}.pil-language-tabs button{font-size:14px;padding:10px 12px}.pil-library-code pre{padding:16px}.pil-agent-details summary{padding:18px 78px 18px 12px;font-size:14px}.pil-agent-card>.code-copy{right:5px}.pil-agent-details pre{padding:14px;font-size:13px}.pil-notebook-pages .example-title{flex-wrap:wrap;gap:6px}.pil-definition-tabs{top:155px}}

@@ -195,6 +195,7 @@ for (const button of document.querySelectorAll('[data-copy-code]')) {
    feedback.textContent = 'Copied';
   } catch {
    delete button.dataset.copied;
+   for(let parent=code.parentElement;parent;parent=parent.parentElement)if(parent instanceof HTMLDetailsElement)parent.open=true;
    const range = document.createRange();
    range.selectNodeContents(code);
    const selection = window.getSelection();
@@ -209,4 +210,41 @@ for (const button of document.querySelectorAll('[data-copy-code]')) {
    }, 3000);
   }
  });
+}
+
+// Independent notebook and language tabs; deep links reveal their target pane.
+for(const group of document.querySelectorAll('[data-pil-tabs]')){
+ const list=group.querySelector('[role=tablist]');
+ const tabs=[...list.querySelectorAll('[role=tab]')];
+ const panels=tabs.map(tab=>document.getElementById(tab.getAttribute('aria-controls')));
+ const select=(index,focus=false,link=false)=>{
+  tabs.forEach((tab,i)=>{tab.setAttribute('aria-selected',String(i===index));tab.tabIndex=i===index?0:-1;panels[i].hidden=i!==index;});
+  if(focus)tabs[index].focus();
+  if(link&&group.hasAttribute('data-pil-deep-links')){
+   history.replaceState(null,'',`#${panels[index].id}`);
+   const headerBottom=document.querySelector('.site-header')?.getBoundingClientRect().bottom??0;
+   if(panels[index].getBoundingClientRect().top<headerBottom)panels[index].scrollIntoView({block:'start'});
+  }
+ };
+ tabs.forEach((tab,index)=>{
+  tab.addEventListener('click',()=>select(index,false,true));
+  tab.addEventListener('keydown',event=>{
+   const vertical=list.getAttribute('aria-orientation')==='vertical';
+   let next;
+   if(event.key===(vertical?'ArrowDown':'ArrowRight'))next=(index+1)%tabs.length;
+   if(event.key===(vertical?'ArrowUp':'ArrowLeft'))next=(index+tabs.length-1)%tabs.length;
+   if(event.key==='Home')next=0;
+   if(event.key==='End')next=tabs.length-1;
+   if(next!==undefined){event.preventDefault();select(next,true,true);}
+  });
+ });
+ const reveal=()=>{
+  let id;try{id=decodeURIComponent(location.hash.slice(1));}catch{return;}
+  const target=document.getElementById(id);
+  const index=panels.findIndex(panel=>panel===target||panel.contains(target));
+  if(index<0)return;
+  select(index);
+  requestAnimationFrame(()=>target.scrollIntoView({block:'start'}));
+ };
+ reveal();window.addEventListener('hashchange',reveal);
 }
