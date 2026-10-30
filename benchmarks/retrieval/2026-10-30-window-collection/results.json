@@ -1,0 +1,60 @@
+{
+  "scope": "Isolated loopback Go endpoint and production Snoot UI in WebKit; 10,000 synthetic unsealed events in one branch.",
+  "measurement": "View-worker elapsed time includes collection, local matching and aggregate preparation; excludes bootstrap and UI painting. Server time is handler wall time. Byte counts are HTTP response bodies, excluding HTTP/TLS headers. Repeat includes two overlap records; arrival includes those two records and one new event. These are not WAN or pre-framework benchmarks.",
+  "tests": [
+    "go/server/cache/collect_browser_test.go",
+    "client/scripts/test-collection-browser.mjs"
+  ],
+  "earlierEnvelopeBaseline": "../2026-10-30-query-delta/results.json",
+  "comparison": "The PAC response reduces first-pull bytes from 1,007,812 to 344,384 and one-arrival bytes from 807 to 428. First-pull worker time rose from 101 ms to 197 ms; this is a measured cold-path cost, not a speed improvement.",
+  "runs": [
+    {
+      "arrival": {
+        "ms": 57,
+        "bytes": 428,
+        "liveFrames": 3,
+        "matched": 10001
+      },
+      "browser": "WebKit",
+      "events": 10000,
+      "first": {
+        "ms": 197,
+        "bytes": 344384,
+        "liveFrames": 10000,
+        "serverMs": 78.031125
+      },
+      "repeat": {
+        "ms": 57,
+        "bytes": 396,
+        "liveFrames": 2,
+        "serverMs": 0.156792,
+        "requests": 1
+      },
+      "checkpoint": 1793397743942
+    },
+    {
+      "arrival": {
+        "ms": 53,
+        "bytes": 428,
+        "liveFrames": 3,
+        "matched": 10001
+      },
+      "browser": "WebKit",
+      "events": 10000,
+      "first": {
+        "ms": 197,
+        "bytes": 344384,
+        "liveFrames": 10000,
+        "serverMs": 79.931916
+      },
+      "repeat": {
+        "ms": 59,
+        "bytes": 396,
+        "liveFrames": 2,
+        "serverMs": 0.158167,
+        "requests": 1
+      },
+      "checkpoint": 1793398087166
+    }
+  ]
+}

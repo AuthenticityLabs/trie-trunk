@@ -1,3 +1,4 @@
+import type {LiveReceiver} from "../seeds/live-pack.ts";
 import {compactHour} from "./time-window.ts";
 import {registeredPath} from "./trunk.ts";
 import { nativeCacheIssue } from "../store/errors.ts";
@@ -23,6 +24,9 @@ export type NativeCollectOptions = {
   data?: "none";
   artifact?: {path:string;kind:"idx"|"pods";states?:string};
   definitionVersion?: string;
+  live?:LiveReceiver;
+  onAttempt?:()=>void;
+  onWindow?:(to:number)=>void;
   onVersion?: (version:string)=>void;
   onProvisional?: (tap:string,from:number,to:number)=>void;
   collection?: string;
@@ -40,9 +44,10 @@ export async function collectNative(options:NativeCollectOptions):Promise<string
 }
 async function collectOnce(options:NativeCollectOptions):Promise<string[]> {
   const {tap,from,to,token,signal,codec,definitions,archive}=options;
-  if(!Number.isFinite(Date.parse(from))||!Number.isFinite(Date.parse(to))||Date.parse(from)>=Date.parse(to))
+  if(!Number.isFinite(Date.parse(from))||(to!=="now"&&!Number.isFinite(Date.parse(to)))||(to!=="now"&&Date.parse(from)>=Date.parse(to)))
     throw Error("Invalid native collection window");
   signal.throwIfAborted();
+  options.onAttempt?.();
   const session=crypto.randomUUID();
   await archive(token,{kind:"native-begin",session});
   let complete=false;
@@ -72,12 +77,14 @@ async function collectOnce(options:NativeCollectOptions):Promise<string[]> {
     }
     const response=await (options.fetcher??fetch)(url,{
       method:"GET",signal,cache:"no-store",
-      headers:{Accept:"application/pil","PIL-Version":"2","PIL-Features":"native-ranges,native-state-pages,adaptive-integers",
+      headers:{Accept:"application/pil","PIL-Version":"2","PIL-Features":"native-ranges,native-state-pages,adaptive-integers"+(options.live?",live-pacs":""),
         "Definition-Version":options.definitionVersion??"",
         "Definition-Known":[...definitions.keys()].slice(-128).join(","),
         ...(have?{"Trunk-Coverage":have}:{}),...(token?{Authorization:`Bearer ${token}`}:{})},
     });
     const version=response.headers.get("Definition-Version");
+    const windowTo=Number(response.headers.get("Trunk-Window-To"));
+    if(response.ok&&options.live&&(!Number.isSafeInteger(windowTo)||windowTo<=Date.parse(from)))throw Error("Invalid collection end time");
     if(response.ok&&(response.headers.get("Trunk-Format")!=="native-pac/0"||(options.artifact&&response.headers.get("Trunk-Path")!==options.artifact.path)||!version||!/^[a-f0-9]{64}$/.test(version))){
       await response.body?.cancel();throw Error("Native collection was not negotiated");
     }
@@ -94,10 +101,10 @@ async function collectOnce(options:NativeCollectOptions):Promise<string[]> {
       records.push({record,...(d?{definition:{digest:d.digest,store:d.store,pil:d.pil}}:{})});queuedBytes+=bytes;
       if(queuedBytes>=4*1024*1024)await flush();
       if(record.kind==="manifest"&&record.manifest.Provisional)provisional.push({tap:record.binding.tap,from:Number(record.manifest.From)*1000,to:Number(record.manifest.To)*1000});
-    }),signal);
+    },undefined,undefined,options.live),signal);
     signal.throwIfAborted();
     const saved=await archive(token,{kind:"native-finish",session,records,collection:options.collection,selection:options.selection});
-    complete=true;options.onVersion?.(version!);for(const p of provisional)options.onProvisional?.(p.tap,p.from,p.to);return saved.nativeSources??[];
+    complete=true;options.onWindow?.(windowTo);options.onVersion?.(version!);for(const p of provisional)options.onProvisional?.(p.tap,p.from,p.to);return saved.nativeSources??[];
   }finally{
     if(!complete)await archive(token,{kind:"native-abort",session}).catch(()=>{});
   }

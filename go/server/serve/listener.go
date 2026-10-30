@@ -67,7 +67,6 @@ func Run(ctx context.Context, c Config) error {
 		routes.Handle("/definitions", api)
 		routes.Handle("/rejections", api)
 		routes.Handle("/summaries", api)
-		routes.Handle("/query-delta", api)
 		routes.Handle("/objects/history", api)
 		routes.Handle("/objects/state", api)
 		routes.Handle("/collections/", api)

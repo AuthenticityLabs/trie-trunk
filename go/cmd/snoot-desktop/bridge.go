@@ -18,7 +18,7 @@ import (
 
 const sessionCookie = "snoot_desktop_session"
 
-var apiPaths = []string{"/query-delta", "/trunk", "/collections", "/caches", "/schemas", "/events", "/collect", "/summaries", "/objects", "/configurations", "/storage", "/rejections", "/definitions", "/ingest"}
+var apiPaths = []string{"/trunk", "/collections", "/caches", "/schemas", "/events", "/collect", "/summaries", "/objects", "/configurations", "/storage", "/rejections", "/definitions", "/ingest"}
 
 // One transport is selected for the session. A failed mutation is never replayed
 // against a different server; changing connections requires an explicit restart.

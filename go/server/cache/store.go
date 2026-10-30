@@ -58,9 +58,6 @@ type branchStore struct {
 	live                             *nativeLive
 	liveViews                        map[string]liveViewSnapshot
 	pendingVersion                   uint64
-	queryNewest, queryLateFrom       int64
-	queryObservedThrough             int64
-	queryLateVersion                 uint64
 	provisionalRecords               map[int64]uint32
 	pendingBytes                     int
 	podsEnd, sumEnd                  uint64

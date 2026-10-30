@@ -1,3 +1,4 @@
+import {livePack,type LiveReceiver} from '../seeds/live-pack.ts';
 import {INDEX_ROW_BYTES} from './pac-native.ts';
 import { decodeObject, encodeObject, objectView } from "./control.ts";
 import { nativePAC, pacPlacement } from "./pac-native.ts";
@@ -12,6 +13,7 @@ export type StoredDefinition = Metadata & {
   handle: number;
   definition: PILDefinition;
 };
+const liveControl:PILDefinition={pil:0,definition:"trunk-live-window",version:0,fields:[{name:"stream",type:"U32"},{name:"generation",type:"BYTES"},{name:"sequence",type:"U64"},{name:"sealed",type:"U64"},{name:"retained",type:"U64"}]};
 const viewControl: PILDefinition = {pil:0,definition:"trunk-view-control",version:1,fields:[{name:"metadata",type:"BYTES"}]};
 export type Batch = { bytes: ArrayBuffer; rows: Uint32Array; common?: (Uint8Array | undefined)[] };
 const define: PILDefinition = {
@@ -73,6 +75,8 @@ export class PILStream {
   private nativeRange?: {stream:number;remaining:number};
   private nativeBlocks = new Map<number,Map<number,Record<string,any>>>();
   private nativeIndexes = new Map<number,Map<number,Uint8Array>>();
+  private liveHandle?:number;
+  private onLive?:LiveReceiver;
   private viewHandle?: number;
   private onView?: (value:unknown)=>void;
   private onNative?: (record: NativeRecord) => Promise<void>;
@@ -87,8 +91,10 @@ export class PILStream {
     onNative?: (record: NativeRecord) => Promise<void>,
     onView?: (value:unknown)=>void,
     onTrunk?: (value:unknown)=>Promise<void>,
+    onLive?:LiveReceiver,
   ) {
     this.codec = codec;
+    this.onLive=onLive;
     this.onView=onView;
     this.onTrunk=onTrunk;
     this.definitions = definitions;
@@ -101,6 +107,7 @@ export class PILStream {
       codec.define(encodeObject(bind)),
       ...(onNative ? nativeControls.map(d => codec.define(encodeObject(d))) : []),
     ];
+    if(onLive){this.liveHandle=codec.define(encodeObject(liveControl));this.handles.push(this.liveHandle)}
     if(onView){this.viewHandle=codec.define(encodeObject(viewControl));this.handles.push(this.viewHandle)}
     if(onTrunk){this.trunkHandle=codec.define(encodeObject(viewControl));this.handles.push(this.trunkHandle)}
   }
@@ -295,6 +302,14 @@ export class PILStream {
         invalidate();
         continue;
       }
+      if(kind===11){
+        if(!this.onLive||this.liveHandle===undefined)throw Error('Live packs were not negotiated');
+        const n=scanAt(this.liveHandle,pos+1);if(!n)break;
+        const raw=bytes.subarray(pos+1,pos+1+n),stream=read(raw,liveControl,0),generation=read(raw,liveControl,1),sequence=read(raw,liveControl,2),sealed=read(raw,liveControl,3),retained=read(raw,liveControl,4);
+        if(typeof stream!=='number'||!this.bindings.has(stream)||!(generation instanceof Uint8Array)||generation.length!==16||![sequence,sealed,retained].every(v=>typeof v==='number'&&Number.isSafeInteger(v)&&v>=0))throw Error('Invalid live window binding');
+        this.onLive.window({binding:this.bindings.get(stream)!,generation:hex(generation),sequence:sequence as number,sealed:sealed as number,retained:retained as number});
+        pos+=1+n;invalidate();continue;
+      }
       if(kind===10){
         if(!this.onTrunk||this.trunkHandle===undefined)throw Error('Trunk bootstrap was not negotiated');
         const n=scanAt(this.trunkHandle,pos+1);if(!n)break;
@@ -324,10 +339,21 @@ export class PILStream {
         const rangeEnd=this.nativeRange?Math.min(bytes.length,pacStart+this.nativeRange.remaining):bytes.length;
         const unpacked=await expandPAC(bytes.subarray(0,rangeEnd),pacStart,0xffffffff,(b,n)=>this.codec.inflate(b,n));if(!unpacked){if(this.nativeRange&&bytes.length-pacStart>=this.nativeRange.remaining)throw Error("Truncated PAC in native range");break;}
         invalidate();
+        const plain=this.onLive?pacHeader(unpacked.bytes,0,0xffffffff,new Set([1,nativePAC])):undefined;
+        if(this.onLive&&!plain)throw Error('Incomplete PAC');
+        if(this.onLive&&plain&&!plain.extensions.some(e=>e.type===nativePAC)){
+          if(this.nativeRange)throw Error('Live pack inside durable range');
+          const raw=unpacked.bytes.slice(),pac=pacHeader(raw,0,0xffffffff,new Set([1]))!;
+          const binding=[...this.bindings.values()].find(b=>b.digest===pac.digest&&b.tap===pac.source);
+          if(!binding)throw Error('Unbound live pack');
+          const definition=this.streams.get(binding.stream)!;
+          await this.onLive.pack(livePack(this.codec,definition.handle,binding,raw,pac));
+          invalidate();this.hasEvents=true;pos=unpacked.end;continue;
+        }
         if(this.onNative){
           // Native storage consumes one complete hourly PAC. Keep its decoded
           // buffer separate; do not rebuild the surrounding network response.
-          const raw=unpacked.bytes,pac=pacHeader(raw,0,0xffffffff,new Set([1,nativePAC]));
+          const raw=unpacked.bytes,pac=plain??pacHeader(raw,0,0xffffffff,new Set([1,nativePAC]));
           if(!pac)throw Error("Incomplete expanded native PAC");
           const binding=[...this.bindings.values()].find(b=>b.digest===pac.digest&&b.tap===pac.source);
           if(!binding)throw Error("Unbound PAC definition/source");

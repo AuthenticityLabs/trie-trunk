@@ -1,10 +1,8 @@
 package cache
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -16,12 +14,12 @@ import (
 
 // Opt-in full-app fixture. Its endpoint and live records are disposable and
 // inaccessible outside loopback. No controls are added to the shipped server.
-func TestQueryDeltaBrowser(t *testing.T) {
-	target := os.Getenv("TRUNK_QUERY_BROWSER_URL")
+func TestCollectionBrowser(t *testing.T) {
+	target := os.Getenv("TRUNK_COLLECTION_BROWSER_URL")
 	if target == "" {
-		t.Skip("set TRUNK_QUERY_BROWSER_URL and TRUNK_QUERY_BROWSER_WEB")
+		t.Skip("set TRUNK_COLLECTION_BROWSER_URL and TRUNK_COLLECTION_BROWSER_WEB")
 	}
-	web := os.Getenv("TRUNK_QUERY_BROWSER_WEB")
+	web := os.Getenv("TRUNK_COLLECTION_BROWSER_WEB")
 	if web == "" {
 		t.Fatal("missing frontend build")
 	}
@@ -31,7 +29,7 @@ func TestQueryDeltaBrowser(t *testing.T) {
 		t.Fatal(e)
 	}
 	defer p.Close()
-	at := time.Now().Add(-30 * time.Minute)
+	at := time.Now().Add(-30 * time.Second)
 	for i := uint32(1); i <= 10000; i++ {
 		if _, e = p.api.Store.Append(Write, testFrame(t, layout, at.Add(time.Duration(i)*time.Millisecond), i, false)); e != nil {
 			t.Fatal(e)
@@ -41,7 +39,6 @@ func TestQueryDeltaBrowser(t *testing.T) {
 		Bytes      int
 		Frames     int
 		Checkpoint *int64
-		Known      int
 		ElapsedMs  float64
 	}
 	var measurements []measurement
@@ -57,32 +54,29 @@ func TestQueryDeltaBrowser(t *testing.T) {
 			w.WriteHeader(204)
 			return
 		}
-		if r.URL.Path == "/__test/deltas" {
+		if r.URL.Path == "/__test/collections" {
 			mu.Lock()
 			defer mu.Unlock()
 			_ = json.NewEncoder(w).Encode(measurements)
 			return
 		}
-		if r.URL.Path == "/query-delta" {
-			raw, _ := io.ReadAll(r.Body)
-			r.Body = io.NopCloser(bytes.NewReader(raw))
-			var request queryDeltaRequest
-			_ = decoder.Unmarshal(raw, &request)
+		if r.URL.Path == "/collect" {
 			rec := httptest.NewRecorder()
 			started := time.Now()
 			api.ServeHTTP(rec, r)
-			elapsed := time.Since(started)
-			var delta queryDeltaResponse
-			_ = decoder.Unmarshal(rec.Body.Bytes(), &delta)
-			m := measurement{Bytes: rec.Body.Len(), Checkpoint: request.Checkpoint, Known: len(request.Known), ElapsedMs: float64(elapsed) / float64(time.Millisecond)}
-			for _, b := range delta.Branches {
-				m.Frames += len(b.Frames)
+			packs := collectionLivePacks(t, rec.Body.Bytes(), layout)
+			frames := 0
+			for _, pack := range packs {
+				frames += len(pack.Members)
 			}
+			from, _ := time.Parse(time.RFC3339Nano, r.URL.Query().Get("from"))
+			checkpoint := from.UnixMilli()
+			m := measurement{Bytes: rec.Body.Len(), Checkpoint: &checkpoint, Frames: frames, ElapsedMs: float64(time.Since(started)) / float64(time.Millisecond)}
 			mu.Lock()
 			measurements = append(measurements, m)
 			mu.Unlock()
-			for k, v := range rec.Header() {
-				w.Header()[k] = v
+			for key, values := range rec.Header() {
+				w.Header()[key] = values
 			}
 			w.WriteHeader(rec.Code)
 			_, _ = w.Write(rec.Body.Bytes())
@@ -99,7 +93,7 @@ func TestQueryDeltaBrowser(t *testing.T) {
 	if e = os.WriteFile(target, []byte(server.URL), 0600); e != nil {
 		t.Fatal(e)
 	}
-	fmt.Println("Live-query fixture:", server.URL)
+	fmt.Println("Collection fixture:", server.URL)
 	timeout := time.After(8 * time.Minute)
 	tick := time.NewTicker(200 * time.Millisecond)
 	defer tick.Stop()

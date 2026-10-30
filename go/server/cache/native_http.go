@@ -11,6 +11,8 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -48,6 +50,11 @@ func (h *HTTP) nativeCollect(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	to, e := time.Parse(time.RFC3339Nano, q.Get("to"))
+	if q.Get("to") == "now" || q.Get("to") == "now()" {
+		to = h.Store.config.Now()
+		e = nil
+	}
+	live := strings.Contains(","+r.Header.Get("PIL-Features")+",", ",live-pacs,") && q.Get("data") != "none"
 	if e != nil || !from.Before(to) {
 		http.Error(w, "invalid time window", 400)
 		return
@@ -85,8 +92,10 @@ func (h *HTTP) nativeCollect(w http.ResponseWriter, r *http.Request) {
 		stream  uint32
 		windows []PackageWindow
 		have    Coverage
+		live    *liveWindow
 	}
 	var targets []selected
+	liveBytes := 0
 	for _, api := range sources {
 		l := api.Store.layout
 		if digest := q.Get("definition"); digest != "" && digest != fmtDigestNative(l.Digest) {
@@ -101,6 +110,16 @@ func (h *HTTP) nativeCollect(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		for _, b := range branches {
+			if live {
+				// Match the physical branches advertised by the trunk catalog.
+				// A wildcard read must not create empty branches as a side effect.
+				if _, err := os.Stat(filepath.Join(api.Store.dir, b.Name()+".tri")); os.IsNotExist(err) {
+					continue
+				} else if err != nil {
+					http.Error(w, err.Error(), 500)
+					return
+				}
+			}
 			windows, e := api.Store.planNativeRanges(b, from, to)
 			if e != nil {
 				http.Error(w, e.Error(), 400)
@@ -115,7 +134,33 @@ func (h *HTTP) nativeCollect(w http.ResponseWriter, r *http.Request) {
 					break
 				}
 			}
-			targets = append(targets, selected{api, b, uint32(len(targets)), windows, known})
+			var pending *liveWindow
+			if live {
+				pending, e = api.Store.liveWindow(b, from, to)
+				if e != nil {
+					http.Error(w, e.Error(), 500)
+					return
+				}
+				for _, event := range pending.events {
+					liveBytes += len(event.frame)
+				}
+				if liveBytes > 64<<20 {
+					http.Error(w, "live window exceeds 64 MB; narrow the time window or scope", http.StatusRequestEntityTooLarge)
+					return
+				}
+				kept := windows[:0]
+				for _, window := range windows {
+					if window.From.UnixMilli() >= pending.sealed {
+						continue
+					}
+					if window.To.UnixMilli() > pending.sealed {
+						window.To = time.UnixMilli(pending.sealed)
+					}
+					kept = append(kept, window)
+				}
+				windows = kept
+			}
+			targets = append(targets, selected{api, b, uint32(len(targets)), windows, known, pending})
 		}
 	}
 	if len(targets) == 0 {
@@ -123,6 +168,7 @@ func (h *HTTP) nativeCollect(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Header().Set("Content-Type", "application/pil")
+	w.Header().Set("Trunk-Window-To", strconv.FormatInt(to.UnixMilli(), 10))
 	w.Header().Set("PIL-Version", "2")
 	version := fmtDigestNative(targets[0].api.Store.layout.Digest)
 	if len(sources) > 1 {
@@ -204,6 +250,9 @@ func (h *HTTP) nativeCollect(w http.ResponseWriter, r *http.Request) {
 			coverage.TrieNodes = manifest.TrieNodes
 			coverage.Index, _ = Normalize(append(coverage.Index, manifest.Index...))
 			coverage.MemberRanges, _ = Normalize(append(coverage.MemberRanges, manifest.MemberRanges...))
+		}
+		if e == nil && target.live != nil {
+			e = target.api.writeLiveWindow(r.Context(), out, target.stream, target.branch, target.live)
 		}
 	}
 	if e == nil {

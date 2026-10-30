@@ -1,5 +1,5 @@
 import {executeLocalSearch} from '../search/execute.ts';
-import {QueryDeltas} from '../search/query-delta.ts';
+import {WindowCache} from '../search/window-cache.ts';
 import {SearchesLRU} from '../search/searches-lru.ts';
 import {queryLocalSummaries} from '../search/summaries.ts';
 import {INDEX_ROW_BYTES} from './pac-native.ts';
@@ -36,7 +36,7 @@ export type NativeViewRecord={row:Uint8Array;base:number;trie:{start:number;byte
 type PackedRecord={bytes:Uint8Array;common?:Uint8Array;native?:NativeViewRecord};
 export class ViewCache {
  private searches=new SearchesLRU();
- private queryDeltas=new QueryDeltas();
+ private windows=new WindowCache();
  private trunk?:TrunkBootstrap;
  private localSummaries=new Map<string,ViewSummary>();
  private localPages=new Map<string,Pick<ViewResponse,'result'|'definitions'|'bindings'>>();
@@ -96,7 +96,7 @@ export class ViewCache {
  private fetcher:typeof fetch;
  constructor(fetcher:typeof fetch=fetch){this.fetcher=fetcher}
  resetEvents(){
-  this.queryDeltas.clear();this.localSummaries.clear();this.localPages.clear();this.nativeHours.clear();this.events.clear();this.prefixes.clear();this.tries.clear();this.bytes=0;
+  this.windows.clear();this.localSummaries.clear();this.localPages.clear();this.nativeHours.clear();this.events.clear();this.prefixes.clear();this.tries.clear();this.bytes=0;
   this.pages.clear();this.versions.clear();this.summaries.clear();this.persisted.clear();this.coverage=new ViewCoverage();
  }
 
@@ -128,7 +128,7 @@ export class ViewCache {
    },{from:Date.parse(query.from),to:Date.parse(query.to)}).catch(()=>undefined):Promise.resolve(undefined);
    try{
     const ticket=query.now?await run:undefined;
-    const view=await executeLocalSearch(this.trunk,query,token,signal,codec,definitions,archive,this.fetcher,onPage,this.localSummaries,this.localPageCache,query.now?{cache:this.queryDeltas,run:ticket}:undefined);
+    const view=await executeLocalSearch(this.trunk,query,token,signal,codec,definitions,archive,this.fetcher,onPage,this.localSummaries,this.localPageCache,query.now?{cache:this.windows,run:ticket}:undefined);
     const elapsedMs=performance.now()-started;
     void run.then(ticket=>ticket&&this.searches.finish(ticket,{status:'complete',progress:view.result.searchProgress,window:view.result.summary?{from:view.result.summary.from,to:view.result.summary.to}:undefined,measurements:{elapsedMs,matched:view.result.summary?.count,loaded:view.result.page.length}})).catch(()=>{});
     return view;

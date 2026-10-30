@@ -485,25 +485,28 @@ Each entry can hold one newest-common timestamp (the minimum of each scanned
 branch's newest timestamp), run counts, and measurements. Branch timestamps are
 transient, and no event bytes or credentials are stored here. Checkpoints are
 recorded only after full scans, before predicate rejection, with a one-millisecond
-overlap for resumption. Searches ending at now use one `/query-delta` request
-across their selected branches. The server captures the upper bound, returns
-changed time-trie coverage, and reads new unsealed PIL records from resident
-memory. Predicates remain client-side. An unchanged branch sends no event bytes;
-a late arrival rewinds the affected response range, and newly sealed hours replace
-provisional rows through the existing whole-pack retrieval and durable write path.
-A proven empty branch contributes the evaluated upper bound to the common
-checkpoint. Generation/revision receipts invalidate snapshots; they are not
-independent query checkpoints.
+overlap for resumption. Searches ending at now use the ordinary `/collect` range:
+its retrieval start advances to the checkpoint minus that overlap, while the
+query's original window stays unchanged. The server captures `now` once. It sends
+sealed PACs through the existing native path and unsealed records as uncompressed,
+Definition-bound PACs with shared values, member addressing, and Seed time/index
+headers. Predicates remain client-side.
 
-Unsealed records stay in a bounded worker-memory cache (20 queries, two hours,
-64 MB combined); IndexedDB contains metadata only. Reload, eviction, cancellation,
-or changed coverage cannot use a checkpoint to skip missing bytes. The delta
-endpoint caps a response at 64 MB of live PIL data and fails explicitly above that
-limit; it does not silently truncate results. Historical packs still use existing
-batched native retrieval. A refreshed window currently re-evaluates local
-predicates and aggregates; incremental retrieval does not imply incremental
-aggregate computation.
-The [isolated WebKit measurements](benchmarks/retrieval/2026-10-30-query-delta/results.json) exercise first retrieval, an unchanged refresh, and a new ingress event against 10,000 live records.
+Unsealed records append to a bounded query cache in worker memory (20 queries,
+two hours, 64 MB combined); IndexedDB contains metadata only. Overlapping records
+are deduplicated by provisional time/record identity. Newly sealed hours are
+committed to local SODS before their ephemeral copies are released, including
+hours sealed behind the incremental start. Reload or eviction retrieves the full
+window again rather than using a checkpoint without its cached records. An empty
+branch contributes the evaluated upper bound to the common checkpoint.
+
+A collection respects its requested lower bound; backdated ingress earlier than
+that bound requires a wider retrieval window. The live response is bounded to
+64 MB of source PIL records across selected branches and fails explicitly above
+that limit. Historical packs retain batched native retrieval. Refreshing still
+re-evaluates local predicates and aggregates; incremental transfer does not imply
+incremental aggregate computation.
+[Isolated WebKit measurements](benchmarks/retrieval/2026-10-30-window-collection/results.json) cover first retrieval, overlap-only refresh, and one new event.
 Profile → Storage → Recent Searches clears individual entries or the whole cache.
 
 Subscription preferences use a `dashboard-services:` key partitioned by a

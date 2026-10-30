@@ -6,7 +6,7 @@ import { compile, type Binding } from '../pil/metadata.ts';
 import { NativeTrie, NativeEvent } from '../seeds/index.ts';
 import { StatePredicate } from './state-predicate.ts';
 import { INDEX_ROW_BYTES,indexMillis } from '../pil/pac-native.ts';
-import {QueryDeltas,deltaBranch} from './query-delta.ts';
+import {WindowCache,windowBranch} from './window-cache.ts';
 import type {SearchRun} from './searches-lru.ts';
 import {newestCommonTimestamp} from './searches-lru.ts';
 import { prepareSearch, planSearch, searchTasks, searchWindows } from './planner.ts';
@@ -44,7 +44,7 @@ const stats = (): ViewStatistics => ({
     latency: []
   }
 });
-export async function executeLocalSearch(trunk: TrunkBootstrap, query: ViewQuery, token: string, signal: AbortSignal, codec: Codec, definitions: Map<string, StoredDefinition>, archive: Archive, fetcher: typeof fetch, onPage?: ((page: ViewResponse) => void), completed?: Map<string, ViewSummary>, pages?: {get(key:string):ViewResponse|undefined;set(key:string,value:ViewResponse):void}, incremental?:{cache:QueryDeltas;run?:SearchRun}): Promise<ViewResponse> {
+export async function executeLocalSearch(trunk: TrunkBootstrap, query: ViewQuery, token: string, signal: AbortSignal, codec: Codec, definitions: Map<string, StoredDefinition>, archive: Archive, fetcher: typeof fetch, onPage?: ((page: ViewResponse) => void), completed?: Map<string, ViewSummary>, pages?: {get(key:string):ViewResponse|undefined;set(key:string,value:ViewResponse):void}, incremental?:{cache:WindowCache;run?:SearchRun}): Promise<ViewResponse> {
   const failed = createAbortScope([signal]);
   signal = failed.signal;
   try {
@@ -53,10 +53,9 @@ export async function executeLocalSearch(trunk: TrunkBootstrap, query: ViewQuery
     requestedTo = Date.parse(query.to);
   let to=requestedTo;
   if (!Number.isSafeInteger(from) || !Number.isSafeInteger(to) || from >= to || !Number.isInteger(query.size) || query.size < 1 || query.size > 4096) throw Error('Invalid local search');
-  const delta=incremental?await incremental.cache.prepare(trunk,query,token,signal,archive,fetcher,incremental.run):undefined;
-  if(delta)to=delta.to;
-  const discoveryDone=performance.now();
-  const plan = delta?{...await planSearch(trunk,query.tap,from,to,token,archive,signal),discoveryMs:discoveryDone-started}:await prepareSearch(trunk, query.tap, from, to, {
+  const window=incremental?await incremental.cache.prepare(trunk,query,token,signal,archive,fetcher,codec,definitions,incremental.run):undefined;
+  if(window)to=window.to;
+  const plan = window?{...await planSearch(trunk,query.tap,from,to,token,archive,signal),discoveryMs:0}:await prepareSearch(trunk, query.tap, from, to, {
     token,
     signal,
     codec,
@@ -64,11 +63,11 @@ export async function executeLocalSearch(trunk: TrunkBootstrap, query: ViewQuery
     archive,
     fetcher
   });
-  if(delta){
+  if(window){
     // Another tab may already have imported a newer seal. Execute this response's
     // snapshot: never count both its live frames and that newer durable hour.
-    plan.branches=plan.branches.map(t=>{const sealed=deltaBranch(delta,t.tap,t.definition)!.receipt.Sealed;return {...t,hours:t.hours.filter(h=>h.time<sealed),receipt:{...t.receipt,rows:t.receipt.rows.filter(h=>h.time<sealed)}}});
-    plan.packRequests=plan.packRequests.map(r=>({...r,to:Math.min(r.to,deltaBranch(delta,r.tap,r.definition)!.receipt.Sealed)})).filter(r=>r.from<r.to);
+    plan.branches=plan.branches.map(t=>{const sealed=windowBranch(window,t.tap,t.definition)!.receipt.Sealed;return {...t,hours:t.hours.filter(h=>h.time<sealed),receipt:{...t.receipt,rows:t.receipt.rows.filter(h=>h.time<sealed)}}});
+    plan.packRequests=plan.packRequests.map(r=>({...r,to:Math.min(r.to,windowBranch(window,r.tap,r.definition)!.receipt.Sealed)})).filter(r=>r.from<r.to);
   }
   const targets = plan.branches,
     receipts = targets.map(t => t.receipt);
@@ -79,7 +78,7 @@ export async function executeLocalSearch(trunk: TrunkBootstrap, query: ViewQuery
     tap: t.tap
   }));
   const mappings = targets.map(t => compile(t.metadata, t.tap));
-  const snapshot = await hash(JSON.stringify([trunk.version, query.tap, from, to, query.query, targets.map((t, i) => [t.tap, t.definition, receipts[i].serial, receipts[i].generation, receipts[i].sequence, receipts[i].rows.map(h => [h.time, h.count]),delta?deltaBranch(delta,t.tap,t.definition)?.receipt:null]),delta?.epoch]));
+  const snapshot = await hash(JSON.stringify([trunk.version, query.tap, from, to, query.query, targets.map((t, i) => [t.tap, t.definition, receipts[i].serial, receipts[i].generation, receipts[i].sequence, receipts[i].rows.map(h => [h.time, h.count]),window?[windowBranch(window,t.tap,t.definition)?.receipt,windowBranch(window,t.tap,t.definition)?.frames.length]:null])]));
   const prior = completed?.get(snapshot);
   const pageKey=JSON.stringify([snapshot,query.after??'',query.size]);
   // Validate origin identity and local completion before reusing the same page.
@@ -87,8 +86,8 @@ export async function executeLocalSearch(trunk: TrunkBootstrap, query: ViewQuery
   const cached=plan.packRequests.length===0?pages?.get(pageKey):undefined;
   if(cached){
     signal.throwIfAborted();
-    const done={...cached,timings:{discovery:plan.discoveryMs??0,planning:performance.now()-started-(plan.discoveryMs??0),request:0,response:0,summaries:0,events:0,client:0}};
-    if(delta)incremental!.cache.commit(trunk,query,token,delta);onPage?.(done);return done;
+    const done={...cached,timings:{discovery:plan.discoveryMs??0,planning:performance.now()-started-(plan.discoveryMs??0)-(window?.collectionMs??0),request:0,response:0,summaries:0,events:window?.collectionMs??0,client:0}};
+    if(window)incremental!.cache.commit(trunk,query,token,window);onPage?.(done);return done;
   }
   let after: string | undefined;
   if (query.after) {
@@ -122,7 +121,7 @@ export async function executeLocalSearch(trunk: TrunkBootstrap, query: ViewQuery
       counts,
       errors,
       count: 0,
-      status: delta?'live-snapshot':'committed-snapshot',
+      status: window?'live-snapshot':'committed-snapshot',
       statistics: stats()
     };
   const services = new Map<string, number>(),
@@ -185,11 +184,11 @@ export async function executeLocalSearch(trunk: TrunkBootstrap, query: ViewQuery
       native: selected.map(i => i.native),
       timings: {
         discovery: plan.discoveryMs ?? 0,
-        planning: planned - started - (plan.discoveryMs ?? 0),
+        planning: planned - started - (plan.discoveryMs ?? 0) - (window?.collectionMs??0),
         request: 0,
         response: 0,
         summaries: 0,
-        events: performance.now() - planned,
+        events: performance.now() - planned + (window?.collectionMs??0),
         client: 0
       }
     };
@@ -201,17 +200,17 @@ export async function executeLocalSearch(trunk: TrunkBootstrap, query: ViewQuery
   if (cursorTime !== undefined && (!Number.isSafeInteger(cursorTime) || cursorTime < from || cursorTime >= to)) throw Error('Invalid client search cursor');
   const scanFrom = prior && cursorTime !== undefined && order > 0 ? cursorTime : from;
   const scanTo = prior && cursorTime !== undefined && order < 0 ? Math.min(to, cursorTime + 1) : to;
-  const schedule=delta?{...plan,branches:targets.map(t=>{
+  const schedule=window?{...plan,branches:targets.map(t=>{
     const hours=new Map(t.hours.map(h=>[h.time,{...h}]));
-    for(const f of deltaBranch(delta,t.tap,t.definition)?.frames??[]){const time=Math.floor(f.time/HOUR)*HOUR;const h=hours.get(time)??{time,count:0,summary:false,index:false,state:false,inverted:false,events:false};h.count++;hours.set(time,h)}
+    for(const f of windowBranch(window,t.tap,t.definition)?.frames??[]){const time=Math.floor(f.time/HOUR)*HOUR;const h=hours.get(time)??{time,count:0,summary:false,index:false,state:false,inverted:false,events:false};h.count++;hours.set(time,h)}
     return {...t,hours:[...hours.values()].sort((a,b)=>a.time-b.time)};
   })}:plan;
   let windows = searchWindows(schedule, scanFrom, scanTo, order < 0);
-  if(delta){
-    const boundaries=[...new Set([...delta.branches.values()].map(b=>Math.max(from,b.receipt.Sealed)))];
+  if(window){
+    const boundaries=[...new Set([...window.branches.values()].map(b=>Math.max(from,b.receipt.Sealed)))];
     windows=windows.flatMap(w=>{const points=[w.from,...boundaries.filter(t=>t>w.from&&t<w.to),w.to].sort((a,b)=>a-b);const parts=points.slice(1).map((to,i)=>({from:points[i],to}));return order<0?parts.reverse():parts});
   }
-  const deltaBranchOptional=(i:number)=>delta?deltaBranch(delta,targets[i].tap,targets[i].definition):undefined;
+  const windowBranchOptional=(i:number)=>window?windowBranch(window,targets[i].tap,targets[i].definition):undefined;
   const dependencies = new Map<number, {
     mapping: ReturnType<typeof compile>;
     trie: NativeTrie;
@@ -244,7 +243,7 @@ export async function executeLocalSearch(trunk: TrunkBootstrap, query: ViewQuery
         });
         dependencies.delete(i);
       }
-      const live=(deltaBranchOptional(i)?.frames??[]).filter(f=>f.time>=a&&f.time<z);
+      const live=(windowBranchOptional(i)?.frames??[]).filter(f=>f.time>=a&&f.time<z);
       if(live.length){
         if(hours.length)throw Error('Live and sealed hours overlap');
         const trie=new NativeTrie(mappings[i]),matcher=new StatePredicate(mappings[i],trie,query.query,knownText);
@@ -252,11 +251,11 @@ export async function executeLocalSearch(trunk: TrunkBootstrap, query: ViewQuery
         if(order<0)live.reverse();
         return async function*(){for(const frame of live){
           signal.throwIfAborted();
-          const row=new Uint8Array(6),base=Math.floor(frame.time/HOUR)*HOUR;new DataView(row.buffer).setUint32(0,frame.time%2**32,true);
-          const event=new NativeEvent(row,frame.bytes,trie,undefined,base);
+          const row=frame.row,base=frame.base;
+          const event=new NativeEvent(row,frame.bytes,trie,frame.common,base);
           if(!matcher.matches(event,true))continue;
           const uuid=hex(Uint8Array.from(event.uuid,c=>c.charCodeAt(0)));
-          yield {event,row:frame.ordinal,bytes:frame.bytes,common:undefined,native:{row,base,trie:[]},stream:i+1,key:uuid+sourcePrefix[i].slice(0,32),sort:String(event.millis).padStart(16,'0')+uuid+t.tap+':'+t.definition} satisfies Item;
+          yield {event,row:frame.ordinal,bytes:frame.bytes,common:frame.common,native:{row,base,trie:[]},stream:i+1,key:uuid+sourcePrefix[i].slice(0,32),sort:String(event.millis).padStart(16,'0')+uuid+t.tap+':'+t.definition} satisfies Item;
         }}();
       }
       if (!hours.length) return undefined;
@@ -450,8 +449,8 @@ export async function executeLocalSearch(trunk: TrunkBootstrap, query: ViewQuery
     while (completed.size > 8) completed.delete(completed.keys().next().value!);
   }
   const done = result(true);
-  done.result.searchProgress={checkpointEpochMs:newestCommonTimestamp(newest.map((value,i)=>value??(deltaBranchOptional(i)?to-1:undefined)))};
-  if(delta)incremental!.cache.commit(trunk,query,token,delta);
+  done.result.searchProgress={checkpointEpochMs:newestCommonTimestamp(newest.map((value,i)=>value??(windowBranchOptional(i)?to-1:undefined)))};
+  if(window)incremental!.cache.commit(trunk,query,token,window);
   pages?.set(pageKey,done);
   if (!published) onPage?.(done);
   return done;
