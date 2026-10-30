@@ -41,6 +41,9 @@
 .bench-references a{color:var(--ink);text-decoration:underline;text-underline-offset:3px}
 .bench-page .measurements{border:0;padding:0}
 .bench-page .measurements>.wrap{width:100%}
+.bench-storage .measurements .section-heading{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:0 16px}
+.bench-storage .measurements .section-heading>p{grid-column:1/-1}
+.bench-storage .measurements .section-heading>.text-link{font-size:11px;white-space:nowrap;min-height:32px;align-content:center}
 .bench-storage .retention-section{width:100%;margin-top:36px;padding-top:32px;padding-bottom:0;border-top:1px solid var(--line);border-bottom:0}
 .bench-page .section-heading{display:block;margin-bottom:26px}
 .bench-page .section-heading>h2{font-size:28px;font-weight:500;line-height:1.2;letter-spacing:-.8px}

@@ -89,7 +89,13 @@ const transit=seedPackComparison
 export function bench(storageSection) {
  const selected=0;
  const names=['Performance','Storage','Transit'];
- const panels=[comparison,storageSection.replace('id="storage"','id="bench-storage"'),transit];
+ const benchmarkLink=storageSection.match(/<a class="text-link" href="\/measurements\.txt">[\s\S]*?<\/a>/)[0];
+ const storageView=storageSection
+  .replace('id="storage"','id="bench-storage"')
+  .replace(benchmarkLink,'')
+  .replace('<h2>Storage</h2>',`<h2>Storage</h2>${benchmarkLink}`)
+  .replace('<p class="section-note">These are development measurements, not production guarantees. The linked report includes allocation, coverage, and format tradeoffs.</p>','');
+ const panels=[comparison,storageView,transit];
  return `<div class="bench-content">
   <div class="bench-heading wrap"><h2 id="bench-title">Bench</h2>${logBench}</div>
   <div class="bench-notebook wrap">
