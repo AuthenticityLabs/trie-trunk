@@ -12,19 +12,117 @@ export const libraryExamples = [
   [
     "javascript",
     "JavaScript / WASM",
-    "import { createCodec } from \"pill-packer\";\n\nconst codec = await createCodec(wasmBytes);\nconst definition = codec.define(rxBytes);\n\ntry {\n  // Encode\n  const record = codec.encodeJSON(definition, jsonText);\n\n  // Decode\n  const restored = codec.decodeJSON(definition, record);\n  console.log(restored);\n} finally {\n  codec.release(definition);\n}"
+    "import { doc } from \"pill-packer\";\n\nconst rx = await doc.write(cddl.rx);\nlet pill = rx.fill(pill_bytes);\nlet pack = rx.pack(header_bytes);\n\n// Encode\npack.push(pill);\nconst cpack = pack.seal({ algorithm: \"gzip\", level: 1 });\n\n// Decode\npack = await cpack.unseal();\npill = pack.get(0);\nconst json = pill.json();\n\nrx.dispose();"
   ],
   [
     "rust",
     "Rust",
-    "use pil_codec::{DefinitionDocument, Error};\n\nfn round_trip(rx: &[u8], json: &[u8])\n    -> Result<Vec<u8>, Error>\n{\n    let definition = DefinitionDocument::from_pil(rx)?;\n    // Encode\n    let record = definition.encode_json(json)?;\n\n    // Decode\n    definition.decode_json(&record)\n}"
+    "use pil_codec::api::{Doc, Fill, PackOptions, Compression};\n\nlet rx = Doc::write(cddl.rx)?;\nlet pill = rx.fill(Fill::Encoded(pill_bytes))?;\nlet mut pack = rx.pack(header_bytes, PackOptions::default())?;\n\n// Encode\npack.push(pill)?;\nlet cpack = pack.seal(Compression {\n    level: 1,\n    only_if_smaller: false,\n})?;\n\n// Decode\npack = cpack.unseal()?;\nlet pill = pack.get(0)?;\nlet json = pill.json()?;"
   ],
   [
     "go",
     "Go",
-    "package example\n\nimport \"github.com/AuthenticityLabs/pill-packer/go/codec\"\n\nfunc RoundTrip(rx, json []byte) ([]byte, error) {\n    definition, err := codec.Parse(\n        rx, codec.IdentityProfile{Primary: -1},\n    )\n    if err != nil {\n        return nil, err\n    }\n    // Encode\n    record, err := definition.EncodeJSON(json)\n    if err != nil {\n        return nil, err\n    }\n\n    // Decode\n    return definition.DecodeJSON(record)\n}"
+    "import pillpacker \"github.com/AuthenticityLabs/pill-packer/go/api\"\n\ndoc := pillpacker.Doc{}\nrx, err := doc.Write(cddl.rx)\nif err != nil { return nil, err }\ndefer rx.Close()\npill, err := rx.Fill(pill_bytes)\nif err != nil { return nil, err }\npack, err := rx.Pack(header_bytes, pillpacker.PackOptions{})\nif err != nil { return nil, err }\n\n// Encode\nif err = pack.Push(pill); err != nil { return nil, err }\ncpack, err := pack.Seal(pillpacker.Compression{Algorithm: \"gzip\", Level: 1})\nif err != nil { return nil, err }\n\n// Decode\npack, err = cpack.Unseal()\nif err != nil { return nil, err }\npill, err = pack.Get(0)\nif err != nil { return nil, err }\njson, err := pill.JSON()\nif err != nil { return nil, err }"
   ]
 ];
+
+export const prescriptionOperations = [
+  [
+    "Doc",
+    "doc.write(input[, format])",
+    "Prepare a prescription. Raw .rx / PIL bytes need no format argument; JSON and CBOR bytes accept an explicit override."
+  ],
+  [
+    "Doc",
+    "doc.read(definitionBytes, recordBytes)",
+    "Quick read; prepares a prescription and binds one encoded PIL record."
+  ],
+  [
+    "Prescription",
+    "rx.fill() / rx.fill(bytes) / rx.fill(fieldBuffers)",
+    "Create an all-absent record, bind encoded PIL bytes, or assemble ordered field buffers. Definition constraints still apply."
+  ],
+  [
+    "Prescription",
+    "rx.pack(headerBytes, options)",
+    "Create a mutable pack. Header bytes encode named application headers."
+  ],
+  [
+    "Prescription",
+    "rx.open(bytes) / rx.unpack(bytes)",
+    "Open a bound pack, or read all decoded members as pill views. Unseal compressed packs first."
+  ],
+  [
+    "Pack",
+    "pack.push(pill) / pack.push(bytes)",
+    "Append in place; keep the packing options."
+  ],
+  [
+    "Pack",
+    "pack.pop()",
+    "Remove and return the last pill; an empty pack returns no pill."
+  ],
+  [
+    "Pack",
+    "pack.get(ordinal) / pack.offset(byteOffset)",
+    "Read without removing. Ordinals start at zero; offsets are exact member-relative byte positions."
+  ],
+  [
+    "Pack",
+    "pack.seal(compression)",
+    "Return a sealed wrapper. The original pack and its views remain valid."
+  ],
+  [
+    "Sealed Pack",
+    "cpack.unseal()",
+    "Restore a mutable pack and its representation."
+  ],
+  [
+    "Pack",
+    "pack.unpack()",
+    "Return logical pill views, including inherited common fields."
+  ],
+  [
+    "Pill",
+    "pill.field(name) / pill.field(position)",
+    "Read encoded field bytes, or an explicit absent/null state."
+  ],
+  [
+    "Pill",
+    "pill.json()",
+    "Render JSON text only when requested."
+  ]
+];
+
+export const libraryNotes = [
+  "Raw bytes default to .rx / PIL: doc.write(definitionBytes). JavaScript JSON text implies JSON; a browser File uses its .rx, .pil, .json, or .cbor extension. Override ambiguous input with doc.write(bytes, \"cbor\"). Go WriteFile and Rust write_file infer the same extensions; Rust uses write_as for an explicit format.",
+  "Pill Packer treats application headers as opaque bytes. Seeds resolves Trie-Trunk time bases, branch rows, and state-trie fields directly over borrowed member spans. Generic member addressing and compression remain in Pill Packer.",
+  "Rust and Go use idiomatic capitalization and explicit variants where overloading is unavailable. Rust uses Fill::Encoded, Fill::Fields, and Fill::Empty; raw-byte appends use push_bytes. Go Fill accepts encoded bytes or ordered field buffers.",
+  "fill(bytes) binds one already-encoded PIL record without copying its host buffer. Validation still runs; JavaScript uploads bytes into reusable WASM scratch memory. Field reads borrow encoded bytes rather than constructing event objects. Keep borrowed buffers immutable while views use them.",
+  "Empty field bytes, absent, and null are distinct. JavaScript uses absent and nullValue, Rust uses FieldBytes, and Go supports explicit codec.Value states. Unknown states are rejected. Application ID helpers belong in the Seed layer.",
+  "push and pop mutate the pack, retain record references, and defer serialization until bytes or seal is requested. Fixed width, directory width, named headers, and common-factoring options survive these mutations and the in-memory seal/unseal round trip. Reopening serialized bytes recovers the encoded representation; a factoring policy that produced no common fields cannot be inferred from the wire.",
+  "Gzip compression produces another buffer; seal does not overwrite the original pack. onlyIfSmaller explicitly permits an uncompressed result. Rust unseal consumes the wrapper and can move its uncompressed buffer. Release JavaScript prescriptions with dispose() and Go prescriptions with Close() after their views are finished; Rust uses ownership.",
+  "Prepare a prescription once for repeated work. doc.read is a convenience that prepares it again. Bulk fixed-width and indexed constructors avoid creating a pill for every append. For direct application views, JavaScript provides view(ordinal, sink), popView(sink), and ordinalAtOffset(offset). For repeated reads, Go provides GetInto, OffsetInto, and FieldWith; Rust provides fill_with and field_with with reusable scratch storage. Dynamic common-field discovery can still require whole-pack checks."
+];
+
+export const librarySpecification = `### 12. Prescription Library API
+
+These examples accept PIL Definition bytes (.rx) and an encoded PIL record. JavaScript doc initializes and reuses the packaged WASM runtime automatically. Rust requires the api and gzip features; Go links the Rust native library.
+
+| Owner | Operation | Meaning |
+| --- | --- | --- |
+${prescriptionOperations.map(row=>`| ${row.join(' | ')} |`).join('\n')}
+
+${libraryNotes.join('\n\n')}
+
+#### Bulk Addressing and Headers
+
+JavaScript accepts rx.pack(headers, recordBytes, recordWidth) and rx.pack(headers, addressBytes, offsets, recordBytes). Rust uses pack_fixed / pack_indexed; Go uses PackFixed / PackIndexed. Directory widths are 2, 3, or 4 bytes. Supplied offsets are little-endian, begin at zero, and describe every record; mutation regenerates the directory. Ordinals and offsets refer to the current pack. Keep published packs immutable while application indexes refer to them.
+
+encodeHeaders (Rust encode_headers; Go EncodeHeaders) encodes a PIL map of text names to byte values. The library generates structural fields. The 64-byte PAC prefix contains 32 bytes of framing and a 32-byte SHA-256 Definition identity, not a payload checksum. CRC32C and gzip integrity checks do not replace that binding.
+
+${libraryExamples.map(([id,label,code])=>`#### ${label}\n\n\`\`\`${id}\n${code}\n\`\`\``).join('\n\n')}
+`;
 export function pilPage(arrow){return `
 <section class="wrap pil-hero"><p class="project-line">PIL / Positional Interchange Layout</p><h1>Positional Interchange Layout</h1><p class="intro">Typed binary records. Shared Definitions. Compact packs.<br>Independent of the datastore that carries them.</p><div class="actions"><a class="button" href="/pill-packer.txt">Read the Specification ${arrow}</a><a class="text-link" href="https://github.com/AuthenticityLabs/pill-packer">Pill Packer on GitHub ${arrow}</a></div></section>
 <section class="wrap layout-section" id="layout"><div class="section-heading"><h2>Record Layout</h2><p>Widths follow the Definition<br>and the fields present in each record.</p></div>
@@ -42,15 +140,19 @@ ${table(['Representation','Section','Encoding'],[['Integers, floats, UUIDs, time
 <details class="pil-detail" id="cddl"><summary>Schema Mapping</summary><p>Named records, optional fields, homogeneous arrays, choices, literals, bounded integers, and supported size constraints compile into positional layouts. Records can preserve additional fields with <code>* tstr =&gt; any</code>. The compiler rejects unsupported CDDL constructs, including recursive rules, arbitrary dynamic maps, generics, group rules, and tuple arrays.</p><p>CDDL constraints describe valid values. Storage annotations select representations such as fixed-capacity text without changing those constraints. Open <code>OBJECT</code> values use the built-in PIL value layout. The specification describes the exact mapping and encoding rules.</p></details></section>
 <section class="wrap seed-section" id="packs"><h2>PAC Layout</h2><p class="seed-lead">A Packed Array Container binds ordered records to one exact Definition.</p><div class="pil-pack-flow"><div>Fixed Header <span>64 bytes · Lengths, flags, count, Definition digest</span></div><div>Header Data <span>Extensions, layout controls, named headers, common frame, optional directory</span></div><div>PIL Members <span>Record 0 → Record 1 → Record 2 → …</span></div></div>
 ${table(['Byte Position','Bytes','Header Value'],[['0–3','4','Decoded container length'],['4–7','4','Flags'],['8–15','8','Total decoded PAC length'],['16–23','8','Header length / first member position'],['24–31','8','Member count'],['32–63','32','SHA-256 digest of exact Definition bytes']])}
-<div class="pil-explain-grid"><div><h3>Shared Values</h3><p>A common PIL frame holds values shared by every member at any field position. Those positions are Absent in members. Reading a logical record combines its member values with the common frame.</p></div><div><h3>Member Addressing</h3><p>Sequential packs scan self-delimiting frames. An optional directory provides 2-, 3-, or 4-byte member-relative offsets. A declared fixed record width instead permits direct ordinal addressing after every member’s width is verified.</p></div><div><h3>Compression</h3><p>The entire decoded PAC can be gzip-compressed. A 16-byte wrapper carries stored length, codec, decoded length, and member count. Expand the PAC before addressing its members.</p></div></div><p class="pil-copy">Full reads validate structure and values. Trusted reads still check bounds and framing. CRC32C can verify bytes against an application-provided checksum; gzip also carries its own integrity checks.</p></section>
-<section class="wrap seed-section pil-libraries" id="libraries"><h2>Pill Packer Libraries</h2><p class="seed-lead">Shared binary records across Rust, JavaScript/WASM, and Go.</p><p class="pil-copy">These examples take a CDDL-backed <code>record.rx</code> and matching JSON text, encode a PIL record, then decode it. Prepare the Definition once and reuse it across records.</p>
+<div class="pil-explain-grid"><div><h3>Shared Values</h3><p>A common PIL frame holds values shared by every member at any field position. Those positions are Absent in members. Reading a logical record combines its member values with the common frame.</p></div><div><h3>Member Addressing</h3><p>Sequential packs scan self-delimiting frames. An optional directory provides 2-, 3-, or 4-byte member-relative offsets. A declared fixed record width instead permits direct ordinal addressing after every member’s width is verified.</p></div><div><h3>Compression</h3><p>The entire decoded PAC can be gzip-compressed. A 16-byte wrapper carries stored length, codec, decoded length, and member count. Expand the PAC before addressing its members.</p></div></div><p class="pil-copy">The 64-byte prefix is 32 bytes of framing plus 32 bytes identifying the exact Definition. SHA-256 binds the layout; it is not a payload checksum. CRC32C and gzip integrity checks detect damaged bytes and do not replace that binding. Full reads validate structure and values; trusted reads still check bounds and framing.</p></section>
+<section class="wrap seed-section pil-libraries" id="libraries"><h2>Pill Packer Libraries</h2><p class="seed-lead">Shared binary records across Rust, JavaScript/WASM, and Go.</p><p class="pil-copy">The inputs are an <code>.rx</code> Definition (<code>cddl.rx</code>), an encoded record (<code>pill_bytes</code>), and encoded named headers (<code>header_bytes</code>). Prepare <code>rx</code> once, fill a <code>pill</code>, then <code>pack</code> and seal it into <code>cpack</code>.</p>
 <div class="pil-library-code" data-pil-tabs>
 ${libraryExamples.map(([id,label,code],i)=>`<div id="library-${id}" role="tabpanel" aria-labelledby="library-tab-${id}" tabindex="0"${i?' hidden':''}><pre><code id="library-code-${id}">${highlight(code)}</code></pre></div>`).join('')}
 <div class="pil-code-footer"><div class="pil-language-tabs" role="tablist" aria-label="Library Language">${libraryExamples.map(([id,label],i)=>`<button type="button" role="tab" id="library-tab-${id}" aria-controls="library-${id}" aria-selected="${i===0}" tabindex="${i===0?0:-1}">${label}</button>`).join('')}</div>${copyButton('library-code-javascript','Copy JavaScript / WASM Example')}</div></div>
-<p class="pil-copy">JavaScript uses the package’s <code>codec.wasm</code>. Go’s compiled-schema support links the Rust native library.</p><a class="text-link" href="https://github.com/AuthenticityLabs/pill-packer#build--test">Library Setup &amp; Build Instructions ${arrow}</a></section>
+<p class="pil-copy">JavaScript loads and reuses the packaged WASM runtime automatically. Rust requires the <code>api</code> and <code>gzip</code> features. Go links the Rust native library.</p><a class="text-link" href="https://github.com/AuthenticityLabs/pill-packer#build--test">Library Setup &amp; Build Instructions ${arrow}</a>
+<h3>Prescriptions, Pills, and Packs</h3>
+${table(['Owner','Operation','Result'],prescriptionOperations.map(([owner,operation,result])=>[owner,`<code>${escape(operation)}</code>`,result]))}
+<details class="pil-detail"><summary>Ownership and Performance</summary>${libraryNotes.map(note=>`<p>${escape(note)}</p>`).join('')}</details>
+<details class="pil-detail"><summary>Bulk Addressing and Named Headers</summary><p>Pass fixed-width records with <code>rx.pack(headers, recordBytes, recordWidth)</code>, or supply a directory with <code>rx.pack(headers, addressBytes, offsets, recordBytes)</code>. Rust uses <code>pack_fixed</code> / <code>pack_indexed</code>; Go uses <code>PackFixed</code> / <code>PackIndexed</code>.</p><p>Directory widths are 2, 3, or 4 bytes. Supplied offsets are little-endian, start at zero, and describe every record; mutation regenerates the directory. Keep published packs immutable while application indexes refer to them.</p><p><code>encodeHeaders</code> (Rust <code>encode_headers</code>; Go <code>EncodeHeaders</code>) encodes a PIL map of text names to byte values. The library supplies count, lengths, flags, and Definition identity.</p></details></section>
 <section class="wrap seed-section" id="definition"><h2>Definitions</h2><p class="seed-lead">CDDL describes the data. The compiled PIL Definition binds field positions, types, dictionaries, and validation rules. JSON provides an editable view of that Definition.</p>
 <div class="pil-notebook" data-pil-tabs data-pil-deep-links>
-<div class="pil-definition-tabs" role="tablist" aria-label="Definitions" aria-orientation="vertical">${[['cli','CLI'],['schema','Schema'],['agents','Agents']].map(([id,label],i)=>`<button type="button" role="tab" id="definition-tab-${id}" aria-controls="definition-${id}" aria-selected="${i===0}" tabindex="${i===0?0:-1}">${label}</button>`).join('')}</div>
+<div class="pil-definition-tabs" role="tablist" aria-label="Definitions" aria-orientation="vertical">${[['cli','CLI'],['editor','Editor'],['schema','Schema'],['agents','Agents']].map(([id,label],i)=>`<button type="button" role="tab" id="definition-tab-${id}" aria-controls="definition-${id}" aria-selected="${i===0}" tabindex="${i===0?0:-1}">${label}</button>`).join('')}</div>
 <div class="pil-notebook-pages">
 <div id="definition-cli" role="tabpanel" aria-labelledby="definition-tab-cli" tabindex="0">
 <h3 id="reader">Read, Write, &amp; Fill Prescriptions with RX</h3><p class="seed-lead">Read records as JSONL, write Definitions from CDDL, and fill records through the codec library.</p>
@@ -62,7 +164,9 @@ rx read pil-example.rx pil-example.pil
 rx read pil-example.rx pil-example.pac
 rx read pil-example.rx pil-example.compressed.pac --pretty</code></pre></details>
 
-<p class="pil-copy">Omit the data path to inspect a Definition. <code>--pretty</code> indents JSON output. Record filling uses the library’s <code>fill</code> API; the CLI provides <code>read</code> and <code>write</code>.</p><a class="text-link" href="/pill-packer.txt">Complete Specification & Commands ${arrow}</a>
+<p class="pil-copy">Omit the data path to inspect a Definition. <code>--pretty</code> indents JSON output. Record filling uses the prescription’s <code>rx.fill</code> API; the CLI provides <code>read</code> and <code>write</code>.</p><a class="text-link" href="/pill-packer.txt">Complete Specification & Commands ${arrow}</a>
+</div>
+<div id="definition-editor" role="tabpanel" aria-labelledby="definition-tab-editor" tabindex="0" hidden>
 <h3 id="doc-editor">Shape a Definition with DOC Editor</h3><p class="pil-copy">Choose a type, then its range or size. Review optional fields, nulls, and dictionaries in the terminal editor, or edit CDDL directly. JSON samples suggest a starting point; you decide the constraints. Every saved Definition is <code>.rx</code>.</p>
 ${codeBox("doc-inputs","Open an Input","doc\ndoc --json samples.json\ndoc --cddl purchase.cddl\ndoc --rx purchase.rx")}<p class="pil-copy">Run <code>doc</code> to start from scratch. Use the field controls to choose types and sizes, or edit CDDL directly. Review sample-derived choices before saving.</p>
 ${table(["Key","Action"],[["F2","Switch Fields, CDDL, Samples, and Layout"],["Enter","Edit the selected field"],["F5","Apply a dialog or validate samples"],["Ctrl+S","Save the Definition as RX"]])}<a class="text-link" href="https://github.com/AuthenticityLabs/pill-packer#doc-definition-editor">DOC Editor Reference ${arrow}</a>

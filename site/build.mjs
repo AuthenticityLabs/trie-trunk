@@ -6,9 +6,9 @@ import {execFileSync} from 'node:child_process';
 import {render,stages,pages} from './src/pages.mjs';
 import {pagePath,redirects} from './src/routes.mjs';
 import {benchmark,measurementReport} from './src/measurements.mjs';
-import {layoutDefinition,layoutHex} from './src/pil.mjs';
+import {layoutDefinition,layoutHex,librarySpecification} from './src/pil.mjs';
 import {createCodec} from '../../pill-packer/npm/index.js';
-import {define,fill,pack,compress} from '../../pill-packer/npm/src/pack.ts';
+import {define,fill,pack,compress} from '../../pill-packer/npm/portable/pack.js';
 import {buildSnootPreview} from './snoot-preview/build.mjs';
 const here=dirname(fileURLToPath(import.meta.url));
 // Local previews use a separate directory from the deployable release.
@@ -50,7 +50,7 @@ await writeFile(join(out,'install-rx.sh'),installer.replace('RX_DEFAULT_REVISION
 const pillReadme=await readFile(join(here,'../../pill-packer/README.md'),'utf8');
 const formatReference=pillReadme.split('## PIL Specification\n')[1]?.split(/\n## /)[0];
 if(!formatReference)throw new Error('Pill Packer README is missing its PIL Specification');
-await writeFile(join(out,'pill-packer.txt'),'# PIL Specification\n'+formatReference.replaceAll('](schemas/definition.cddl)','](https://trietrunk.com/definition.cddl)'));
+await writeFile(join(out,'pill-packer.txt'),'# PIL Specification\n'+formatReference.replaceAll('](schemas/definition.cddl)','](https://trietrunk.com/definition.cddl)')+'\n'+librarySpecification);
 // Generate the documented bytes through Pill Packer, and fail the build if
 // its output no longer matches the annotated layout example.
 const codec=await createCodec(await readFile(join(here,'../../pill-packer/npm/codec.wasm')));
