@@ -248,3 +248,13 @@ for(const group of document.querySelectorAll('[data-pil-tabs]')){
  };
  reveal();window.addEventListener('hashchange',reveal);
 }
+
+// Keep section headings clear of the responsive sticky header.
+if(document.body.dataset.page==='PIL'){
+ const root=document.documentElement;
+ const header=document.querySelector('.site-header');
+ const updateClearance=()=>root.style.setProperty('--pil-header-clearance',`${Math.ceil(header?.getBoundingClientRect().height??0)+16}px`);
+ updateClearance();
+ root.classList.add('pil-section-snap');
+ if(header)new ResizeObserver(updateClearance).observe(header);
+}
