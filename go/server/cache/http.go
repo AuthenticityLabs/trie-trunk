@@ -98,6 +98,10 @@ func (h *HTTP) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		h.summariesHTTP(w, r)
 		return
 	}
+	if r.URL.Path == "/query-delta" {
+		h.queryDeltaHTTP(w, r)
+		return
+	}
 	if r.URL.Path == "/events" {
 		h.viewHTTP(w, r)
 		return

@@ -17,6 +17,7 @@ const archive=(_token,c)=>{
   switch(c.kind){
    case 'definitions':return {definitions:[...definitions.values()]};
    case 'trunk-save':for(const d of c.snapshot.definitions)definitions.set(d.digest,d);return {};
+   case 'time-read-many':return {times:await store.timeWindows(c.queries)};
    case 'time-read':return {time:await store.timeWindow(c.query)};
    case 'time-save':await nativeTransaction(backend,b=>new NativeStore(b).importTime(c.input));return {};
    case 'summary-read':return {summaryBytes:await store.summaryBytes(c.query)};

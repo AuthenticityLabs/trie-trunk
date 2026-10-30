@@ -4,7 +4,7 @@ import {searchTimingRows} from './search/timing.ts';
 
 test('local search reports measured stages without fabricated network or summary zeroes',()=>{
  const rows=searchTimingRows(21144,{discovery:21000,planning:120,events:2,request:0,response:0,summaries:0,client:0});
- assert.deepEqual(rows.map(r=>[r.label,r.ms]),[['Time Trie Sync',21000],['Local Planning',120],['Collection & Matching',2],['Other Elapsed',22]]);
+ assert.deepEqual(rows.map(r=>[r.label,r.ms]),[['Source Sync',21000],['Local Planning',120],['Retrieval & Matching',2],['Other Elapsed',22]]);
  assert.equal(rows.reduce((sum,r)=>sum+r.ms,0),21144);
 });
 test('comparison search retains measured request, decode and summary phases',()=>{

@@ -182,7 +182,7 @@ func TestBridgeBootstrapAndCatalogReplicationRoutes(t *testing.T) {
 	defer upstream.Close()
 	target, _ := url.Parse(upstream.URL)
 	b := newBridge("127.0.0.1:34185", "test-secret", fstest.MapFS{"assets/local.tri": {Data: []byte("local")}}, target, http.DefaultTransport, "HTTP")
-	for _, route := range []string{"/trunk", "/trunk/demo/payment", "/collections/demo/payment/transactions.v1", "/demo/payment/transactions.v1/0/resource.rx", "/demo/payment/transactions.v1/0/read.tri?begin=2600100&end=2600123", "/demo/payment/transactions.v1/0/read.sum", "/demo/payment/transactions.v1/0/read.idx", "/demo/payment/transactions.v1/0/read.tvy", "/demo/payment/transactions.v1/0/read.pods?page=100"} {
+	for _, route := range []string{"/query-delta", "/trunk", "/trunk/demo/payment", "/collections/demo/payment/transactions.v1", "/demo/payment/transactions.v1/0/resource.rx", "/demo/payment/transactions.v1/0/read.tri?begin=2600100&end=2600123", "/demo/payment/transactions.v1/0/read.sum", "/demo/payment/transactions.v1/0/read.idx", "/demo/payment/transactions.v1/0/read.tvy", "/demo/payment/transactions.v1/0/read.pods?page=100"} {
 		t.Run(route, func(t *testing.T) {
 			w := httptest.NewRecorder()
 			b.ServeHTTP(w, authorized(route))

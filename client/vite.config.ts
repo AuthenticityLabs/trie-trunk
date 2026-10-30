@@ -13,7 +13,7 @@ export default defineConfig(({ mode }) => {
       port: 5173,
       strictPort: true,
       proxy: Object.fromEntries(
-        ["/trunk", "/collect", "/events", "/summaries", "/schemas", "/caches", "/objects", "/collections", "/rejections",
+        ["/query-delta", "/trunk", "/collect", "/events", "/summaries", "/schemas", "/caches", "/objects", "/collections", "/rejections",
           '^/(?:[^/]+/)+(?:resource\\.rx|(?:resource|state|read|write|error|debug|trace)\\.(?:tri|sum|idx|tvy|pods))(?:\\?|$)',
         ].map(path => [
           path, api,

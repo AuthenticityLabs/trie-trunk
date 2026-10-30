@@ -1,0 +1,49 @@
+{
+  "scope": "Isolated loopback Go endpoint and production Snoot UI in WebKit; 10,000 synthetic unsealed events in one branch.",
+  "measurement": "View-worker elapsed time, including local predicate matching and aggregate preparation; excludes bootstrap and UI painting. Server time is handler wall time. Two isolated runs, each with a first search and unchanged refresh; the second also includes a new ingress event; not a pre-framework comparison or WAN benchmark.",
+  "test": "go/server/cache/query_delta_browser_test.go + client/scripts/test-query-delta-browser.mjs",
+  "runs": [
+    {
+      "browser": "WebKit",
+      "events": 10000,
+      "first": {
+        "ms": 101,
+        "bytes": 1007812,
+        "liveFrames": 10000,
+        "serverMs": 5.874916
+      },
+      "repeat": {
+        "ms": 51,
+        "bytes": 516,
+        "liveFrames": 0,
+        "serverMs": 0.056958,
+        "requests": 1
+      },
+      "checkpoint": 1793392476025
+    },
+    {
+      "arrival": {
+        "ms": 50,
+        "bytes": 807,
+        "liveFrames": 3,
+        "matched": 10001
+      },
+      "browser": "WebKit",
+      "events": 10000,
+      "first": {
+        "ms": 101,
+        "bytes": 1007812,
+        "liveFrames": 10000,
+        "serverMs": 6.375625
+      },
+      "repeat": {
+        "ms": 49,
+        "bytes": 516,
+        "liveFrames": 0,
+        "serverMs": 0.071708,
+        "requests": 1
+      },
+      "checkpoint": 1793392862973
+    }
+  ]
+}

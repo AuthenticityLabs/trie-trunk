@@ -37,7 +37,8 @@ try{
   run=await cache.start(query(1),{...context,source:'different server'},window);ok(!run.previous,'source crossed');await complete(run);
   run=await cache.start(query(1),{...context,definitions:['other']},window);ok(!run.previous,'Definition crossed');await complete(run);
   run=await cache.start(query(1),context,window);await complete(run);
-  run=await cache.start(query(1),context,{from:101,to:20000});ok(!run.previous,'start crossed');await complete(run);
+  run=await cache.start(query(1),context,{from:101,to:20000});ok(run.previous?.checkpointEpochMs===11000,'sliding start lost checkpoint');await complete(run);
+  run=await cache.start(query(1),context,window);ok(!run.previous,'earlier start crossed');await complete(run);
   run=await cache.start(query(1),context,{from:101,to:11000});ok(!run.previous,'shrinking end crossed');await complete(run,10000);
   // LRU touches do not indefinitely extend the two-hour expiry.
   let expiry=(await cache.get(run.signature)).expiresAt;
@@ -129,7 +130,7 @@ try{
   await form.getByRole('button',{name:'Search',exact:true}).click();
   const repeated=await completed(first.uses);
   assert.equal(repeated.measurements.matched,first.measurements.matched);
-  assert.equal(repeated.checkpointEpochMs,first.checkpointEpochMs);
+  if(first.checkpointEpochMs!==undefined)assert.ok(repeated.checkpointEpochMs>=first.checkpointEpochMs);
   console.log(JSON.stringify({integration:'Local Search',uses:repeated.uses,matched:repeated.measurements.matched,checkpointEpochMs:repeated.checkpointEpochMs}));
   const expand=app.getByRole('button',{name:'Expand navigation',exact:true});
   if(await expand.isVisible())await expand.click();

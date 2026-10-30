@@ -74,6 +74,14 @@ func (s *Store) rememberLive(b *branchStore, p pending, row uint64, staged bool)
 	}
 	if staged {
 		b.pendingVersion++
+		ms := eventTime(p.id[:])
+		if ms <= max(b.queryNewest, b.queryObservedThrough) {
+			if b.queryLateVersion == 0 || ms < b.queryLateFrom {
+				b.queryLateFrom = ms
+			}
+			b.queryLateVersion = b.pendingVersion
+		}
+		b.queryNewest = max(b.queryNewest, ms)
 		b.pendingBytes += len(p.frame)
 	}
 	return nil

@@ -179,8 +179,8 @@ export function PagedResults(props:{
    <div class="results-toolbar"><strong>Event Activity</strong><span>{s().count.toLocaleString()} matched</span><SearchPerformance timing={chartTiming()} />
     <button class="text-button" onClick={()=>restart(props.query)}>Reset Time Window</button></div>
    <Histogram counts={s().counts} errors={s().errors} first={s().from} last={s().from+s().step*s().counts.length}
-    count={s().count} onWindow={(from,to)=>restart({...query,from:new Date(Math.max(from,s().from)).toISOString(),to:new Date(Math.min(to,s().to)).toISOString()})} />
-   <Show when={result()?.provisional}><div class="results-footer">Committed events only · the recent arrival window is still open</div></Show>
+    count={s().count} onWindow={(from,to)=>restart({...query,now:false,from:new Date(Math.max(from,s().from)).toISOString(),to:new Date(Math.min(to,s().to)).toISOString()})} />
+   <Show when={result()?.provisional&&s().status!=='live-snapshot'}><div class="results-footer">Committed events only · the recent arrival window is still open</div></Show>
   </section>}</Show>
   <section class="card results-card">
    <div class="results-toolbar"><strong>Events</strong><div class="results-actions">

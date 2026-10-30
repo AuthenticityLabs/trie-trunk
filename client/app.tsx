@@ -654,7 +654,7 @@ function Workspace(props: {onLogout: () => void}) {
       const ast=parseQuery(queryText(),queryFields());
       for(const [field,value] of Object.entries(localParameters()))if(value)ast.plan.filters.push({field,op:'==',value:{kind:'string',value}});
       const q=selection(false);stop();setError("");setSearchError("");
-      setPagedQuery({engine:tantivyComparison()?'tantivy':'local',tap:q.tap,from:q.from,to:q.to!,size:ast.page?.size??pageSize(),after:ast.page?.after,
+      setPagedQuery({now:range()!=='custom'||!to(),engine:tantivyComparison()?'tantivy':'local',tap:q.tap,from:q.from,to:q.to!,size:ast.page?.size??pageSize(),after:ast.page?.after,
         ...(ast.plan.filters.length||ast.plan.predicate||ast.plan.search||ast.plan.order!=='asc'?{query:ast.plan}:{})});
     }catch(e){setSearchError(e instanceof Error?e.message:String(e))}
   }

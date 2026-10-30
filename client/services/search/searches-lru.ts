@@ -107,7 +107,7 @@ export class SearchesLRU{
   const id=crypto.randomUUID();
   return this.change((rows,store,now)=>{
    const old=rows.find(row=>row.signature===signature);
-   const previous=old?.context===contextKey&&old.window.from===window.from&&old.window.to<=window.to?structuredClone(old):undefined;
+   const previous=old?.context===contextKey&&old.window.from<=window.from&&old.window.to<=window.to?structuredClone(old):undefined;
    // A new scope/window cannot inherit progress merely because predicates match.
    // Changing the end also needs a fresh completeness check before advancement.
    const label=formatQuery({collection:'events',plan:{filters:[],...query,order:'asc'}},'pipeline').replace(/\s*\n\s*/g,' ');
@@ -116,7 +116,7 @@ export class SearchesLRU{
    store.put(row);return {signature,id,previous};
   });
  }
- async finish(run:SearchRun,result:{status:'complete';progress?:{checkpointEpochMs?:number};measurements:SearchMeasurements}|{status:'failed'|'cancelled'}):Promise<void>{
+ async finish(run:SearchRun,result:{status:'complete';progress?:{checkpointEpochMs?:number};window?:SearchWindow;measurements:SearchMeasurements}|{status:'failed'|'cancelled'}):Promise<void>{
   return this.change((rows,store,now)=>{
    const row=rows.find(row=>row.signature===run.signature);
    // A completed old request must not overwrite a newer query/scope or resurrect
@@ -124,6 +124,7 @@ export class SearchesLRU{
    if(!row||row.activeRun!==run.id)return;
    delete row.activeRun;row.status=result.status;
    if(result.status==='complete'){
+    if(result.window)row.window=result.window;
     const checkpoint=result.progress?.checkpointEpochMs;
     if(checkpoint!==undefined&&(!Number.isSafeInteger(checkpoint)||checkpoint<row.window.from||checkpoint>=row.window.to))throw Error('Invalid query checkpoint');
     row.updatedAt=now;row.expiresAt=now+SEARCH_TTL_MS;

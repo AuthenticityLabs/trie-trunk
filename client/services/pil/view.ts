@@ -1,4 +1,5 @@
 import {executeLocalSearch} from '../search/execute.ts';
+import {QueryDeltas} from '../search/query-delta.ts';
 import {SearchesLRU} from '../search/searches-lru.ts';
 import {queryLocalSummaries} from '../search/summaries.ts';
 import {INDEX_ROW_BYTES} from './pac-native.ts';
@@ -12,7 +13,7 @@ import { ViewCoverage } from './view-coverage.ts';
 import { PILStream, consume, type StoredDefinition, type Batch } from './stream.ts';
 import { Codec } from './wasm.ts';
 import type { Metadata, Binding } from './metadata.ts';
-export type ViewQuery={engine?:'local'|'tantivy';query?:import('../query').QueryPlan;tap:string;from:string;to:string;size:number;after?:string;include?:'summary'|'page'|'summary,page'|'summary,page,statistics'};
+export type ViewQuery={now?:boolean;engine?:'local'|'tantivy';query?:import('../query').QueryPlan;tap:string;from:string;to:string;size:number;after?:string;include?:'summary'|'page'|'summary,page'|'summary,page,statistics'};
 export type ViewStatistics={complete?:boolean;matched?:number;evaluated?:number;services:{name:string;count:number}[];levels:{name:string;count:number}[];duration:{count:number;average:number;min:number;max:number};operations:{errors:import('../operations').OperationRank[];latency:import('../operations').OperationRank[]}};
 export type ViewSummary={from:number;to:number;step:number;counts:number[];errors:number[];count:number;status:'committed-snapshot'|'live-snapshot';statistics?:ViewStatistics};
 export function validateStatistics(summary:ViewSummary):void {
@@ -35,6 +36,7 @@ export type NativeViewRecord={row:Uint8Array;base:number;trie:{start:number;byte
 type PackedRecord={bytes:Uint8Array;common?:Uint8Array;native?:NativeViewRecord};
 export class ViewCache {
  private searches=new SearchesLRU();
+ private queryDeltas=new QueryDeltas();
  private trunk?:TrunkBootstrap;
  private localSummaries=new Map<string,ViewSummary>();
  private localPages=new Map<string,Pick<ViewResponse,'result'|'definitions'|'bindings'>>();
@@ -94,7 +96,7 @@ export class ViewCache {
  private fetcher:typeof fetch;
  constructor(fetcher:typeof fetch=fetch){this.fetcher=fetcher}
  resetEvents(){
-  this.localSummaries.clear();this.localPages.clear();this.nativeHours.clear();this.events.clear();this.prefixes.clear();this.tries.clear();this.bytes=0;
+  this.queryDeltas.clear();this.localSummaries.clear();this.localPages.clear();this.nativeHours.clear();this.events.clear();this.prefixes.clear();this.tries.clear();this.bytes=0;
   this.pages.clear();this.versions.clear();this.summaries.clear();this.persisted.clear();this.coverage=new ViewCoverage();
  }
 
@@ -117,16 +119,18 @@ export class ViewCache {
    if(!this.trunk||!archive)throw Error('Local search requires the trunk catalog and local storage. Reload the connection.');
    if(query.include==='summary'&&!query.query)return queryLocalSummaries(this.trunk,query,token,signal,archive,this.fetcher,projection);
    const started=performance.now();
-   // Metadata I/O runs beside execution, never on the first-page critical path.
+   // Historical queries record metadata beside execution. Live refreshes read
+   // the prior checkpoint before deciding which interval to request.
    // Pagination and summary-only dashboard refreshes do not replace a search's
    // checkpoint with a partial scan. Credentials are only hashed, never stored.
    const run=!query.after&&this.searches.available?this.searches.start(query.query,{
     source:JSON.stringify([globalThis.location?.origin,token,this.trunk.version]),scope:query.tap,definitions:this.trunk.definitions.map(d=>d.digest)
    },{from:Date.parse(query.from),to:Date.parse(query.to)}).catch(()=>undefined):Promise.resolve(undefined);
    try{
-    const view=await executeLocalSearch(this.trunk,query,token,signal,codec,definitions,archive,this.fetcher,onPage,this.localSummaries,this.localPageCache);
+    const ticket=query.now?await run:undefined;
+    const view=await executeLocalSearch(this.trunk,query,token,signal,codec,definitions,archive,this.fetcher,onPage,this.localSummaries,this.localPageCache,query.now?{cache:this.queryDeltas,run:ticket}:undefined);
     const elapsedMs=performance.now()-started;
-    void run.then(ticket=>ticket&&this.searches.finish(ticket,{status:'complete',progress:view.result.searchProgress,measurements:{elapsedMs,matched:view.result.summary?.count,loaded:view.result.page.length}})).catch(()=>{});
+    void run.then(ticket=>ticket&&this.searches.finish(ticket,{status:'complete',progress:view.result.searchProgress,window:view.result.summary?{from:view.result.summary.from,to:view.result.summary.to}:undefined,measurements:{elapsedMs,matched:view.result.summary?.count,loaded:view.result.page.length}})).catch(()=>{});
     return view;
    }catch(error){
     void run.then(ticket=>ticket&&this.searches.finish(ticket,{status:signal.aborted?'cancelled':'failed'})).catch(()=>{});

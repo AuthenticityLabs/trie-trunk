@@ -330,7 +330,7 @@ func (p *Endpoint) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		(&HTTP{sources: sources}).branchFileHTTP(w, r, file)
 		return
 	}
-	if api != nil && (r.URL.Path == "/summaries" || r.URL.Path == "/events" || r.URL.Path == "/collect" || r.URL.Path == "/schemas" || r.URL.Path == "/rejections") {
+	if api != nil && (r.URL.Path == "/query-delta" || r.URL.Path == "/summaries" || r.URL.Path == "/events" || r.URL.Path == "/collect" || r.URL.Path == "/schemas" || r.URL.Path == "/rejections") {
 		handler := &HTTP{Store: api.Store, sources: sources}
 		handler.ServeHTTP(w, r)
 		return

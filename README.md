@@ -485,8 +485,25 @@ Each entry can hold one newest-common timestamp (the minimum of each scanned
 branch's newest timestamp), run counts, and measurements. Branch timestamps are
 transient, and no event bytes or credentials are stored here. Checkpoints are
 recorded only after full scans, before predicate rejection, with a one-millisecond
-overlap available for resumption. Current scans cover sealed data; this metadata
-does not yet narrow live collections or establish late-arrival completeness.
+overlap for resumption. Searches ending at now use one `/query-delta` request
+across their selected branches. The server captures the upper bound, returns
+changed time-trie coverage, and reads new unsealed PIL records from resident
+memory. Predicates remain client-side. An unchanged branch sends no event bytes;
+a late arrival rewinds the affected response range, and newly sealed hours replace
+provisional rows through the existing whole-pack retrieval and durable write path.
+A proven empty branch contributes the evaluated upper bound to the common
+checkpoint. Generation/revision receipts invalidate snapshots; they are not
+independent query checkpoints.
+
+Unsealed records stay in a bounded worker-memory cache (20 queries, two hours,
+64 MB combined); IndexedDB contains metadata only. Reload, eviction, cancellation,
+or changed coverage cannot use a checkpoint to skip missing bytes. The delta
+endpoint caps a response at 64 MB of live PIL data and fails explicitly above that
+limit; it does not silently truncate results. Historical packs still use existing
+batched native retrieval. A refreshed window currently re-evaluates local
+predicates and aggregates; incremental retrieval does not imply incremental
+aggregate computation.
+The [isolated WebKit measurements](benchmarks/retrieval/2026-10-30-query-delta/results.json) exercise first retrieval, an unchanged refresh, and a new ingress event against 10,000 live records.
 Profile → Storage → Recent Searches clears individual entries or the whole cache.
 
 Subscription preferences use a `dashboard-services:` key partitioned by a

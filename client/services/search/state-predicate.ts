@@ -175,10 +175,12 @@ export class StatePredicate {
     this.cached.set(leaf, result);
     return result;
   }
-  matches(event: NativeEvent): boolean {
-    if (!this.matchesLeaf(event.stateLeaf)) return false;
+  matches(event: NativeEvent, live=false): boolean {
+    if (live) {
+      if(!this.stateFilters.every(f=>f.test(valueAt(event,this.mapping.definition.fields[f.key].name))))return false;
+    } else if (!this.matchesLeaf(event.stateLeaf)) return false;
     if (!this.eventFilters.every(f => f.test(valueAt(event, f.field)))) return false;
     if (this.expression && !this.expression.event(event)) return false;
-    return this.text.every(term => term.keys.every(k => this.mapping.dictionary.path.has(k)) || term.keys.some(k => term.labels.has(String(decodeValue(event.read(k), this.mapping.dictionary.fields.keys.get(k))))));
+    return this.text.every(term => !live && term.keys.every(k => this.mapping.dictionary.path.has(k)) || term.keys.some(k => term.labels.has(String(decodeValue(event.read(k), this.mapping.dictionary.fields.keys.get(k))))));
   }
 }

@@ -8,9 +8,9 @@ const remoteStages = [
  ['events','Event Data','Load requested events from local storage or complete remote hours.'],
 ] as const;
 const localStages = [
- ['discovery','Time Trie Sync','Read local receipts, fetch missing time trie ranges and save them locally. Includes network and storage waits.'],
+ ['discovery','Source Sync','Check local receipts, synchronize time trie coverage and retrieve live query updates when needed. Includes network, decode and storage waits.'],
  ['planning','Local Planning','Read coverage, bind Definitions and prepare the search snapshot. Includes local storage waits.'],
- ['events','Collection & Matching','Collect missing event packs, read local records, match predicates and aggregate results.'],
+ ['events','Retrieval & Matching','Retrieve missing event packs, read local records, match predicates and aggregate results.'],
 ] as const;
 
 /** Sequential wall-clock stages, not CPU timings or sums of parallel requests. */
