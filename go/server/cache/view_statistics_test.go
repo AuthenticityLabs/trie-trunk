@@ -67,7 +67,7 @@ func TestViewStatisticsFullRangeSparseAndContinuation(t *testing.T) {
 		req.Header.Set("PIL-Features", "pac-arrays")
 		req.Header.Set("Summary-Known", known)
 		w := httptest.NewRecorder()
-		h.ServeHTTP(w, req)
+		h.serveHTTP(w, req)
 		if w.Code != 200 {
 			t.Fatal(w.Code, w.Body.String())
 		}

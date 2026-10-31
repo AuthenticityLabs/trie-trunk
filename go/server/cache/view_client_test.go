@@ -36,7 +36,7 @@ func collectView(t *testing.T, l *Layout, h *HTTP, raw []byte) viewDecoded {
 			r.Header.Set("Authorization", "Bearer "+h.Token)
 		}
 		w := httptest.NewRecorder()
-		h.ServeHTTP(w, r)
+		h.serveHTTP(w, r)
 		if w.Code != 200 {
 			t.Fatal(w.Code, w.Body.String())
 		}

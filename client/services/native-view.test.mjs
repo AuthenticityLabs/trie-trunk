@@ -39,7 +39,7 @@ test('sealed views collect a complete hour and expose canonical bytes without se
  const viewWire=()=>bytes(magic,[2],bind,[8],frame([3],[text.encode(JSON.stringify(meta))]),[255,254]);
  let collects=0;
  const cache=new ViewCache(async url=>{
-  if(url.startsWith('/collect?')){collects++;assert.equal(new URL(url,'https://test').searchParams.get('definition'),binding.digest);return new Response(wire,{headers:{'Content-Type':'application/pil','PIL-Version':'2','Definition-Version':binding.digest,'Trunk-Format':'native-pac/0','Trunk-Completion':'body'}})}
+  if(url.startsWith('/demo/seeds?')){collects++;assert.equal(new URL(url,'https://test').searchParams.get('definition'),binding.digest);return new Response(wire,{headers:{'Content-Type':'application/pil','PIL-Version':'2','Definition-Version':binding.digest,'Trunk-Format':'native-pac/0','Trunk-Completion':'body'}})}
   return new Response(viewWire(),{headers:{'Content-Type':'application/pil','PIL-Version':'2','Trunk-Format':'pac-view/0','Trunk-Completion':'body'}});
  });
  const query={engine:'tantivy',tap:binding.tap,from:new Date(from).toISOString(),to:new Date(to).toISOString(),size:1,include:'page'};
@@ -59,7 +59,7 @@ test('sealed views collect a complete hour and expose canonical bytes without se
  await cache.query(query,'',new AbortController().signal,codec,definitions,archive);
  assert.equal(collects,2,'evicted local hour was not rechecked');
  const conflict=new NativeCacheError('generation conflict',{code:'native-cache-conflict',source:binding.tap,reason:'generation-fork'});
- const failed=new ViewCache(async(url,init)=>{if(url.startsWith('/collect?')){collects++;throw conflict;}return new Response(viewWire(),{headers:{'Content-Type':'application/pil','PIL-Version':'2','Trunk-Format':'pac-view/0','Trunk-Completion':'body'}})});
+ const failed=new ViewCache(async(url,init)=>{if(url.startsWith('/demo/seeds?')){collects++;throw conflict;}return new Response(viewWire(),{headers:{'Content-Type':'application/pil','PIL-Version':'2','Trunk-Format':'pac-view/0','Trunk-Completion':'body'}})});
  await assert.rejects(failed.query(query,'',new AbortController().signal,codec,definitions,archive),error=>nativeCacheIssue(error)?.conflicts?.[0].source===conflict.issue.source);
  assert.equal(collects,3,'persistent conflict must not trigger a duplicate download');collects--;
 
@@ -100,7 +100,7 @@ test('sealed page overlaps at most four hour collections and batches rows withou
  let active=0,peak=0,collects=0,reads=0,release;
  const gate=new Promise(resolve=>{release=resolve});
  const cache=new ViewCache(async url=>{
-  if(!url.startsWith('/collect?'))return new Response(viewWire,{headers:{'Content-Type':'application/pil','PIL-Version':'2','Trunk-Format':'pac-view/0','Trunk-Completion':'body'}});
+  if(!url.startsWith('/demo/seeds?'))return new Response(viewWire,{headers:{'Content-Type':'application/pil','PIL-Version':'2','Trunk-Format':'pac-view/0','Trunk-Completion':'body'}});
   collects++;active++;peak=Math.max(peak,active);
   if(collects===4)release();
   await gate;active--;
@@ -135,12 +135,12 @@ test('search discovers every conflicting resource beyond the four concurrent col
  const packet=bytes(magic,...taps.map((tap,i)=>bytes([2],frame([2,3,3],[le(i,4),Buffer.from(digest,'hex'),new TextEncoder().encode(tap)]))),[8],frame([3],[new TextEncoder().encode(JSON.stringify(meta))]),[255,254]);
  const calls=[];
  const cache=new ViewCache(async url=>{
-  if(!url.startsWith('/collect?'))return new Response(packet,{headers:{'Content-Type':'application/pil','PIL-Version':'2','Trunk-Format':'pac-view/0','Trunk-Completion':'body'}});
-  const source=new URL(url,'https://test').searchParams.get('tap');calls.push(source);
+  if(!url.startsWith('/demo/seeds?'))return new Response(packet,{headers:{'Content-Type':'application/pil','PIL-Version':'2','Trunk-Format':'pac-view/0','Trunk-Completion':'body'}});
+  const source='demo/'+new URL(url,'https://test').searchParams.get('branch');calls.push(source);
   throw new NativeCacheError('conflict',{code:'native-cache-conflict',source,reason:'generation-fork'});
  });
  const archive=async()=>({});
- await assert.rejects(cache.query({engine:'tantivy',tap:'',from:new Date(from).toISOString(),to:new Date(from+7200000).toISOString(),size:12},'',new AbortController().signal,codec,definitions,archive),error=>{
+ await assert.rejects(cache.query({engine:'tantivy',tap:'demo/*/*/*',from:new Date(from).toISOString(),to:new Date(from+7200000).toISOString(),size:12},'',new AbortController().signal,codec,definitions,archive),error=>{
   assert.ok(nativeCacheIssue(error),error.message);assert.deepEqual(nativeCacheIssue(error).conflicts.map(c=>c.source).sort(),taps);return true;
  });
  assert.deepEqual([...new Set(calls)].sort(),taps,'later resources must still be checked');

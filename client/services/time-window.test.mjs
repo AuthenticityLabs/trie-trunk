@@ -26,7 +26,7 @@ async function setup(){
 }
 test('time replication reuses durable leaves without certifying events or indexes',async()=>{
  const f=await setup();let calls=0;
- const fetcher=async url=>{calls++;assert.match(url,/\.tri\?begin=\d{7}&end=\d{7}$/);return f.response()};
+ const fetcher=async url=>{calls++;assert.equal(new URL(url,'http://test').pathname,'/demo/timelines');return f.response()};
  const signal=new AbortController().signal;
  const first=await loadTimeWindow(f.query,'',signal,f.archive,fetcher);
  assert.ok(first.count>0);assert.equal(calls,1);

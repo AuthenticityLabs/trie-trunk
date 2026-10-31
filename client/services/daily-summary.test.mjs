@@ -45,8 +45,8 @@ test('daily cache reuses content, partitions authorization and checks manifest',
 });
 test('Snoot summary-only request fetches daily summaries and no event PACs',async()=>{
  const {result}=fixture('aligned'),calls=[],raw=readFileSync(new URL('aligned/view.pil',root));
- const fetcher=async(url,options)=>{calls.push(url);if(url.startsWith('/events?')){assert.match(options.headers['PIL-Features'],/daily-summaries/);return new Response(raw,{headers:{'Content-Type':'application/pil','PIL-Version':'2','Trunk-Completion':'body','Trunk-Format':'pac-view/0'}})}
-  assert.equal(url,'/summaries');assert.equal(options.method,'POST');return summaryResponse(JSON.parse(options.body).packs.map(ref=>bytes('aligned',ref)));};
+ const fetcher=async(url,options)=>{calls.push(url);if(url.startsWith('/demo/indexes?')){assert.match(options.headers['PIL-Features'],/daily-summaries/);return new Response(raw,{headers:{'Content-Type':'application/pil','PIL-Version':'2','Trunk-Completion':'body','Trunk-Format':'pac-view/0'}})}
+  assert.equal(url,'/demo/summaries');assert.equal(options.method,'POST');return summaryResponse(JSON.parse(options.body).packs.map(ref=>bytes('aligned',ref)));};
  const codec=new Codec((await WebAssembly.instantiate(readFileSync(new URL('../assets/pil.wasm',import.meta.url)))).instance);
  const cache=new ViewCache(fetcher),definitions=new Map(),query={engine:'tantivy',tap:'demo/payment/transactions.v1/*',from:new Date(result.summary.from).toISOString(),to:new Date(result.summary.to).toISOString(),include:'summary',size:50};
  const first=await cache.query(query,'secret',new AbortController().signal,codec,definitions);
@@ -76,7 +76,7 @@ test('progressive search publishes its page before any summary fetch, then the s
  const {result}=fixture('aligned'),raw=readFileSync(new URL('aligned/view.pil',root));
  let published,dayFetches=0;
  const fetcher=async (url,options)=>{
-  if(url.startsWith('/events?'))return new Response(raw,{headers:{'Content-Type':'application/pil','PIL-Version':'2','Trunk-Completion':'body','Trunk-Format':'pac-view/0'}});
+  if(url.startsWith('/demo/indexes?'))return new Response(raw,{headers:{'Content-Type':'application/pil','PIL-Version':'2','Trunk-Completion':'body','Trunk-Format':'pac-view/0'}});
   assert.ok(published,'summary network must not delay page delivery');dayFetches++;
   return summaryResponse(JSON.parse(options.body).packs.map(ref=>bytes('aligned',ref)));
  };
@@ -93,7 +93,7 @@ test('progressive search publishes its page before any summary fetch, then the s
 test('failed chart retrieval leaves the delivered page intact and remains retryable',async()=>{
  const {result}=fixture('aligned'),raw=readFileSync(new URL('aligned/view.pil',root));let published,broken=true;
  const fetcher=async (url,options)=>{
-  if(url.startsWith('/events?'))return new Response(raw,{headers:{'Content-Type':'application/pil','PIL-Version':'2','Trunk-Completion':'body','Trunk-Format':'pac-view/0'}});
+  if(url.startsWith('/demo/indexes?'))return new Response(raw,{headers:{'Content-Type':'application/pil','PIL-Version':'2','Trunk-Completion':'body','Trunk-Format':'pac-view/0'}});
   if(broken)throw Error('offline');
   return summaryResponse(JSON.parse(options.body).packs.map(ref=>bytes('aligned',ref)));
  };

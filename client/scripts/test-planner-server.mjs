@@ -39,7 +39,7 @@ const archive=(_token,c)=>{
  });serial=task.catch(()=>{});return task;
 };
 let truncatePack=false;
-const fetcher=async(path,options)=>{calls.push(path);const response=await fetch(new URL(path,base),options);if(truncatePack&&new URL(path,base).pathname.endsWith('.pods')){const raw=new Uint8Array(await response.arrayBuffer());return new Response(raw.subarray(0,raw.length-2),{headers:response.headers});}return response;};
+const fetcher=async(path,options)=>{calls.push(path);const response=await fetch(new URL(path,base),options);if(truncatePack&&new URL(path,base).pathname.endsWith('/seeds')){const raw=new Uint8Array(await response.arrayBuffer());return new Response(raw.subarray(0,raw.length-2),{headers:response.headers});}return response;};
 function client(){
  const channel=new MessageChannel(),connect=workerService(wasm,fetcher,archive);connect(channel.port2);
  const jobs=new Map();let id=0;
@@ -53,8 +53,8 @@ try{
  const search=async(q=query)=>{const messages=await tab.run({kind:'view',query:q});return messages.find(m=>m.kind==='view').view};
  const cold=await search();assert.equal(cold.result.page.length,2);assert.equal(cold.result.summary.count,4);
  const path=p=>new URL(p,base).pathname;
- const paths=calls.map(path);assert.ok(paths.some(p=>p.endsWith('.tri')));assert.ok(paths.some(p=>p.endsWith('.pods')));
- assert.ok(!paths.includes('/events'));assert.ok(!paths.some(p=>p.endsWith('.idx')));assert.ok(!paths.includes('/collect'));
+ const paths=calls.map(path);assert.ok(paths.some(p=>p.endsWith('/timelines')));assert.ok(paths.some(p=>p.endsWith('/seeds')));
+ assert.ok(!paths.includes('/events'));assert.ok(!paths.some(p=>p.endsWith('/indexes')));assert.ok(!paths.includes('/collect'));
  let source=(await backend.list()).find(s=>s.tap===query.tap),hour=Date.parse(query.from);
  assert.equal(timeLeaf(source.timeTrie,hour).flags,TIME_INDEX|TIME_STATE|TIME_SODS);
  assert.equal(timeLeaf(source.timeTrie,hour+3600000).flags,TIME_INDEX|TIME_STATE|TIME_SODS,'whole hours precede local matching');

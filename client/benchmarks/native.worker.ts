@@ -1,3 +1,4 @@
+import { resourceURL, timeParameters } from "../services/resources.ts";
 // Explicit benchmark entry, excluded from the app build. Uses an isolated OPFS namespace.
 import wasmURL from '../assets/pil.wasm?url';
 import { NativeEvent, NativeTrie } from '../services/seeds/index.ts';
@@ -160,13 +161,7 @@ self.onmessage = async ({
         });
         return;
       }
-      const query = new URLSearchParams({
-        format: 'native',
-        tap,
-        from,
-        to
-      });
-      const response = await fetch('/collect?' + query, {
+      const response = await fetch(resourceURL('seeds', tap, timeParameters(from,to)), {
         headers: {
           Accept: 'application/pil',
           'PIL-Version': '2',

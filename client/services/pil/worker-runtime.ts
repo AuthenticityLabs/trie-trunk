@@ -1,3 +1,4 @@
+import {cacheScopes,resourceURL} from '../resources.ts';
 import { createAbortScope } from '../abort.ts';
 import {INDEX_ROW_BYTES} from './pac-native.ts';
 import { decodeObject } from "./control.ts";
@@ -108,10 +109,11 @@ export function workerService(
       s.loading = (async () => {
         const request = createAbortScope([], 30000);
         try {
-        const response = await fetcher("/schemas", {
-          method: "POST",
-          headers: { ...headers(token), "Content-Type": "application/json" },
-          body: JSON.stringify({ tap, known: [...s.definitions.keys()] }),
+        const scopes=cacheScopes(tap,s.views.sources);
+        if(scopes.length!==1)throw Error("Select one cache for registry negotiation");
+        const response = await fetcher(resourceURL("registries",scopes[0],new URLSearchParams({kind:"bindings"})), {
+          method: "GET",
+          headers: { ...headers(token), "Definition-Known": [...s.definitions.keys()].join(",") },
           signal: request.signal,
           cache: "no-store",
         });

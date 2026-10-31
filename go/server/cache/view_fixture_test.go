@@ -18,7 +18,7 @@ func exportViewNative(t *testing.T, dir string, h *HTTP, from, to time.Time) {
 	r.Header.Set("PIL-Version", "2")
 	r.Header.Set("PIL-Features", "native-ranges,native-state-pages,adaptive-integers")
 	w := httptest.NewRecorder()
-	h.ServeHTTP(w, r)
+	h.serveHTTP(w, r)
 	if w.Code != 200 {
 		t.Fatal(fmt.Sprint(w.Code), w.Body.String())
 	}

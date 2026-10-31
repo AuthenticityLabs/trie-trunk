@@ -36,7 +36,7 @@ func TestTextQueryPaginationSummariesAndSnapshot(t *testing.T) {
 		r.Header.Set("PIL-Version", "2")
 		r.Header.Set("PIL-Features", "pac-arrays,adaptive-integers,view-buckets")
 		w := httptest.NewRecorder()
-		h.ServeHTTP(w, r)
+		h.serveHTTP(w, r)
 		return w
 	}
 	q := QueryPlan{Filters: []QueryFilter{{"state", "==", QueryLiteral{"string", "authorized"}}, {"duration", ">=", QueryLiteral{"duration", "14us"}}}, Search: &QueryText{"REQUEST", "contains"}, Order: "desc"}
@@ -172,7 +172,7 @@ func TestLevelAndAccessAreIndependentQueryFields(t *testing.T) {
 			r.Header.Set("PIL-Version", "2")
 			r.Header.Set("PIL-Features", "pac-arrays,adaptive-integers,view-buckets")
 			w := httptest.NewRecorder()
-			h.ServeHTTP(w, r)
+			h.serveHTTP(w, r)
 			if w.Code != 200 {
 				t.Fatal(w.Code, w.Body.String())
 			}

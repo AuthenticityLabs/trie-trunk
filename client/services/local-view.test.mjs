@@ -38,8 +38,8 @@ async function setup({twoBranches=false}={}){
  };
  const fetcher=async url=>{
   requests.push(url);if(twoBranches)url=url.replace('/read.','/write.');const headers={'Content-Type':'application/pil','PIL-Version':'2','Trunk-Completion':'body','Definition-Version':b.digest,'Trunk-Generation':generation,'Trunk-Generation-Sequence':String(m.GenerationSequence??1),'Trunk-Source':b.tap};
-  if(url.startsWith('/'+path+'.tri?'))return new Response(m.TimeTrie,{headers:{...headers,'Trunk-Format':'time-trie/0','Trunk-Path':path+'.tri'}});
-  if(url.startsWith('/'+path+'.pods?'))return new Response(wire,{headers:{...headers,'Trunk-Format':'native-pac/0','Trunk-Path':path+'.pods'}});
+  if(url.startsWith('/demo/timelines?'))return new Response(m.TimeTrie,{headers:{...headers,'Trunk-Format':'time-trie/0','Trunk-Path':path+'.tri'}});
+  if(url.startsWith('/demo/seeds?'))return new Response(wire,{headers:{...headers,'Trunk-Format':'native-pac/0','Trunk-Path':path+'.pods'}});
   throw Error('Unexpected network request '+url);
  };
  let cache=new ViewCache(fetcher);cache.setTrunk(trunk);

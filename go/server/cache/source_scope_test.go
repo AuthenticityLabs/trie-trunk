@@ -45,7 +45,7 @@ func TestSourceScopeSelection(t *testing.T) {
 		r.Header.Set("Accept", "application/pil")
 		r.Header.Set("Accept-Encoding", "gzip")
 		w := httptest.NewRecorder()
-		h.ServeHTTP(w, r)
+		h.serveHTTP(w, r)
 		if w.Code != 200 {
 			t.Fatal(w.Code, w.Body.String())
 		}
@@ -64,7 +64,7 @@ func TestSourceScopeSelection(t *testing.T) {
 	r.Header.Set("Accept", "application/pil")
 	r.Header.Set("Accept-Encoding", "gzip")
 	w := httptest.NewRecorder()
-	h.ServeHTTP(w, r)
+	h.serveHTTP(w, r)
 	if w.Code != 200 || !bytes.Contains(w.Body.Bytes(), []byte(h.tap(Write))) {
 		t.Fatal("scoped schemas", w.Code, w.Body.String())
 	}
@@ -73,7 +73,7 @@ func TestSourceScopeSelection(t *testing.T) {
 	r.Header.Set("Content-Type", "application/pil")
 	r.Header.Set("Definition-Version", fmtDigest(l))
 	w = httptest.NewRecorder()
-	h.ServeHTTP(w, r)
+	h.serveHTTP(w, r)
 	if w.Code != 412 {
 		t.Fatal("ingress accepted wildcard", w.Code)
 	}

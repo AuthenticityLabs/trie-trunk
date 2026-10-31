@@ -31,7 +31,7 @@ func TestEndpointRegistration(t *testing.T) {
 		r.Header.Set("Content-Type", "application/pil")
 		r.Header.Set("Authorization", "Bearer "+token)
 		w := httptest.NewRecorder()
-		p.Handler("secret").ServeHTTP(w, r)
+		p.operationHandler("secret").ServeHTTP(w, r)
 		return w
 	}
 	digest := fmt.Sprintf("%x", l.Digest)
@@ -68,7 +68,7 @@ func TestEndpointBlindFirstWrite(t *testing.T) {
 	r := httptest.NewRequest("POST", "/ingest", bytes.NewReader(raw))
 	r.Header.Set("Content-Type", "application/cbor")
 	w := httptest.NewRecorder()
-	p.ServeHTTP(w, r)
+	p.serveHTTP(w, r)
 	if w.Code != 200 || p.api == nil || !p.api.Store.generic() {
 		t.Fatal(w.Code, w.Body.String())
 	}

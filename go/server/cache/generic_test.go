@@ -33,7 +33,7 @@ func TestGenericCBORIntakeRecovery(t *testing.T) {
 		r.Header.Set("Content-Type", "application/cbor")
 		r.Header.Set("Authorization", "Bearer secret")
 		w := httptest.NewRecorder()
-		h.ServeHTTP(w, r)
+		h.serveHTTP(w, r)
 		return w
 	}
 	id, _ := codec.NewUUIDv7(now.Add(-time.Minute))
@@ -132,7 +132,7 @@ func TestStandardCBORHasNoCustomNegotiation(t *testing.T) {
 		r := httptest.NewRequest("POST", "/ingest", bytes.NewReader(raw))
 		r.Header.Set("Content-Type", "application/cbor")
 		w := httptest.NewRecorder()
-		p.ServeHTTP(w, r)
+		p.serveHTTP(w, r)
 		if w.Code != 200 {
 			t.Fatal(w.Code, w.Body.String())
 		}
@@ -141,7 +141,7 @@ func TestStandardCBORHasNoCustomNegotiation(t *testing.T) {
 		r := httptest.NewRequest(method, "/ingest", nil)
 		r.Header.Set("Trunk-Version", "1.0.0")
 		w := httptest.NewRecorder()
-		p.ServeHTTP(w, r)
+		p.serveHTTP(w, r)
 		if w.Code != 405 {
 			t.Fatal(method, w.Code)
 		}
@@ -150,7 +150,7 @@ func TestStandardCBORHasNoCustomNegotiation(t *testing.T) {
 	r.Header.Set("Content-Type", "application/cbor")
 	r.Header.Set("Trunk-Digest", "old")
 	w := httptest.NewRecorder()
-	p.ServeHTTP(w, r)
+	p.serveHTTP(w, r)
 	if w.Code != 400 {
 		t.Fatal(w.Code)
 	}

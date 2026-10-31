@@ -88,8 +88,8 @@ func TestObjectHistoryHTTP2HTTP3AndSocket(t *testing.T) {
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			client := &http.Client{Transport: tc.transport, Timeout: 10 * time.Second}
-			query := fmt.Sprintf("cache=demo&collection=customer%%2Faccounts.v1&id=%x-%x-%x-%x-%x", id[:4], id[4:6], id[6:8], id[8:10], id[10:])
-			r, _ := http.NewRequest("GET", tc.origin+"/objects/history?"+query+"&from=2026-09-01T00:00:00Z&to=2026-09-02T00:00:00Z", nil)
+			query := fmt.Sprintf("branch=customer%%2Faccounts.v1%%2Fwrite&id=%x-%x-%x-%x-%x", id[:4], id[4:6], id[6:8], id[8:10], id[10:])
+			r, _ := http.NewRequest("GET", tc.origin+"/demo/collections?"+query+"&beginTime=1788220800000&endTime=1788307200000", nil)
 			r.Header.Set("Authorization", "Bearer secret")
 			r.Header.Set("Accept", "application/pil")
 			r.Header.Set("PIL-Version", "2")
@@ -103,7 +103,7 @@ func TestObjectHistoryHTTP2HTTP3AndSocket(t *testing.T) {
 				t.Fatalf("history: %v %v %x", res, err, body)
 			}
 			token := res.Header.Get("Trunk-State")
-			r, _ = http.NewRequest("GET", tc.origin+"/objects/state?"+query+"&token="+token, nil)
+			r, _ = http.NewRequest("GET", tc.origin+"/demo/collections?kind=state&"+query+"&token="+token, nil)
 			r.Header.Set("Authorization", "Bearer secret")
 			res, err = client.Do(r)
 			if err != nil {
@@ -186,7 +186,7 @@ func TestNativeCacheHTTP2HTTP3AndSocket(t *testing.T) {
 			if e != nil || res.StatusCode != 200 || res.ProtoMajor != tc.major || res.Header.Get("Trunk-Acknowledgement") != "durable-staging" {
 				t.Fatalf("PIL ingress %v %v %s", res, e, body)
 			}
-			req, _ = http.NewRequest("GET", tc.url+"/events?page=50&tap=demo/payment/transactions.v1/write&from="+current.Add(-time.Minute).UTC().Format(time.RFC3339)+"&to="+current.Add(time.Minute).UTC().Format(time.RFC3339), nil)
+			req, _ = http.NewRequest("GET", tc.url+"/demo/indexes?mode=search&page=50&branch=payment/transactions.v1/write&beginTime="+fmt.Sprint(current.Add(-time.Minute).UnixMilli())+"&endTime="+fmt.Sprint(current.Add(time.Minute).UnixMilli()), nil)
 			req.Header.Set("Accept", "application/pil")
 			req.Header.Set("PIL-Version", "2")
 			req.Header.Set("PIL-Features", "adaptive-integers,pac-arrays,native-ranges")
@@ -199,7 +199,7 @@ func TestNativeCacheHTTP2HTTP3AndSocket(t *testing.T) {
 			if e != nil || res.StatusCode != 200 || !viewContainsFrame(t, l, body, recent) {
 				t.Fatalf("staged collection %v %s", e, body)
 			}
-			r, _ := http.NewRequest("GET", tc.url+"/collect?tap=demo/payment/transactions.v1/write&from=2026-09-01T00:00:00Z&to=2026-09-02T00:00:00Z", nil)
+			r, _ := http.NewRequest("GET", tc.url+"/demo/seeds?branch=payment/transactions.v1/write&beginTime=1788220800000&endTime=1788307200000", nil)
 			r.Header.Set("Accept", "application/pil")
 			r.Header.Set("Accept-Encoding", "gzip")
 			r.Header.Set("PIL-Version", "2")
@@ -268,7 +268,7 @@ func TestPILLoggerRegistrationTransports(t *testing.T) {
 			if e = logger.WriteValues(context.Background(), values); e != nil {
 				t.Fatal(e)
 			}
-			request, _ := http.NewRequest("GET", origin+"/events?page=50&tap=demo/payment/transactions.v1/write&from="+time.Now().Add(-time.Hour).UTC().Format(time.RFC3339)+"&to="+time.Now().Add(time.Hour).UTC().Format(time.RFC3339), nil)
+			request, _ := http.NewRequest("GET", origin+"/demo/indexes?mode=search&page=50&branch=payment/transactions.v1/write&beginTime="+fmt.Sprint(time.Now().Add(-time.Hour).UnixMilli())+"&endTime="+fmt.Sprint(time.Now().Add(time.Hour).UnixMilli()), nil)
 			request.Header.Set("Authorization", "Bearer secret")
 			request.Header.Set("Accept", "application/pil")
 			request.Header.Set("PIL-Version", "2")

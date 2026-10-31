@@ -28,7 +28,7 @@ func TestBlindJSONLAndSyslogPersistNativeObjects(t *testing.T) {
 			r := httptest.NewRequest("POST", "/ingest", bytes.NewBufferString(tc.raw))
 			r.Header.Set("Content-Type", tc.kind)
 			w := httptest.NewRecorder()
-			endpoint.ServeHTTP(w, r)
+			endpoint.serveHTTP(w, r)
 			if w.Code != 200 {
 				endpoint.Close()
 				t.Fatal(w.Code, w.Body.String())
@@ -91,7 +91,7 @@ func TestBlindJSONRejectsDuplicateAndOutOfRangeValues(t *testing.T) {
 		r := httptest.NewRequest("POST", "/ingest", bytes.NewBufferString(raw))
 		r.Header.Set("Content-Type", "application/json")
 		w := httptest.NewRecorder()
-		p.ServeHTTP(w, r)
+		p.serveHTTP(w, r)
 		if w.Code != 400 {
 			t.Fatal(w.Code, raw, w.Body.String())
 		}

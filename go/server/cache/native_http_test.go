@@ -189,7 +189,7 @@ func TestNativeCollectHTTPGapOnlyAndLazyPayload(t *testing.T) {
 			r.Header.Set("Definition-Known", fmtDigest(l))
 		}
 		w := httptest.NewRecorder()
-		p.ServeHTTP(w, r)
+		p.serveHTTP(w, r)
 		return w
 	}
 	if w := request(nil, false); w.Code != 426 {

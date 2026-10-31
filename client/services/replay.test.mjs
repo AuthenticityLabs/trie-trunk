@@ -15,9 +15,10 @@ test("object identity stays lossless and escaped; lookup requires an exact colle
   assert.equal(objectParameters(query).get("id"), query.id);
   for (const id of ["customer/ID ?✓", "", "AP_-"]) {
     const url = new URL(historyURL({ ...query, id, from: "2026-10-16T00:00:00Z", to: "2026-10-17T00:00:00Z" }), "https://localhost");
-    assert.equal(decodeURIComponent(url.pathname.slice('/collections/'.length)), id);
-    assert.equal(url.searchParams.has('id'), false);
-    assert.equal(url.searchParams.get("collection"), "payment/transactions.v1");
+    assert.equal(url.pathname, '/demo/collections');
+    assert.equal(url.searchParams.get('id'), id);
+    assert.equal(url.searchParams.get('branch'), 'payment/transactions.v1/write');
+    assert.equal(url.searchParams.has("collection"), false);
   }
   for (const source of ["demo", "*/payment/transactions.v1/write", "demo/payment/*/write"])
     assert.throws(() => objectParameters({ ...query, source }));
@@ -62,7 +63,7 @@ test("origin reconciliation validates only the caller's observed invalidation to
   assert.equal(second.value, null); // Authoritative deletion is also a full refresh.
   assert.equal(second.state.token, newer);
   assert.equal(await validateObject(original, "secret", signal(), fetcher), false);
-  assert.ok(calls.every(url => url.startsWith("/objects/state?")));
+  assert.ok(calls.every(url => url.startsWith("/demo/collections?")));
 });
 
 test("an error during origin fetch prevents publishing the fetched value as validated", async () => {

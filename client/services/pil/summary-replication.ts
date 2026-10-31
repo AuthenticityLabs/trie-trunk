@@ -1,6 +1,7 @@
+import {resourceURL,timeParameters} from '../resources.ts';
 import type {Archive} from '../store/protocol.ts';
 import type {TrunkBootstrap} from './trunk.ts';
-import {branchTargets,compactHour} from './time-window.ts';
+import {branchTargets} from './time-window.ts';
 import {TIME_SUM} from '../store/time-trie.ts';
 import {readSummaryPacks,summaryBatchLimit} from './summary-packs.ts';
 import {decodeSummaryDay} from './summaries.ts';
@@ -26,7 +27,7 @@ export async function replicateSummaryRanges(trunk:TrunkBootstrap,scope:string,f
   for(const day of missing){const last=ranges.at(-1);if(last?.to===day&&(last.to-last.from)/DAY<summaryBatchLimit)last.to+=DAY;else ranges.push({from:day,to:day+DAY});}
   for(const range of ranges){
    signal.throwIfAborted();
-   const response=await fetcher(`/${path}?begin=${compactHour(range.from).slice(0,5)}&end=${compactHour(range.to).slice(0,5)}`,{signal,cache:'no-store',headers:{Accept:'application/pil',...(token?{Authorization:`Bearer ${token}`}:{})}});
+   const response=await fetcher(resourceURL('summaries',tap,new URLSearchParams([...timeParameters(range.from,range.to),['definition',definition.digest]])),{signal,cache:'no-store',headers:{Accept:'application/pil',...(token?{Authorization:`Bearer ${token}`}:{})}});
    if(!response.ok)throw Error(`Summary range request failed (${response.status})`);
    const h=response.headers,count=Number(h.get('Trunk-Pack-Count'));
    if(h.get('Trunk-Format')!=='summary-packs/0'||h.get('Trunk-Path')!==path||h.get('Trunk-Source')!==tap||h.get('Definition-Version')!==definition.digest||h.get('Trunk-Generation')!==receipt.generation||Number(h.get('Trunk-Generation-Sequence'))!==receipt.sequence||!h.has('Trunk-Pack-Count')||!Number.isInteger(count)||count<0||count>(range.to-range.from)/DAY)throw Error('Summary range binding mismatch');

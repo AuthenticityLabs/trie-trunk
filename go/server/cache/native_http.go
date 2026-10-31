@@ -38,7 +38,7 @@ func (h *HTTP) nativeCollect(w http.ResponseWriter, r *http.Request) {
 	}
 	for key := range q {
 		switch key {
-		case "format", "tap", "from", "to", "definition", "data":
+		case "format", "tap", "from", "to", "definition", "data", "states":
 		default:
 			http.Error(w, "unsupported native selection parameter", 400)
 			return

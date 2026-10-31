@@ -201,7 +201,7 @@ func TestCapacityRolloverNegotiatesNewMinor(t *testing.T) {
 		r.Header.Set("PIL-Version", "2")
 		r.Header.Set("Definition-Version", fmt.Sprintf("%x", layout.Digest))
 		w := httptest.NewRecorder()
-		p.ServeHTTP(w, r)
+		p.serveHTTP(w, r)
 		return w
 	}
 	raw := append(testFrame(t, l, at, 1, false), testFrame(t, l, at.Add(time.Millisecond), 2, false)...)

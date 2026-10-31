@@ -140,7 +140,7 @@ func (r runner) get(ctx context.Context, q request) ([]byte, measurement, error)
 			}
 		}
 	}
-	if m.Path == "/collect" && (!bytes.HasPrefix(raw, []byte{'T', 'P', 'I', 'L', 2}) || !bytes.HasSuffix(raw, []byte{255, 254})) {
+	if strings.HasSuffix(m.Path, "/seeds") && (!bytes.HasPrefix(raw, []byte{'T', 'P', 'I', 'L', 2}) || !bytes.HasSuffix(raw, []byte{255, 254})) {
 		return nil, m, fmt.Errorf("incomplete native seed-pack response")
 	}
 	return raw, m, nil
@@ -298,6 +298,30 @@ func (r runner) batch(ctx context.Context, qs []request) ([]measurement, error) 
 	wg.Wait()
 	return result, first
 }
+
+// resourcePath keeps benchmark requests on the same public API as Snoot.
+func resourcePath(kind, source string, q url.Values) (string, error) {
+	parts := strings.SplitN(source, "/", 2)
+	if parts[0] == "" || parts[0] == "*" {
+		return "", fmt.Errorf("benchmark scope requires a cache")
+	}
+	q.Del("tap")
+	if len(parts) == 2 {
+		q.Set("branch", parts[1])
+	}
+	for _, pair := range [][2]string{{"from", "beginTime"}, {"to", "endTime"}} {
+		if value := q.Get(pair[0]); value != "" {
+			t, err := time.Parse(time.RFC3339Nano, value)
+			if err != nil {
+				return "", err
+			}
+			q.Del(pair[0])
+			q.Set(pair[1], fmt.Sprint(t.UnixMilli()))
+		}
+	}
+	return "/" + parts[0] + "/" + kind + "?" + q.Encode(), nil
+}
+
 func (r runner) run(ctx context.Context, s scenario, trial int) (sample, error) {
 	result := sample{Scenario: s.Name, Trial: trial}
 	started := time.Now()
@@ -305,7 +329,12 @@ func (r runner) run(ctx context.Context, s scenario, trial int) (sample, error) 
 	if s.Query != "" {
 		params.Set("query", s.Query)
 	}
-	search := request{Path: "/events?" + params.Encode(), Stage: "search", Headers: baseHeaders}
+	params.Set("mode", "search")
+	searchPath, err := resourcePath("indexes", s.Tap, params)
+	if err != nil {
+		return result, err
+	}
+	search := request{Path: searchPath, Stage: "search", Headers: baseHeaders}
 	raw, m, e := r.get(ctx, search)
 	if e != nil {
 		return result, e
@@ -347,7 +376,7 @@ func (r runner) run(ctx context.Context, s scenario, trial int) (sample, error) 
 			for i, d := range days {
 				digests[i] = d.Key
 			}
-			summaries = append(summaries, request{Path: "/summaries", Stage: "summary", Headers: http.Header{"Content-Type": {"application/json"}, "Accept": {"application/pil"}}, Body: body, Digests: digests})
+			summaries = append(summaries, request{Path: "/" + strings.SplitN(s.Tap, "/", 2)[0] + "/summaries", Stage: "summary", Headers: http.Header{"Content-Type": {"application/json"}, "Accept": {"application/pil"}}, Body: body, Digests: digests})
 		}
 	}
 	seen := map[string]bool{}
@@ -363,7 +392,10 @@ func (r runner) run(ctx context.Context, s scenario, trial int) (sample, error) 
 			return result, fmt.Errorf("unknown page binding")
 		}
 		n := ref.Native
-		path := "/collect?" + url.Values{"tap": {b.Source}, "from": {time.UnixMilli(n.From).UTC().Format(time.RFC3339Nano)}, "to": {time.UnixMilli(n.To).UTC().Format(time.RFC3339Nano)}, "definition": {b.Definition}, "format": {"native"}}.Encode()
+		path, err := resourcePath("seeds", b.Source, url.Values{"tap": {b.Source}, "from": {time.UnixMilli(n.From).UTC().Format(time.RFC3339Nano)}, "to": {time.UnixMilli(n.To).UTC().Format(time.RFC3339Nano)}, "definition": {b.Definition}, "format": {"native"}})
+		if err != nil {
+			return result, err
+		}
 		if seen[path] {
 			continue
 		}

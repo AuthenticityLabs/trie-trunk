@@ -81,7 +81,7 @@ func TestStorageEmptyEndpoint(t *testing.T) {
 	}
 	defer p.Close()
 	w := httptest.NewRecorder()
-	p.Handler("").ServeHTTP(w, httptest.NewRequest("GET", "/storage", nil))
+	p.operationHandler("").ServeHTTP(w, httptest.NewRequest("GET", "/storage", nil))
 	if w.Code != 200 {
 		t.Fatal(w.Code, w.Body.String())
 	}
@@ -103,7 +103,7 @@ func TestStorageInventoryAggregatesMinorsAndIgnoresClassification(t *testing.T) 
 	inspect := func() storageSnapshot {
 		t.Helper()
 		w := httptest.NewRecorder()
-		p.Handler("").ServeHTTP(w, httptest.NewRequest("GET", "/storage", nil))
+		p.operationHandler("").ServeHTTP(w, httptest.NewRequest("GET", "/storage", nil))
 		if w.Code != 200 {
 			t.Fatal(w.Code, w.Body.String())
 		}

@@ -75,7 +75,7 @@ func TestStagingCapacityHTTPAcknowledgesDurablePrefix(t *testing.T) {
 	r.Header.Set("Content-Type", "application/pil")
 	definitionHeaders(r.Header, l)
 	w := httptest.NewRecorder()
-	p.ServeHTTP(w, r)
+	p.serveHTTP(w, r)
 	if w.Code != 503 || w.Header().Get("Trunk-Received") != "1" || w.Header().Get("Retry-After") == "" {
 		t.Fatal(w.Code, w.Header(), w.Body.String())
 	}

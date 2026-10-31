@@ -54,7 +54,7 @@ func TestRegistrationBeforeWriteAndRecovery(t *testing.T) {
 	if e != nil {
 		t.Fatal(e)
 	}
-	if fmt.Sprint(calls) != "[HEAD /definitions PUT /definitions]" {
+	if fmt.Sprint(calls) != "[HEAD /demo/registries PUT /demo/registries]" {
 		t.Fatal(calls)
 	}
 	l, _ := cache.ParseDefinition(config.Definition)
@@ -82,7 +82,7 @@ func TestRegistrationBeforeWriteAndRecovery(t *testing.T) {
 	if e = logger.Register(ctx); e != nil {
 		t.Fatal(e)
 	}
-	if fmt.Sprint(calls) != "[HEAD /definitions]" {
+	if fmt.Sprint(calls) != "[HEAD /demo/registries]" {
 		t.Fatal(calls)
 	}
 	if e = logger.WriteFrames(ctx, raw); e != nil {
@@ -186,7 +186,7 @@ func TestPreferredDefinitionReordersAndRemaps(t *testing.T) {
 	if e != nil {
 		t.Fatal(e)
 	}
-	if fmt.Sprint(calls) != "[HEAD /definitions PUT /definitions POST /definitions]" {
+	if fmt.Sprint(calls) != "[HEAD /demo/registries PUT /demo/registries POST /demo/registries]" {
 		t.Fatal(calls)
 	}
 	if !bytes.Equal(logger.AcceptedDefinition(), target.Bytes) {
@@ -216,7 +216,7 @@ func TestPreferredDefinitionReordersAndRemaps(t *testing.T) {
 	if e = logger.Register(context.Background()); e != nil {
 		t.Fatal(e)
 	}
-	if fmt.Sprint(calls) != "[HEAD /definitions POST /definitions]" {
+	if fmt.Sprint(calls) != "[HEAD /demo/registries POST /demo/registries]" {
 		t.Fatal(calls)
 	}
 	if e = logger.WriteValues(context.Background(), values); e != nil {
@@ -227,7 +227,7 @@ func TestPreferredDefinitionReordersAndRemaps(t *testing.T) {
 	if _, e = Open(context.Background(), Config{URL: "https://logger.test", Cache: "demo", Definition: source.Bytes, HTTPClient: client}); e != nil {
 		t.Fatal(e)
 	}
-	if fmt.Sprint(calls) != "[HEAD /definitions GET /definitions POST /definitions]" {
+	if fmt.Sprint(calls) != "[HEAD /demo/registries GET /demo/registries POST /demo/registries]" {
 		t.Fatal(calls)
 	}
 	// Restart retains both producer recognition and preferred layout.
@@ -243,7 +243,7 @@ func TestPreferredDefinitionReordersAndRemaps(t *testing.T) {
 	if e = logger.Register(context.Background()); e != nil {
 		t.Fatal(e)
 	}
-	if fmt.Sprint(calls) != "[HEAD /definitions POST /definitions]" {
+	if fmt.Sprint(calls) != "[HEAD /demo/registries POST /demo/registries]" {
 		t.Fatal(calls)
 	}
 }

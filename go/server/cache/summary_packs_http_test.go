@@ -29,7 +29,7 @@ func TestSummarySearchValidationAndAuthorization(t *testing.T) {
 		r := httptest.NewRequest(tc.method, "/summaries", strings.NewReader(tc.body))
 		r.Header.Set("Content-Type", tc.content)
 		w := httptest.NewRecorder()
-		h.ServeHTTP(w, r)
+		h.serveHTTP(w, r)
 		if w.Code != tc.status {
 			t.Fatalf("%+v: %d %s", tc, w.Code, w.Body.String())
 		}

@@ -238,7 +238,7 @@ func (p *Endpoint) Handler(token string) http.Handler {
 		p.ServeHTTP(w, r)
 	})
 }
-func (p *Endpoint) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (p *Endpoint) serveHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "no-store")
 	w.Header().Set("X-Content-Type-Options", "nosniff")
 	if r.URL.Path == "/definitions" {
@@ -299,7 +299,7 @@ func (p *Endpoint) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if r.URL.Path == "/storage" {
-		(&HTTP{sources: sources, storageRoots: map[string]string{p.config.Cache: filepath.Join(p.config.Root, p.config.Cache)}}).ServeHTTP(w, r)
+		(&HTTP{sources: sources, storageRoots: map[string]string{p.config.Cache: filepath.Join(p.config.Root, p.config.Cache)}}).serveHTTP(w, r)
 		return
 	}
 	if catalogRequest(r) {
@@ -323,7 +323,7 @@ func (p *Endpoint) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if api == nil && r.Method == http.MethodGet && r.URL.Path == "/rejections" && r.URL.Query().Get("format") == "availability" {
-		(&HTTP{}).ServeHTTP(w, r)
+		(&HTTP{}).serveHTTP(w, r)
 		return
 	}
 	if file, ok := branchFilePath(r.URL.Path); ok {
@@ -332,7 +332,7 @@ func (p *Endpoint) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	if api != nil && (r.URL.Path == "/summaries" || r.URL.Path == "/events" || r.URL.Path == "/collect" || r.URL.Path == "/schemas" || r.URL.Path == "/rejections") {
 		handler := &HTTP{Store: api.Store, sources: sources}
-		handler.ServeHTTP(w, r)
+		handler.serveHTTP(w, r)
 		return
 	}
 	if api == nil {
@@ -344,7 +344,7 @@ func (p *Endpoint) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "register a PIL definition before writing; blind CBOR registers automatically", 412)
 		return
 	}
-	api.ServeHTTP(w, r)
+	api.serveHTTP(w, r)
 }
 func (p *Endpoint) Run(ctx context.Context, interval time.Duration) error {
 	if interval <= 0 {

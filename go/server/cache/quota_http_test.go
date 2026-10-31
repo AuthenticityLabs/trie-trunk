@@ -61,7 +61,7 @@ func TestQuotaPersistenceAndPublicationConflict(t *testing.T) {
 		r.Header.Set("Authorization", "Bearer "+token)
 		r.Header.Set("If-Match", `"`+revision+`"`)
 		w := httptest.NewRecorder()
-		p.Handler("secret").ServeHTTP(w, r)
+		p.operationHandler("secret").ServeHTTP(w, r)
 		return w
 	}
 	if w := call("GET", "", "", nil); w.Code != 401 {
@@ -132,7 +132,7 @@ func TestQuotaConcurrentAdministrators(t *testing.T) {
 			req := httptest.NewRequest("PUT", "/storage/quotas", bytes.NewReader(raw))
 			req.Header.Set("If-Match", `"unset"`)
 			w := httptest.NewRecorder()
-			p.Handler("").ServeHTTP(w, req)
+			p.operationHandler("").ServeHTTP(w, req)
 			codes <- w.Code
 		}(i, p)
 	}

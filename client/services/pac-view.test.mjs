@@ -21,7 +21,7 @@ test('Go PAC view round trip, one GET and exact cached dependencies/page omissio
  const second=await cache.query(query,'secret',new AbortController().signal,codec,definitions);
  assert.deepEqual(second.batch,first.batch);assert.deepEqual(second.result.summary,first.result.summary);
  assert.ok(second.result.page.every(r=>r.cached));
- assert.equal(calls.length,2);assert.match(calls[0].url,/^\/events\?/);assert.equal(calls[0].opts.headers['Definition-Known'],'');
+ assert.equal(calls.length,2);assert.match(calls[0].url,/^\/demo\/indexes\?/);assert.equal(calls[0].opts.headers['Definition-Known'],'');
  assert.equal(calls[1].opts.headers['Definition-Known'],first.definitions[0].digest);
  assert.equal(calls[1].opts.headers['Summary-Known'],first.result.snapshot);
  assert.equal(calls[1].opts.headers['Event-Known'],first.result.page.map(r=>r.key).join(','));
@@ -49,7 +49,7 @@ test('worker view uses same-call negotiation and remembers definitions without r
  const connect=workerService(module,async(url)=>{urls.push(url);return reply(cold)},async(token,cmd)=>{stored.push(cmd);return {definitions:[]}});
  const channel=new MessageChannel();connect(channel.port2);t.after(()=>{channel.port1.postMessage({kind:'close'});channel.port1.close()});
  const messages=await new Promise((resolve,reject)=>{const list=[];channel.port1.onmessage=({data})=>{list.push(data);if(data.kind==='done')resolve(list);if(data.kind==='error')reject(Error(data.message))};channel.port1.postMessage({id:1,kind:'view',token:'secret',query})});
- assert.equal(urls.length,1);assert.match(urls[0],/^\/events/);
+ assert.equal(urls.length,1);assert.match(urls[0],/^\/demo\/indexes/);
  assert.deepEqual(stored.map(c=>c.kind),['definitions']);
  const view=messages.find(m=>m.kind==='view').view;
  assert.equal(view.batch.rows.length,6);

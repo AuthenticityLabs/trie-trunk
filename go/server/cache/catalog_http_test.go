@@ -18,7 +18,7 @@ func TestCacheCatalog(t *testing.T) {
 
 	check := func(handler http.Handler, want []string) {
 		t.Helper()
-		for _, path := range []string{"/caches", "/taps"} {
+		for _, path := range []string{"/caches"} {
 			for _, tc := range []struct {
 				method, suffix, token, accept string
 				status                        int
@@ -57,7 +57,7 @@ func TestCacheCatalog(t *testing.T) {
 			}
 		}
 	}
-	check(p.Handler("secret"), []string{})
+	check(p.operationHandler("secret"), []string{})
 	if err := p.install(testLayout(t, false)); err != nil {
 		t.Fatal(err)
 	}
@@ -66,7 +66,7 @@ func TestCacheCatalog(t *testing.T) {
 		want = append(want, p.api.tap(b))
 	}
 	sort.Strings(want)
-	check(p.Handler("secret"), want)
+	check(p.operationHandler("secret"), want)
 	// The direct single-store handler has the same contract (branch order).
 	want = []string{}
 	for b := Read; b <= Trace; b++ {

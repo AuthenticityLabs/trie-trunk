@@ -419,7 +419,7 @@ test("native collector performs one GET and commits coverage only after wire suc
  };
  let requests=0,truncated=true;
  const options={tap:"demo/payment/transactions.v1/write",from:"2026-10-16T12:12:00Z",to:"2026-10-16T12:28:00Z",token:"",signal:new AbortController().signal,codec,definitions,archive,fetcher:async(url,init)=>{
-  requests++;assert.equal(init.method,"GET");assert.match(url,/format=native/);assert.equal(init.headers["PIL-Features"],"native-ranges,native-state-pages,adaptive-integers");
+  requests++;assert.equal(init.method,"GET");assert.equal(new URL(url,"https://test").pathname,"/demo/seeds");assert.equal(init.headers["PIL-Features"],"native-ranges,native-state-pages,adaptive-integers");
   assert.equal(init.headers["Definition-Version"],"");
   return new Response(truncated?wire.subarray(0,wire.length-1):wire,{headers:{"Content-Type":"application/pil","PIL-Version":"2","Definition-Version":"a".repeat(64),"Trunk-Format":"native-pac/0","Trunk-Completion":"body"}});
  }};

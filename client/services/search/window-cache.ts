@@ -1,3 +1,4 @@
+import {cacheScopes} from '../resources.ts';
 import {Seed,bindSeed} from '../seeds/index.ts';
 import {compile} from '../pil/metadata.ts';
 import {branchTargets} from '../pil/time-window.ts';
@@ -53,8 +54,9 @@ export class WindowCache {
   const result:QueryWindow={from,to:Date.parse(q.to),requestTo:q.to,branches:new Map(),expires:Date.now()+SEARCH_TTL_MS,serial,bytes:0,collectionMs:0};
   // This is an ordinary collection range. No query state is sent to the server.
   const collectionStarted=performance.now();
-  await collectNative({tap:q.tap,from:new Date(collectFrom).toISOString(),to:'now',token,signal,codec,definitions,archive,fetcher,
-   onAttempt:()=>result.branches.clear(),onWindow:to=>{result.to=to},live:{
+  let windowTo:number|undefined;
+  for(const scope of cacheScopes(q.tap,targets.map(t=>t.tap))) await collectNative({tap:scope,from:new Date(collectFrom).toISOString(),to:'now',token,signal,codec,definitions,archive,fetcher,
+   onAttempt:()=>{for(const [key,b] of result.branches)if(b.receipt.Tap.split('/')[0]===scope.split('/')[0])result.branches.delete(key)},onWindow:to=>{windowTo=windowTo===undefined?to:Math.max(windowTo,to);result.to=windowTo},live:{
     window:part=>{
      const key=branchKey(part.binding.tap,part.binding.digest);
      if(!selected.has(key)||result.branches.has(key))throw Error('Unexpected collection branch');

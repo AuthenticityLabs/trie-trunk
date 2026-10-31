@@ -4,6 +4,7 @@ import {readFile,mkdir,writeFile,readdir,stat} from 'node:fs/promises';
 import {resolve,join,extname,relative} from 'node:path';
 import {createHash} from 'node:crypto';
 import {gzipSync,brotliCompressSync,constants} from 'node:zlib';
+import {resourceURL,timeParameters} from '../services/resources.ts';
 import {Codec} from '../services/pil/wasm.ts';
 import {PILStream,consume} from '../services/pil/stream.ts';
 import {compile} from '../services/pil/metadata.ts';
@@ -16,8 +17,8 @@ const manifest=JSON.parse(await readFile(join(root,'demo-data.json'),'utf8'));
 if(manifest.Synthetic!==true)throw Error('This comparison requires the synthetic demo manifest');
 const codec=new Codec(await WebAssembly.instantiate(await WebAssembly.compile(await readFile(new URL('../assets/pil.wasm',import.meta.url)))));
 const definitions=new Map(),mappings=new Map(),lines=[],bare=[],ids=new Set();let events=0;
-const query=new URLSearchParams({tap:`${manifest.Cache}/*/*/*`,from:manifest.From,to:manifest.To,limit:'all'});
-const response=await fetch(`${origin}/collect?${query}`,{headers:{Accept:'application/pil','PIL-Version':'2','PIL-Features':'adaptive-integers','Trunk-Completion':'body'},signal:AbortSignal.timeout(120000)});
+const query=timeParameters(manifest.From,manifest.To);query.set("limit","all");
+const response=await fetch(new URL(resourceURL('seeds',`${manifest.Cache}/*/*/*`,query),origin),{headers:{Accept:'application/pil','PIL-Version':'2','PIL-Features':'adaptive-integers','Trunk-Completion':'body'},signal:AbortSignal.timeout(120000)});
 const parser=new PILStream(codec,definitions,()=>{},binding=>{
  mappings.set(binding.stream,{mapping:compile(definitions.get(binding.digest),binding.tap,[]),tap:binding.tap});
 },async batch=>{

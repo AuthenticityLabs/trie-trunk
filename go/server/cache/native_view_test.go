@@ -62,7 +62,7 @@ func TestColdViewPlansWholePACWithoutPayloadReads(t *testing.T) {
 				r.Header.Set("PIL-Version", "2")
 				r.Header.Set("PIL-Features", "pac-arrays")
 				w := httptest.NewRecorder()
-				h.ServeHTTP(w, r)
+				h.serveHTTP(w, r)
 				if w.Code != 200 {
 					t.Fatal(w.Code, w.Body.String())
 				}

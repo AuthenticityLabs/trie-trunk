@@ -103,7 +103,7 @@ func TestCollectLiveWindow(t *testing.T) {
 		r.Header.Set("PIL-Features", "native-ranges,live-pacs,adaptive-integers")
 		r.Header.Set("Definition-Known", fmtDigestNative(l.Digest))
 		w := httptest.NewRecorder()
-		p.ServeHTTP(w, r)
+		p.serveHTTP(w, r)
 		if w.Code != 200 {
 			t.Fatal(w.Code, w.Body.String())
 		}
@@ -244,7 +244,7 @@ func TestCollectLivePromotionBehindStart(t *testing.T) {
 		r.Header.Set("PIL-Features", features)
 		r.Header.Set("Definition-Known", fmtDigestNative(l.Digest))
 		w := httptest.NewRecorder()
-		p.ServeHTTP(w, r)
+		p.serveHTTP(w, r)
 		if w.Code != 200 {
 			t.Fatal(w.Code, w.Body.String())
 		}

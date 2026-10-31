@@ -48,7 +48,7 @@ func TestCollectionHistoryPathFetchesLatestRetainedAndLiveWrites(t *testing.T) {
 		t.Fatal("accepted a conflicting query identity", w.Code)
 	}
 	w := httptest.NewRecorder()
-	p.ServeHTTP(w, httptest.NewRequest("POST", path, nil))
+	p.serveHTTP(w, httptest.NewRequest("POST", path, nil))
 	if w.Code != 405 {
 		t.Fatal("accepted a history write", w.Code)
 	}

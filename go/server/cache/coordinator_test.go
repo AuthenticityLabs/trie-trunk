@@ -174,7 +174,7 @@ func TestCoordinatorMinorsRecoveryReplayAndRetention(t *testing.T) {
 	r.Header.Set("Accept-Encoding", "gzip")
 	r.Header.Set("Accept", "application/pil")
 	w := httptest.NewRecorder()
-	p.ServeHTTP(w, r)
+	p.serveHTTP(w, r)
 	if w.Code != 200 {
 		t.Fatal(w.Code, w.Body.String())
 	}
@@ -234,7 +234,7 @@ func TestCoordinatorRegistrationSelectsCollectionAndPreferred(t *testing.T) {
 		definitionHeaders(r.Header, l)
 		r.Header.Set("Content-Type", "application/pil")
 		w := httptest.NewRecorder()
-		p.ServeHTTP(w, r)
+		p.serveHTTP(w, r)
 		if w.Code != 204 {
 			t.Fatal(w.Code, w.Body.String())
 		}
@@ -253,14 +253,14 @@ func TestCoordinatorRegistrationSelectsCollectionAndPreferred(t *testing.T) {
 	definitionHeaders(r.Header, first)
 	r.Header.Set("Content-Type", "application/pil")
 	w := httptest.NewRecorder()
-	p.ServeHTTP(w, r)
+	p.serveHTTP(w, r)
 	if w.Code != 200 || w.Header().Get("Definition-Version") != fmtDigest(next) || !bytes.Equal(w.Body.Bytes(), next.Bytes) {
 		t.Fatal("preferred negotiation", w.Code)
 	}
 	r = httptest.NewRequest("HEAD", "/definitions", nil)
 	definitionHeaders(r.Header, second)
 	w = httptest.NewRecorder()
-	p.ServeHTTP(w, r)
+	p.serveHTTP(w, r)
 	if w.Code != 204 {
 		t.Fatal(w.Code)
 	}
@@ -268,7 +268,7 @@ func TestCoordinatorRegistrationSelectsCollectionAndPreferred(t *testing.T) {
 	r.Header.Set("PIL-Version", "2")
 	r.Header.Set("Definition-Version", fmt.Sprintf("%x", first.Digest))
 	w = httptest.NewRecorder()
-	p.ServeHTTP(w, r)
+	p.serveHTTP(w, r)
 	if w.Code != 400 {
 		t.Fatal("ambiguous registration", w.Code)
 	}

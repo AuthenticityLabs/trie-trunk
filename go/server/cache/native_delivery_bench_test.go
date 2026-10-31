@@ -84,7 +84,7 @@ func BenchmarkNativeDelivery(b *testing.B) {
 						if mode == "standalone" {
 							benchmarkStandaloneCollect(w, r, h)
 						} else {
-							h.ServeHTTP(w, r)
+							h.serveHTTP(w, r)
 						}
 						size = w.bytes
 					}

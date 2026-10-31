@@ -41,7 +41,7 @@ test('batch search requests only cache holes, retains verified packs after inter
   const unique=[...new Map(refs.map(ref=>[ref.key,ref])).values()];assert.ok(unique.length>=2);
   let broken=true;
   const fetcher=async(url,options)=>{
-    assert.equal(url,'/summaries');assert.equal(options.method,'POST');
+    assert.equal(url,'/demo/summaries');assert.equal(options.method,'POST');
     const selected=JSON.parse(options.body).packs;requests.push(selected.map(ref=>ref.key));
     const raw=summaryArray(selected.map(pack));
     return response(broken?raw.subarray(0,-1):raw);

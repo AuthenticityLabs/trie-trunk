@@ -1,3 +1,4 @@
+import {cacheScopes,resourceURL,timeParameters} from '../resources.ts';
 import {executeLocalSearch} from '../search/execute.ts';
 import {WindowCache} from '../search/window-cache.ts';
 import {SearchesLRU} from '../search/searches-lru.ts';
@@ -57,6 +58,7 @@ export class ViewCache {
    while(this.localPages.size>8)this.localPages.delete(this.localPages.keys().next().value!);
   }
  };
+ get sources():readonly string[]{return this.trunk?.catalog.sources??[];}
  setTrunk(trunk:TrunkBootstrap){this.trunk=trunk;}
 
  private summaryDays=new SummaryDayCache();
@@ -154,7 +156,8 @@ export class ViewCache {
   const started=performance.now();
   const planningEnded=performance.now();
   const scope=JSON.stringify([query.tap,query.from,query.to,query.query]);
-  const params=new URLSearchParams({tap:query.tap,from:query.from,to:query.to,page:String(query.size),include:query.include??'summary,page,statistics'});if(query.after)params.set('after',query.after);if(query.query)params.set('query',JSON.stringify(query.query));
+  const scopes=cacheScopes(query.tap,this.sources);if(scopes.length!==1)throw Error('Select one cache for the Tantivy comparison');
+  const params=timeParameters(query.from,query.to);params.set('mode','search');params.set('page',String(query.size));params.set('include',query.include??'summary,page,statistics');if(query.after)params.set('after',query.after);if(query.query)params.set('query',JSON.stringify(query.query));
   // Pin advertised bytes for this request, so concurrent eviction cannot make
   // an acknowledged cached event disappear while its response is in flight.
   const pageKey=JSON.stringify([scope,query.size,query.after??"",query.include??"summary,page,statistics"]);
@@ -166,7 +169,7 @@ export class ViewCache {
   const known=this.versions.get(scope),heldSummary=known?this.summaries.get(known):undefined;
   const fetcher=this.fetcher;
   const requestStarted=performance.now();
-  const response=await fetcher(`/events?${params}`,{signal,cache:'no-store',headers:{Accept:'application/pil','PIL-Version':'2','PIL-Features':'pac-arrays,adaptive-integers,view-buckets,daily-summaries','Definition-Known':[...definitions.keys()].slice(-128).join(','),'Event-Known':knownPage.join(','),...(buckets.keys.length?{'Bucket-Known':buckets.keys.join(',')}:{} ),...(!background&&!projection&&known&&heldSummary?{'Summary-Known':known}:{}),...(token?{Authorization:`Bearer ${token}`}:{})}});
+  const response=await fetcher(resourceURL('indexes',scopes[0],params),{signal,cache:'no-store',headers:{Accept:'application/pil','PIL-Version':'2','PIL-Features':'pac-arrays,adaptive-integers,view-buckets,daily-summaries','Definition-Known':[...definitions.keys()].slice(-128).join(','),'Event-Known':knownPage.join(','),...(buckets.keys.length?{'Bucket-Known':buckets.keys.join(',')}:{} ),...(!background&&!projection&&known&&heldSummary?{'Summary-Known':known}:{}),...(token?{Authorization:`Bearer ${token}`}:{})}});
   const requestEnded=performance.now();
   if(response.ok&&response.headers.get('Trunk-Format')!=='pac-view/0'){await response.body?.cancel();throw Error('Server does not support paged views; update the server to search')}
   let result:ViewResult|undefined;const bindings:Binding[]=[],fresh:({stream:number}&PackedRecord)[]=[];

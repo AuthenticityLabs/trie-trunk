@@ -41,7 +41,7 @@ func TestConfigurationEditorUsesHierarchyAndPreservesOtherSettings(t *testing.T)
 		r.Header.Set("Authorization", "Bearer "+token)
 		r.Header.Set("If-Match", `"`+revision+`"`)
 		w := httptest.NewRecorder()
-		p.Handler("secret").ServeHTTP(w, r)
+		p.operationHandler("secret").ServeHTTP(w, r)
 		return w
 	}
 	if w := call("GET", resource, "", "", ""); w.Code != 401 {

@@ -1,3 +1,4 @@
+import {resourceURL} from '../resources.ts';
 import type {Archive} from "../store/protocol.ts";
 import {unsignedNumber as compact,unsignedBig as compactBig,shuffleColumns,type ColumnSpan,type UnsignedEncoding} from 'pill-packer/columns';
 import {expandPAC,pacHeader} from './pac.ts';
@@ -375,10 +376,12 @@ export class SummaryDayCache {
         }));
         for(const result of prepares)if(result.status==='rejected')throw result.reason;
         const missing=owned.filter(item=>item.missing);
-        for(let start=0;start<missing.length;start+=summaryBatchLimit){
+        const byCache=new Map<string,Pending[]>();
+        for(const item of missing){const cache=item.ref.source.split("/")[0],items=byCache.get(cache)??[];items.push(item);byCache.set(cache,items)}
+        for(const [cache,items] of byCache) for(let start=0;start<items.length;start+=summaryBatchLimit){
           signal.throwIfAborted();
-          const batch=missing.slice(start,start+summaryBatchLimit);
-          const response=await fetcher('/summaries',{
+          const batch=items.slice(start,start+summaryBatchLimit);
+          const response=await fetcher(resourceURL('summaries',cache),{
             method:'POST',signal,cache:'no-store',
             headers:{'Content-Type':'application/json',Accept:'application/pil',...(token?{Authorization:`Bearer ${token}`}:{})},
             body:JSON.stringify({packs:batch.map(({ref:{source,definition,key}})=>({source,definition,key}))})

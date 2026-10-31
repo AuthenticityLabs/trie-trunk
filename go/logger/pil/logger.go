@@ -141,6 +141,9 @@ func Open(ctx context.Context, c Config) (*Logger, error) {
 func (w *Logger) request(ctx context.Context, method, path string, body io.Reader, branches ...string) (*http.Response, error) {
 	u := *w.origin
 	u.Path = path
+	if path == "/definitions" {
+		u.Path = "/" + w.config.Cache + "/registries"
+	}
 	if path == "/ingest" {
 		n := w.layout.Definition.Resource
 		branch := w.config.Branch

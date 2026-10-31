@@ -94,7 +94,7 @@ func TestTimedBatchTimerAndClose(t *testing.T) {
 				rec := httptest.NewRecorder()
 				rec.Header().Set("PIL-Version", "2")
 				rec.Header().Set("Definition-Version", r.Header.Get("Definition-Version"))
-				if r.URL.Path == "/definitions" {
+				if r.URL.Path == "/demo/registries" {
 					rec.WriteHeader(204)
 				} else {
 					_, _ = io.Copy(io.Discard, r.Body)

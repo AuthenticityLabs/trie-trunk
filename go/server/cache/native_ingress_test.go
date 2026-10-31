@@ -376,7 +376,7 @@ func TestNativeIngressHTTPBatchRecovery(t *testing.T) {
 		r.Header.Set("Definition-Version", fmtDigest(l))
 		r.Header.Set("Content-Type", "application/pil")
 		w := httptest.NewRecorder()
-		h.ServeHTTP(w, r)
+		h.serveHTTP(w, r)
 		return w
 	}
 	if w := submit(body); w.Code != 400 || w.Header().Get("Trunk-Received") != "2049" {

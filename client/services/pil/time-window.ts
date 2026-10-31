@@ -1,3 +1,4 @@
+import {resourceURL,timeParameters} from '../resources.ts';
 import { createAbortScope } from '../abort.ts';
 import type {TimeReceipt} from '../store/native.ts';
 import type {Archive} from '../store/protocol.ts';
@@ -46,7 +47,7 @@ export async function loadTimeWindow(q:TimeWindowRequest,token:string,signal:Abo
   const rows=new Map((saved?.rows??[]).map(r=>[r.time,r]));
   for(const gap of saved?.missing??[{from,to}]){
    signal.throwIfAborted();
-   const response=await fetcher(`/${file.path}?begin=${compactHour(gap.from)}&end=${compactHour(gap.to)}`,{signal,cache:'no-store',headers:{Accept:'application/octet-stream',...(token?{Authorization:`Bearer ${token}`}:{})}});
+   const response=await fetcher(resourceURL('timelines',tap,new URLSearchParams([...timeParameters(gap.from,gap.to),['definition',definition.digest]])),{signal,cache:'no-store',headers:{Accept:'application/octet-stream',...(token?{Authorization:`Bearer ${token}`}:{})}});
    if(!response.ok)throw Error(`Time trie request failed (${response.status})`);
    const h=response.headers,generation=h.get('Trunk-Generation')??'',sequence=Number(h.get('Trunk-Generation-Sequence'));
    if(h.get('Trunk-Format')!=='time-trie/0'||h.get('Trunk-Path')!==file.path||h.get('Trunk-Source')!==tap||h.get('Definition-Version')!==definition.digest||!/^[a-f0-9]{32}$/.test(generation)||!Number.isSafeInteger(sequence)||sequence<1)throw Error('Invalid time trie response binding');

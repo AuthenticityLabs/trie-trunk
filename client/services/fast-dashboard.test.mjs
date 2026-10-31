@@ -89,12 +89,12 @@ test('Fast projection reuses cached summary packets and never requests event bod
   const calls=[],payload=readFileSync(new URL('view.pil',root));
   const fetcher=async(url,options)=>{
     calls.push(url);
-    if(url.startsWith('/events?')){
+    if(url.startsWith('/demo/indexes?')){
       assert.equal(new URL(url,'http://localhost').searchParams.get('include'),'summary');
       assert.equal(options.headers['Summary-Known'],undefined,'projection always gets the source manifest');
       return new Response(payload,{headers:{'Content-Type':'application/pil','PIL-Version':'2','Trunk-Completion':'body','Trunk-Format':'pac-view/0'}});
     }
-    assert.equal(url,'/summaries');
+    assert.equal(url,'/demo/summaries');
     return summaryResponse(JSON.parse(options.body).packs.map(raw));
   };
   const codec=new Codec((await WebAssembly.instantiate(readFileSync(new URL('../assets/pil.wasm',import.meta.url)))).instance),cache=new ViewCache(fetcher),definitions=new Map();
@@ -103,8 +103,8 @@ test('Fast projection reuses cached summary packets and never requests event bod
     const view=await cache.query({engine:'tantivy',tap:'demo/payment/*/*',from:new Date(request.from).toISOString(),to:new Date(request.to).toISOString(),include:'summary',size:1},'',new AbortController().signal,codec,definitions,undefined,false,(manifest,days)=>p.consume(manifest,days));
     assert.equal(p.count,view.result.summary.count);assert.equal(view.batch.rows.length,0);
   }
-  assert.equal(calls.filter(u=>u.startsWith('/events?')).length,2);
-  assert.equal(calls.filter(u=>u==='/summaries').length,1);
+  assert.equal(calls.filter(u=>u.startsWith('/demo/indexes?')).length,2);
+  assert.equal(calls.filter(u=>u==='/demo/summaries').length,1);
 });
 
 test('duration display converts the microsecond role to milliseconds without rounding data',()=>{

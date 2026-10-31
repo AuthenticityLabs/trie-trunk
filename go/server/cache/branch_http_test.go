@@ -47,7 +47,7 @@ func TestBranchTimeRangeContainsServerLeavesOnly(t *testing.T) {
 		r := httptest.NewRequest(method, path, nil)
 		r.Header.Set("Authorization", "Bearer secret")
 		w := httptest.NewRecorder()
-		p.Handler("secret").ServeHTTP(w, r)
+		p.operationHandler("secret").ServeHTTP(w, r)
 		return w
 	}
 	w := request("GET", path)
@@ -127,7 +127,7 @@ func TestBranchIndexReplicationDoesNotCollectPayload(t *testing.T) {
 			r.Header.Set("Trunk-Coverage", have)
 		}
 		w := httptest.NewRecorder()
-		p.Handler("").ServeHTTP(w, r)
+		p.operationHandler("").ServeHTTP(w, r)
 		if w.Code != 200 {
 			t.Fatal(w.Code, w.Body.String())
 		}

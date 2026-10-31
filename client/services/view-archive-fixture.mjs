@@ -8,8 +8,8 @@ import {Backend} from './native-backend-fixture.mjs';
 export class ViewCache extends Base {
  constructor(fetcher) {
   super(async(url,opts)=>{
-   if(!url.startsWith('/collect?'))return fetcher(url,opts);
-   const from=new URL(url,'https://test').searchParams.get('from');
+   if(!url.startsWith('/demo/seeds?'))return fetcher(url,opts);
+   const from=new Date(Number(new URL(url,'https://test').searchParams.get('beginTime'))).toISOString();
    const group=from.startsWith('2026-09')?'pac-buckets':'pac-live';
    const raw=readFileSync(new URL(`./fixtures/${group}/native.pil`,import.meta.url));
    return new Response(raw,{headers:{'Content-Type':'application/pil','PIL-Version':'2','Trunk-Format':'native-pac/0','Definition-Version':opts.headers['Definition-Version'],'Trunk-Completion':'body'}});

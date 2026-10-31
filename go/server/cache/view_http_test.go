@@ -148,7 +148,7 @@ func TestPagedViewNegotiationSnapshotAndCache(t *testing.T) {
 			r.Header.Set(k, v)
 		}
 		w := httptest.NewRecorder()
-		h.ServeHTTP(w, r)
+		h.serveHTTP(w, r)
 		return w
 	}
 	first := get(path, nil)
@@ -334,7 +334,7 @@ func TestPagedViewBranchesBoundaryAndGeneration(t *testing.T) {
 		r.Header.Set("PIL-Version", "2")
 		r.Header.Set("PIL-Features", "pac-arrays")
 		w := httptest.NewRecorder()
-		h.ServeHTTP(w, r)
+		h.serveHTTP(w, r)
 		return w
 	}
 	first := get(path)

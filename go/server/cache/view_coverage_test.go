@@ -35,7 +35,7 @@ func TestViewBucketCoverageIsFullScopedAndSealed(t *testing.T) {
 		r.Header.Set("PIL-Features", "pac-arrays,adaptive-integers,view-buckets")
 		r.Header.Set("Bucket-Known", known)
 		w := httptest.NewRecorder()
-		h.ServeHTTP(w, r)
+		h.serveHTTP(w, r)
 		return w
 	}
 	first := get(path, "")
@@ -115,7 +115,7 @@ func TestOpenViewBucketCannotSuppressPayloads(t *testing.T) {
 		r.Header.Set("PIL-Features", "pac-arrays,adaptive-integers,view-buckets")
 		r.Header.Set("Bucket-Known", known)
 		w := httptest.NewRecorder()
-		h.ServeHTTP(w, r)
+		h.serveHTTP(w, r)
 		if w.Code != 200 {
 			t.Fatal(w.Body.String())
 		}

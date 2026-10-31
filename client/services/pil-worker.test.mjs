@@ -85,8 +85,8 @@ test("object history streams original cross-minor PIL and reuses maps without ce
   const connect = workerService(module, async (url, options) => {
     calls.push(options.headers);
     const parsed = new URL(url, "https://localhost");
-    assert.equal(parsed.pathname, "/collections/42");
-    assert.equal(parsed.searchParams.has("id"), false);
+    assert.equal(parsed.pathname, "/demo/collections");
+    assert.equal(parsed.searchParams.get("id"), "42");
     assert.equal(options.cache, 'no-store');
     assert.equal(options.headers.Authorization, "Bearer auth");
     return historyResponse(calls.length === 1 ? historyBytes : historyWarmBytes);
@@ -128,11 +128,11 @@ test("two tabs share negotiated definitions; collect sends both version headers 
     calls = [];
   const connect = workerService(module, async (url, options) => {
     calls.push({ url, headers: options.headers });
-    if (url === "/schemas") {
+    if (url.includes("/registries?")) {
       await new Promise((r) => setTimeout(r, 10));
       return response(f.schemas);
     }
-    assert.equal(new URL(url, "https://localhost").pathname, "/collect");
+    assert.equal(new URL(url, "https://localhost").pathname, "/test/seeds");
     assert.equal(options.method, "GET");
     assert.equal(options.body, undefined);
     assert.equal(options.headers["PIL-Version"], "2");
@@ -160,7 +160,7 @@ test("two tabs share negotiated definitions; collect sends both version headers 
     assert.equal(batch.rows.length, 3);
   }
   await b.run({ kind: "schemas", tap: "test", token: "two" });
-  assert.equal(calls.filter((c) => c.url === "/schemas").length, 2);
+  assert.equal(calls.filter((c) => c.url.includes("/registries?")).length, 2);
 });
 test("cold collect gets definitions first, newer version refreshes in the same request and is reused", async (t) => {
   const first = fixture(),
@@ -170,7 +170,7 @@ test("cold collect gets definitions first, newer version refreshes in the same r
     calls = 0;
   const connect = workerService(module, async (url, options) => {
     calls++;
-    assert.equal(new URL(url, "https://localhost").pathname, "/collect");
+    assert.equal(new URL(url, "https://localhost").pathname, "/test/seeds");
     assert.equal(options.method, "GET");
     assert.equal(options.body, undefined);
     return response(
@@ -211,7 +211,7 @@ test("canceling one port aborts only its event request; the other tab can reuse 
   const f = fixture();
   let active;
   const connect = workerService(module, async (url, options) => {
-    if (url === "/schemas") return response(f.schemas);
+    if (url.includes("/registries?")) return response(f.schemas);
     if (new URL(url, "https://localhost").searchParams.get("follow") !== "true")
       return response(f.cached);
     active = options.signal;
@@ -257,8 +257,8 @@ test("changing tap selection reuses cached definition bodies for the same creden
   const f = fixture();
   const known = [];
   const connect = workerService(module, async (url, options) => {
-    assert.equal(url, "/schemas");
-    const query = JSON.parse(options.body);
+    assert.ok(url.includes("/registries?"));
+    const query = {known:options.headers["Definition-Known"].split(",").filter(Boolean)};
     known.push(query.known);
     return response(
       query.known.includes(f.digest)
@@ -294,8 +294,8 @@ test("persisted definitions are negotiated as known and frames commit before del
     workerService(
       module,
       async (url, options) => {
-        if (url === "/schemas") {
-          assert.deepEqual(JSON.parse(options.body).known, [f.digest]);
+        if (url.includes("/registries?")) {
+          assert.deepEqual(options.headers["Definition-Known"].split(",").filter(Boolean), [f.digest]);
           return response(bytes(magic, f.bind(), [255, 254]));
         }
         return response(f.cached);
@@ -395,7 +395,7 @@ test("cold collect reuses persisted definitions in one GET without schema discov
       async (url, options) => {
         calls++;
         const query = new URL(url, "https://localhost");
-        assert.equal(query.pathname, "/collect");
+        assert.equal(query.pathname, "/test/seeds");
         assert.equal(options.method, "GET");
         assert.equal(options.body, undefined);
         assert.equal(options.headers["Definition-Version"], "");
@@ -432,7 +432,7 @@ test("a pending schema choice lookup does not gate collection", async (t) => {
   const pending = new Promise((r) => (began = r));
   let finish;
   const connect = workerService(module, async (url, options) => {
-    if (url === "/schemas") {
+    if (url.includes("/registries?")) {
       began();
       return await new Promise((r) => (finish = () => r(response(f.schemas))));
     }
@@ -543,8 +543,8 @@ test("only missing ranges are fetched, and a failed later gap never certifies th
   );
   assert.deepEqual(
     calls.map((u) => [
-      Date.parse(u.searchParams.get("from")),
-      Date.parse(u.searchParams.get("to")),
+      Number(u.searchParams.get("beginTime")),
+      Number(u.searchParams.get("endTime")),
     ]),
     gaps.map((g) => [g.from, g.to]),
   );
@@ -593,8 +593,8 @@ test("native-capable worker collects missing ranges, delivers unassembled pages 
  };
  let requests=0;
  const fetcher=async(url,options)=>{
-  if(url==="/schemas")return new Response(schemas,{headers:{"Content-Type":"application/pil","PIL-Version":"2","Definition-Version":"a".repeat(64),"Trunk-Completion":"body","Trunk-Features":"native-ranges"}});
-  assert.match(url,/format=native/);assert.equal(options.method,"GET");requests++;
+  if(url.includes("/registries?"))return new Response(schemas,{headers:{"Content-Type":"application/pil","PIL-Version":"2","Definition-Version":"a".repeat(64),"Trunk-Completion":"body","Trunk-Features":"native-ranges"}});
+  assert.equal(new URL(url,"https://test").pathname,"/demo/seeds");assert.equal(options.method,"GET");requests++;
   if(requests===2){
    const have=JSON.parse(Buffer.from(options.headers["Trunk-Coverage"],"base64url"));
    assert.deepEqual(have[0].Index,[{Start:1,End:7}]);
@@ -650,12 +650,12 @@ test("native worker delivers provisional hours in memory without claiming persis
   }
  };
  const requests=[];
- const fetcher=async url=>{
+ const fetcher=async (url,options)=>{
   requests.push(url);
   const headers={"Content-Type":"application/pil","PIL-Version":"2","Definition-Version":binding.digest,"Trunk-Completion":"body","Trunk-Features":"native-ranges"};
-  if(url==="/schemas")return new Response(schemas,{headers});
-  if(url.includes("format=native"))return new Response(native,{headers:{...headers,"Trunk-Format":"native-pac/0"}});
-  assert.match(url,/from=2026-10-19T12/);return new Response(live,{headers});
+  if(url.includes("/registries?"))return new Response(schemas,{headers});
+  if(options.headers["PIL-Features"].includes("native-ranges"))return new Response(native,{headers:{...headers,"Trunk-Format":"native-pac/0"}});
+  assert.equal(new URL(url,"https://test").searchParams.get("beginTime"),String(Date.parse("2026-10-19T12:00:00Z")));return new Response(live,{headers});
  };
  const client=tab(workerService(module,fetcher,archive),t);
  await client.run({kind:"schemas",tap:binding.tap,token:""});
@@ -676,7 +676,7 @@ test('view delivery completes independently of failed durable cache storage',asy
   throw Error('disk quota exhausted');
  };
  const fetcher=async url=>{
-  assert.match(url,/^\/events\?/);
+  assert.match(url,/^\/demo\/indexes\?/);
   const r=response(raw,'a'.repeat(64));r.headers.set('Trunk-Format','pac-view/0');return r;
  };
  const client=tab(workerService(module,fetcher,archive),t);

@@ -151,7 +151,7 @@ func TestRejectionAvailabilityWithoutPayloadExpansion(t *testing.T) {
 			r.Header.Set("Authorization", "Bearer "+token)
 		}
 		w := httptest.NewRecorder()
-		h.ServeHTTP(w, r)
+		h.serveHTTP(w, r)
 		return w
 	}
 	if w := request("format=availability", ""); w.Code != 401 {

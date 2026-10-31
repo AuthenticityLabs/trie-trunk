@@ -13,6 +13,8 @@ import (
 	"strings"
 	"time"
 
+	"trie-trunk/go/internal/resourceapi"
+
 	"github.com/quic-go/quic-go"
 	"github.com/quic-go/quic-go/http3"
 )
@@ -86,6 +88,10 @@ func Run(ctx context.Context, c Config) error {
 		fallback = staticFiles(c.Web)
 	}
 	routes.Handle("/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if resourceapi.IsPath(r.URL.Path) {
+			api.ServeHTTP(w, r)
+			return
+		}
 		for _, extension := range []string{".rx", ".tri", ".sum", ".idx", ".tvy", ".pods"} {
 			if strings.HasSuffix(r.URL.Path, extension) {
 				api.ServeHTTP(w, r)

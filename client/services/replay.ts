@@ -1,3 +1,4 @@
+import {resourceURL,timeParameters} from './resources.ts';
 import {apiFetch,activeConnection,connectionFetch} from './connections.ts';
 import { validSource } from "./source.ts";
 import type { Archive } from "./store/protocol.ts";
@@ -71,9 +72,7 @@ export function historyURL(query: HistoryQuery): string {
   const from = Date.parse(query.from), to = Date.parse(query.to);
   if (!Number.isFinite(from) || !Number.isFinite(to) || from >= to)
     throw Error("Object history requires a valid time window");
-  parameters.set("from", query.from); parameters.set("to", query.to);
-  parameters.delete("id");
-  return `/collections/${encodeURIComponent(query.id)}?${parameters}`;
+  return resourceURL("collections",query.source.replace(/\/[^/]+$/,'/write'),new URLSearchParams([...timeParameters(query.from,query.to),["id",query.id]]));
 }
 export function observedState(query: ObjectQuery, token: string): ObservedState {
   objectParameters(query);
@@ -89,7 +88,8 @@ async function stateRequest(query: ObjectQuery, credential: string, signal: Abor
     parameters.set("token", observed);
   }
   signal.throwIfAborted();
-  const response = await fetcher(`/objects/state?${parameters}`, {
+  parameters.delete("cache");parameters.delete("collection");parameters.set("kind","state");
+  const response = await fetcher(resourceURL("collections",query.source.replace(/\/[^/]+$/,'/write'),parameters), {
     signal, cache: "no-store", headers: { Accept: "application/json",
       ...(credential.trim() ? { Authorization: `Bearer ${credential.trim()}` } : {}) },
   });

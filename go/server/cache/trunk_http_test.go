@@ -108,7 +108,7 @@ func TestTrunkBootstrapIncludesEveryDefinitionAndActualFolderPaths(t *testing.T)
 		r.Header.Set("Authorization", "Bearer "+token)
 		r.Header.Set("Accept-Encoding", "gzip")
 		w := httptest.NewRecorder()
-		p.Handler("secret").ServeHTTP(w, r)
+		p.operationHandler("secret").ServeHTTP(w, r)
 		return w
 	}
 	w := get("GET", "/trunk", "application/pil", "secret")

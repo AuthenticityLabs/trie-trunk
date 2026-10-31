@@ -1,5 +1,5 @@
+import {resourceURL,timeParameters} from '../resources.ts';
 import type {LiveReceiver} from "../seeds/live-pack.ts";
-import {compactHour} from "./time-window.ts";
 import {registeredPath} from "./trunk.ts";
 import { nativeCacheIssue } from "../store/errors.ts";
 import type { Archive, NativeInput } from "../store/protocol.ts";
@@ -64,17 +64,15 @@ async function collectOnce(options:NativeCollectOptions):Promise<string[]> {
       const candidate=btoa(JSON.stringify(coverage.slice(0,n))).replaceAll("+","-").replaceAll("/","_").replace(/=+$/,"");
       if(candidate.length<=16384){have=candidate;break;}
     }
-    const query=new URLSearchParams({format:"native",tap,from,to});
+    const query=timeParameters(from,to);
     if(options.definitionVersion)query.set("definition",options.definitionVersion);
-    if(options.data)query.set("data",options.data);
-    let url=`/collect?${query}`;
     if(options.artifact){
       const {path,kind,states}=options.artifact;
       if(!registeredPath(path)||!path.endsWith('.'+kind)||(kind==='idx')!==(options.data==='none'))throw Error("Invalid catalog collection artifact");
-      const range=new URLSearchParams({begin:compactHour(Date.parse(from)),end:compactHour(Date.parse(to))});
-      if(states)range.set('states',states);
-      url=`/${path}?${range}`;
+      if(states)query.set("states",states);
+      // State filters remain a client planner concern; sealed packs stay whole.
     }
+    const url=resourceURL(options.data==='none'?'indexes':'seeds',tap,query);
     const response=await (options.fetcher??fetch)(url,{
       method:"GET",signal,cache:"no-store",
       headers:{Accept:"application/pil","PIL-Version":"2","PIL-Features":"native-ranges,native-state-pages,adaptive-integers"+(options.live?",live-pacs":""),
@@ -85,7 +83,7 @@ async function collectOnce(options:NativeCollectOptions):Promise<string[]> {
     const version=response.headers.get("Definition-Version");
     const windowTo=Number(response.headers.get("Trunk-Window-To"));
     if(response.ok&&options.live&&(!Number.isSafeInteger(windowTo)||windowTo<=Date.parse(from)))throw Error("Invalid collection end time");
-    if(response.ok&&(response.headers.get("Trunk-Format")!=="native-pac/0"||(options.artifact&&response.headers.get("Trunk-Path")!==options.artifact.path)||!version||!/^[a-f0-9]{64}$/.test(version))){
+    if(response.ok&&(response.headers.get("Trunk-Format")!=="native-pac/0"||!version||!/^[a-f0-9]{64}$/.test(version))){
       await response.body?.cancel();throw Error("Native collection was not negotiated");
     }
     await consume(response,new PILStream(codec,definitions,()=>{},()=>{},async()=>{

@@ -24,6 +24,6 @@ test('history links preserve typed identities and resource scope without using t
   const target=objectHistoryTarget(event(type,value,'customer_id'),enabled);
   assert.equal(target.id,id);assert.equal(target.field,'customer_id');
   const url=new URL(historyURL({...target,from:'1970-01-01T00:00:00Z',to:'2026-10-20T00:00:00Z'}),'http://localhost');
-  assert.equal(decodeURIComponent(url.pathname.slice('/collections/'.length)),id);assert.equal(url.searchParams.get('collection'),'payment/transactions.v1');
+  assert.equal(url.searchParams.get('id'),id);assert.equal(url.searchParams.get('branch'),'payment/transactions.v1/write');
  }
 });

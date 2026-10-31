@@ -36,7 +36,7 @@ func TestNativeHTTPInterop(t *testing.T) {
 			r.Header.Set("Definition-Known", fmtDigest(l))
 		}
 		w := httptest.NewRecorder()
-		h.ServeHTTP(w, r)
+		h.serveHTTP(w, r)
 		return w
 	}
 	tap := url.QueryEscape(h.tap(Write))
@@ -87,7 +87,7 @@ func TestNativeHTTPInterop(t *testing.T) {
 	r.Header.Set("Authorization", "Bearer test")
 	r.Header.Set("PIL-Version", "2")
 	w = httptest.NewRecorder()
-	h.ServeHTTP(w, r)
+	h.serveHTTP(w, r)
 	if w.Code != http.StatusUpgradeRequired {
 		t.Fatal("unnegotiated integer profile")
 	}
@@ -142,7 +142,7 @@ func TestPILIngressStagingAndReceiverStubs(t *testing.T) {
 		r.Header.Set("Definition-Version", fmtDigest(l))
 		r.Header.Set("Content-Type", kind)
 		w := httptest.NewRecorder()
-		h.ServeHTTP(w, r)
+		h.serveHTTP(w, r)
 		return w
 	}
 	for _, kind := range []string{"application/jsonl", "application/x-ndjson", "text/plain", "application/syslog"} {
@@ -171,13 +171,13 @@ func TestPILIngressStagingAndReceiverStubs(t *testing.T) {
 	r := httptest.NewRequest("GET", "/rejections", nil)
 	r.Header.Set("Authorization", "Bearer secret")
 	w := httptest.NewRecorder()
-	h.ServeHTTP(w, r)
+	h.serveHTTP(w, r)
 	if w.Code != 200 || !bytes.Contains(w.Body.Bytes(), []byte(`"message":"request completed"`)) || !bytes.Contains(w.Body.Bytes(), []byte(`"pil_base64"`)) {
 		t.Fatal(w.Code, w.Body.String())
 	}
 	r = httptest.NewRequest("GET", "/rejections", nil)
 	w = httptest.NewRecorder()
-	h.ServeHTTP(w, r)
+	h.serveHTTP(w, r)
 	if w.Code != 401 {
 		t.Fatal("unauthenticated rejection log")
 	}
@@ -205,7 +205,7 @@ func TestPILIngressLargeFrameAndFragmentedBody(t *testing.T) {
 	r.Header.Set("Definition-Version", fmtDigest(l))
 	r.Header.Set("Content-Type", "application/pil")
 	w := httptest.NewRecorder()
-	h.ServeHTTP(w, r)
+	h.serveHTTP(w, r)
 	if w.Code != 200 || w.Header().Get("Trunk-Received") != "2" || w.Header().Get("Trunk-Acknowledgement") != "durable-staging" {
 		t.Fatal(w.Code, w.Header(), w.Body.String())
 	}

@@ -71,7 +71,7 @@ func (h *HTTP) selectedBranches(selector string) ([]Branch, error) {
 	}
 	return found, nil
 }
-func (h *HTTP) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *HTTP) serveHTTP(w http.ResponseWriter, r *http.Request) {
 	if h.Token != "" && subtle.ConstantTimeCompare([]byte(r.Header.Get("Authorization")), []byte("Bearer "+h.Token)) != 1 {
 		http.Error(w, "unauthorized", 401)
 		return
@@ -163,6 +163,7 @@ func (h *HTTP) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	q := r.URL.Query()
 	tap := q.Get("tap")
 	known := r.Header.Get("Definition-Known")
+
 	if r.URL.Path == "/schemas" {
 		var body struct {
 			Tap   string   `json:"tap"`

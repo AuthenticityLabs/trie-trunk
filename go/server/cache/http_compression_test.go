@@ -44,7 +44,7 @@ func TestHTTPGzipIngressMembersRecovery(t *testing.T) {
 	r.Header.Set("PIL-Version", "2")
 	r.Header.Set("Definition-Version", fmtDigest(l))
 	w := httptest.NewRecorder()
-	h.ServeHTTP(w, r)
+	h.serveHTTP(w, r)
 	if w.Code != 200 || w.Header().Get("Trunk-Received") != "2" {
 		t.Fatalf("%d %s", w.Code, w.Body.String())
 	}
@@ -102,7 +102,7 @@ func TestHTTPGzipRejectsDamagedOrUnsupportedCoding(t *testing.T) {
 			r.Header.Set("PIL-Version", "2")
 			r.Header.Set("Definition-Version", fmtDigest(l))
 			w := httptest.NewRecorder()
-			h.ServeHTTP(w, r)
+			h.serveHTTP(w, r)
 			if w.Code < 400 || w.Header().Get("Trunk-Acknowledgement") != "" {
 				t.Fatalf("acknowledged invalid coding: %d", w.Code)
 			}

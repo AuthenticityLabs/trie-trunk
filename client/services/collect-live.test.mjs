@@ -37,7 +37,7 @@ async function fixture(promotion=false){
  const snapshots=Array.from({length:promotion?3:6},(_,i)=>load((promotion?'promotion-':'')+i+'.pil'));
  const end=promotion?[65*60000,80*60000,80*60000]:[600000,601000,720000,720000,720000,7200000];
  const fetcher=async(url,init)=>{
-  if(url.startsWith('/collect?')){const request=new URL(url,'http://test');requests.push({from:Date.parse(request.searchParams.get('from')),to:request.searchParams.get('to'),method:init.method});return new Response(snapshots[promotion&&request.searchParams.get('to')!=='now'?2:step],{headers:{'Content-Type':'application/pil','PIL-Version':'2','Trunk-Completion':'body','Definition-Version':digest,'Trunk-Window-To':String(from+end[step]),'Trunk-Format':'native-pac/0'}})}
+  if(url.startsWith('/demo/seeds?')){const request=new URL(url,'http://test');requests.push({from:Number(request.searchParams.get('beginTime')),to:(request.searchParams.has('endTime')?new Date(Number(request.searchParams.get('endTime'))).toISOString():'now'),method:init.method});return new Response(snapshots[promotion&&(request.searchParams.has('endTime')?new Date(Number(request.searchParams.get('endTime'))).toISOString():'now')!=='now'?2:step],{headers:{'Content-Type':'application/pil','PIL-Version':'2','Trunk-Completion':'body','Definition-Version':digest,'Trunk-Window-To':String(from+end[step]),'Trunk-Format':'native-pac/0'}})}
   throw Error('Unexpected request '+url);
  };
  const reset=()=>{cache=new ViewCache(fetcher);cache.setTrunk(trunk);

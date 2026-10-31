@@ -71,7 +71,7 @@ func TestNativeStatePagesHTTP(t *testing.T) {
 	r.Header.Set("PIL-Version", "2")
 	r.Header.Set("PIL-Features", "native-ranges,native-state-pages,adaptive-integers")
 	w := httptest.NewRecorder()
-	(&HTTP{Store: s}).ServeHTTP(w, r)
+	(&HTTP{Store: s}).serveHTTP(w, r)
 	if w.Code != 200 {
 		t.Fatal(w.Code, w.Body.String())
 	}

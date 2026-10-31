@@ -22,7 +22,7 @@ func replayRequest(p *Endpoint, path string, known ...string) *httptest.Response
 		r.Header.Set("Definition-Known", known[0])
 	}
 	w := httptest.NewRecorder()
-	p.ServeHTTP(w, r)
+	p.serveHTTP(w, r)
 	return w
 }
 func decodeHistory(t *testing.T, raw []byte) (frames [][]byte, digests [][32]byte) {
@@ -222,7 +222,7 @@ func TestReplayHTTPMinorHistoryAndInvalidation(t *testing.T) {
 	}
 	r := httptest.NewRequest("GET", path, nil)
 	w = httptest.NewRecorder()
-	p.Handler("secret").ServeHTTP(w, r)
+	p.operationHandler("secret").ServeHTTP(w, r)
 	if w.Code != 401 {
 		t.Fatal("history bypassed auth")
 	}

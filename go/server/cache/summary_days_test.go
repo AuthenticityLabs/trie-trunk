@@ -224,7 +224,7 @@ func TestDailySummaryHTTPFixture(t *testing.T) {
 			r.Header.Set("Summary-Resolution", "month")
 		}
 		w := httptest.NewRecorder()
-		h.ServeHTTP(w, r)
+		h.serveHTTP(w, r)
 		if w.Code != 200 {
 			t.Fatal(w.Code, w.Body.String())
 		}
@@ -404,7 +404,7 @@ func requestSummaryPacks(t *testing.T, h *HTTP, refs []summaryPackQuery) *httpte
 	r := httptest.NewRequest("POST", "/summaries", bytes.NewReader(raw))
 	r.Header.Set("Content-Type", "application/json")
 	w := httptest.NewRecorder()
-	h.ServeHTTP(w, r)
+	h.serveHTTP(w, r)
 	return w
 }
 

@@ -218,7 +218,7 @@ func TestCalendarRollupHTTPSelection(t *testing.T) {
 		r.Header.Set("Summary-Resolution", res)
 		r.Header.Set("Summary-Known", known)
 		w := httptest.NewRecorder()
-		(&HTTP{Store: s}).ServeHTTP(w, r)
+		(&HTTP{Store: s}).serveHTTP(w, r)
 		if w.Code != 200 {
 			return w.Code, ViewResult{}
 		}

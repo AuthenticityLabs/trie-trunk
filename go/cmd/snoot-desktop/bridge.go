@@ -14,6 +14,7 @@ import (
 	"path"
 	"strings"
 	"time"
+	"trie-trunk/go/internal/resourceapi"
 )
 
 const sessionCookie = "snoot_desktop_session"
@@ -116,6 +117,10 @@ func (b *bridge) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	if strings.HasPrefix(r.URL.Path, "/__desktop/") {
 		b.diagnostics(w, r)
+		return
+	}
+	if resourceapi.IsPath(r.URL.Path) {
+		b.proxy.ServeHTTP(w, r)
 		return
 	}
 	for _, p := range apiPaths {

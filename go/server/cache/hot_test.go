@@ -128,7 +128,7 @@ func TestLiveViewPaginationSurvivesFinalization(t *testing.T) {
 		r.Header.Set("PIL-Version", "2")
 		r.Header.Set("PIL-Features", "pac-arrays,adaptive-integers,view-buckets")
 		w := httptest.NewRecorder()
-		h.ServeHTTP(w, r)
+		h.serveHTTP(w, r)
 		return w
 	}
 	first := get("")

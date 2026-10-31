@@ -221,7 +221,7 @@ completions expose the query unit. Refresh preserves the selected time window
 independently of disposable scroll geometry.
 
 Definition-declared object IDs have a distinct link color. Clicking one opens
-Object History and performs a fresh `/collections/<id>` lookup in its resource.
+Object History and performs a fresh `/<cache>/collections?branch=<service/resource/write>&id=<id>` lookup in its resource.
 Debug and trace leaf buttons sit in the event margin and open separate data
 dialogs. They use `correlation_id` or `trace_id` when supplied, with an exact
 millisecond timestamp fallback within the same resource. Their records are
@@ -284,18 +284,28 @@ paths. `GET /trunk/<relative-folder>/` traverses registered folders without
 assuming a fixed hierarchy depth. The client validates artifacts and commits its
 bootstrap snapshot only after every file is durable.
 
-A scoped time request uses the advertised path, for example
-`/demo/payment/transactions.v1/0/write.tri?begin=YYDDDHH&end=YYDDDHH`.
-The same pattern applies to other branches. Bounds are UTC,
-begin-inclusive/end-exclusive, with two-digit years interpreted as 2000–2099.
-It returns only published hours, clipped to retained bounds, and reports the
-Definition and physical generation in response headers. Each definition has its
-own physical path; there is no definition query selector. Clients use catalog
-paths rather than constructing them from version components.
+Cache-scoped resource endpoints use branch selectors and epoch-millisecond bounds:
+
+| Endpoint | Data |
+| --- | --- |
+| `/<cache>/registries` | Definition registration and negotiation; `kind=bindings` lists selected bindings |
+| `/<cache>/collections` | Object history; `kind=state` checks subscription state |
+| `/<cache>/seeds` | Whole sealed packs and the available unsealed interval |
+| `/<cache>/summaries` | Daily summary ranges or a batch of summary references |
+| `/<cache>/timelines` | Published time-trie ranges and hourly counts |
+| `/<cache>/indexes` | Branch index ranges; `mode=search` enables the temporary Tantivy comparison |
+
+`branch=payment/transactions.v1/write` selects a branch. `definition=<digest>`
+disambiguates physical resource definitions. `beginTime` is inclusive and
+`endTime` is exclusive, both epoch milliseconds. Omit `endTime` on seeds to
+retrieve everything currently available from `beginTime`; this is a finite
+response, not a continuous tail. Timelines align to whole hours and summaries
+to UTC days. Catalog artifact names remain storage identities, not HTTP paths.
+`/trunk` remains bootstrap and is independent of query execution.
 
 Bootstrap and time-window replication are connected to Search. Selecting a scope
 or applying a window reads available local time leaves and fetches missing ranges
-through the catalog's branch `.tri` paths, with at most four concurrent requests.
+through cache-scoped `/timelines` requests, with at most four concurrent requests.
 The histogram shows sealed hourly counts before Search is invoked; debug/trace
 branches do not contribute to ordinary event counts. Long ranges combine hourly
 counts into at most 300 rendered bars. Time imports preserve existing completion
@@ -304,7 +314,7 @@ longer submits an event search automatically.
 
 ### Client Search Execution
 
-Search uses catalog paths and hourly completeness bits to collect only missing
+Search uses catalog identities and hourly completeness bits to collect only missing
 whole `.pods` packs. It does not call `/events` or independently fetch `.idx`
 ranges in the default path. The first nonempty hour is scheduled separately for
 prompt first-page results; remaining work is grouped by day with at most four
@@ -485,7 +495,7 @@ Each entry can hold one newest-common timestamp (the minimum of each scanned
 branch's newest timestamp), run counts, and measurements. Branch timestamps are
 transient, and no event bytes or credentials are stored here. Checkpoints are
 recorded only after full scans, before predicate rejection, with a one-millisecond
-overlap for resumption. Searches ending at now use the ordinary `/collect` range:
+overlap for resumption. Searches ending at now use the ordinary `/<cache>/seeds` range:
 its retrieval start advances to the checkpoint minus that overlap, while the
 query's original window stays unchanged. The server captures `now` once. It sends
 sealed PACs through the existing native path and unsealed records as uncompressed,
@@ -1064,7 +1074,7 @@ with cache receipts, not a complete warm-view time. No Node runtime is used in
 this benchmark. No competing platform has been measured on this workload yet.
 
 The browser now delivers the validated event page before loading chart summaries
-from the same snapshot. Missing summary packs are selected through `POST /summaries`
+from the same snapshot. Missing summary packs are selected through `POST /<cache>/summaries`
 with `{ "packs": [{ "source": "…", "definition": "…", "key": "…" }] }`, using identities from the
 search manifest. The response is a streamed PIL record containing `ARRAY<BYTES>`: each
 entry is an unchanged daily summary pack in request order. There is no JSON/base64
